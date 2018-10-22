@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="Memory.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="WitnessRandomizer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Memory.cpp" />
