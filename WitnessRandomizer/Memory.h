@@ -24,10 +24,11 @@ public:
 	}
 
 	template <class T>
-	void WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
+	bool WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
 		if (!WriteProcessMemory(_handle, (LPVOID)ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), NULL)) {
-			ThrowError();
+			return false;
 		}
+		return true;
 	}
 	
 private:
