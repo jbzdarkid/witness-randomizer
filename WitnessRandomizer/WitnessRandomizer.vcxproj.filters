@@ -21,6 +21,9 @@
     <ClInclude Include="WitnessRandomizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Panels.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WitnessRandomizer.cpp">

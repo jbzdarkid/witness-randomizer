@@ -17,18 +17,23 @@ public:
 	std::vector<T> ReadData(const std::vector<int>& offsets, int numItems) {
 		std::vector<T> data;
 		data.resize(numItems);
-		if (!ReadProcessMemory(_handle, (LPVOID)ComputeOffset(offsets), &data[0], sizeof(T) * numItems, NULL)) {
-			ThrowError();
+		for (int i=0; i<5; i++) {
+			if (ReadProcessMemory(_handle, (LPVOID)ComputeOffset(offsets), &data[0], sizeof(T) * numItems, NULL))
+			{
+				return data;
+			}
 		}
-		return data;
+		ThrowError();
 	}
 
 	template <class T>
-	bool WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
-		if (!WriteProcessMemory(_handle, (LPVOID)ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), NULL)) {
-			return false;
+	void WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
+		for (int i=0; i<5; i++) {
+			if (WriteProcessMemory(_handle, (LPVOID)ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), NULL)) {
+				return;
+			}
 		}
-		return true;
+		ThrowError();
 	}
 	
 private:

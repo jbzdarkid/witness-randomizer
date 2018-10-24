@@ -153,6 +153,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="Panels.h" />
     <ClInclude Include="WitnessRandomizer.h" />
   </ItemGroup>
   <ItemGroup>
