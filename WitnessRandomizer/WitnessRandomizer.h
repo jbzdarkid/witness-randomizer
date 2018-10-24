@@ -1,14 +1,8 @@
 #pragma once
 
 int SWAP_TARGETS = 0x1;
-int SWAP_PATHWAYS = 0x2;
-int SWAP_STYLE = 0x4;
-int SWAP_COLORS = 0x8;
-int SWAP_TRACED = 0x10;
-
-
-int SWAP_SIZE = 0x20;
-
+int SWAP_LINES = 0x2;
+int SWAP_COLORS = 0x4;
 
 class WitnessRandomizer {
 public:

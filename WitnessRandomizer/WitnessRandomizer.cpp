@@ -1,10 +1,8 @@
-/* BUGS:
- * Quarry colors are broken (specfically boathouse row 2 is translating wrong)
- * Desert flood exit isn't off properly
+/*
+ * BUGS:
+ * Something is wrong with bunker
  * FEATURES:
  * Randomize audio logs
- * Randomize lasers
- * Tackle remaining areas (Treehouse, Keep, Shadows, Town, Monastery, Jungle, Bunker, Swamp)
  * Compile panel lists in a more reasonable way
  * Separate panels out by "square", which can probably be anywhere
  * List of panels which can be valid "Burn" (aka desert) substitutes: Prevent (or limit) panel counting
@@ -19,6 +17,21 @@ int main(int argc, char** argv)
 	WitnessRandomizer randomizer = WitnessRandomizer();
 
 	//*
+
+	std::vector<int> lasers = {
+		0x0360D, // Symmetry
+		0x03615, // Swamp
+		0x09DE0, // Bunker
+		0x17CA4, // Monastery
+		0x032F5, // Town
+		0x03613, // Treehouse
+//		0x03608, // Desert
+		0x03612, // Quarry
+		0x03616, // Jungle
+	};
+	randomizer.Randomize(lasers, SWAP_TARGETS);
+
+
 	if (argc == 2) {
 		srand(atoi(argv[1])); // Seed with RNG from command line
 	}
@@ -61,7 +74,7 @@ int main(int argc, char** argv)
 //		0x032F7. //Orchard Apple Tree 4
 //		0x032FF. //Orchard Apple Tree 5
 	};
-	randomizer.Randomize(outsidetutorialPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(outsidetutorialPanels, SWAP_LINES | SWAP_COLORS);
 
 	
 	std::vector<int> symmetryPanels = {
@@ -111,9 +124,8 @@ int main(int argc, char** argv)
 		0x00A61, // Symmetry Island Laser Blue 1
 		0x00A64, // Symmetry Island Laser Blue 2
 		0x00A68, // Symmetry Island Laser Blue 3
-		// 0x0360D, // Symmetry Island Laser
 	};
-	randomizer.Randomize(symmetryPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(symmetryPanels, SWAP_LINES | SWAP_COLORS);
 
 
 
@@ -162,10 +174,9 @@ int main(int argc, char** argv)
 //		0x17C31, // Desert Final Transparent
 		0x012D7, // Desert Final Far
 //		0x0A015, // Desert Final Far Control
-//		0x03608, // Desert Laser
 	};
 
-	randomizer.Randomize(desertPanels, SWAP_PATHWAYS);
+	randomizer.Randomize(desertPanels, SWAP_LINES);
 
 	std::vector<int> quarryPanels = {
 		0x01E5A, // Mill Entry Door Left
@@ -221,9 +232,8 @@ int main(int argc, char** argv)
 //		0x275FA, // Boathouse Hook Control
 		0x09E57, // Quarry Entry Gate 1
 		0x17C09, // Quarry Entry Gate 2
-//		0x03612, // Quarry Laser
 	};
-	randomizer.Randomize(quarryPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(quarryPanels, SWAP_LINES | SWAP_COLORS);
 
 	std::vector<int> treehousePanels = { //worked fine until I commented out pivoting panels, puzzles solve fine if you know solution but star and dot colors are all messed up
 //		0x17C95, // Treehouse Summon Boat
@@ -289,10 +299,9 @@ int main(int argc, char** argv)
 		0x17FA0, // Treehouse Laser Discard
 //		0x2700B, // Treehouse Exterior Door Control
 //		0x17CBC, // Treehouse Interior Door Control
-//		0x03613, // Treehouse Laser
 //		0x037FF, // Treehouse Drawbridge Control
 	};
-	randomizer.Randomize(treehousePanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(treehousePanels, SWAP_LINES | SWAP_COLORS);
 
 	std::vector<int> keepPanels = {
 		0x00139, // Keep Hedges 1
@@ -316,7 +325,7 @@ int main(int argc, char** argv)
 		0x00AFB, // Shipwreck Vault
 //		0x03535, // Shipwreck Vault Box
 	};
-	randomizer.Randomize(keepPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(keepPanels, SWAP_LINES | SWAP_COLORS);
 
 	std::vector<int> shadowsPanels = { //works beautifully, can solve based on panel color and where start/end points are if your memory is good
 		0x386FA, //Shadows Avoid 1
@@ -344,7 +353,7 @@ int main(int argc, char** argv)
 		0x0AC7A, //Shadows Tutorial 7
 		0x0A8E0, //Shadows Tutorial 8
 	};
-	randomizer.Randomize(shadowsPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(shadowsPanels, SWAP_LINES | SWAP_COLORS);
 
 	std::vector<int> townPanels = { //appears to be ok but keeps crashing game?
 		0x2899C, //Town 25 Dots 1
@@ -363,7 +372,6 @@ int main(int argc, char** argv)
 		0x28A0D, //Town Church Stars
 		0x28AD9, //Town Eraser
 		0x28998, //Town Green Door
-//		0x032F5, //Town Laser
 //		0x09F98, //Town Laser Redirect Control
 //		0x1C344, //Town Laser Redirect Panel 1
 //		0x1C343, //Town Laser Redirect Panel 2
@@ -395,7 +403,7 @@ int main(int argc, char** argv)
 		0x33AB2, //Theater Corona Exit
 		0x0A168, //Theater Sun Exit
 	};
-	randomizer.Randomize(townPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(townPanels, SWAP_LINES | SWAP_COLORS);
 
 	std::vector<int> monasteryPanels = {
 //		0x00B10, //Monastery Left Door
@@ -408,7 +416,6 @@ int main(int argc, char** argv)
 		0x193AA, //Monastery Interior 2
 		0x193AB, //Monastery Interior 3
 		0x193A6, //Monastery Interior 4
-//		0x17CA4, //Monastery Laser if something else activates laser then you can't turn on any more panels as the activation string breaks
 		0x03713, //Monastery Shortcut
 	};
 	randomizer.Randomize(monasteryPanels, SWAP_TARGETS);
@@ -434,9 +441,8 @@ int main(int argc, char** argv)
 		0x014B2, //Jungle Dots 6
 //		0x17CAB, //Jungle Pop - up Wall
 //		0x337FA, //Jungle Shortcut
-//		0x03616, //Jungle Laser
 	};
-	randomizer.Randomize(junglePanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(junglePanels, SWAP_LINES | SWAP_COLORS);
 
 //		std::vector<int> bunkerPanels = { this doesn't want to behave, I have no idea
 //			0x17C2E, //Bunker Entry Door
@@ -458,9 +464,8 @@ int main(int argc, char** argv)
 //			0x17E63, //Bunker Ultraviolet 1
 //			0x17E67, //Bunker Ultraviolet 2
 //			0x0A079, //Bunker Elevator
-//	//		0x09DE0, //Bunker Laser
 //		};
-//		randomizer.Randomize(bunkerPanels, SWAP_PATHWAYS | SWAP_COLORS);
+//		randomizer.Randomize(bunkerPanels, SWAP_LINES | SWAP_COLORS);
 
 	std::vector<int> swampPanels = { //appears to work ok swapping panels but keeps crashing game?
 		0x0056E, //Swamp Entry
@@ -520,9 +525,8 @@ int main(int argc, char** argv)
 		0x17E07, //Swamp Island Control 2
 		0x17C05, //Swamp Laser Shortcut 1
 		0x17C02, //Swamp Laser Shortcut 2
-//		0x03615, //Swamp Laser
 	};
-	randomizer.Randomize(swampPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(swampPanels, SWAP_LINES | SWAP_COLORS);
 
 	std::vector<int> mountainPanels = {
 //		0x09E39, //Mountain 1 Purple Pathway
@@ -588,7 +592,7 @@ int main(int argc, char** argv)
 //		0x17C34, //Mountaintop Perspective
 		0x0042D, //Mountaintop River
 	};
-	randomizer.Randomize(mountainPanels, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.Randomize(mountainPanels, SWAP_LINES | SWAP_COLORS);
 
 //		std::vector<int> utmPanels = { this looks like it swaps ok but crashes to much to tell, not sure why it's not happy
 //			0x0A16E, //UTM Challenge Entrance
@@ -649,26 +653,27 @@ int main(int argc, char** argv)
 //	//		0x2FAF6, //Tunnels Vault Box
 //			0x09E85, //Tunnels Town Shortcut
 //		};
-//		randomizer.Randomize(utmPanels, SWAP_PATHWAYS | SWAP_COLORS);
+//		randomizer.Randomize(utmPanels, SWAP_LINES | SWAP_COLORS);
 
 
 	   	 	/*/
 
 
+	int BOATH_3_1 = 0x21B5;
 	int MILL_L_1 = 0xE0C;
 	int MILL_U_1 = 0x557;
 	int QUARRY_E_1 = 0x9E57;
 	int QUARRY_E_2 = 0x17C09;
 	int MILL_E_1 = 0x1E5A;
 
-	randomizer.SwapPanels(QUARRY_E_2, MILL_E_1, SWAP_PATHWAYS | SWAP_COLORS);
+	randomizer.SwapPanels(BOATH_3_1, QUARRY_E_1, SWAP_LINES | SWAP_COLORS);
 	//*/
 }
 
 WitnessRandomizer::WitnessRandomizer() : _memory(Memory("witness64_d3d11.exe"))
 {
 	// Turn off desert flood final
-	_memory.WriteData<float>({0x5B28C0, 0x18, 0x18076*8, 0x2A8}, {0.0f});
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x18076*8, 0x2A8}, {0.0f, 0.0f});
 	// Change desert floating target to desert flood final
 	_memory.WriteData<int>({0x5B28C0, 0x18, 0x17ECA*8, 0x2BC}, {0x18077});
 }
@@ -677,7 +682,7 @@ void WitnessRandomizer::Randomize(std::vector<int> panels, int flags) {
 	for (size_t i=panels.size() - 1; i > 1; i--) {
 		int target = rand() % i;
 		if (i != target) {
-			std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
+			// std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
 			SwapPanels(panels[i], panels[target], flags);
 			std::swap(panels[i], panels[target]); // Panel indices in the array
 		}
@@ -690,7 +695,7 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 	if (flags & SWAP_TARGETS) {
 		offsets[0x2BC] = sizeof(int);
 	}
-	if (flags & SWAP_PATHWAYS) {
+	if (flags & SWAP_LINES) {
 		offsets[0x3B8] = sizeof(int); // num_dots
 		offsets[0x3BC] = sizeof(int); // num_connections
 		offsets[0x3C8] = sizeof(void*); // *dot_positions
@@ -718,15 +723,18 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x3A4] = sizeof(float); // path_width_scale
 		offsets[0x3A8] = sizeof(float); // startpoint_scale
 
+		offsets[0x230] = 16; // traced_edges
 
 		// TODO: Try using is_cylinder to swap into tutorial pillar. If it fails, discard.
 		// Probably not: Extra back distance
 		// SwapPanelData(panels[i], panels[target], 0x2FC, 125); // is_cylinder through max_connections
 	}
+	/*
 	if (flags & SWAP_STYLE) {
 		// 340 - pattern_scale
 		// 288 - flash_mode
 	}
+	*/
 	if (flags & SWAP_COLORS) {
 		offsets[0xC8] = 16; // path_color
 		offsets[0xD8] = 16; // reflection_path_color
@@ -751,12 +759,11 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x208] = sizeof(int); // push_symbol_colors
 		offsets[0x20C] = 16; // outer_background
 		offsets[0x21C] = sizeof(int); // outer_background_mode
+		offsets[0x430] = sizeof(void*); // *decoration_colors
+		offsets[0x4A0] = sizeof(int); // num_colored_regions
 		offsets[0x4A8] = sizeof(void*); // *colored_regions
+//		offsets[0x4B8] = sizeof(void*); // *backing_texture
 	}
-	if (flags & SWAP_TRACED) {
-		offsets[0x230] = 16; // traced_edges
-	}
-
 
 	for (auto const& [offset, size] : offsets) {
 		SwapPanelData(panel1, panel2, offset, size);
