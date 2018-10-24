@@ -35,6 +35,35 @@ int main(int argc, char** argv)
 
 	randomizer.Randomize(tutorialPanels, SWAP_TARGETS);
 
+	std::vector<int> outsidetutorialPanels = {
+		0x0005D, //Outside Tutorial Dots Tutorial 1
+		0x0005E, //Outside Tutorial Dots Tutorial 2
+		0x0005F, //Outside Tutorial Dots Tutorial 3
+		0x00060, //Outside Tutorial Dots Tutorial 4
+		0x00061, //Outside Tutorial Dots Tutorial 5
+		0x018AF, //Outside Tutorial Stones Tutorial 1
+		0x0001B, //Outside Tutorial Stones Tutorial 2
+		0x012C9, //Outside Tutorial Stones Tutorial 3
+		0x0001C, //Outside Tutorial Stones Tutorial 4
+		0x0001D, //Outside Tutorial Stones Tutorial 5
+		0x0001E, //Outside Tutorial Stones Tutorial 6
+		0x0001F, //Outside Tutorial Stones Tutorial 7
+		0x00020, //Outside Tutorial Stones Tutorial 8
+		0x00021, //Outside Tutorial Stones Tutorial 9
+		0x033D4, //Outside Tutorial Vault
+//		0x03481, //Outside Tutorial Vault Box
+		0x0A171, //Tutorial Optional Door 1
+		0x04CA4, //Tutorial Optional Door 2
+		0x17CFB, //Outside Tutorial Discard
+//		0x00143. //Orchard Apple Tree 1
+//		0x0003B. //Orchard Apple Tree 2
+//		0x00055. //Orchard Apple Tree 3
+//		0x032F7. //Orchard Apple Tree 4
+//		0x032FF. //Orchard Apple Tree 5
+	};
+	randomizer.Randomize(outsidetutorialPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+	
 	std::vector<int> symmetryPanels = {
 //		0x3C12B, // Glass Factory Discard
 		0x01A54, // Glass Factory Entry
@@ -196,8 +225,434 @@ int main(int argc, char** argv)
 	};
 	randomizer.Randomize(quarryPanels, SWAP_PATHWAYS | SWAP_COLORS);
 
+	std::vector<int> treehousePanels = { //worked fine until I commented out pivoting panels, puzzles solve fine if you know solution but star and dot colors are all messed up
+//		0x17C95, // Treehouse Summon Boat
+		0x0288C, // Treehouse Door 1
+		0x02886, // Treehouse Door 2
+		0x17D72, // Treehouse Yellow 1
+		0x17D8F, // Treehouse Yellow 2
+		0x17D74, // Treehouse Yellow 3
+		0x17DAC, // Treehouse Yellow 4
+		0x17D9E, // Treehouse Yellow 5
+		0x17DB9, // Treehouse Yellow 6
+		0x17D9C, // Treehouse Yellow 7
+		0x17DC2, // Treehouse Yellow 8
+		0x17DC4, // Treehouse Yellow 9
+		0x0A182, // Treehouse Door 3
+		0x17DC8, // Treehouse First Purple 1
+		0x17DC7, // Treehouse First Purple 2
+		0x17CE4, // Treehouse First Purple 3
+		0x17D2D, // Treehouse First Purple 4
+		0x17D6C, // Treehouse First Purple 5
+		0x17D9B, // Treehouse Second Purple 1
+		0x17D99, // Treehouse Second Purple 2
+		0x17DAA, // Treehouse Second Purple 3
+		0x17D97, // Treehouse Second Purple 4
+		0x17BDF, // Treehouse Second Purple 5
+		0x17D91, // Treehouse Second Purple 6
+		0x17DC6, // Treehouse Second Purple 7
+		0x17DB3, // Treehouse Left Orange 1
+		0x17DB5, // Treehouse Left Orange 2
+		0x17DB6, // Treehouse Left Orange 3
+		0x17DC0, // Treehouse Left Orange 4
+		0x17DD7, // Treehouse Left Orange 5
+		0x17DD9, // Treehouse Left Orange 6
+		0x17DB8, // Treehouse Left Orange 7
+		0x17DDC, // Treehouse Left Orange 8
+//		0x17DD1, // Treehouse Left Orange 9 has to pivot
+		0x17DDE, // Treehouse Left Orange 10
+		0x17DE3, // Treehouse Left Orange 11
+		0x17DEC, // Treehouse Left Orange 12
+		0x17DAE, // Treehouse Left Orange 13
+		0x17DB0, // Treehouse Left Orange 14
+		0x17DDB, // Treehouse Left Orange 15
+		0x17D88, // Treehouse Right Orange 1
+		0x17DB4, // Treehouse Right Orange 2
+		0x17D8C, // Treehouse Right Orange 3
+		0x17CE3, // Treehouse Right Orange 4
+//		0x17DCD, // Treehouse Right Orange 5 has to pivot
+		0x17DB2, // Treehouse Right Orange 6
+		0x17DCC, // Treehouse Right Orange 7
+		0x17DCA, // Treehouse Right Orange 8
+		0x17D8E, // Treehouse Right Orange 9
+//		0x17DB7, // Treehouse Right Orange 10 has to pivot
+		0x17DB1, // Treehouse Right Orange 11
+		0x17DA2, // Treehouse Right Orange 12
+		0x17E3C, // Treehouse Green 1
+		0x17E4D, // Treehouse Green 2
+		0x17E4F, // Treehouse Green 3
+		0x17E52, // Treehouse Green 4
+		0x17E5B, // Treehouse Green 5
+		0x17E5F, // Treehouse Green 6
+		0x17E61, // Treehouse Green 7
+		0x17FA9, // Treehouse Green Bridge Discard
+		0x17FA0, // Treehouse Laser Discard
+//		0x2700B, // Treehouse Exterior Door Control
+//		0x17CBC, // Treehouse Interior Door Control
+//		0x03613, // Treehouse Laser
+//		0x037FF, // Treehouse Drawbridge Control
+	};
+	randomizer.Randomize(treehousePanels, SWAP_PATHWAYS | SWAP_COLORS);
 
-	/*/
+	std::vector<int> keepPanels = {
+		0x00139, // Keep Hedges 1
+		0x019DC, // Keep Hedges 2
+		0x019E7, // Keep Hedges 3
+		0x01A0F, // Keep Hedges 4
+//		0x033EA, // Keep Yellow Pressure Plates
+//		0x0A3A8, // Keep Yellow Reset
+//		0x01BE9, // Keep Purple Pressure Plates
+//		0x0A3B9, // Keep Purple Reset
+//		0x01CD3, // Keep Green Pressure Plates
+//		0x0A3BB, // Keep Green Reset
+//		0x01D3F, // Keep Blue Pressure Plates
+//		0x0A3AD, // Keep Blue Reset
+		0x0360E, // Keep Front Laser
+		0x03317, // Keep Back Laser
+//		0x09E49, // Keep Shadows Shortcut
+//		0x0361B, // Keep Tower Shortcut
+		0x17D27, // Keep Discard
+		0x17D28, // Shipwreck Discard
+		0x00AFB, // Shipwreck Vault
+//		0x03535, // Shipwreck Vault Box
+	};
+	randomizer.Randomize(keepPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+	std::vector<int> shadowsPanels = { //works beautifully, can solve based on panel color and where start/end points are if your memory is good
+		0x386FA, //Shadows Avoid 1
+		0x1C33F, //Shadows Avoid 2
+		0x196E2, //Shadows Avoid 3
+		0x1972A, //Shadows Avoid 4
+		0x19809, //Shadows Avoid 5
+		0x19806, //Shadows Avoid 6
+		0x196F8, //Shadows Avoid 7
+		0x1972F, //Shadows Avoid 8
+		0x19797, //Shadows Follow 1
+		0x1979A, //Shadows Follow 2
+		0x197E0, //Shadows Follow 3
+		0x197E8, //Shadows Follow 4
+		0x197E5, //Shadows Follow 5
+//		0x334DC, //Shadows Inner Door Control
+		0x19650, //Shadows Laser
+//		0x334DB, //Shadows Outer Door Control
+		0x198B5, //Shadows Tutorial 1
+		0x198BD, //Shadows Tutorial 2
+		0x198BF, //Shadows Tutorial 3
+		0x19771, //Shadows Tutorial 4
+		0x0A8DC, //Shadows Tutorial 5
+		0x0AC74, //Shadows Tutorial 6
+		0x0AC7A, //Shadows Tutorial 7
+		0x0A8E0, //Shadows Tutorial 8
+	};
+	randomizer.Randomize(shadowsPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+	std::vector<int> townPanels = { //appears to be ok but keeps crashing game?
+		0x2899C, //Town 25 Dots 1
+		0x28A33, //Town 25 Dots 2
+		0x28ABF, //Town 25 Dots 3
+		0x28AC0, //Town 25 Dots 4
+		0x28AC1, //Town 25 Dots 5
+		0x28938, //Town Apple Tree
+		0x28AC7, //Town Blue 1
+		0x28AC8, //Town Blue 2
+		0x28ACA, //Town Blue 3
+		0x28ACB, //Town Blue 4
+		0x28ACC, //Town Blue 5
+//		0x0A054, //Town Summon Boat
+//		0x2896A, //Town Bridge
+		0x28A0D, //Town Church Stars
+		0x28AD9, //Town Eraser
+		0x28998, //Town Green Door
+//		0x032F5, //Town Laser
+//		0x09F98, //Town Laser Redirect Control
+//		0x1C344, //Town Laser Redirect Panel 1
+//		0x1C343, //Town Laser Redirect Panel 2
+//		0x28A69, //Town Lattice
+		0x28A79, //Town Maze
+		0x0A0C8, //Town Orange Crate
+		0x17D01, //Town Orange Crate Discard
+//		0x28B39, //Town Red Hexagonal
+//		0x334D8, //Town RGB Light Control
+		0x03C08, //Town RGB Stars
+		0x03C0C, //Town RGB Stones
+		0x17C71, //Town Rooftop Discard
+//		0x034E3, //Town Soundproof Dots panels in their locations must match so can't swap unless that is fixed
+//		0x034E4, //Town Soundproof Waves
+		0x18590, //Town Transparent
+//		0x079DF, //Town Triple
+		0x17D02, //Town Windmill Control
+		0x17F5F, //Town Windmill Door
+		0x28AE3, //Town Wire
+		0x17F89, //Theater Entrance
+//		0x00815, //Theater Video Input
+//		0x03553, //Theater Tutorial Video
+//		0x03552, //Theater Desert Video
+//		0x0354E, //Theater Jungle Video
+//		0x03549, //Theater Challenge Video
+//		0x0354F, //Theater Shipwreck Video
+//		0x03545, //Theater Mountain Video
+		0x17CF7, //Theater Discard
+		0x33AB2, //Theater Corona Exit
+		0x0A168, //Theater Sun Exit
+	};
+	randomizer.Randomize(townPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+	std::vector<int> monasteryPanels = {
+//		0x00B10, //Monastery Left Door
+//		0x00C92, //Monastery Right Door
+		0x00290, //Monastery Exterior 1
+		0x00038, //Monastery Exterior 2
+		0x00037, //Monastery Exterior 3
+//		0x09D9B, //Monastery Bonsai
+		0x193A7, //Monastery Interior 1
+		0x193AA, //Monastery Interior 2
+		0x193AB, //Monastery Interior 3
+		0x193A6, //Monastery Interior 4
+//		0x17CA4, //Monastery Laser if something else activates laser then you can't turn on any more panels as the activation string breaks
+		0x03713, //Monastery Shortcut
+	};
+	randomizer.Randomize(monasteryPanels, SWAP_TARGETS);
+
+	std::vector<int> junglePanels = {
+//		0x17CDF, //Jungle Summon Boat
+		0x17F9B, //Jungle Discard
+		0x002C4, //Jungle Waves 1
+		0x00767, //Jungle Waves 2
+		0x002C6, //Jungle Waves 3
+		0x0070E, //Jungle Waves 4
+		0x0070F, //Jungle Waves 5
+		0x0087D, //Jungle Waves 6
+		0x002C7, //Jungle Waves 7
+//		0x15ADD, //Jungle Vault
+//		0x03702, //Jungle Vault Box
+//		0x17CAA, //Jungle Courtyard Gate
+		0x0026D, //Jungle Dots 1
+		0x0026E, //Jungle Dots 2
+		0x0026F, //Jungle Dots 3
+		0x00C3F, //Jungle Dots 4
+		0x00C41, //Jungle Dots 5
+		0x014B2, //Jungle Dots 6
+//		0x17CAB, //Jungle Pop - up Wall
+//		0x337FA, //Jungle Shortcut
+//		0x03616, //Jungle Laser
+	};
+	randomizer.Randomize(junglePanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+//		std::vector<int> bunkerPanels = { this doesn't want to behave, I have no idea
+//			0x17C2E, //Bunker Entry Door
+//			0x09F7D, //Bunker Tutorial 1
+//			0x09FDC, //Bunker Tutorial 2
+//			0x09FF7, //Bunker Tutorial 3
+//			0x09F82, //Bunker Tutorial 4
+//			0x09FF8, //Bunker Tutorial 5
+//			0x09D9F, //Bunker Advanced 1
+//			0x09DA1, //Bunker Advanced 2
+//			0x09DA2, //Bunker Advanced 3
+//			0x09DAF, //Bunker Advanced 4
+//	//		0x0A099, //Bunker Glass Door
+//	//		0x0A010, //Bunker Glass 1
+//	//		0x0A01B, //Bunker Glass 2
+//	//		0x0A01F, //Bunker Glass 3
+//			0x34BC5, //Bunker Open Ultraviolet
+//			0x34BC6, //Bunker Close Ultraviolet
+//			0x17E63, //Bunker Ultraviolet 1
+//			0x17E67, //Bunker Ultraviolet 2
+//			0x0A079, //Bunker Elevator
+//	//		0x09DE0, //Bunker Laser
+//		};
+//		randomizer.Randomize(bunkerPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+	std::vector<int> swampPanels = { //appears to work ok swapping panels but keeps crashing game?
+		0x0056E, //Swamp Entry
+		0x00469, //Swamp Tutorial 1
+		0x00472, //Swamp Tutorial 2
+		0x00262, //Swamp Tutorial 3
+		0x00474, //Swamp Tutorial 4
+		0x00553, //Swamp Tutorial 5
+		0x0056F, //Swamp Tutorial 6
+		0x00390, //Swamp Tutorial 7
+		0x010CA, //Swamp Tutorial 8
+		0x00983, //Swamp Tutorial 9
+		0x00984, //Swamp Tutorial 10
+		0x00986, //Swamp Tutorial 11
+		0x00985, //Swamp Tutorial 12
+		0x00987, //Swamp Tutorial 13
+		0x181A9, //Swamp Tutorial 14
+//		0x00609, //Swamp Surface Sliding Bridge Control
+		0x00982, //Swamp Red 1
+		0x0097F, //Swamp Red 2
+		0x0098F, //Swamp Red 3
+		0x00990, //Swamp Red 4
+		0x17C0D, //Swamp Red Shortcut 1
+		0x17C0E, //Swamp Red Shortcut 2
+		0x00999, //Swamp Discontinuous 1
+		0x0099D, //Swamp Discontinuous 2
+		0x009A0, //Swamp Discontinuous 3
+		0x009A1, //Swamp Discontinuous 4
+		0x00007, //Swamp Rotation Tutorial 1
+		0x00008, //Swamp Rotation Tutorial 2
+		0x00009, //Swamp Rotation Tutorial 3
+		0x0000A, //Swamp Rotation Tutorial 4
+		0x181F5, //Swamp Rotating Bridge Control
+		0x009AB, //Swamp Blue Underwater 1
+		0x009AD, //Swamp Blue Underwater 2
+		0x009AE, //Swamp Blue Underwater 3
+		0x009AF, //Swamp Blue Underwater 4
+		0x00006, //Swamp Blue Underwater 5
+		0x003B2, //Swamp Rotation Advanced 1
+		0x00A1E, //Swamp Rotation Advanced 2
+		0x00C2E, //Swamp Rotation Advanced 3
+		0x00E3A, //Swamp Rotation Advanced 4
+//		0x17E2B, //Swamp Flood Gate Control
+//		0x09DB8, //Swamp Summon Boat
+		0x009A6, //Swamp Purple Tetris
+//		0x18488, //Swamp Underwater Sliding Bridge Control
+		0x00002, //Swamp Teal Underwater 1
+		0x00004, //Swamp Teal Underwater 2
+		0x00005, //Swamp Teal Underwater 3
+		0x013E6, //Swamp Teal Underwater 4
+		0x00596, //Swamp Teal Underwater 5
+		0x00001, //Swamp Red Underwater 1
+		0x014D2, //Swamp Red Underwater 2
+		0x014D4, //Swamp Red Underwater 3
+		0x014D1, //Swamp Red Underwater 4
+		0x17C0A, //Swamp Island Control 1
+		0x17E07, //Swamp Island Control 2
+		0x17C05, //Swamp Laser Shortcut 1
+		0x17C02, //Swamp Laser Shortcut 2
+//		0x03615, //Swamp Laser
+	};
+	randomizer.Randomize(swampPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+	std::vector<int> mountainPanels = {
+//		0x09E39, //Mountain 1 Purple Pathway
+		0x09E73, //Mountain 1 Orange 1
+		0x09E75, //Mountain 1 Orange 2
+		0x09E78, //Mountain 1 Orange 3
+		0x09E79, //Mountain 1 Orange 4
+		0x09E6C, //Mountain 1 Orange 5
+		0x09E6F, //Mountain 1 Orange 6
+		0x09E6B, //Mountain 1 Orange 7
+//		0x33AF5, //Mountain 1 Blue 1
+//		0x33AF7, //Mountain 1 Blue 2
+//		0x09F6E, //Mountain 1 Blue 3
+		0x09EAD, //Mountain 1 Purple 1
+		0x09EAF, //Mountain 1 Purple 2
+		0x09E7A, //Mountain 1 Green 1
+		0x09E71, //Mountain 1 Green 2
+		0x09E72, //Mountain 1 Green 3
+		0x09E69, //Mountain 1 Green 4
+		0x09E7B, //Mountain 1 Green 5
+		0x09FD3, //Mountain 2 Rainbow 1
+		0x09FD4, //Mountain 2 Rainbow 2
+		0x09FD6, //Mountain 2 Rainbow 3
+		0x09FD7, //Mountain 2 Rainbow 4
+		0x09FD8, //Mountain 2 Rainbow 5
+//		0x09E86, //Mountain 2 Blue Pathway
+//		0x09FCC, //Mountain 2 Multipanel 1  panels work fine other places but the actual location isn't on - I think maybe it needs all the panels the same
+//		0x09FCE, //Mountain 2 Multipanel 2
+//		0x09FCF, //Mountain 2 Multipanel 3
+//		0x09FD0, //Mountain 2 Multipanel 4
+//		0x09FD1, //Mountain 2 Multipanel 5
+//		0x09FD2, //Mountain 2 Multipanel 6
+//		0x09ED8, //Mountain 2 Orange Pathway
+//		0x09EEB, //Mountain 2 Elevator
+		0x17F93, //Mountain 2 Discard
+		0x09F8E, //Mountain 3 Near Right Floor
+		0x09FC1, //Mountain 3 Near Left Floor
+		0x09F01, //Mountain 3 Far Right Floor
+		0x09EFF, //Mountain 3 Far Left Floor
+		0x09FDA, //Mountain 3 Giant Floor
+		0x17FA2, //Mountain 3 Secret Door
+//		0x01983, //Mountain 3 Left Peekaboo
+//		0x01987, //Mountain 3 Right Peekaboo
+//		0x0383D, //Mountain 3 Left Pillar 1
+//		0x0383F, //Mountain 3 Left Pillar 2
+//		0x03859, //Mountain 3 Left Pillar 3
+//		0x339BB, //Mountain 3 Left Pillar 4
+//		0x0383A, //Mountain 3 Right Pillar 1
+//		0x09E56, //Mountain 3 Right Pillar 2
+//		0x09E5A, //Mountain 3 Right Pillar 3
+//		0x33961, //Mountain 3 Right Pillar 4
+//		0x3D9A6, //Mountain 3 Left Close Door
+//		0x3D9A7, //Mountain 3 Right Close Door
+//		0x3D9AA, //Mountain 3 Left Activate Elevator
+//		0x3D9A8, //Mountain 3 Right Activate Elevator
+//		0x3D9A9, //Mountain 3 Launch Elevator
+//		0x3C113, //Mountain 3 Left Open Door
+//		0x3C114, //Mountain 3 Right Open Door
+		0x17C42, //Mountainside Discard
+		0x002A6, //Mountainside Vault
+//		0x03542, //Mountainside Vault Box
+//		0x09F7F, //Mountaintop Laser Box
+//		0x17C34, //Mountaintop Perspective
+		0x0042D, //Mountaintop River
+	};
+	randomizer.Randomize(mountainPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+//		std::vector<int> utmPanels = { this looks like it swaps ok but crashes to much to tell, not sure why it's not happy
+//			0x0A16E, //UTM Challenge Entrance
+//	//		0x09DD5, //UTM Challenge Pillar
+//			0x00FF8, //UTM Entrance Door
+//			0x0A16B, //UTM Green Dots 1
+//			0x0A2CE, //UTM Green Dots 2
+//			0x0A2D7, //UTM Green Dots 3
+//			0x0A2DD, //UTM Green Dots 4
+//			0x0A2EA, //UTM Green Dots 5
+//			0x17FB9, //UTM Green Dots 6
+//			0x335AB, //UTM In Elevator Control
+//			0x0008F, //UTM Invisible Dots 1
+//			0x0006B, //UTM Invisible Dots 2
+//			0x0008B, //UTM Invisible Dots 3
+//			0x0008C, //UTM Invisible Dots 4
+//			0x0008A, //UTM Invisible Dots 5
+//			0x00089, //UTM Invisible Dots 6
+//			0x0006A, //UTM Invisible Dots 7
+//			0x0006C, //UTM Invisible Dots 8
+//			0x00027, //UTM Invisible Dots Symmetry 1
+//			0x00028, //UTM Invisible Dots Symmetry 2
+//			0x00029, //UTM Invisible Dots Symmetry 3
+//			0x3369D, //UTM Lower Elevator Control
+//			0x021D7, //UTM Mountainside Shortcut
+//	//		0x288EA, //UTM Perspective 1
+//	//		0x288FC, //UTM Perspective 2
+//	//		0x289E7, //UTM Perspective 3
+//	//		0x288AA, //UTM Perspective 4
+//			0x00B71, //UTM Quarry
+//			0x01A31, //UTM Rainbow
+//	//		0x334E1, //UTM Secret Door Control
+//			0x32962, //UTM Swamp
+//			0x32966, //UTM Treehouse
+//			0x335AC, //UTM Upper Elevator Control
+//			0x17CF2, //UTM Waterfall Shortcut
+//			0x00A72, //UTM Blue Cave In
+//			0x009A4, //UTM Blue Discontinuous
+//			0x018A0, //UTM Blue Easy Symmetry
+//			0x01A0D, //UTM Blue Hard Symmetry
+//			0x008B8, //UTM Blue Left 1
+//			0x00973, //UTM Blue Left 2
+//			0x0097B, //UTM Blue Left 3
+//			0x0097D, //UTM Blue Left 4
+//			0x0097E, //UTM Blue Left 5
+//			0x00994, //UTM Blue Right Far 1
+//			0x334D5, //UTM Blue Right Far 2
+//			0x00995, //UTM Blue Right Far 3
+//			0x00996, //UTM Blue Right Far 4
+//			0x00998, //UTM Blue Right Far 5
+//			0x00190, //UTM Blue Right Near 1
+//			0x00558, //UTM Blue Right Near 2
+//			0x00567, //UTM Blue Right Near 3
+//			0x006FE, //UTM Blue Right Near 4
+//	//		0x2773D, //Tunnels Desert Shortcut
+//			0x039B4, //Tunnels Theater Catwalk
+//	//		0x27732, //Tunnels Theater Shortcut
+//	//		0x2FAF6, //Tunnels Vault Box
+//			0x09E85, //Tunnels Town Shortcut
+//		};
+//		randomizer.Randomize(utmPanels, SWAP_PATHWAYS | SWAP_COLORS);
+
+
+	   	 	/*/
 
 
 	int MILL_L_1 = 0xE0C;
