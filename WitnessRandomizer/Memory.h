@@ -2,6 +2,9 @@
 #include <vector>
 #include <map>
 #include <windows.h>
+#include <thread>
+#include <chrono>
+using namespace std::chrono_literals;
 
 // https://github.com/erayarslan/WriteProcessMemory-Example
 // http://stackoverflow.com/q/32798185
@@ -22,6 +25,7 @@ public:
 			{
 				return data;
 			}
+			// std::this_thread::sleep_for(10ms);
 		}
 		ThrowError();
 	}
@@ -32,6 +36,7 @@ public:
 			if (WriteProcessMemory(_handle, (LPVOID)ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), NULL)) {
 				return;
 			}
+			// std::this_thread::sleep_for(10ms);
 		}
 		ThrowError();
 	}

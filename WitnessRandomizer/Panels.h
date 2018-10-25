@@ -13,6 +13,26 @@ std::vector<int> lasers = {
 	0x03616, // Jungle
 };
 
+std::vector<int> burnablePanels = {
+	0x17D9C, // Treehouse Yellow 7
+	0x17DC2, // Treehouse Yellow 8
+	0x17DC4, // Treehouse Yellow 9
+	0x00999, // Swamp Discontinuous 1
+	0x0099D, // Swamp Discontinuous 2
+	0x009A0, // Swamp Discontinuous 3
+	0x009A1, // Swamp Discontinuous 4
+	0x00007, // Swamp Rotation Tutorial 1
+	0x00008, // Swamp Rotation Tutorial 2
+	0x00009, // Swamp Rotation Tutorial 3
+	0x0000A, // Swamp Rotation Tutorial 4
+	0x28AC7, // Town Blue 1
+	0x28AC8, // Town Blue 2
+	0x28ACA, // Town Blue 3
+	0x28ACB, // Town Blue 4
+	0x28ACC, // Town Blue 5
+	0x17CF0, // Mill Discard
+};
+
 std::vector<int> tutorialPanels = {
 //	0x0A3B5, // Back Left
 	0x0A3B2, // Back Right
@@ -49,9 +69,9 @@ std::vector<int> outsideTutorialPanels = {
 //	0x032F7, // Orchard Apple Tree 4
 //	0x032FF, // Orchard Apple Tree 5
 };
-	
+
 std::vector<int> symmetryPanels = {
-//	0x3C12B, // Glass Factory Discard
+	0x3C12B, // Glass Factory Discard
 	0x01A54, // Glass Factory Entry
 	0x00086, // Glass Factory Vertical Symmetry 1
 	0x00087, // Glass Factory Vertical Symmetry 2
@@ -97,11 +117,11 @@ std::vector<int> symmetryPanels = {
 	0x00A61, // Symmetry Island Laser Blue 1
 	0x00A64, // Symmetry Island Laser Blue 2
 	0x00A68, // Symmetry Island Laser Blue 3
+	0x17CE7, // Desert Discard
+	0x0CC7B, // Desert Vault
 };
 
 std::vector<int> desertPanels = {
-//	0x17CE7, // Desert Discard
-//	0x0CC7B, // Desert Vault
 //	0x0339E, // Desert Vault Box
 	0x00698, // Desert Surface 1
 	0x0048F, // Desert Surface 2
@@ -172,7 +192,7 @@ std::vector<int> quarryPanels = {
 //	0x275ED, // Mill EP Door
 //	0x17CAC, // Mill Stairs Shortcut Door
 	0x03677, // Mill Stairs Control
-//	0x17CF0, // Mill Discard
+	0x17CF0, // Mill Discard
 //	0x17CC4, // Mill Elevator Control
 	0x021D5, // Boathouse Ramp Activation Shapers
 	0x034D4, // Boathouse Ramp Activation Stars
@@ -258,7 +278,7 @@ std::vector<int> treehousePanels = { //worked fine until I commented out pivotin
 	0x17E3C, // Treehouse Green 1
 	0x17E4D, // Treehouse Green 2
 	0x17E4F, // Treehouse Green 3
-//	0x17E52, // Treehouse Green 4
+//	0x17E52, // Treehouse Green 4 has to pivot
 	0x17E5B, // Treehouse Green 5
 	0x17E5F, // Treehouse Green 6
 	0x17E61, // Treehouse Green 7
@@ -401,7 +421,7 @@ std::vector<int> junglePanels = {
 	0x00C3F, // Jungle Dots 4
 	0x00C41, // Jungle Dots 5
 	0x014B2, // Jungle Dots 6
-//	0x17CAB, // Jungle Pop - up Wall
+//	0x17CAB, // Jungle Pop-up Wall
 //	0x337FA, // Jungle Shortcut
 };
 
@@ -548,6 +568,8 @@ std::vector<int> pillars = {
 	0x09E5A, // Mountain 3 Right Pillar 3
 	0x33961, // Mountain 3 Right Pillar 4
 	0x09DD5, // UTM Challenge Pillar
+//	0x1C31A, // Challenge Left Pillar
+//	0x1C319, // Challenge Right Pillar
 };
 
 std::vector<int> mountainMultipanel = {

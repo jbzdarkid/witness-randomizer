@@ -13,7 +13,7 @@ public:
 	void Randomize(std::vector<int> panels, int flags);
 	void SwapPanels(int panel1, int panel2, int flags);
 
-private:
+//private:
 	void SwapPanelData(int panel1, int panel2, int finalOffset, int dataSize);
 
 	Memory _memory;

@@ -18,7 +18,7 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (!_handle) {
-		OutputDebugStringA("Process is not open!");
+		OutputDebugStringA("Process is not open!\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -38,7 +38,7 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (_baseAddress == 0) {
-		OutputDebugStringA("Couldn't find base address!");
+		OutputDebugStringA("Couldn't find base address!\n");
 		exit(EXIT_FAILURE);
 	}
 }

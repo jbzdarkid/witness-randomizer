@@ -2,11 +2,9 @@
  * BUGS:
  * Bunker has physical panel objects which I can't move :(
  * Shipwreck vault does not copy well
- * Pillars can be swapped but they don't zoom you out enough. Maybe SWAP_DISTANCE?
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
  * Randomize audio logs
- * Separate panels out by "square", which can probably be anywhere
  * List of panels which can be valid "Burn" (aka desert) substitutes: Prevent (or limit) panel counting
  * List of panels which split left/right (for left/right controls)
  * List of panels which split up/down (for up/down controls)
@@ -62,17 +60,39 @@ int main(int argc, char** argv)
 	int PILLAR_L_1 = 0x383D;
 	int PILLAR_L_4 = 0x339BB;
 	int PILLAR_C = 0x9DD5;
+	int PILLAR_C_L = 0x1C31A;
+	int DESERT_1 = 0x00698;
+	int DESERT_L_2 = 0x006E3;
+	int TOWN_S_1 = 0x28AC7;
 
-	randomizer.SwapPanels(PILLAR_L_1, PILLAR_C, SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
+	std::vector<int> squarePanels;
+	for (auto panelSet : {outsideTutorialPanels, symmetryPanels, quarryPanels, keepPanels, townPanels, bunkerPanels, swampPanels, mountainPanels, utmPanels, treehousePanels}) {
+		squarePanels.insert(squarePanels.end(), panelSet.begin(), panelSet.end());
+	}
+	for (int panel : squarePanels) {
+		randomizer.SwapPanels(DESERT_L_2, panel, SWAP_LINES | SWAP_STYLE);
+	}
+
+
+	//randomizer.SwapPanels(PILLAR_L_1, PILLAR_C_L, SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
+	//randomizer.SwapPanelData(PILLAR_L_1, PILLAR_C_L, 0x200, 0x50);
+	// Turn on the panel
+	//randomizer._memory.WriteData<float>({0x5B28C0, 0x18, PILLAR_L_1*8, 0x2A8}, {1.0f, 1.0f});
+
+	// randomizer.SwapPanels(PILLAR_L_1, PILLAR_C_L, SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
 	//*/
 }
 
-WitnessRandomizer::WitnessRandomizer() : _memory(Memory("witness64_d3d11.exe"))
+WitnessRandomizer::WitnessRandomizer() : _memory("witness64_d3d11.exe")
 {
 	// Turn off desert flood final
 	_memory.WriteData<float>({0x5B28C0, 0x18, 0x18076*8, 0x2A8}, {0.0f, 0.0f});
 	// Change desert floating target to desert flood final
 	_memory.WriteData<int>({0x5B28C0, 0x18, 0x17ECA*8, 0x2BC}, {0x18077});
+	// Explicitly set back-off distance for the challenge entry & final 2 pillars
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x9DD5*8, 0x22C}, {2.5f});
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x1C31A*8, 0x22C}, {3.0f});
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x1C319*8, 0x22C}, {3.0f});
 }
 
 void WitnessRandomizer::Randomize(std::vector<int> panels, int flags) {
@@ -95,7 +115,7 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 	}
 	if (flags & SWAP_LINES) {
 		offsets[0x230] = 16; // traced_edges
-//		offsets[0x220] = sizeof(void*); // *pattern_name
+		offsets[0x220] = sizeof(void*); // *pattern_name
 //		offsets[0x240] = sizeof(void*); // *mesh_name
 		offsets[0x2FC] = sizeof(int); // is_cylinder
 		offsets[0x300] = sizeof(float); // cylinder_z0
@@ -104,6 +124,8 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 //		offsets[0x35C] = sizeof(int); // solvable_from_behind
 
 //		offsets[0x30C] = sizeof(float); // uv_to_world_scale
+		offsets[0x398] = sizeof(float); // specular_add
+		offsets[0x39C] = sizeof(int); // specular_power
 		offsets[0x3A4] = sizeof(float); // path_width_scale
 		offsets[0x3A8] = sizeof(float); // startpoint_scale
 		offsets[0x3B8] = sizeof(int); // num_dots
@@ -112,6 +134,7 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x3D0] = sizeof(void*); // *dot_flags
 		offsets[0x3D8] = sizeof(void*); // *dot_connection_a
 		offsets[0x3E0] = sizeof(void*); // *dot_connection_b
+//		offsets[0x3E8] = sizeof(int); // randomize_on_power_on
 		offsets[0x420] = sizeof(void*); // *decorations
 		offsets[0x428] = sizeof(void*); // *decoration_flags
 		offsets[0x438] = sizeof(int); // num_decorations
@@ -173,8 +196,8 @@ void WitnessRandomizer::SwapPanelData(int panel1, int panel2, int finalOffset, i
 	std::vector<int> panel2Offset = {0x5B28C0, 0x18, panel2*8, finalOffset};
 
 	std::vector<byte> panel1Data = _memory.ReadData<byte>(panel1Offset, dataSize);
-	std::vector<byte> panel2Data = _memory.ReadData<byte>(panel2Offset, dataSize);
+	//std::vector<byte> panel2Data = _memory.ReadData<byte>(panel2Offset, dataSize);
 
 	_memory.WriteData<byte>(panel2Offset, panel1Data);
-	_memory.WriteData<byte>(panel1Offset, panel2Data);
+	//_memory.WriteData<byte>(panel1Offset, panel2Data);
 }
