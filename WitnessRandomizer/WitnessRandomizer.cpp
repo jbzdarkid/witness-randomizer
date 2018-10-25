@@ -1,6 +1,6 @@
 /*
  * BUGS:
- * Something is wrong with bunker
+ * Bunker has physical panel objects which I can't move :(
  * Shipwreck vault does not copy well
  * Pillars can be swapped but they don't zoom you out enough. Maybe SWAP_DISTANCE?
  * FEATURES:
@@ -29,8 +29,8 @@ int main(int argc, char** argv)
 		srand(atoi(argv[1])); // Seed with RNG from command line
 	}
 
-	// randomizer.Randomize(bunkerPanels,			SWAP_LINES | SWAP_COLORS);
-	//*
+	// randomizer.Randomize(bunkerPanels,			SWAP_LINES | SWAP_STYLE);
+	/*
 	randomizer.Randomize(lasers,				SWAP_TARGETS);
 	randomizer.Randomize(tutorialPanels,		SWAP_TARGETS);
 	randomizer.Randomize(monasteryPanels,		SWAP_TARGETS);
@@ -43,11 +43,11 @@ int main(int argc, char** argv)
 	for (auto panelSet : {outsideTutorialPanels, symmetryPanels, quarryPanels, keepPanels, townPanels, bunkerPanels, swampPanels, mountainPanels, utmPanels}) {
 		squarePanels.insert(squarePanels.end(), panelSet.begin(), panelSet.end());
 	}
-	randomizer.Randomize(squarePanels,			SWAP_LINES | SWAP_COLORS);
+	randomizer.Randomize(squarePanels,			SWAP_LINES | SWAP_STYLE);
 
-	randomizer.Randomize(junglePanels,			SWAP_LINES | SWAP_COLORS);
-	randomizer.Randomize(mountainMultipanel,	SWAP_LINES | SWAP_COLORS);
-	randomizer.Randomize(pillars,				SWAP_LINES | SWAP_COLORS);
+	randomizer.Randomize(junglePanels,			SWAP_LINES | SWAP_STYLE);
+	randomizer.Randomize(mountainMultipanel,	SWAP_LINES | SWAP_STYLE);
+	randomizer.Randomize(pillars,				SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
 	/*/
 	int BOATH_3_1 = 0x21B5;
 	int MILL_L_1 = 0xE0C;
@@ -59,8 +59,11 @@ int main(int argc, char** argv)
 	int BUNKER_T_1 = 0x9F7D;
 	int TUT_PILLAR = 0xC335;
 	int TUT_F_C = 0x293;
+	int PILLAR_L_1 = 0x383D;
+	int PILLAR_L_4 = 0x339BB;
+	int PILLAR_C = 0x9DD5;
 
-	randomizer.SwapPanels(TUT_PILLAR, TUT_F_C, SWAP_LINES | SWAP_COLORS);
+	randomizer.SwapPanels(PILLAR_L_1, PILLAR_C, SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
 	//*/
 }
 
@@ -124,18 +127,8 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x480] = sizeof(void*); // *dot_sequence_reflection
 		offsets[0x4B0] = sizeof(void*); // *panel_target
 		offsets[0x4D8] = sizeof(void*); // *specular_texture
-
-		// TODO: Try using is_cylinder to swap into tutorial pillar. If it fails, discard.
-		// Probably not: Extra back distance
-		// SwapPanelData(panels[i], panels[target], 0x2FC, 125); // is_cylinder through max_connections
 	}
-	/*
 	if (flags & SWAP_STYLE) {
-		// 340 - pattern_scale
-		// 288 - flash_mode
-	}
-	*/
-	if (flags & SWAP_COLORS) {
 		offsets[0xC8] = 16; // path_color
 		offsets[0xD8] = 16; // reflection_path_color
 //		offsets[0xE8] = 16; // deprecated_finished_path_color
@@ -159,6 +152,7 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x208] = sizeof(int); // push_symbol_colors
 		offsets[0x20C] = 16; // outer_background
 		offsets[0x21C] = sizeof(int); // outer_background_mode
+		offsets[0x278] = sizeof(void*); // *audio_prefix
 		offsets[0x430] = sizeof(void*); // *decoration_colors
 		offsets[0x4A0] = sizeof(int); // num_colored_regions
 		offsets[0x4A8] = sizeof(void*); // *colored_regions
