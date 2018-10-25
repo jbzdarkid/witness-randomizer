@@ -40,6 +40,8 @@ private:
 	void ThrowError();
 
 	uintptr_t ComputeOffset(std::vector<int> offsets);
+
+	std::map<std::vector<int>, uintptr_t> _computedOffsets;
 	uintptr_t _baseAddress;
 	HANDLE _handle;
 };

@@ -58,16 +58,22 @@ void Memory::ThrowError() {
 
 uintptr_t Memory::ComputeOffset(std::vector<int> offsets)
 {
-	uintptr_t cumulativeAddress = _baseAddress;
-
 	// Leave off the last offset, since it will be either read/write, and may not be of type unitptr_t.
 	int final_offset = offsets.back();
 	offsets.pop_back();
+
+	auto search = _computedOffsets.find(offsets);
+	if (search != std::end(_computedOffsets)) {
+		return search->second + final_offset;
+	}
+
+	uintptr_t cumulativeAddress = _baseAddress;
 	for (int offset : offsets) {
 		cumulativeAddress += offset;
 		if (!ReadProcessMemory(_handle, (LPVOID)cumulativeAddress, &cumulativeAddress, sizeof(uintptr_t), NULL)) {
 			ThrowError();
 		}
 	}
+	_computedOffsets[offsets] = cumulativeAddress;
 	return cumulativeAddress + final_offset;
 }
