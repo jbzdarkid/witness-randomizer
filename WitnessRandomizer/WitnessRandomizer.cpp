@@ -1,15 +1,14 @@
 /*
- * BUGS:
- * Bunker has physical panel objects which I can't move :(
- * Shipwreck vault does not copy well
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
+ ** Jungle(?), Bunker, Monastery, Challenge(!), Shadows
  * Randomize audio logs
- * List of panels which can be valid "Burn" (aka desert) substitutes: Prevent (or limit) panel counting
  * List of panels which split left/right (for left/right controls)
  * List of panels which split up/down (for up/down controls)
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
+ * Kill panel slowdown in tutorial
+ * Fix desert elevator (laser rando) / Add keep?
  * TRY:
  * Swap treehouse pivots
 */
@@ -27,25 +26,21 @@ int main(int argc, char** argv)
 		srand(atoi(argv[1])); // Seed with RNG from command line
 	}
 
-	// randomizer.Randomize(bunkerPanels,			SWAP_LINES | SWAP_STYLE);
-	/*
+	//*
 	randomizer.Randomize(lasers,				SWAP_TARGETS);
-	randomizer.Randomize(tutorialPanels,		SWAP_TARGETS);
-	randomizer.Randomize(monasteryPanels,		SWAP_TARGETS);
-	randomizer.Randomize(shadowsPanels,			SWAP_TARGETS);
 
-	randomizer.Randomize(desertPanels,			SWAP_LINES);
-	randomizer.Randomize(treehousePanels,		SWAP_LINES);
-
-	std::vector<int> squarePanels;
-	for (auto panelSet : {outsideTutorialPanels, symmetryPanels, quarryPanels, keepPanels, townPanels, bunkerPanels, swampPanels, mountainPanels, utmPanels}) {
-		squarePanels.insert(squarePanels.end(), panelSet.begin(), panelSet.end());
-	}
 	randomizer.Randomize(squarePanels,			SWAP_LINES | SWAP_STYLE);
+	randomizer.Randomize(burnablePanels,		SWAP_LINES | SWAP_STYLE);
 
-	randomizer.Randomize(junglePanels,			SWAP_LINES | SWAP_STYLE);
-	randomizer.Randomize(mountainMultipanel,	SWAP_LINES | SWAP_STYLE);
-	randomizer.Randomize(pillars,				SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
+	
+	// randomizer.Randomize(monasteryPanels,		SWAP_TARGETS);
+	// randomizer.Randomize(shadowsPanels,			SWAP_TARGETS);
+	// randomizer.Randomize(bunkerPanels,			SWAP_TARGETS);
+
+	// randomizer.Randomize(junglePanels,			SWAP_LINES | SWAP_STYLE);
+	// randomizer.Randomize(mountainMultipanel,	SWAP_LINES | SWAP_STYLE);
+	// randomizer.Randomize(pillars,				SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
+
 	/*/
 	int BOATH_3_1 = 0x21B5;
 	int MILL_L_1 = 0xE0C;
@@ -65,14 +60,6 @@ int main(int argc, char** argv)
 	int DESERT_L_2 = 0x006E3;
 	int TOWN_S_1 = 0x28AC7;
 
-	std::vector<int> squarePanels;
-	for (auto panelSet : {outsideTutorialPanels, symmetryPanels, quarryPanels, keepPanels, townPanels, bunkerPanels, swampPanels, mountainPanels, utmPanels, treehousePanels}) {
-		squarePanels.insert(squarePanels.end(), panelSet.begin(), panelSet.end());
-	}
-	for (int panel : squarePanels) {
-		randomizer.SwapPanels(DESERT_L_2, panel, SWAP_LINES | SWAP_STYLE);
-	}
-
 
 	//randomizer.SwapPanels(PILLAR_L_1, PILLAR_C_L, SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
 	//randomizer.SwapPanelData(PILLAR_L_1, PILLAR_C_L, 0x200, 0x50);
@@ -89,10 +76,13 @@ WitnessRandomizer::WitnessRandomizer() : _memory("witness64_d3d11.exe")
 	_memory.WriteData<float>({0x5B28C0, 0x18, 0x18076*8, 0x2A8}, {0.0f, 0.0f});
 	// Change desert floating target to desert flood final
 	_memory.WriteData<int>({0x5B28C0, 0x18, 0x17ECA*8, 0x2BC}, {0x18077});
+	// Distance-gate shadows laser to prevent sniping through the bars
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x19650*8, 0x3C0}, {2.0f});
+
 	// Explicitly set back-off distance for the challenge entry & final 2 pillars
-	_memory.WriteData<float>({0x5B28C0, 0x18, 0x9DD5*8, 0x22C}, {2.5f});
-	_memory.WriteData<float>({0x5B28C0, 0x18, 0x1C31A*8, 0x22C}, {3.0f});
-	_memory.WriteData<float>({0x5B28C0, 0x18, 0x1C319*8, 0x22C}, {3.0f});
+//	_memory.WriteData<float>({0x5B28C0, 0x18, 0x9DD5*8, 0x22C}, {2.5f});
+//	_memory.WriteData<float>({0x5B28C0, 0x18, 0x1C31A*8, 0x22C}, {3.0f});
+//	_memory.WriteData<float>({0x5B28C0, 0x18, 0x1C319*8, 0x22C}, {3.0f});
 }
 
 void WitnessRandomizer::Randomize(std::vector<int> panels, int flags) {
@@ -196,8 +186,8 @@ void WitnessRandomizer::SwapPanelData(int panel1, int panel2, int finalOffset, i
 	std::vector<int> panel2Offset = {0x5B28C0, 0x18, panel2*8, finalOffset};
 
 	std::vector<byte> panel1Data = _memory.ReadData<byte>(panel1Offset, dataSize);
-	//std::vector<byte> panel2Data = _memory.ReadData<byte>(panel2Offset, dataSize);
+	std::vector<byte> panel2Data = _memory.ReadData<byte>(panel2Offset, dataSize);
 
 	_memory.WriteData<byte>(panel2Offset, panel1Data);
-	//_memory.WriteData<byte>(panel1Offset, panel2Data);
+	_memory.WriteData<byte>(panel1Offset, panel2Data);
 }
