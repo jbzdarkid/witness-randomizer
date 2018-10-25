@@ -158,6 +158,9 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x4A8] = sizeof(void*); // *colored_regions
 //		offsets[0x4B8] = sizeof(void*); // *backing_texture
 	}
+	if (flags & SWAP_BACK_DISTANCE) {
+		offsets[0x22C] = sizeof(float); // extra_back_distance
+	}
 
 	for (auto const& [offset, size] : offsets) {
 		SwapPanelData(panel1, panel2, offset, size);
