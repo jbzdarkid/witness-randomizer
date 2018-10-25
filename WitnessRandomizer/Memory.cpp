@@ -14,12 +14,12 @@ Memory::Memory(const std::string& processName) {
 	while (Process32Next(snapshot, &entry)) {
 		if (processName == entry.szExeFile) {
 			_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
-			if (!_handle) {
-				std::cerr << "Couldn't find " << processName.c_str() << ". Is it open?" << std::endl;
-				exit(EXIT_FAILURE);
-			}
 			break;
 		}
+	}
+	if (!_handle) {
+		OutputDebugStringA("Process is not open!");
+		exit(EXIT_FAILURE);
 	}
 
 	// Next, get the process base address
@@ -38,7 +38,7 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (_baseAddress == 0) {
-		std::cerr << "Couldn't find base address!" << std::endl;
+		OutputDebugStringA("Couldn't find base address!");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -50,9 +50,9 @@ Memory::~Memory() {
 // Private methods:
 
 void Memory::ThrowError() {
-	wchar_t message[256];
-	FormatMessageW(4096, NULL, GetLastError(), 1024, message, 256, NULL);
-	std::cerr << message << std::endl;
+	std::string message(256, '\0');
+	FormatMessageA(4096, NULL, GetLastError(), 1024, &message[0], message.length(), NULL);
+	OutputDebugStringA(message.c_str());
 	exit(EXIT_FAILURE);
 }
 
