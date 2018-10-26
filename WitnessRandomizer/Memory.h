@@ -28,6 +28,7 @@ public:
 			// std::this_thread::sleep_for(10ms);
 		}
 		ThrowError();
+		return {};
 	}
 
 	template <class T>

@@ -60,22 +60,55 @@ std::vector<int> burnablePanels = {
 	0x012D7, // Desert Final Far
 };
 
-// Note: Some of these (non-switches) are duplicated elsewhere
+// Note: Some of these (non-controls) are duplicated elsewhere
+// TODO: Gave up
 std::vector<int> leftRightPanels = {
+	0x01A54, // Glass Factory Entry
+	0x00086, // Glass Factory Vertical Symmetry 1
+	0x00087, // Glass Factory Vertical Symmetry 2
+	0x00059, // Glass Factory Vertical Symmetry 3
+	0x00062, // Glass Factory Vertical Symmetry 4
+	0x00025, // Symmetry Island Black Dots 4
+	0x00026, // Symmetry Island Black Dots 5
+	0x00072, // Symmetry Island Fading Lines 3
+
 	0x17D02, // Town Windmill Control
 };
 
-// Note: Some of these (non-switches) are duplicated elsewhere
+// Note: Some of these (non-controls) are duplicated elsewhere
 std::vector<int> upDownPanels = {
+	0x0008D, // Glass Factory Rotational Symmetry 1
+	0x00081, // Glass Factory Rotational Symmetry 2
+	0x00083, // Glass Factory Rotational Symmetry 3
+	0x00084, // Glass Factory Melting 1
+	0x00070, // Symmetry Island Fading Lines 5
+	0x01E5A, // Mill Entry Door Left
+	0x28AC7, // Town Blue 1
+	0x28AC8, // Town Blue 2
+	0x28ACA, // Town Blue 3
+	0x28ACB, // Town Blue 4
+	0x28ACC, // Town Blue 5
+	0x00029, // UTM Invisible Dots Symmetry 3
+
 	0x0A3B5, // Tutorial Back Left
 	0x17CC4, // Mill Elevator Control
+	0x335AB, // UTM In Elevator Control
+	0x3369D, // UTM Lower Elevator Control
+	0x335AC, // UTM Upper Elevator Control
+	0x09EEB, // Mountain 2 Elevator
 };
 
+// Note: Some of these (non-controls) are duplicated elsewhere
 std::vector<int> leftForwardRightPanels = {
-	0x17DD1, // Treehouse Left Orange 9 has to pivot
-	0x17CE3, // Treehouse Right Orange 4 has to pivot
-	0x17DB7, // Treehouse Right Orange 10 has to pivot
-	0x17E52, // Treehouse Green 4 has to pivot
+//	0x00075, // Symmetry Island Colored Dots 3
+//	0x288EA, // UTM Perspective 1
+//	0x288FC, // UTM Perspective 2
+//	0x289E7, // UTM Perspective 3
+
+	0x17DD1, // Treehouse Left Orange 9
+	0x17CE3, // Treehouse Right Orange 4
+	0x17DB7, // Treehouse Right Orange 10
+	0x17E52, // Treehouse Green 4
 };
 
 std::vector<int> pillars = {
@@ -99,159 +132,6 @@ std::vector<int> mountainMultipanel = {
 	0x09FD0, // Mountain 2 Multipanel 4
 	0x09FD1, // Mountain 2 Multipanel 5
 	0x09FD2, // Mountain 2 Multipanel 6
-};
-
-// There might be something to do with these, I haven't decided yet.
-std::vector<int> nothingPanels = {
-// Doors & Shortcuts & Shortcut doors & Door controls
-	0x0C339, // Desert Surface Door
-	0x0A249, // Desert Pond Exit Door
-	0x275ED, // Mill EP Door
-	0x17CAC, // Mill Stairs Shortcut Door
-	0x38663, // Boathouse Shortcut
-	0x09E49, // Keep Shadows Shortcut
-	0x0361B, // Keep Tower Shortcut
-	0x334DC, // Shadows Inner Door Control
-	0x334DB, // Shadows Outer Door Control
-	0x2700B, // Treehouse Exterior Door Control
-	0x17CBC, // Treehouse Interior Door Control
-//	0x337FA, // Jungle Shortcut
-
-// Controls (?)
-	0x09FA0, // Desert Surface 3 Control
-	0x09F86, // Desert Surface 8 Control
-	0x1C2DF, // Desert Flood Control Lower Far Left
-	0x1831E, // Desert Flood Control Lower Far Right
-	0x1C260, // Desert Flood Control Lower Near Left
-	0x1831C, // Desert Flood Control Lower Near Right
-	0x1C2F3, // Desert Flood Control Raise Far Left
-	0x1831D, // Desert Flood Control Raise Far Right
-	0x1C2B1, // Desert Flood Control Raise Near Left
-	0x1831B, // Desert Flood Control Raise Near Right
-	0x0A015, // Desert Final Far Control
-	0x03678, // Mill Lower Ramp Contol
-	0x03679, // Mill Lower Lift Control
-	0x03675, // Mill Upper Lift Control
-	0x03676, // Mill Upper Ramp Control
-	0x03852, // Boathouse Ramp Angle Control
-	0x03858, // Boathouse Ramp Position Control
-	0x275FA, // Boathouse Hook Control
-	0x037FF, // Treehouse Drawbridge Control
-	0x09F98, // Town Laser Redirect Control
-	0x334D8, // Town RGB Light Control
-	0x17E2B, // Swamp Flood Gate Control
-	0x00609, // Swamp Surface Sliding Bridge Control
-	0x18488, // Swamp Underwater Sliding Bridge Control
-	0x17C0A, // Swamp Island Control 1
-	0x17E07, // Swamp Island Control 2
-	0x181F5, // Swamp Rotating Bridge Control
-
-// Vault Boxes
-	0x03481, // Outside Tutorial Vault Box
-	0x0339E, // Desert Vault Box
-	0x03535, // Shipwreck Vault Box
-	0x03702, // Jungle Vault Box
-	0x03542, // Mountainside Vault Box
-
-// Boat Summons
-	0x17CC8, // Glass Factory Summon Boat
-	0x17CA6, // Boathouse Summon Boat
-	0x17C95, // Treehouse Summon Boat
-	0x0A054, // Town Summon Boat
-	0x09DB8, // Swamp Summon Boat
-	0x17CDF, // Jungle Summon Boat
-
-// Identical sets
-	0x00143, // Orchard Apple Tree 1
-	0x0003B, // Orchard Apple Tree 2
-	0x00055, // Orchard Apple Tree 3
-	0x032F7, // Orchard Apple Tree 4
-	0x032FF, // Orchard Apple Tree 5
-	0x009B8, // Symmetry Island Transparent 1
-	0x003E8, // Symmetry Island Transparent 2
-	0x00A15, // Symmetry Island Transparent 3
-	0x00B53, // Symmetry Island Transparent 4
-	0x00B8D, // Symmetry Island Transparent 5
-
-// Misc
-	0x03629, // Tutorial Gate Open
-	0x09FAA, // Desert Lightswitch
-	0x0C335, // Tutorial Pillar
-	0x0C373, // Tutorial Patio floor
-	0x1C349, // Symmetry Island Door 2 - Collision fails here, sadly
-	0x18076, // Desert Flood Exit - I am doing something with this -- but it's a very unique panel.
-	0x0A15C, // Desert Final Left Convex
-	0x09FFF, // Desert Final Left Concave
-	0x0A15F, // Desert Final Near
-	0x033EA, // Keep Yellow Pressure Plates
-	0x0A3A8, // Keep Yellow Reset
-	0x01BE9, // Keep Purple Pressure Plates
-	0x0A3B9, // Keep Purple Reset
-	0x01CD3, // Keep Green Pressure Plates
-	0x0A3BB, // Keep Green Reset
-	0x01D3F, // Keep Blue Pressure Plates
-	0x0A3AD, // Keep Blue Reset
-	0x2896A, // Town Bridge
-	0x28A69, // Town Lattice
-	0x28A79, // Town Maze
-	0x28B39, // Town Red Hexagonal
-	0x034E3, // Town Soundproof Dots
-	0x034E4, // Town Soundproof Waves
-	0x079DF, // Town Triple
-	0x00815, // Theater Video Input
-	0x03553, // Theater Tutorial Video
-	0x03552, // Theater Desert Video
-	0x0354E, // Theater Jungle Video
-	0x03549, // Theater Challenge Video
-	0x0354F, // Theater Shipwreck Video
-	0x03545, // Theater Mountain Video
-	0x18590, // Town Transparent
-	0x28AE3, // Town Wire
-
-
-//	0x09E39, // Mountain 1 Purple Pathway
-//	0x33AF5, // Mountain 1 Blue 1
-//	0x33AF7, // Mountain 1 Blue 2
-//	0x09F6E, // Mountain 1 Blue 3
-//	0x09FD8, // Mountain 2 Rainbow 5
-//	0x09E86, // Mountain 2 Blue Pathway
-//	0x09ED8, // Mountain 2 Orange Pathway
-//	0x09EEB, // Mountain 2 Elevator
-	0x09F8E, // Mountain 3 Near Right Floor
-	0x09FC1, // Mountain 3 Near Left Floor
-	0x09F01, // Mountain 3 Far Right Floor
-	0x09EFF, // Mountain 3 Far Left Floor
-	0x09FDA, // Mountain 3 Giant Floor
-//	0x01983, // Mountain 3 Left Peekaboo
-//	0x01987, // Mountain 3 Right Peekaboo
-//	0x3D9A6, // Mountain 3 Left Close Door
-//	0x3D9A7, // Mountain 3 Right Close Door
-//	0x3D9AA, // Mountain 3 Left Activate Elevator
-//	0x3D9A8, // Mountain 3 Right Activate Elevator
-//	0x3D9A9, // Mountain 3 Launch Elevator
-//	0x3C113, // Mountain 3 Left Open Door
-//	0x3C114, // Mountain 3 Right Open Door
-//	0x09F7F, // Mountaintop Laser Box
-//	0x17C34, // Mountaintop Perspective
-//	0x0A16E, // UTM Challenge Entrance
-//	0x335AB, // UTM In Elevator Control
-//	0x3369D, // UTM Lower Elevator Control
-//	0x288EA, // UTM Perspective 1
-//	0x288FC, // UTM Perspective 2
-//	0x289E7, // UTM Perspective 3
-//	0x288AA, // UTM Perspective 4
-//	0x334E1, // UTM Secret Door Control
-//	0x335AC, // UTM Upper Elevator Control
-//	0x2773D, // Tunnels Desert Shortcut
-//	0x27732, // Tunnels Theater Shortcut
-//	0x2FAF6, // Tunnels Vault Box
-//	0x0A099, // Bunker Glass Door
-//	0x34BC5, // Bunker Open Ultraviolet
-//	0x34BC6, // Bunker Close Ultraviolet
-//	0x15ADD, // Jungle Vault
-//	0x17CAA, // Jungle Courtyard Gate
-//	0x17CAB, // Jungle Pop-up Wall
-	0x0005C, // Glass Factory Vertical Symmetry 5
 };
 
 std::vector<int> squarePanels = {
@@ -453,6 +333,7 @@ std::vector<int> squarePanels = {
 	0x0A168, // Theater Sun Exit
 	0x00B10, // Monastery Left Door
 	0x00C92, // Monastery Right Door
+	0x17C2E, // Bunker Entry Door
 	0x0056E, // Swamp Entry
 	0x00469, // Swamp Tutorial 1
 	0x00472, // Swamp Tutorial 2
@@ -573,7 +454,15 @@ std::vector<int> squarePanels = {
 	0x09E85, // Tunnels Town Shortcut
 };
 
-std::vector<int> shadowsPanels = { // works beautifully, can solve based on panel color and where start/end points are if your memory is good
+std::vector<int> shadowsPanels = {
+	0x198B5, // Shadows Tutorial 1
+	0x198BD, // Shadows Tutorial 2
+	0x198BF, // Shadows Tutorial 3
+	0x19771, // Shadows Tutorial 4
+	0x0A8DC, // Shadows Tutorial 5
+	0x0AC74, // Shadows Tutorial 6
+	0x0AC7A, // Shadows Tutorial 7
+	0x0A8E0, // Shadows Tutorial 8
 	0x386FA, // Shadows Avoid 1
 	0x1C33F, // Shadows Avoid 2
 	0x196E2, // Shadows Avoid 3
@@ -587,17 +476,12 @@ std::vector<int> shadowsPanels = { // works beautifully, can solve based on pane
 	0x197E0, // Shadows Follow 3
 	0x197E8, // Shadows Follow 4
 	0x197E5, // Shadows Follow 5
-	0x198B5, // Shadows Tutorial 1
-	0x198BD, // Shadows Tutorial 2
-	0x198BF, // Shadows Tutorial 3
-	0x19771, // Shadows Tutorial 4
-	0x0A8DC, // Shadows Tutorial 5
-	0x0AC74, // Shadows Tutorial 6
-	0x0AC7A, // Shadows Tutorial 7
-	0x0A8E0, // Shadows Tutorial 8
+	0x19650, // Shadows Laser
 };
 
 std::vector<int> monasteryPanels = {
+	0x00B10, // Monastery Left Door
+	0x00C92, // Monastery Right Door
 	0x00290, // Monastery Exterior 1
 	0x00038, // Monastery Exterior 2
 	0x00037, // Monastery Exterior 3
@@ -607,10 +491,10 @@ std::vector<int> monasteryPanels = {
 	0x193AB, // Monastery Interior 3
 	0x193A6, // Monastery Interior 4
 //	0x03713, // Monastery Shortcut
+	0x17CA4, // Monastery Laser
 };
 
-std::vector<int> bunkerPanels = { // this doesn't want to behave, I have no idea
-	0x17C2E, // Bunker Entry Door
+std::vector<int> bunkerPanels = {
 	0x09F7D, // Bunker Tutorial 1
 	0x09FDC, // Bunker Tutorial 2
 	0x09FF7, // Bunker Tutorial 3
@@ -620,11 +504,14 @@ std::vector<int> bunkerPanels = { // this doesn't want to behave, I have no idea
 	0x09DA1, // Bunker Advanced 2
 	0x09DA2, // Bunker Advanced 3
 	0x09DAF, // Bunker Advanced 4
+//	0x0A099, // Bunker Glass Door
 	0x0A010, // Bunker Glass 1
 	0x0A01B, // Bunker Glass 2
 	0x0A01F, // Bunker Glass 3
 	0x17E63, // Bunker Ultraviolet 1
 	0x17E67, // Bunker Ultraviolet 2
+	0x34BC5, // Bunker Open Ultraviolet
+	0x34BC6, // Bunker Close Ultraviolet
 	0x0A079, // Bunker Elevator
 };
 
@@ -636,10 +523,154 @@ std::vector<int> junglePanels = {
 	0x0070F, // Jungle Waves 5
 	0x0087D, // Jungle Waves 6
 	0x002C7, // Jungle Waves 7
+//	0x17CAB, // Jungle Pop-up Wall
 	0x0026D, // Jungle Dots 1
 	0x0026E, // Jungle Dots 2
 	0x0026F, // Jungle Dots 3
 	0x00C3F, // Jungle Dots 4
 	0x00C41, // Jungle Dots 5
 	0x014B2, // Jungle Dots 6
+	0x03616, // Jungle Laser
+};
+
+// There might be something to do with these, I haven't decided yet.
+std::vector<int> nothingPanels = {
+// Doors & Shortcuts & Shortcut doors & Door controls
+	0x0C339, // Desert Surface Door
+	0x0A249, // Desert Pond Exit Door
+	0x275ED, // Mill EP Door
+	0x17CAC, // Mill Stairs Shortcut Door
+	0x38663, // Boathouse Shortcut
+	0x09E49, // Keep Shadows Shortcut
+	0x0361B, // Keep Tower Shortcut
+	0x334DC, // Shadows Inner Door Control
+	0x334DB, // Shadows Outer Door Control
+	0x2700B, // Treehouse Exterior Door Control
+	0x17CBC, // Treehouse Interior Door Control
+	0x337FA, // Jungle Shortcut
+
+// Controls (?)
+	0x09FA0, // Desert Surface 3 Control
+	0x09F86, // Desert Surface 8 Control
+	0x1C2DF, // Desert Flood Control Lower Far Left
+	0x1831E, // Desert Flood Control Lower Far Right
+	0x1C260, // Desert Flood Control Lower Near Left
+	0x1831C, // Desert Flood Control Lower Near Right
+	0x1C2F3, // Desert Flood Control Raise Far Left
+	0x1831D, // Desert Flood Control Raise Far Right
+	0x1C2B1, // Desert Flood Control Raise Near Left
+	0x1831B, // Desert Flood Control Raise Near Right
+	0x0A015, // Desert Final Far Control
+	0x03678, // Mill Lower Ramp Contol
+	0x03679, // Mill Lower Lift Control
+	0x03675, // Mill Upper Lift Control
+	0x03676, // Mill Upper Ramp Control
+	0x03852, // Boathouse Ramp Angle Control
+	0x03858, // Boathouse Ramp Position Control
+	0x275FA, // Boathouse Hook Control
+	0x037FF, // Treehouse Drawbridge Control
+	0x09F98, // Town Laser Redirect Control
+	0x334D8, // Town RGB Light Control
+	0x17E2B, // Swamp Flood Gate Control
+	0x00609, // Swamp Surface Sliding Bridge Control
+	0x18488, // Swamp Underwater Sliding Bridge Control
+	0x17C0A, // Swamp Island Control 1
+	0x17E07, // Swamp Island Control 2
+	0x181F5, // Swamp Rotating Bridge Control
+
+// Vault Boxes
+	0x03481, // Outside Tutorial Vault Box
+	0x0339E, // Desert Vault Box
+	0x03535, // Shipwreck Vault Box
+	0x03702, // Jungle Vault Box
+	0x03542, // Mountainside Vault Box
+	0x2FAF6, // Tunnels Vault Box
+
+// Boat Summons
+	0x17CC8, // Glass Factory Summon Boat
+	0x17CA6, // Boathouse Summon Boat
+	0x17C95, // Treehouse Summon Boat
+	0x0A054, // Town Summon Boat
+	0x09DB8, // Swamp Summon Boat
+	0x17CDF, // Jungle Summon Boat
+
+// Identical sets
+	0x00143, // Orchard Apple Tree 1
+	0x0003B, // Orchard Apple Tree 2
+	0x00055, // Orchard Apple Tree 3
+	0x032F7, // Orchard Apple Tree 4
+	0x032FF, // Orchard Apple Tree 5
+	0x009B8, // Symmetry Island Transparent 1
+	0x003E8, // Symmetry Island Transparent 2
+	0x00A15, // Symmetry Island Transparent 3
+	0x00B53, // Symmetry Island Transparent 4
+	0x00B8D, // Symmetry Island Transparent 5
+
+// Misc
+	0x03629, // Tutorial Gate Open
+	0x09FAA, // Desert Lightswitch
+	0x0C335, // Tutorial Pillar
+	0x0C373, // Tutorial Patio floor
+	0x1C349, // Symmetry Island Door 2 - Collision fails here, sadly
+	0x18076, // Desert Flood Exit - I am doing something with this -- but it's a very unique panel.
+	0x0A15C, // Desert Final Left Convex
+	0x09FFF, // Desert Final Left Concave
+	0x0A15F, // Desert Final Near
+	0x033EA, // Keep Yellow Pressure Plates
+	0x0A3A8, // Keep Yellow Reset
+	0x01BE9, // Keep Purple Pressure Plates
+	0x0A3B9, // Keep Purple Reset
+	0x01CD3, // Keep Green Pressure Plates
+	0x0A3BB, // Keep Green Reset
+	0x01D3F, // Keep Blue Pressure Plates
+	0x0A3AD, // Keep Blue Reset
+	0x2896A, // Town Bridge
+	0x28A69, // Town Lattice
+	0x28A79, // Town Maze
+	0x28B39, // Town Red Hexagonal
+	0x034E3, // Town Soundproof Dots
+	0x034E4, // Town Soundproof Waves
+	0x079DF, // Town Triple
+	0x00815, // Theater Video Input
+	0x03553, // Theater Tutorial Video
+	0x03552, // Theater Desert Video
+	0x0354E, // Theater Jungle Video
+	0x03549, // Theater Challenge Video
+	0x0354F, // Theater Shipwreck Video
+	0x03545, // Theater Mountain Video
+	0x18590, // Town Transparent
+	0x28AE3, // Town Wire
+
+
+	0x09E39, // Mountain 1 Purple Pathway
+//	0x33AF5, // Mountain 1 Blue 1
+//	0x33AF7, // Mountain 1 Blue 2
+//	0x09F6E, // Mountain 1 Blue 3
+//	0x09FD8, // Mountain 2 Rainbow 5
+	0x09E86, // Mountain 2 Blue Pathway
+	0x09ED8, // Mountain 2 Orange Pathway
+	0x09F8E, // Mountain 3 Near Right Floor
+	0x09FC1, // Mountain 3 Near Left Floor
+	0x09F01, // Mountain 3 Far Right Floor
+	0x09EFF, // Mountain 3 Far Left Floor
+	0x09FDA, // Mountain 3 Giant Floor
+//	0x01983, // Mountain 3 Left Peekaboo
+//	0x01987, // Mountain 3 Right Peekaboo
+//	0x3D9A6, // Mountain 3 Left Close Door
+//	0x3D9A7, // Mountain 3 Right Close Door
+//	0x3D9AA, // Mountain 3 Left Activate Elevator
+//	0x3D9A8, // Mountain 3 Right Activate Elevator
+//	0x3D9A9, // Mountain 3 Launch Elevator
+//	0x3C113, // Mountain 3 Left Open Door
+//	0x3C114, // Mountain 3 Right Open Door
+	0x09F7F, // Mountaintop Laser Box
+	0x17C34, // Mountaintop Perspective
+	0x0A16E, // UTM Challenge Entrance
+//	0x334E1, // UTM Secret Door Control
+//	0x2773D, // Tunnels Desert Shortcut
+//	0x27732, // Tunnels Theater Shortcut
+//	0x0A099, // Bunker Glass Door
+//	0x15ADD, // Jungle Vault
+//	0x17CAA, // Jungle Courtyard Gate
+	0x0005C, // Glass Factory Vertical Symmetry 5
 };

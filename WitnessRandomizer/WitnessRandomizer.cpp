@@ -1,22 +1,33 @@
 /*
+ * BUGS:
+ * 3-way in treehouse not working :(
+ * Mountain orange is copying movement data :(
+ * Treehouse panels are not copying color?
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
- ** Jungle(?), Bunker, Monastery, Challenge(!), Shadows
+ ** Think about: Jungle
+ ** Hard: Monastery
+ ** Do: Challenge
  * Randomize audio logs
- * List of panels which split left/right (for left/right controls)
- * List of panels which split up/down (for up/down controls)
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
  * Kill panel slowdown in tutorial
  * Fix desert elevator (laser rando) / Add keep?
- * TRY:
- * Swap treehouse pivots
 */
 #include "Memory.h"
 #include "WitnessRandomizer.h"
 #include "Panels.h"
 #include <string>
 #include <iostream>
+#include <numeric>
+
+template <class T>
+int find(const std::vector<T> &data, T search, int startIndex = 0) {
+	for (int i=startIndex ; i<data.size(); i++) {
+		if (data[i] == search) return i;
+	}
+	return -1;
+}
 
 int main(int argc, char** argv)
 {
@@ -24,60 +35,75 @@ int main(int argc, char** argv)
 
 	if (argc == 2) {
 		srand(atoi(argv[1])); // Seed with RNG from command line
+	} else {
+		int seed = rand() % 1 << 16;
+		std::cout << "Selected seed:" << seed << std::endl;
+		srand(seed);
 	}
 
-	//*
-	randomizer.Randomize(lasers,				SWAP_TARGETS);
 
-	randomizer.Randomize(squarePanels,			SWAP_LINES | SWAP_STYLE);
-	randomizer.Randomize(burnablePanels,		SWAP_LINES | SWAP_STYLE);
+	// Content swaps -- must happen before squarePanels
+	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
+	randomizer.Randomize(leftForwardRightPanels, SWAP_LINES | SWAP_STYLE);
 
-	
-	// randomizer.Randomize(monasteryPanels,		SWAP_TARGETS);
-	// randomizer.Randomize(shadowsPanels,			SWAP_TARGETS);
-	// randomizer.Randomize(bunkerPanels,			SWAP_TARGETS);
+	randomizer.Randomize(squarePanels, SWAP_LINES | SWAP_STYLE);
 
-	// randomizer.Randomize(junglePanels,			SWAP_LINES | SWAP_STYLE);
-	// randomizer.Randomize(mountainMultipanel,	SWAP_LINES | SWAP_STYLE);
-	// randomizer.Randomize(pillars,				SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
-
-	/*/
-	int BOATH_3_1 = 0x21B5;
-	int MILL_L_1 = 0xE0C;
-	int MILL_U_1 = 0x557;
-	int QUARRY_E_1 = 0x9E57;
-	int QUARRY_E_2 = 0x17C09;
-	int MILL_E_1 = 0x1E5A;
-	int BUNKER_G_1 = 0xA010;
-	int BUNKER_T_1 = 0x9F7D;
-	int TUT_PILLAR = 0xC335;
-	int TUT_F_C = 0x293;
-	int PILLAR_L_1 = 0x383D;
-	int PILLAR_L_4 = 0x339BB;
-	int PILLAR_C = 0x9DD5;
-	int PILLAR_C_L = 0x1C31A;
-	int DESERT_1 = 0x00698;
-	int DESERT_L_2 = 0x006E3;
-	int TOWN_S_1 = 0x28AC7;
+	// Frame swaps -- must happen after squarePanels
+	randomizer.Randomize(burnablePanels, SWAP_LINES | SWAP_STYLE);
 
 
-	//randomizer.SwapPanels(PILLAR_L_1, PILLAR_C_L, SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
-	//randomizer.SwapPanelData(PILLAR_L_1, PILLAR_C_L, 0x200, 0x50);
-	// Turn on the panel
-	//randomizer._memory.WriteData<float>({0x5B28C0, 0x18, PILLAR_L_1*8, 0x2A8}, {1.0f, 1.0f});
+	// Target swaps, can happen whenever
+	randomizer.Randomize(lasers, SWAP_TARGETS);
 
-	// randomizer.SwapPanels(PILLAR_L_1, PILLAR_C_L, SWAP_LINES | SWAP_STYLE | SWAP_BACK_DISTANCE);
-	//*/
+	std::vector<int> randomOrder = std::vector(junglePanels.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	// Randomize Waves 2-7
+	// Waves 1 cannot be randomized, since no other panel can start on
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 7);
+	// Randomize Pitches 1-6 onto themselves
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 7, 13);
+	randomizer.ReassignTargets(junglePanels, randomOrder);
+
+	randomOrder = std::vector(bunkerPanels.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	// Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
+	// Tutorial 1 cannot be randomized, since no other panel can start on
+	// Glass 1 will become door + glass 1, due to the targetting system
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 10);
+	// Randomize Glass 1-3 into everything after the door
+	int glassDoorIndex = find(randomOrder, 9) + 1;
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, glassDoorIndex, 12);
+	randomizer.ReassignTargets(bunkerPanels, randomOrder);
+
+	randomOrder = std::vector(shadowsPanels.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 0, 8); // Tutorial
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 8, 16); // Avoid
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
+	randomizer.ReassignTargets(shadowsPanels, randomOrder);
+	randomizer.TurnOff(shadowsPanels[0]);
+	randomizer.TurnOn(shadowsPanels[randomOrder[0]]);
 }
 
 WitnessRandomizer::WitnessRandomizer() : _memory("witness64_d3d11.exe")
 {
 	// Turn off desert flood final
-	_memory.WriteData<float>({0x5B28C0, 0x18, 0x18076*8, 0x2A8}, {0.0f, 0.0f});
+	TurnOff(0x18076);
 	// Change desert floating target to desert flood final
 	_memory.WriteData<int>({0x5B28C0, 0x18, 0x17ECA*8, 0x2BC}, {0x18077});
 	// Distance-gate shadows laser to prevent sniping through the bars
-	_memory.WriteData<float>({0x5B28C0, 0x18, 0x19650*8, 0x3C0}, {2.0f});
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x19650*8, 0x3C0}, {2.5f});
+	// Change the shadows tutorial cable to only activate avoid
+	_memory.WriteData<int>({0x5B28C0, 0x18, 0x319A8*8, 0xD8}, {0});
+	// Change shadows avoid 8 to power shadows follow
+	_memory.WriteData<int>({0x5B28C0, 0x18, 0x1972F*8, 0x2BC}, {0x1C34C});
+	// Disable tutorial cursor speed modifications
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x00295*8, 0x358}, {1.0});
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x0C373*8, 0x358}, {1.0});
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x00293*8, 0x358}, {1.0});
+	_memory.WriteData<float>({0x5B28C0, 0x18, 0x002C2*8, 0x358}, {1.0});
+
+
 
 	// Explicitly set back-off distance for the challenge entry & final 2 pillars
 //	_memory.WriteData<float>({0x5B28C0, 0x18, 0x9DD5*8, 0x22C}, {2.5f});
@@ -85,10 +111,17 @@ WitnessRandomizer::WitnessRandomizer() : _memory("witness64_d3d11.exe")
 //	_memory.WriteData<float>({0x5B28C0, 0x18, 0x1C319*8, 0x22C}, {3.0f});
 }
 
-void WitnessRandomizer::Randomize(std::vector<int> panels, int flags) {
+void WitnessRandomizer::Randomize(std::vector<int> &panels, int flags) {
+	return RandomizeRange(panels, flags, 0, panels.size());
+}
+
+// Range is [start, end)
+void WitnessRandomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex) {
 	if (panels.size() == 0) return;
-	for (size_t i=panels.size() - 1; i > 1; i--) {
-		int target = rand() % i;
+	if (startIndex >= endIndex) return;
+	if (endIndex >= panels.size()) endIndex = panels.size();
+	for (size_t i = endIndex-1; i > startIndex+1; i--) {
+		size_t target = rand() % (i - startIndex) + startIndex;
 		if (i != target) {
 			// std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
 			SwapPanels(panels[i], panels[target], flags);
@@ -180,6 +213,36 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 	}
 }
 
+/*
+void WitnessRandomizer::SwapTargetList(const std::vector<int>& initialOrder, const std::vector<int>& randomizedOrder) {
+	std::vector<std::vector<int>> randomizedTargets;
+	for (int panel : randomizedOrder) {
+		randomizedTargets.push_back(_memory.ReadData<int>({0x5B28C0, 0x18, panel*8, 0x2BC}, 1));
+	}
+	for (int i=0; i<initialOrder.size(); i++) {
+		int panel = initialOrder[i];
+		std::vector<int> target = randomizedTargets[i];
+		_memory.WriteData<int>({0x5B28C0, 0x18, panel*8, 0x2BC}, target);
+	}
+}
+*/
+
+void WitnessRandomizer::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order) {
+	std::vector<int> targetToActivatePanel = {panels[0] + 1};
+	for (int panel : panels) {
+		int target = _memory.ReadData<int>({0x5B28C0, 0x18, panel*8, 0x2BC}, 1)[0];
+		targetToActivatePanel.push_back(target);
+	}
+
+	for (int i=0; i<order.size() - 1; i++) {
+		// order[i+1] is the target panel
+		// order[i+1] - 1 is the (real) panel before the target panel
+		// targets[order[i+1] - 1] is the (real) target which will activate the target panel
+		int panelTarget = targetToActivatePanel[order[i+1]];
+		_memory.WriteData<int>({0x5B28C0, 0x18, panels[order[i]]*8, 0x2BC}, {panelTarget});
+	}
+}
+
 void WitnessRandomizer::SwapPanelData(int panel1, int panel2, int finalOffset, int dataSize) {
 	// Currently wired for old version
 	std::vector<int> panel1Offset = {0x5B28C0, 0x18, panel1*8, finalOffset};
@@ -190,4 +253,12 @@ void WitnessRandomizer::SwapPanelData(int panel1, int panel2, int finalOffset, i
 
 	_memory.WriteData<byte>(panel2Offset, panel1Data);
 	_memory.WriteData<byte>(panel1Offset, panel2Data);
+}
+
+void WitnessRandomizer::TurnOn(int panel) {
+	_memory.WriteData<float>({0x5B28C0, 0x18, panel*8, 0x2A8}, {1.0f, 1.0f});
+}
+
+void WitnessRandomizer::TurnOff(int panel) {
+	_memory.WriteData<float>({0x5B28C0, 0x18, panel*8, 0x2A8}, {0.0f, 0.0f});
 }

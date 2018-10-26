@@ -51,7 +51,7 @@ Memory::~Memory() {
 
 void Memory::ThrowError() {
 	std::string message(256, '\0');
-	FormatMessageA(4096, NULL, GetLastError(), 1024, &message[0], message.length(), NULL);
+	FormatMessageA(4096, NULL, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.length()), NULL);
 	OutputDebugStringA(message.c_str());
 	exit(EXIT_FAILURE);
 }
