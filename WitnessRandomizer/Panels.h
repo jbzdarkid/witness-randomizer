@@ -96,7 +96,7 @@ const std::vector<int> upDownPanels = {
 	0x335AB, // UTM In Elevator Control
 	0x3369D, // UTM Lower Elevator Control
 	0x335AC, // UTM Upper Elevator Control
-	0x09EEB, // Mountain 2 Elevator
+//	0x09EEB, // Mountain 2 Elevator
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere

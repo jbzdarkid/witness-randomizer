@@ -1,8 +1,12 @@
 /*
+ * TODO: Split out main() logic into another file, and move into separate functions for easier testing. Then write tests.
  * BUGS:
- * Shipwreck vault fails, possibly because of dot_reflection?
+ * Shipwreck vault fails, possibly because of dot_reflection? Sometimes?
  * Treehouse pivots *should* work, but I need to not copy style_flags.
    This seems to cause crashes when pivots appear elsewhere in the world.
+ * Some panels are impossible casually: (idc, I think)
+ ** Town Stars, Invisible dots
+ * Something is wrong with jungle
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
  ** Think about: Jungle
@@ -34,7 +38,6 @@ size_t find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 
 int main(int argc, char** argv)
 {
-	
 	WitnessRandomizer randomizer = WitnessRandomizer();
 
 	if (argc == 2) {
@@ -44,6 +47,22 @@ int main(int argc, char** argv)
 		std::cout << "Selected seed: " << seed << std::endl;
 		srand(seed);
 	}
+
+	/*
+	randomizer.SwapPanels(0x0007C, 0x0005D, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 1
+	randomizer.SwapPanels(0x0007E, 0x0005E, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 2
+	randomizer.SwapPanels(0x00075, 0x0005F, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 3
+	randomizer.SwapPanels(0x00073, 0x00060, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 4
+	randomizer.SwapPanels(0x00077, 0x00061, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 5
+	0x00079; // Symmetry Island Colored Dots 6
+
+	0x0005D; // Outside Tutorial Dots Tutorial 1
+	0x0005E; // Outside Tutorial Dots Tutorial 2
+	0x0005F; // Outside Tutorial Dots Tutorial 3
+	0x00060; // Outside Tutorial Dots Tutorial 4
+	0x00061; // Outside Tutorial Dots Tutorial 5
+	*/
+
 
 	// Content swaps -- must happen before squarePanels
 	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
@@ -60,8 +79,10 @@ int main(int argc, char** argv)
 	std::vector<int> keepFrontLaserTarget = randomizer.ReadPanelData<int>(0x0360E, TARGET, 1);
 	randomizer.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
 
-	/* Jungle */
-	std::vector<int> randomOrder = std::vector(junglePanels.size(), 0);
+	std::vector<int> randomOrder;
+
+	/* Jungle
+	randomOrder = std::vector(junglePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
 	// Randomize Waves 2-7
 	// Waves 1 cannot be randomized, since no other panel can start on
@@ -69,6 +90,7 @@ int main(int argc, char** argv)
 	// Randomize Pitches 1-6 onto themselves
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 7, 13);
 	randomizer.ReassignTargets(junglePanels, randomOrder);
+	 */
 
 	/* Bunker */
 	randomOrder = std::vector(bunkerPanels.size(), 0);
@@ -104,7 +126,6 @@ int main(int argc, char** argv)
 
 	randomizer.ReassignTargets(monasteryPanels, randomOrder);
 	*/
-
 }
 
 WitnessRandomizer::WitnessRandomizer()
@@ -117,7 +138,7 @@ WitnessRandomizer::WitnessRandomizer()
 	// Distance-gate shadows laser to prevent sniping through the bars
 	WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5f});
 	// Change the shadows tutorial cable to only activate avoid
-	WritePanelData<int>(0x319A8, 0xD8, {0});
+	WritePanelData<int>(0x319A8, CABLE_TARGET_2, {0});
 	// Change shadows avoid 8 to power shadows follow
 	WritePanelData<int>(0x1972F, TARGET, {0x1C34C});
 

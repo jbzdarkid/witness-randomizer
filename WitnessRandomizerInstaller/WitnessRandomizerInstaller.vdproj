@@ -37,6 +37,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -53,6 +61,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
@@ -130,15 +146,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:WitnessRandomizer"
-        "ProductCode" = "8:{1D8F70FD-4741-4C9F-B0FE-9207F15FEC1A}"
-        "PackageCode" = "8:{FF874506-B46A-40E9-B6C2-C87CFE189AFF}"
+        "ProductCode" = "8:{9EB4E1F3-2D4E-4D2B-B8AA-B51C12F8149B}"
+        "PackageCode" = "8:{2D819EE6-D857-426F-A0B0-48CDB593BCD3}"
         "UpgradeCode" = "8:{B2AF0F34-4917-4AEC-B892-FE4FD4B9584A}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.1"
+        "ProductVersion" = "8:1.0.2"
         "Manufacturer" = "8:jbzdarkid"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
