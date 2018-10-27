@@ -30,11 +30,10 @@ int main(int argc, char** argv)
 	if (argc == 2) {
 		srand(atoi(argv[1])); // Seed with RNG from command line
 	} else {
-		int seed = rand() % 1 << 16;
-		std::cout << "Selected seed:" << seed << std::endl;
+		int seed = rand() % (1 << 16);
+		std::cout << "Selected seed: " << seed << std::endl;
 		srand(seed);
 	}
-
 
 	// Content swaps -- must happen before squarePanels
 	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
@@ -48,8 +47,8 @@ int main(int argc, char** argv)
 	// Target swaps, can happen whenever
 	randomizer.Randomize(lasers, SWAP_TARGETS);
 	// Read the target of keep front laser, and write it to keep back laser.
-	std::vector<int> keepFrontLaserTarget = randomizer.ReadPanelData<int>(0x0360E, 0x2BC, 1);
-	randomizer.WritePanelData<int>(0x03317, 0x2BC, keepFrontLaserTarget);
+	std::vector<int> keepFrontLaserTarget = randomizer.ReadPanelData<int>(0x0360E, TARGET, 1);
+	randomizer.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
 
 	std::vector<int> randomOrder = std::vector(junglePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
@@ -79,30 +78,30 @@ int main(int argc, char** argv)
 	randomizer.ReassignTargets(shadowsPanels, randomOrder);
 
 	// Turn off original starting panel
-	randomizer.WritePanelData<float>(shadowsPanels[0], 0x2A8, {0.0f, 0.0f});
+	randomizer.WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
 	// Turn on new starting panel
-	randomizer.WritePanelData<float>(shadowsPanels[randomOrder[0]], 0x2A8, {1.0f, 1.0f});
+	randomizer.WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
 }
 
-WitnessRandomizer::WitnessRandomizer() : _memory("witness64_d3d11.exe")
+WitnessRandomizer::WitnessRandomizer()
 {
 	// Turn off desert flood final
-	WritePanelData<float>(0x18076, 0x2A8, {0.0f, 0.0f});
+	WritePanelData<float>(0x18076, POWER, {0.0f, 0.0f});
 	// Change desert floating target to desert flood final
-	WritePanelData<int>(0x17ECA, 0x2BC, {0x18077});
+	WritePanelData<int>(0x17ECA, TARGET, {0x18077});
 
 	// Distance-gate shadows laser to prevent sniping through the bars
-	WritePanelData<float>(0x19650, 0x3C0, {2.5f});
+	WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5f});
 	// Change the shadows tutorial cable to only activate avoid
 	WritePanelData<int>(0x319A8, 0xD8, {0});
 	// Change shadows avoid 8 to power shadows follow
-	WritePanelData<int>(0x1972F, 0x2BC, {0x1C34C});
+	WritePanelData<int>(0x1972F, TARGET, {0x1C34C});
 
 	// Disable tutorial cursor speed modifications
-	WritePanelData<float>(0x00295, 0x358, {1.0});
-	WritePanelData<float>(0x0C373, 0x358, {1.0});
-	WritePanelData<float>(0x00293, 0x358, {1.0});
-	WritePanelData<float>(0x002C2, 0x358, {1.0});
+	WritePanelData<float>(0x00295, CURSOR_SPEED_SCALE, {1.0});
+	WritePanelData<float>(0x0C373, CURSOR_SPEED_SCALE, {1.0});
+	WritePanelData<float>(0x00293, CURSOR_SPEED_SCALE, {1.0});
+	WritePanelData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
 }
 
 void WitnessRandomizer::Randomize(std::vector<int> &panels, int flags) {
@@ -128,78 +127,80 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 	std::map<int, int> offsets;
 
 	if (flags & SWAP_TARGETS) {
-		offsets[0x2BC] = sizeof(int);
+		offsets[TARGET] = sizeof(int);
 	}
 	if (flags & SWAP_STYLE) {
-		offsets[0x450] = sizeof(int); // style_flags
+		offsets[STYLE_FLAGS] = sizeof(int);
 	}
 	if (flags & SWAP_LINES) {
-		offsets[0xC8] = 16; // path_color
-		offsets[0xD8] = 16; // reflection_path_color
-		offsets[0xF8] = 16; // dot_color
-		offsets[0x108] = 16; // active_color
-		offsets[0x118] = 16; // background_region_color
-		offsets[0x128] = 16; // success_color_a
-		offsets[0x138] = 16; // success_color_b
-		offsets[0x148] = 16; // strobe_color_a
-		offsets[0x158] = 16; // strobe_color_b
-		offsets[0x168] = 16; // error_color
-		offsets[0x188] = 16; // pattern_point_color
-		offsets[0x198] = 16; // pattern_point_color_a
-		offsets[0x1A8] = 16; // pattern_point_color_b
-		offsets[0x1B8] = 16; // symbol_a
-		offsets[0x1C8] = 16; // symbol_b
-		offsets[0x1D8] = 16; // symbol_c
-		offsets[0x1E8] = 16; // symbol_d
-		offsets[0x1F8] = 16; // symbol_e
-		offsets[0x208] = sizeof(int); // push_symbol_colors
-		offsets[0x20C] = 16; // outer_background
-		offsets[0x21C] = sizeof(int); // outer_background_mode
-		offsets[0x230] = 16; // traced_edges
-		offsets[0x278] = sizeof(void*); // *audio_prefix
-		offsets[0x2FC] = sizeof(int); // is_cylinder
-		offsets[0x300] = sizeof(float); // cylinder_z0
-		offsets[0x304] = sizeof(float); // cylinder_z1
-		offsets[0x308] = sizeof(float); // cylinder_radius
-		offsets[0x398] = sizeof(float); // specular_add
-		offsets[0x39C] = sizeof(int); // specular_power
-		offsets[0x3A4] = sizeof(float); // path_width_scale
-		offsets[0x3A8] = sizeof(float); // startpoint_scale
-		offsets[0x3B8] = sizeof(int); // num_dots
-		offsets[0x3BC] = sizeof(int); // num_connections
-		offsets[0x3C8] = sizeof(void*); // *dot_positions
-		offsets[0x3D0] = sizeof(void*); // *dot_flags
-		offsets[0x3D8] = sizeof(void*); // *dot_connection_a
-		offsets[0x3E0] = sizeof(void*); // *dot_connection_b
-		offsets[0x420] = sizeof(void*); // *decorations
-		offsets[0x428] = sizeof(void*); // *decoration_flags
-		offsets[0x430] = sizeof(void*); // *decoration_colors
-		offsets[0x438] = sizeof(int); // num_decorations
-		offsets[0x440] = sizeof(void*); // *reflection_data
-		offsets[0x448] = sizeof(int); // grid_size_x
-		offsets[0x44C] = sizeof(int); // grid_size_y
-		offsets[0x45C] = sizeof(int); // sequence_len
-		offsets[0x460] = sizeof(void*); // *sequence
-		offsets[0x468] = sizeof(int); // dot_sequence_len
-		offsets[0x470] = sizeof(void*); // *dot_sequence
-		offsets[0x478] = sizeof(int); // dot_sequence_len_reflection
-		offsets[0x480] = sizeof(void*); // *dot_sequence_reflection
-		offsets[0x4A0] = sizeof(int); // num_colored_regions
-		offsets[0x4A8] = sizeof(void*); // *colored_regions
-		offsets[0x4B0] = sizeof(void*); // *panel_target
-		offsets[0x4D8] = sizeof(void*); // *specular_texture
+		offsets[PATH_COLOR] = 16;
+		offsets[REFLECTION_PATH_COLOR] = 16;
+		offsets[DOT_COLOR] = 16;
+		offsets[ACTIVE_COLOR] = 16;
+		offsets[BACKGROUND_REGION_COLOR] = 16;
+		offsets[SUCCESS_COLOR_A] = 16;
+		offsets[SUCCESS_COLOR_B] = 16;
+		offsets[STROBE_COLOR_A] = 16;
+		offsets[STROBE_COLOR_B] = 16;
+		offsets[ERROR_COLOR] = 16;
+		offsets[PATTERN_POINT_COLOR] = 16;
+		offsets[PATTERN_POINT_COLOR_A] = 16;
+		offsets[PATTERN_POINT_COLOR_B] = 16;
+		offsets[SYMBOL_A] = 16;
+		offsets[SYMBOL_B] = 16;
+		offsets[SYMBOL_C] = 16;
+		offsets[SYMBOL_D] = 16;
+		offsets[SYMBOL_E] = 16;
+		offsets[PUSH_SYMBOL_COLORS] = sizeof(int);
+		offsets[OUTER_BACKGROUND] = 16;
+		offsets[OUTER_BACKGROUND_MODE] = sizeof(int);
+		offsets[TRACED_EDGES] = 16;
+		offsets[AUDIO_PREFIX] = sizeof(void*);
+//		offsets[IS_CYLINDER] = sizeof(int);
+//		offsets[CYLINDER_Z0] = sizeof(float);
+//		offsets[CYLINDER_Z1] = sizeof(float);
+//		offsets[CYLINDER_RADIUS] = sizeof(float);
+		offsets[SPECULAR_ADD] = sizeof(float);
+		offsets[SPECULAR_POWER] = sizeof(int);
+		offsets[PATH_WIDTH_SCALE] = sizeof(float);
+		offsets[STARTPOINT_SCALE] = sizeof(float);
+		offsets[NUM_DOTS] = sizeof(int);
+		offsets[NUM_CONNECTIONS] = sizeof(int);
+		offsets[DOT_POSITIONS] = sizeof(void*);
+		offsets[DOT_FLAGS] = sizeof(void*);
+		offsets[DOT_CONNECTION_A] = sizeof(void*);
+		offsets[DOT_CONNECTION_B] = sizeof(void*);
+		offsets[DECORATIONS] = sizeof(void*);
+		offsets[DECORATION_FLAGS] = sizeof(void*);
+		offsets[DECORATION_COLORS] = sizeof(void*);
+		offsets[NUM_DECORATIONS] = sizeof(int);
+		offsets[REFLECTION_DATA] = sizeof(void*);
+		offsets[GRID_SIZE_X] = sizeof(int);
+		offsets[GRID_SIZE_Y] = sizeof(int);
+		offsets[SEQUENCE_LEN] = sizeof(int);
+		offsets[SEQUENCE] = sizeof(void*);
+		offsets[DOT_SEQUENCE_LEN] = sizeof(int);
+		offsets[DOT_SEQUENCE] = sizeof(void*);
+		offsets[DOT_SEQUENCE_LEN_REFLECTION] = sizeof(int);
+		offsets[DOT_SEQUENCE_REFLECTION] = sizeof(void*);
+		offsets[NUM_COLORED_REGIONS] = sizeof(int);
+		offsets[COLORED_REGIONS] = sizeof(void*);
+		offsets[PANEL_TARGET] = sizeof(void*);
+		offsets[SPECULAR_TEXTURE] = sizeof(void*);
 	}
 
 	for (auto const& [offset, size] : offsets) {
-		std::vector<byte> data = ReadPanelData<byte>(panel1, offset, size);
-		WritePanelData<byte>(panel2, offset, data);
+		std::vector<byte> panel1data = ReadPanelData<byte>(panel1, offset, size);
+		std::vector<byte> panel2data = ReadPanelData<byte>(panel2, offset, size);
+		WritePanelData<byte>(panel2, offset, panel1data);
+		WritePanelData<byte>(panel1, offset, panel2data);
 	}
 }
 
 void WitnessRandomizer::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order) {
 	std::vector<int> targetToActivatePanel = {panels[0] + 1};
 	for (int panel : panels) {
-		int target = ReadPanelData<int>(panel, 0x2BC, 1)[0];
+		int target = ReadPanelData<int>(panel, TARGET, 1)[0];
 		targetToActivatePanel.push_back(target);
 	}
 
@@ -208,6 +209,6 @@ void WitnessRandomizer::ReassignTargets(const std::vector<int>& panels, const st
 		// order[i+1] - 1 is the (real) panel before the target panel
 		// targets[order[i+1] - 1] is the (real) target which will activate the target panel
 		int panelTarget = targetToActivatePanel[order[i+1]];
-		WritePanelData<int>(panels[order[i]], 0x2BC, {panelTarget});
+		WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
 	}
 }

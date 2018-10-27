@@ -18,7 +18,7 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (!_handle) {
-		OutputDebugStringA("Process is not open!\n");
+		std::cout << "Couldn't find " << processName.c_str() << ", is it open?" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -38,7 +38,7 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (_baseAddress == 0) {
-		OutputDebugStringA("Couldn't find base address!\n");
+		std::cout << "Couldn't find the base process address!" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
@@ -52,7 +52,7 @@ Memory::~Memory() {
 void Memory::ThrowError() {
 	std::string message(256, '\0');
 	FormatMessageA(4096, NULL, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.length()), NULL);
-	OutputDebugStringA(message.c_str());
+	std::cout << message.c_str() << std::endl;
 	exit(EXIT_FAILURE);
 }
 
