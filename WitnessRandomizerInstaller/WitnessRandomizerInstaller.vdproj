@@ -44,6 +44,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
         "Release"
@@ -68,6 +76,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
     }
@@ -146,15 +162,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:WitnessRandomizer"
-        "ProductCode" = "8:{9EB4E1F3-2D4E-4D2B-B8AA-B51C12F8149B}"
-        "PackageCode" = "8:{2D819EE6-D857-426F-A0B0-48CDB593BCD3}"
+        "ProductCode" = "8:{CFA35C1B-207B-4F9A-AF67-3D3FC8B47530}"
+        "PackageCode" = "8:{EB510A81-D971-401F-BCA1-03DB37ED9F10}"
         "UpgradeCode" = "8:{B2AF0F34-4917-4AEC-B892-FE4FD4B9584A}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.2"
+        "ProductVersion" = "8:1.0.3"
         "Manufacturer" = "8:jbzdarkid"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

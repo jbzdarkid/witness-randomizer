@@ -19,23 +19,23 @@ const std::vector<int> lasers = {
 
 // Note: Some of these (non-desert) are duplicated elsewhere
 const std::vector<int> burnablePanels = {
-	0x17D9C, // Treehouse Yellow 7
-	0x17DC2, // Treehouse Yellow 8
-	0x17DC4, // Treehouse Yellow 9
-	0x00999, // Swamp Discontinuous 1
-	0x0099D, // Swamp Discontinuous 2
-	0x009A0, // Swamp Discontinuous 3
-	0x009A1, // Swamp Discontinuous 4
-	0x00007, // Swamp Rotation Tutorial 1
-	0x00008, // Swamp Rotation Tutorial 2
-	0x00009, // Swamp Rotation Tutorial 3
-	0x0000A, // Swamp Rotation Tutorial 4
-	0x28AC7, // Town Blue 1
-	0x28AC8, // Town Blue 2
-	0x28ACA, // Town Blue 3
-	0x28ACB, // Town Blue 4
-	0x28ACC, // Town Blue 5
-	0x17CF0, // Mill Discard
+//	0x17D9C, // Treehouse Yellow 7
+//	0x17DC2, // Treehouse Yellow 8
+//	0x17DC4, // Treehouse Yellow 9
+//	0x00999, // Swamp Discontinuous 1
+//	0x0099D, // Swamp Discontinuous 2
+//	0x009A0, // Swamp Discontinuous 3
+//	0x009A1, // Swamp Discontinuous 4
+//	0x00007, // Swamp Rotation Tutorial 1
+//	0x00008, // Swamp Rotation Tutorial 2
+//	0x00009, // Swamp Rotation Tutorial 3
+//	0x0000A, // Swamp Rotation Tutorial 4
+//	0x28AC7, // Town Blue 1
+//	0x28AC8, // Town Blue 2
+//	0x28ACA, // Town Blue 3
+//	0x28ACB, // Town Blue 4
+//	0x28ACC, // Town Blue 5
+//	0x17CF0, // Mill Discard
 
 	0x00698, // Desert Surface 1
 	0x0048F, // Desert Surface 2

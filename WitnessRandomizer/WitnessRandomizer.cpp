@@ -5,6 +5,7 @@
  * Treehouse pivots *should* work, but I need to not copy style_flags.
    This seems to cause crashes when pivots appear elsewhere in the world.
  * Some panels are impossible casually: (idc, I think)
+ * Shadows burn marks are not appearing
  ** Town Stars, Invisible dots
  * Something is wrong with jungle
  * FEATURES:
@@ -48,20 +49,19 @@ int main(int argc, char** argv)
 		srand(seed);
 	}
 
-	/*
-	randomizer.SwapPanels(0x0007C, 0x0005D, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 1
-	randomizer.SwapPanels(0x0007E, 0x0005E, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 2
-	randomizer.SwapPanels(0x00075, 0x0005F, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 3
-	randomizer.SwapPanels(0x00073, 0x00060, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 4
-	randomizer.SwapPanels(0x00077, 0x00061, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 5
-	0x00079; // Symmetry Island Colored Dots 6
+//	randomizer.SwapPanels(0x28AC7, 0x00698, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 1
+//	randomizer.SwapPanels(0x28AC8, 0x0048F, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 2
+//	randomizer.SwapPanels(0x28ACA, 0x09F92, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 3
+//	randomizer.SwapPanels(0x28ACB, 0x0A036, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 4
+//	randomizer.SwapPanels(0x28ACC, 0x09DA6, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 5
+//	0x00079; // Symmetry Island Colored Dots 6
+//
+//	0x0005D; // Outside Tutorial Dots Tutorial 1
+//	0x0005E; // Outside Tutorial Dots Tutorial 2
+//	0x0005F; // Outside Tutorial Dots Tutorial 3
+//	0x00060; // Outside Tutorial Dots Tutorial 4
+//	0x00061; // Outside Tutorial Dots Tutorial 5
 
-	0x0005D; // Outside Tutorial Dots Tutorial 1
-	0x0005E; // Outside Tutorial Dots Tutorial 2
-	0x0005F; // Outside Tutorial Dots Tutorial 3
-	0x00060; // Outside Tutorial Dots Tutorial 4
-	0x00061; // Outside Tutorial Dots Tutorial 5
-	*/
 
 
 	// Content swaps -- must happen before squarePanels
