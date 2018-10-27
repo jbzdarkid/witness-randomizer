@@ -47,7 +47,7 @@ private:
 
 	uintptr_t ComputeOffset(std::vector<int> offsets);
 
-	std::map<std::vector<int>, uintptr_t> _computedOffsets;
+	std::map<uintptr_t, uintptr_t> _computedAddresses;
 	uintptr_t _baseAddress;
 	HANDLE _handle;
 };

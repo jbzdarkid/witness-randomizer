@@ -62,18 +62,21 @@ uintptr_t Memory::ComputeOffset(std::vector<int> offsets)
 	int final_offset = offsets.back();
 	offsets.pop_back();
 
-	auto search = _computedOffsets.find(offsets);
-	if (search != std::end(_computedOffsets)) {
-		return search->second + final_offset;
-	}
-
 	uintptr_t cumulativeAddress = _baseAddress;
 	for (int offset : offsets) {
 		cumulativeAddress += offset;
-		if (!ReadProcessMemory(_handle, (LPVOID)cumulativeAddress, &cumulativeAddress, sizeof(uintptr_t), NULL)) {
-			ThrowError();
+
+		auto search = _computedAddresses.find(cumulativeAddress);
+		if (search == std::end(_computedAddresses)) {
+			// If the address is not yet computed, then compute it.
+			uintptr_t computedAddress = 0;
+			if (!ReadProcessMemory(_handle, (LPVOID)cumulativeAddress, &computedAddress, sizeof(uintptr_t), NULL)) {
+				ThrowError();
+			}
+			_computedAddresses[cumulativeAddress] = computedAddress;
 		}
+
+		cumulativeAddress = _computedAddresses[cumulativeAddress];
 	}
-	_computedOffsets[offsets] = cumulativeAddress;
 	return cumulativeAddress + final_offset;
 }

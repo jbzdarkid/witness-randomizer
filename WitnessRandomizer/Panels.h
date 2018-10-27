@@ -101,10 +101,10 @@ std::vector<int> upDownPanels = {
 
 // Note: Some of these (non-controls) are duplicated elsewhere
 std::vector<int> leftForwardRightPanels = {
-	0x00075, // Symmetry Island Colored Dots 3
-	0x288EA, // UTM Perspective 1
-	0x288FC, // UTM Perspective 2
-	0x289E7, // UTM Perspective 3
+//	0x00075, // Symmetry Island Colored Dots 3
+//	0x288EA, // UTM Perspective 1
+//	0x288FC, // UTM Perspective 2
+//	0x289E7, // UTM Perspective 3
 
 	0x17DD1, // Treehouse Left Orange 9
 	0x17CE3, // Treehouse Right Orange 4

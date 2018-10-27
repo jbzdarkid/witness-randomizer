@@ -1,4 +1,7 @@
 /*
+ * BUGS:
+ * Treehouse pivots *should* work, but I need to not copy style_flags.
+   This seems to cause crashes when pivots appear elsewhere in the world.
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
  ** Think about: Jungle
