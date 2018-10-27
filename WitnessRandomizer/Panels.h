@@ -480,8 +480,8 @@ std::vector<int> shadowsPanels = {
 
 std::vector<int> monasteryPanels = {
 	0x00B10, // Monastery Left Door
-	0x00C92, // Monastery Right Door
 	0x00290, // Monastery Exterior 1
+	0x00C92, // Monastery Right Door
 	0x00038, // Monastery Exterior 2
 	0x00037, // Monastery Exterior 3
 //	0x09D9B, // Monastery Bonsai

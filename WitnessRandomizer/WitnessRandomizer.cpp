@@ -31,9 +31,9 @@ int main(int argc, char** argv)
 	WitnessRandomizer randomizer = WitnessRandomizer();
 
 	if (argc == 2) {
-		srand(atoi(argv[1])); // Seed with RNG from command line
+		srand(atoi(argv[1])); // Seed from the command line
 	} else {
-		int seed = rand() % (1 << 16);
+		int seed = time(0) % (1 << 16); // Seed from the time in milliseconds
 		std::cout << "Selected seed: " << seed << std::endl;
 		srand(seed);
 	}
@@ -53,6 +53,7 @@ int main(int argc, char** argv)
 	std::vector<int> keepFrontLaserTarget = randomizer.ReadPanelData<int>(0x0360E, TARGET, 1);
 	randomizer.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
 
+	/* Jungle */
 	std::vector<int> randomOrder = std::vector(junglePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
 	// Randomize Waves 2-7
@@ -62,6 +63,7 @@ int main(int argc, char** argv)
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 7, 13);
 	randomizer.ReassignTargets(junglePanels, randomOrder);
 
+	/* Bunker */
 	randomOrder = std::vector(bunkerPanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
 	// Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
@@ -73,17 +75,29 @@ int main(int argc, char** argv)
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, glassDoorIndex, 12);
 	randomizer.ReassignTargets(bunkerPanels, randomOrder);
 
+	/* Shadows */
 	randomOrder = std::vector(shadowsPanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 0, 8); // Tutorial
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 8, 16); // Avoid
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
 	randomizer.ReassignTargets(shadowsPanels, randomOrder);
-
 	// Turn off original starting panel
 	randomizer.WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
 	// Turn on new starting panel
 	randomizer.WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
+
+	/* Monastery
+	randomOrder = std::vector(monasteryPanels.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 2, 6); // outer 2 & 3, inner 1
+	// Once outer 3 and right door are solved, inner 2-4 are accessible
+	int innerPanelsIndex = max(find(randomOrder, 2), find(randomOrder, 4));
+	randomizer.RandomizeRange(randomOrder, SWAP_NONE, innerPanelsIndex, 9); // Inner 2-4
+
+	randomizer.ReassignTargets(monasteryPanels, randomOrder);
+	*/
+
 }
 
 WitnessRandomizer::WitnessRandomizer()
