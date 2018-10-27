@@ -47,30 +47,28 @@ Memory::~Memory() {
 	CloseHandle(_handle);
 }
 
-// Private methods:
-
 void Memory::ThrowError() {
 	std::string message(256, '\0');
-	FormatMessageA(4096, NULL, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.length()), NULL);
+	FormatMessageA(4096, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.length()), nullptr);
 	std::cout << message.c_str() << std::endl;
 	exit(EXIT_FAILURE);
 }
 
-uintptr_t Memory::ComputeOffset(std::vector<int> offsets)
+void* Memory::ComputeOffset(std::vector<int> offsets)
 {
 	// Leave off the last offset, since it will be either read/write, and may not be of type unitptr_t.
 	int final_offset = offsets.back();
 	offsets.pop_back();
 
 	uintptr_t cumulativeAddress = _baseAddress;
-	for (int offset : offsets) {
+	for (const int offset : offsets) {
 		cumulativeAddress += offset;
 
-		auto search = _computedAddresses.find(cumulativeAddress);
+		const auto search = _computedAddresses.find(cumulativeAddress);
 		if (search == std::end(_computedAddresses)) {
 			// If the address is not yet computed, then compute it.
 			uintptr_t computedAddress = 0;
-			if (!ReadProcessMemory(_handle, (LPVOID)cumulativeAddress, &computedAddress, sizeof(uintptr_t), NULL)) {
+			if (!ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
 				ThrowError();
 			}
 			_computedAddresses[cumulativeAddress] = computedAddress;
@@ -78,5 +76,5 @@ uintptr_t Memory::ComputeOffset(std::vector<int> offsets)
 
 		cumulativeAddress = _computedAddresses[cumulativeAddress];
 	}
-	return cumulativeAddress + final_offset;
+	return reinterpret_cast<void*>(cumulativeAddress + final_offset);
 }

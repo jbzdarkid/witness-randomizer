@@ -2,7 +2,7 @@
 #include <vector>
 
 // Some of these (the puzzle ones) are duplicated elsewhere
-std::vector<int> lasers = {
+const std::vector<int> lasers = {
 	0x0360D, // Symmetry
 	0x03615, // Swamp
 	0x09DE0, // Bunker
@@ -18,7 +18,7 @@ std::vector<int> lasers = {
 };
 
 // Note: Some of these (non-desert) are duplicated elsewhere
-std::vector<int> burnablePanels = {
+const std::vector<int> burnablePanels = {
 	0x17D9C, // Treehouse Yellow 7
 	0x17DC2, // Treehouse Yellow 8
 	0x17DC4, // Treehouse Yellow 9
@@ -63,7 +63,7 @@ std::vector<int> burnablePanels = {
 
 // Note: Some of these (non-controls) are duplicated elsewhere
 // TODO: Gave up
-std::vector<int> leftRightPanels = {
+const std::vector<int> leftRightPanels = {
 	0x01A54, // Glass Factory Entry
 	0x00086, // Glass Factory Vertical Symmetry 1
 	0x00087, // Glass Factory Vertical Symmetry 2
@@ -77,7 +77,7 @@ std::vector<int> leftRightPanels = {
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
-std::vector<int> upDownPanels = {
+const std::vector<int> upDownPanels = {
 	0x0008D, // Glass Factory Rotational Symmetry 1
 	0x00081, // Glass Factory Rotational Symmetry 2
 	0x00083, // Glass Factory Rotational Symmetry 3
@@ -100,7 +100,7 @@ std::vector<int> upDownPanels = {
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
-std::vector<int> leftForwardRightPanels = {
+const std::vector<int> leftForwardRightPanels = {
 //	0x00075, // Symmetry Island Colored Dots 3
 //	0x288EA, // UTM Perspective 1
 //	0x288FC, // UTM Perspective 2
@@ -112,7 +112,7 @@ std::vector<int> leftForwardRightPanels = {
 	0x17E52, // Treehouse Green 4
 };
 
-std::vector<int> pillars = {
+const std::vector<int> pillars = {
 	0x0383D, // Mountain 3 Left Pillar 1
 	0x0383F, // Mountain 3 Left Pillar 2
 	0x03859, // Mountain 3 Left Pillar 3
@@ -126,7 +126,7 @@ std::vector<int> pillars = {
 //	0x1C319, // Challenge Right Pillar
 };
 
-std::vector<int> mountainMultipanel = {
+const std::vector<int> mountainMultipanel = {
 	0x09FCC, // Mountain 2 Multipanel 1
 	0x09FCE, // Mountain 2 Multipanel 2
 	0x09FCF, // Mountain 2 Multipanel 3
@@ -135,7 +135,7 @@ std::vector<int> mountainMultipanel = {
 	0x09FD2, // Mountain 2 Multipanel 6
 };
 
-std::vector<int> squarePanels = {
+const std::vector<int> squarePanels = {
 	0x00064, // Tutorial Straight
 	0x00182, // Tutorial Bend
 	0x0A3B2, // Tutorial Back Right
@@ -453,7 +453,7 @@ std::vector<int> squarePanels = {
 	0x09E85, // Tunnels Town Shortcut
 };
 
-std::vector<int> shadowsPanels = {
+const std::vector<int> shadowsPanels = {
 	0x198B5, // Shadows Tutorial 1
 	0x198BD, // Shadows Tutorial 2
 	0x198BF, // Shadows Tutorial 3
@@ -478,7 +478,7 @@ std::vector<int> shadowsPanels = {
 	0x19650, // Shadows Laser
 };
 
-std::vector<int> monasteryPanels = {
+const std::vector<int> monasteryPanels = {
 	0x00B10, // Monastery Left Door
 	0x00290, // Monastery Exterior 1
 	0x00C92, // Monastery Right Door
@@ -493,7 +493,7 @@ std::vector<int> monasteryPanels = {
 	0x17CA4, // Monastery Laser
 };
 
-std::vector<int> bunkerPanels = {
+const std::vector<int> bunkerPanels = {
 	0x09F7D, // Bunker Tutorial 1
 	0x09FDC, // Bunker Tutorial 2
 	0x09FF7, // Bunker Tutorial 3
@@ -514,7 +514,7 @@ std::vector<int> bunkerPanels = {
 	0x0A079, // Bunker Elevator
 };
 
-std::vector<int> junglePanels = {
+const std::vector<int> junglePanels = {
 	0x002C4, // Jungle Waves 1
 	0x00767, // Jungle Waves 2
 	0x002C6, // Jungle Waves 3
@@ -533,7 +533,7 @@ std::vector<int> junglePanels = {
 };
 
 // There might be something to do with these, I haven't decided yet.
-std::vector<int> nothingPanels = {
+const std::vector<int> nothingPanels = {
 // Doors & Shortcuts & Shortcut doors & Door controls
 	0x0C339, // Desert Surface Door
 	0x0A249, // Desert Pond Exit Door

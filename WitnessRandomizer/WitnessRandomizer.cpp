@@ -1,5 +1,6 @@
 /*
  * BUGS:
+ * Shipwreck vault fails, possibly because of dot_reflection?
  * Treehouse pivots *should* work, but I need to not copy style_flags.
    This seems to cause crashes when pivots appear elsewhere in the world.
  * FEATURES:
@@ -17,23 +18,26 @@
 #include <string>
 #include <iostream>
 #include <numeric>
+#include <chrono>
 
 template <class T>
-int find(const std::vector<T> &data, T search, int startIndex = 0) {
-	for (int i=startIndex ; i<data.size(); i++) {
+size_t find(const std::vector<T> &data, T search, size_t startIndex = 0) {
+	for (size_t i=startIndex ; i<data.size(); i++) {
 		if (data[i] == search) return i;
 	}
-	return -1;
+	std::cout << "Couldn't find " << search << " in data!" << std::endl;
+	exit(-1);
 }
 
 int main(int argc, char** argv)
 {
+	
 	WitnessRandomizer randomizer = WitnessRandomizer();
 
 	if (argc == 2) {
 		srand(atoi(argv[1])); // Seed from the command line
 	} else {
-		int seed = time(0) % (1 << 16); // Seed from the time in milliseconds
+		int seed = time(nullptr) % (1 << 16); // Seed from the time in milliseconds
 		std::cout << "Selected seed: " << seed << std::endl;
 		srand(seed);
 	}
@@ -71,7 +75,7 @@ int main(int argc, char** argv)
 	// Glass 1 will become door + glass 1, due to the targetting system
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 10);
 	// Randomize Glass 1-3 into everything after the door
-	int glassDoorIndex = find(randomOrder, 9) + 1;
+	const size_t glassDoorIndex = find(randomOrder, 9) + 1;
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, glassDoorIndex, 12);
 	randomizer.ReassignTargets(bunkerPanels, randomOrder);
 
@@ -121,17 +125,17 @@ WitnessRandomizer::WitnessRandomizer()
 	WritePanelData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
 }
 
-void WitnessRandomizer::Randomize(std::vector<int> &panels, int flags) {
+void WitnessRandomizer::Randomize(const std::vector<int>& panels, int flags) {
 	return RandomizeRange(panels, flags, 0, panels.size());
 }
 
 // Range is [start, end)
-void WitnessRandomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex) {
+void WitnessRandomizer::RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex) {
 	if (panels.size() == 0) return;
 	if (startIndex >= endIndex) return;
 	if (endIndex >= panels.size()) endIndex = panels.size();
 	for (size_t i = endIndex-1; i > startIndex+1; i--) {
-		size_t target = rand() % (i - startIndex) + startIndex;
+		const size_t target = rand() % (i - startIndex) + startIndex;
 		if (i != target) {
 			// std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
 			SwapPanels(panels[i], panels[target], flags);
@@ -215,17 +219,17 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 }
 
 void WitnessRandomizer::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order) {
+	// This list is offset by 1, so the target of the Nth panel is in position N (aka the N+1th element)
+	// The first panel may not have a wire to power it, so we use the panel ID itself.
 	std::vector<int> targetToActivatePanel = {panels[0] + 1};
-	for (int panel : panels) {
+	for (const int panel : panels) {
 		int target = ReadPanelData<int>(panel, TARGET, 1)[0];
 		targetToActivatePanel.push_back(target);
 	}
 
-	for (int i=0; i<order.size() - 1; i++) {
-		// order[i+1] is the target panel
-		// order[i+1] - 1 is the (real) panel before the target panel
-		// targets[order[i+1] - 1] is the (real) target which will activate the target panel
-		int panelTarget = targetToActivatePanel[order[i+1]];
+	for (size_t i=0; i<order.size() - 1; i++) {
+		// Set the target of order[i] to order[i+1], using the "real" target as determined above.
+		const int panelTarget = targetToActivatePanel[order[i+1]];
 		WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
 	}
 }

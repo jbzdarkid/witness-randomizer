@@ -12,13 +12,13 @@ class WitnessRandomizer {
 public:
 	WitnessRandomizer();
 
-	void Randomize(std::vector<int> &panels, int flags);
-	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
+	void Randomize(const std::vector<int>& panels, int flags);
+	void RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);
 	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order);
 
 	template <class T>
-	std::vector<T> ReadPanelData(int panel, int offset, int size) {
+	std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
 		return _memory.ReadData<T>({GLOBALS, 0x18, panel*8, offset}, size);
 	}
 
