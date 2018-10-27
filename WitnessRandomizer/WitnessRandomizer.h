@@ -15,7 +15,7 @@ public:
 	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);
 	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order);
-
+	void Overwrite(int panel1, int panel2, int offset, int size);
 
 //private:
 	void TurnOn(int panel);

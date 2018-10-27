@@ -9,6 +9,8 @@ std::vector<int> lasers = {
 	0x17CA4, // Monastery
 	0x032F5, // Town
 	0x03613, // Treehouse
+	0x0360E, // Keep Front Laser
+//	0x03317, // Keep Back Laser
 //	0x03608, // Desert
 	0x03612, // Quarry
 	0x03616, // Jungle
@@ -34,7 +36,6 @@ std::vector<int> burnablePanels = {
 	0x28ACB, // Town Blue 4
 	0x28ACC, // Town Blue 5
 	0x17CF0, // Mill Discard
-	0x17C31, // Desert Final Transparent
 
 	0x00698, // Desert Surface 1
 	0x0048F, // Desert Surface 2
@@ -100,10 +101,10 @@ std::vector<int> upDownPanels = {
 
 // Note: Some of these (non-controls) are duplicated elsewhere
 std::vector<int> leftForwardRightPanels = {
-//	0x00075, // Symmetry Island Colored Dots 3
-//	0x288EA, // UTM Perspective 1
-//	0x288FC, // UTM Perspective 2
-//	0x289E7, // UTM Perspective 3
+	0x00075, // Symmetry Island Colored Dots 3
+	0x288EA, // UTM Perspective 1
+	0x288FC, // UTM Perspective 2
+	0x289E7, // UTM Perspective 3
 
 	0x17DD1, // Treehouse Left Orange 9
 	0x17CE3, // Treehouse Right Orange 4
@@ -198,7 +199,6 @@ std::vector<int> squarePanels = {
 	0x00A68, // Symmetry Island Laser Blue 3
 	0x17CE7, // Desert Discard
 	0x0CC7B, // Desert Vault
-	0x17C31, // Desert Final Transparent
 	0x01E5A, // Mill Entry Door Left
 	0x01E59, // Mill Entry Door Right
 	0x00E0C, // Mill Lower Row 1
@@ -306,7 +306,6 @@ std::vector<int> squarePanels = {
 	0x17D27, // Keep Discard
 	0x17D28, // Shipwreck Discard
 	0x00AFB, // Shipwreck Vault
-	0x19650, // Shadows Laser
 	0x2899C, // Town 25 Dots 1
 	0x28A33, // Town 25 Dots 2
 	0x28ABF, // Town 25 Dots 3
@@ -673,4 +672,6 @@ std::vector<int> nothingPanels = {
 //	0x15ADD, // Jungle Vault
 //	0x17CAA, // Jungle Courtyard Gate
 	0x0005C, // Glass Factory Vertical Symmetry 5
+	0x17C31, // Desert Final Transparent
+	0x19650, // Shadows Laser
 };

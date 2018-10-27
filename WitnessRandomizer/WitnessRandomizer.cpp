@@ -1,8 +1,4 @@
 /*
- * BUGS:
- * 3-way in treehouse not working :(
- * Mountain orange is copying movement data :(
- * Treehouse panels are not copying color?
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
  ** Think about: Jungle
@@ -11,8 +7,6 @@
  * Randomize audio logs
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
- * Kill panel slowdown in tutorial
- * Fix desert elevator (laser rando) / Add keep?
 */
 #include "Memory.h"
 #include "WitnessRandomizer.h"
@@ -44,16 +38,17 @@ int main(int argc, char** argv)
 
 	// Content swaps -- must happen before squarePanels
 	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
-	randomizer.Randomize(leftForwardRightPanels, SWAP_LINES | SWAP_STYLE);
+	randomizer.Randomize(leftForwardRightPanels, SWAP_LINES);
 
 	randomizer.Randomize(squarePanels, SWAP_LINES | SWAP_STYLE);
 
 	// Frame swaps -- must happen after squarePanels
 	randomizer.Randomize(burnablePanels, SWAP_LINES | SWAP_STYLE);
 
-
 	// Target swaps, can happen whenever
 	randomizer.Randomize(lasers, SWAP_TARGETS);
+	// Read the target of keep front laser, and write it to keep back laser.
+	randomizer.Overwrite(0x0360E, 0x03317, 0x2BC, sizeof(int));
 
 	std::vector<int> randomOrder = std::vector(junglePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
@@ -138,7 +133,7 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 	}
 	if (flags & SWAP_LINES) {
 		offsets[0x230] = 16; // traced_edges
-		offsets[0x220] = sizeof(void*); // *pattern_name
+//		offsets[0x220] = sizeof(void*); // *pattern_name
 //		offsets[0x240] = sizeof(void*); // *mesh_name
 		offsets[0x2FC] = sizeof(int); // is_cylinder
 		offsets[0x300] = sizeof(float); // cylinder_z0
@@ -164,7 +159,6 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x440] = sizeof(void*); // *reflection_data
 		offsets[0x448] = sizeof(int); // grid_size_x
 		offsets[0x44C] = sizeof(int); // grid_size_y
-		offsets[0x450] = sizeof(int); // style_flags // This is required to not ignore dots
 		offsets[0x45C] = sizeof(int); // sequence_len
 		offsets[0x460] = sizeof(void*); // *sequence
 		offsets[0x468] = sizeof(int); // dot_sequence_len
@@ -173,8 +167,6 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x480] = sizeof(void*); // *dot_sequence_reflection
 		offsets[0x4B0] = sizeof(void*); // *panel_target
 		offsets[0x4D8] = sizeof(void*); // *specular_texture
-	}
-	if (flags & SWAP_STYLE) {
 		offsets[0xC8] = 16; // path_color
 		offsets[0xD8] = 16; // reflection_path_color
 //		offsets[0xE8] = 16; // deprecated_finished_path_color
@@ -204,9 +196,14 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[0x4A8] = sizeof(void*); // *colored_regions
 //		offsets[0x4B8] = sizeof(void*); // *backing_texture
 	}
+	if (flags & SWAP_STYLE) {
+		offsets[0x450] = sizeof(int); // style_flags
+	}
+	/*
 	if (flags & SWAP_BACK_DISTANCE) {
 		offsets[0x22C] = sizeof(float); // extra_back_distance
 	}
+	*/
 
 	for (auto const& [offset, size] : offsets) {
 		SwapPanelData(panel1, panel2, offset, size);
@@ -261,4 +258,9 @@ void WitnessRandomizer::TurnOn(int panel) {
 
 void WitnessRandomizer::TurnOff(int panel) {
 	_memory.WriteData<float>({0x5B28C0, 0x18, panel*8, 0x2A8}, {0.0f, 0.0f});
+}
+
+void WitnessRandomizer::Overwrite(int panel1, int panel2, int offset, int size) {
+	std::vector<byte> data = _memory.ReadData<int>({0x5B28C0, 0x18, panel1*8, offset}, size);
+	_memory.WriteData<byte>({0x5B28C0, 0x18, panel2*8, offset}, data);
 }
