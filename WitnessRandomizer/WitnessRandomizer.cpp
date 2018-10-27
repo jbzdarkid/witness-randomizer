@@ -11,6 +11,9 @@
  * Randomize audio logs
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
+ * Start the game if it isn't running?
+ * UI for the randomizer :(
+ * Increase odds of mountain oranges garbage on other panels?
 */
 #include "Memory.h"
 #include "WitnessRandomizer.h"
