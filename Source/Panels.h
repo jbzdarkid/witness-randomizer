@@ -17,50 +17,6 @@ std::vector<int> lasers = {
 	0x19650, // Shadows
 };
 
-// Note: Some of these (non-desert) are duplicated elsewhere
-std::vector<int> burnablePanels = {
-	0x17D9C, // Treehouse Yellow 7
-	0x17DC2, // Treehouse Yellow 8
-	0x17DC4, // Treehouse Yellow 9
-	0x00999, // Swamp Discontinuous 1
-	0x0099D, // Swamp Discontinuous 2
-	0x009A0, // Swamp Discontinuous 3
-	0x009A1, // Swamp Discontinuous 4
-	0x00007, // Swamp Rotation Tutorial 1
-	0x00008, // Swamp Rotation Tutorial 2
-	0x00009, // Swamp Rotation Tutorial 3
-	0x0000A, // Swamp Rotation Tutorial 4
-	0x28AC7, // Town Blue 1
-	0x28AC8, // Town Blue 2
-	0x28ACA, // Town Blue 3
-	0x28ACB, // Town Blue 4
-	0x28ACC, // Town Blue 5
-	0x17CF0, // Mill Discard
-
-	0x00698, // Desert Surface 1
-	0x0048F, // Desert Surface 2
-	0x09F92, // Desert Surface 3
-	0x0A036, // Desert Surface 4
-	0x09DA6, // Desert Surface 5
-	0x0A049, // Desert Surface 6
-	0x0A053, // Desert Surface 7
-	0x09F94, // Desert Surface 8
-	0x00422, // Desert Light 1
-	0x006E3, // Desert Light 2
-	0x0A02D, // Desert Light 3
-	0x00C72, // Desert Pond 1
-	0x0129D, // Desert Pond 2
-	0x008BB, // Desert Pond 3
-	0x0078D, // Desert Pond 4
-	0x18313, // Desert Pond 5
-	0x04D18, // Desert Flood 1
-	0x01205, // Desert Flood 2
-	0x181AB, // Desert Flood 3
-	0x0117A, // Desert Flood 4
-	0x17ECA, // Desert Flood 5
-	0x012D7, // Desert Final Far
-};
-
 // Note: Some of these (non-controls) are duplicated elsewhere
 // TODO: Gave up
 std::vector<int> leftRightPanels = {
@@ -105,10 +61,10 @@ std::vector<int> upDownPanels = {
 
 // Note: Some of these (non-controls) are duplicated elsewhere
 std::vector<int> leftForwardRightPanels = {
-//	0x00075, // Symmetry Island Colored Dots 3
-//	0x288EA, // UTM Perspective 1
-//	0x288FC, // UTM Perspective 2
-//	0x289E7, // UTM Perspective 3
+	0x00075, // Symmetry Island Colored Dots 3
+	0x288EA, // UTM Perspective 1
+	0x288FC, // UTM Perspective 2
+	0x289E7, // UTM Perspective 3
 
 	0x17DD1, // Treehouse Left Orange 9
 	0x17CE3, // Treehouse Right Orange 4
@@ -458,6 +414,35 @@ std::vector<int> squarePanels = {
 	0x09E85, // Tunnels Town Shortcut
 };
 
+std::vector<int> desertPanels = {
+	0x00698, // Desert Surface 1
+	0x0048F, // Desert Surface 2
+	0x09F92, // Desert Surface 3
+	0x0A036, // Desert Surface 4
+	0x09DA6, // Desert Surface 5
+	0x0A049, // Desert Surface 6
+	0x0A053, // Desert Surface 7
+	0x09F94, // Desert Surface 8
+	0x00422, // Desert Light 1
+	0x006E3, // Desert Light 2
+	0x0A02D, // Desert Light 3
+	0x00C72, // Desert Pond 1
+	0x0129D, // Desert Pond 2
+	0x008BB, // Desert Pond 3
+	0x0078D, // Desert Pond 4
+	0x18313, // Desert Pond 5
+	0x04D18, // Desert Flood 1
+	0x01205, // Desert Flood 2
+	0x181AB, // Desert Flood 3
+	0x0117A, // Desert Flood 4
+	0x17ECA, // Desert Flood 5
+//	0x18076, // Desert Flood Exit
+//	0x0A15C, // Desert Final Left Convex
+//	0x09FFF, // Desert Final Left Concave
+//	0x0A15F, // Desert Final Near
+	0x012D7, // Desert Final Far
+};
+
 std::vector<int> shadowsPanels = {
 	0x198B5, // Shadows Tutorial 1
 	0x198BD, // Shadows Tutorial 2
@@ -485,8 +470,8 @@ std::vector<int> shadowsPanels = {
 
 std::vector<int> monasteryPanels = {
 	0x00B10, // Monastery Left Door
-	0x00290, // Monastery Exterior 1
 	0x00C92, // Monastery Right Door
+	0x00290, // Monastery Exterior 1
 	0x00038, // Monastery Exterior 2
 	0x00037, // Monastery Exterior 3
 //	0x09D9B, // Monastery Bonsai
@@ -616,10 +601,6 @@ std::vector<int> nothingPanels = {
 	0x0C335, // Tutorial Pillar
 	0x0C373, // Tutorial Patio floor
 	0x1C349, // Symmetry Island Door 2 - Collision fails here, sadly
-	0x18076, // Desert Flood Exit - I am doing something with this -- but it's a very unique panel.
-	0x0A15C, // Desert Final Left Convex
-	0x09FFF, // Desert Final Left Concave
-	0x0A15F, // Desert Final Near
 	0x033EA, // Keep Yellow Pressure Plates
 	0x0A3A8, // Keep Yellow Reset
 	0x01BE9, // Keep Purple Pressure Plates
