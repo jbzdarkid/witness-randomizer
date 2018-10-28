@@ -5,16 +5,14 @@
  * Treehouse pivots *should* work, but I need to not copy style_flags.
    This seems to cause crashes when pivots appear elsewhere in the world.
  * Some panels are impossible casually: (idc, I think)
- * Shadows burn marks are not appearing
  ** Town Stars, Invisible dots
- * Something is wrong with jungle
+ * Shadows burn marks are not appearing
+ * Something is wrong with jungle re: softlocks
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
  ** Think about: Jungle
  ** Hard: Monastery
  ** Do: Challenge
- * Block swamp snipe w/ distance gate
- * Turn off shadows 8
  * Randomize audio logs
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
@@ -133,19 +131,24 @@ int main(int argc, char** argv)
 
 WitnessRandomizer::WitnessRandomizer()
 {
+	// Turn off desert surface 8
+	WritePanelData<float>(0x09F94, POWER, {0.0, 0.0});
 	// Turn off desert flood final
-	WritePanelData<float>(0x18076, POWER, {0.0f, 0.0f});
+	WritePanelData<float>(0x18076, POWER, {0.0, 0.0});
 	// Change desert floating target to desert flood final
 	WritePanelData<int>(0x17ECA, TARGET, {0x18077});
 
 	// Distance-gate shadows laser to prevent sniping through the bars
-	WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5f});
+	WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
 	// Change the shadows tutorial cable to only activate avoid
 	WritePanelData<int>(0x319A8, CABLE_TARGET_2, {0});
 	// Change shadows avoid 8 to power shadows follow
 	WritePanelData<int>(0x1972F, TARGET, {0x1C34C});
 
-	// Disable tutorial cursor speed modifications
+	// Distance-gate swamp snipe 1 to prevent RNG swamp snipe
+	WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {5.0});
+
+	// Disable tutorial cursor speed modifications (not working?)
 	WritePanelData<float>(0x00295, CURSOR_SPEED_SCALE, {1.0});
 	WritePanelData<float>(0x0C373, CURSOR_SPEED_SCALE, {1.0});
 	WritePanelData<float>(0x00293, CURSOR_SPEED_SCALE, {1.0});
