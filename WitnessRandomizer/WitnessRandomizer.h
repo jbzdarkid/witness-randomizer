@@ -1,7 +1,7 @@
 #pragma once
 
-#define GLOBALS 0x5B28C0
-// #define GLOBALS 0x62A080
+// #define GLOBALS 0x5B28C0
+#define GLOBALS 0x62A080
 
 int SWAP_NONE = 0x0;
 int SWAP_TARGETS = 0x1;
