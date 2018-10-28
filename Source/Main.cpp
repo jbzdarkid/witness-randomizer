@@ -16,7 +16,6 @@
 HINSTANCE hInst;
 WCHAR szWindowClass[MAX_LOADSTRING];
 HWND hwndSeed;
-std::shared_ptr<Randomizer> randomizer;
 
 // Forward declares
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -31,10 +30,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (!InitInstance(hInstance, nCmdShow)) {
         return FALSE;
     }
-	randomizer = std::make_shared<Randomizer>();
-	if (randomizer == nullptr) {
-		return FALSE;
-	}
 
     MSG msg;
     while (!GetMessage(&msg, nullptr, 0, 0) == 0)
@@ -107,18 +102,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (WM_COMMAND == WM_DESTROY) { 
-        PostQuitMessage(0);
-	} else {
+	if (message == WM_DESTROY) {
+		PostQuitMessage(0);
+	} else if (message == WM_COMMAND) {
         int wmId = LOWORD(wParam);
         // Parse the menu selections:
-        switch (wmId)
-        {
-        case IDM_ABOUT:
-            DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-            break;
-		case IDC_RANDOMIZE:
-		{
+		if (wmId == IDC_RANDOMIZE) {
 			std::wstring text(100, '\0');
 			GetWindowText(hwndSeed, &text[0], 100);
 			int seed = 0;
@@ -131,15 +120,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			} else {
 				seed = _wtoi(text.c_str());
 			}
-			randomizer->Randomize(seed);
-
-			break;
-		}
-        case IDM_EXIT:
-            DestroyWindow(hWnd);
-            break;
-        default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
+			srand(seed);
+			Randomizer().Randomize();
         }
 	}
     return DefWindowProc(hWnd, message, wParam, lParam);
