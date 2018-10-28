@@ -105,6 +105,15 @@ void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::
 	for (size_t i=0; i<order.size() - 1; i++) {
 		// Set the target of order[i] to order[i+1], using the "real" target as determined above.
 		const int panelTarget = targetToActivatePanel[order[i+1]];
+
+		std::stringstream message;
+		message << "i=" << i;
+		message << " order[i]=" << order[i];
+		message << " order[i+1]=" << order[i+1];
+		message << " panels[order[i]]=0x" << std::hex << panels[order[i]];
+		message << " panels[order[i+1]]=0x" << std::hex << panels[order[i+1]];
+		message << " panelTarget=0x" << std::hex << panelTarget << std::endl;
+		OutputDebugStringA(message.str().c_str());
 		WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
 	}
 }

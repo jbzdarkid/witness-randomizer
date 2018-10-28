@@ -1,18 +1,15 @@
 /*
- * TODO: Split out main() logic into another file, and move into separate functions for easier testing. Then write tests.
  * BUGS:
- * Shipwreck vault fails, possibly because of dot_reflection? Sometimes?
- * Some panels are impossible casually: (idc, I think)
- ** Town Stars, Invisible dots
+ * Shipwreck vault is solved reversed?
+ * Extra_back_distance to make pillar swaps work
+ * Verify UTM perspective?
  * FEATURES:
- * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
- ** Do: Challenge
+ * Challenge randomization
  * Randomize audio logs
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
  * Start the game if it isn't running?
- * UI for the randomizer :(
- * Increase odds of mountain oranges garbage on other panels?
+ * Increase odds of mountain oranges garbage on other panels? [setting]
 */
 #include "Memory.h"
 #include "Randomizer.h"
@@ -34,11 +31,11 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 void Randomizer::Randomize()
 {
 	// Content swaps -- must happen before squarePanels
-	_core.Randomize(tallUpDownPanels, SWAP_LINES|SWAP_LINES);
-	_core.Randomize(upDownPanels, SWAP_LINES|SWAP_LINES);
-	_core.Randomize(leftForwardRightPanels, SWAP_LINES|SWAP_LINES);
+	_core.Randomize(tallUpDownPanels, SWAP_LINES);
+	_core.Randomize(upDownPanels, SWAP_LINES);
+	_core.Randomize(leftForwardRightPanels, SWAP_LINES);
 
-	_core.Randomize(squarePanels, SWAP_LINES|SWAP_LINES);
+	_core.Randomize(squarePanels, SWAP_LINES);
 
 	// Individual area modifications
 	RandomizeTutorial();
@@ -54,6 +51,7 @@ void Randomizer::Randomize()
 	RandomizeJungle();
 	RandomizeSwamp();
 	RandomizeMountain();
+	// RandomizeChallenge();
 }
 
 void Randomizer::RandomizeTutorial() {
@@ -68,7 +66,7 @@ void Randomizer::RandomizeSymmetry() {
 }
 
 void Randomizer::RandomizeDesert() {
-	_core.Randomize(desertPanels, SWAP_LINES|SWAP_LINES);
+	_core.Randomize(desertPanels, SWAP_LINES);
 
 	// Turn off desert surface 8
 	_core.WritePanelData<float>(0x09F94, POWER, {0.0, 0.0});
@@ -83,10 +81,14 @@ void Randomizer::RandomizeQuarry() {
 
 void Randomizer::RandomizeTreehouse() {
 	// Ensure that whatever pivot panels we have are flagged as "pivotable"
-	_core.WritePanelData<int>(0x17DD1, STYLE_FLAGS, {0x8000});
-	_core.WritePanelData<int>(0x17CE3, STYLE_FLAGS, {0x8000});
-	_core.WritePanelData<int>(0x17DB7, STYLE_FLAGS, {0x8000});
-	_core.WritePanelData<int>(0x17E52, STYLE_FLAGS, {0x8000});
+	int panelFlags = _core.ReadPanelData<int>(0x17DD1, STYLE_FLAGS, 1)[0];
+	_core.WritePanelData<int>(0x17DD1, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _core.ReadPanelData<int>(0x17CE3, STYLE_FLAGS, 1)[0];
+	_core.WritePanelData<int>(0x17CE3, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _core.ReadPanelData<int>(0x17DB7, STYLE_FLAGS, 1)[0];
+	_core.WritePanelData<int>(0x17DB7, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _core.ReadPanelData<int>(0x17E52, STYLE_FLAGS, 1)[0];
+	_core.WritePanelData<int>(0x17E52, STYLE_FLAGS, {panelFlags | 0x8000});
 }
 
 void Randomizer::RandomizeKeep() {
@@ -138,11 +140,9 @@ void Randomizer::RandomizeBunker() {
 void Randomizer::RandomizeJungle() {
 	std::vector<int> randomOrder(junglePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	// Randomize Waves 2-7
 	// Waves 1 cannot be randomized, since no other panel can start on
-	_core.RandomizeRange(randomOrder, SWAP_NONE, 1, 7);
-	// Randomize Pitches 1-6 onto themselves
-	_core.RandomizeRange(randomOrder, SWAP_NONE, 8, 13);
+	_core.RandomizeRange(randomOrder, SWAP_NONE, 1, 7); // Waves 2-7
+	_core.RandomizeRange(randomOrder, SWAP_NONE, 8, 13); // Pitches 1-6
 	_core.ReassignTargets(junglePanels, randomOrder);
 }
 
@@ -153,9 +153,23 @@ void Randomizer::RandomizeSwamp() {
 
 void Randomizer::RandomizeMountain() {
 	_core.Randomize(lasers, SWAP_TARGETS);
-	_core.Randomize(pillars, SWAP_LINES|SWAP_LINES);
+	_core.Randomize(pillars, SWAP_LINES);
+	_core.Randomize(mountainMultipanel, SWAP_LINES);
 
 	// Read the target of keep front laser, and write it to keep back laser.
 	std::vector<int> keepFrontLaserTarget = _core.ReadPanelData<int>(0x0360E, TARGET, 1);
 	_core.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
+}
+
+void Randomizer::RandomizeChallenge() {
+	std::vector<int> randomOrder(challengePanels.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	_core.RandomizeRange(randomOrder, SWAP_NONE, 1, 11); // Easy maze - Triple 2
+	std::vector<int> triple1Target = _core.ReadPanelData<int>(0x00C80, TARGET, 1);
+	_core.WritePanelData<int>(0x00CA1, TARGET, triple1Target);
+	_core.WritePanelData<int>(0x00CB9, TARGET, triple1Target);
+	std::vector<int> triple2Target = _core.ReadPanelData<int>(0x00C22, TARGET, 1);
+	_core.WritePanelData<int>(0x00C59, TARGET, triple2Target);
+	_core.WritePanelData<int>(0x00C68, TARGET, triple2Target);
+	_core.ReassignTargets(challengePanels, randomOrder);
 }

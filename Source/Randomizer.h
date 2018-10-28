@@ -6,7 +6,6 @@ public:
 	void Randomize();
 
 private:
-	RandomizerCore _core;
 	void RandomizeTutorial();
 	void RandomizeSymmetry();
 	void RandomizeDesert();
@@ -20,4 +19,7 @@ private:
 	void RandomizeJungle();
 	void RandomizeSwamp();
 	void RandomizeMountain();
+	void RandomizeChallenge();
+
+	RandomizerCore _core;
 };
