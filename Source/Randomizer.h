@@ -13,6 +13,8 @@ class Randomizer {
 public:
 	Randomizer();
 
+	void Randomize(int seed);
+
 	void Randomize(std::vector<int>& panels, int flags);
 	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);

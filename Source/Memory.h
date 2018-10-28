@@ -39,7 +39,7 @@ public:
 		}
 		ThrowError();
 	}
-	
+
 private:
 	void ThrowError();
 

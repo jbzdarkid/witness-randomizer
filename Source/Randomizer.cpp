@@ -6,7 +6,6 @@
    This seems to cause crashes when pivots appear elsewhere in the world.
  * Some panels are impossible casually: (idc, I think)
  ** Town Stars, Invisible dots
- * Shadows burn marks are not appearing
  * Something is wrong with jungle re: softlocks
  * FEATURES:
  * SWAP_TARGETS should still require the full panel sequence (and have ways to prevent softlocks?)
@@ -37,34 +36,23 @@ size_t find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	exit(-1);
 }
 
-int main(int argc, char** argv)
+void Randomizer::Randomize(int seed)
 {
-	Randomizer randomizer = Randomizer();
-
-	if (argc == 2) {
-		srand(atoi(argv[1])); // Seed from the command line
-	} else {
-		srand(static_cast<unsigned int>(time(nullptr)));
-		int seed = rand() % (1 << 16); // Seed from the time in milliseconds
-		std::cout << "Selected seed: " << seed << std::endl;
-		srand(seed);
-	}
-
 	// Content swaps -- must happen before squarePanels
-	randomizer.Randomize(tallUpDownPanels, SWAP_LINES | SWAP_STYLE);
-	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
-	randomizer.Randomize(leftForwardRightPanels, SWAP_LINES);
+	Randomize(tallUpDownPanels, SWAP_LINES | SWAP_STYLE);
+	Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
+	Randomize(leftForwardRightPanels, SWAP_LINES);
 
-	randomizer.Randomize(squarePanels, SWAP_LINES | SWAP_STYLE);
+	Randomize(squarePanels, SWAP_LINES | SWAP_STYLE);
 
 	// Frame swaps -- must happen after squarePanels
-	randomizer.Randomize(burnablePanels, SWAP_LINES | SWAP_STYLE);
+	Randomize(burnablePanels, SWAP_LINES | SWAP_STYLE);
 
 	// Target swaps, can happen whenever
-	randomizer.Randomize(lasers, SWAP_TARGETS);
+	Randomize(lasers, SWAP_TARGETS);
 	// Read the target of keep front laser, and write it to keep back laser.
-	std::vector<int> keepFrontLaserTarget = randomizer.ReadPanelData<int>(0x0360E, TARGET, 1);
-	randomizer.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
+	std::vector<int> keepFrontLaserTarget = ReadPanelData<int>(0x0360E, TARGET, 1);
+	WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
 
 	std::vector<int> randomOrder;
 
@@ -77,7 +65,7 @@ int main(int argc, char** argv)
 	// Randomize Pitches 1-6 onto themselves
 	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 7, 13);
 	randomizer.ReassignTargets(junglePanels, randomOrder);
-	 */
+	*/
 
 	/* Bunker */
 	randomOrder = std::vector(bunkerPanels.size(), 0);
@@ -85,23 +73,23 @@ int main(int argc, char** argv)
 	// Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
 	// Tutorial 1 cannot be randomized, since no other panel can start on
 	// Glass 1 will become door + glass 1, due to the targetting system
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 10);
+	RandomizeRange(randomOrder, SWAP_NONE, 1, 10);
 	// Randomize Glass 1-3 into everything after the door
 	const size_t glassDoorIndex = find(randomOrder, 9) + 1;
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, glassDoorIndex, 12);
-	randomizer.ReassignTargets(bunkerPanels, randomOrder);
+	RandomizeRange(randomOrder, SWAP_NONE, glassDoorIndex, 12);
+	ReassignTargets(bunkerPanels, randomOrder);
 
 	/* Shadows */
 	randomOrder = std::vector(shadowsPanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 0, 8); // Tutorial
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 8, 16); // Avoid
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
-	randomizer.ReassignTargets(shadowsPanels, randomOrder);
+	RandomizeRange(randomOrder, SWAP_NONE, 0, 8); // Tutorial
+	RandomizeRange(randomOrder, SWAP_NONE, 8, 16); // Avoid
+	RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
+	ReassignTargets(shadowsPanels, randomOrder);
 	// Turn off original starting panel
-	randomizer.WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
+	WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
 	// Turn on new starting panel
-	randomizer.WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
+	WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
 
 	/* Monastery
 	randomOrder = std::vector(monasteryPanels.size(), 0);
