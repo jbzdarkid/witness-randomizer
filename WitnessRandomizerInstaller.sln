@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "WitnessRandomizerInstaller", "WitnessRandomizerInstaller.vdproj", "{BBF9ED06-A4A7-4574-A15A-CF12489F45B8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WitnessRandomizer", "..\WitnessRandomizer\WitnessRandomizer.vcxproj", "{1563D1E2-0A18-4AFC-8D6F-9F8D9A433F31}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WitnessRandomizer", "WitnessRandomizer\WitnessRandomizer.vcxproj", "{1563D1E2-0A18-4AFC-8D6F-9F8D9A433F31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
