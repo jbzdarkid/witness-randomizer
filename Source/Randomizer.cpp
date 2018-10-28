@@ -21,7 +21,7 @@
  * Increase odds of mountain oranges garbage on other panels?
 */
 #include "Memory.h"
-#include "WitnessRandomizer.h"
+#include "Randomizer.h"
 #include "Panels.h"
 #include <string>
 #include <iostream>
@@ -39,7 +39,7 @@ size_t find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 
 int main(int argc, char** argv)
 {
-	WitnessRandomizer randomizer = WitnessRandomizer();
+	Randomizer randomizer = Randomizer();
 
 	if (argc == 2) {
 		srand(atoi(argv[1])); // Seed from the command line
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 	*/
 }
 
-WitnessRandomizer::WitnessRandomizer()
+Randomizer::Randomizer()
 {
 	// Turn off desert surface 8
 	WritePanelData<float>(0x09F94, POWER, {0.0, 0.0});
@@ -141,12 +141,12 @@ WitnessRandomizer::WitnessRandomizer()
 	WritePanelData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
 }
 
-void WitnessRandomizer::Randomize(std::vector<int>& panels, int flags) {
+void Randomizer::Randomize(std::vector<int>& panels, int flags) {
 	return RandomizeRange(panels, flags, 0, panels.size());
 }
 
 // Range is [start, end)
-void WitnessRandomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex) {
+void Randomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex) {
 	if (panels.size() == 0) return;
 	if (startIndex >= endIndex) return;
 	if (endIndex >= panels.size()) endIndex = panels.size();
@@ -160,7 +160,7 @@ void WitnessRandomizer::RandomizeRange(std::vector<int> &panels, int flags, size
 	}
 }
 
-void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
+void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
 	std::map<int, int> offsets;
 
 	if (flags & SWAP_TARGETS) {
@@ -234,7 +234,7 @@ void WitnessRandomizer::SwapPanels(int panel1, int panel2, int flags) {
 	}
 }
 
-void WitnessRandomizer::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order) {
+void Randomizer::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order) {
 	// This list is offset by 1, so the target of the Nth panel is in position N (aka the N+1th element)
 	// The first panel may not have a wire to power it, so we use the panel ID itself.
 	std::vector<int> targetToActivatePanel = {panels[0] + 1};

@@ -1,16 +1,17 @@
 #pragma once
+#include "Memory.h"
 
 // #define GLOBALS 0x5B28C0
 #define GLOBALS 0x62A080
 
-int SWAP_NONE = 0x0;
-int SWAP_TARGETS = 0x1;
-int SWAP_LINES = 0x2;
-int SWAP_STYLE = 0x4;
+__declspec(selectany) int SWAP_NONE = 0x0;
+__declspec(selectany) int SWAP_TARGETS = 0x1;
+__declspec(selectany) int SWAP_LINES = 0x2;
+__declspec(selectany) int SWAP_STYLE = 0x4;
 
-class WitnessRandomizer {
+class Randomizer {
 public:
-	WitnessRandomizer();
+	Randomizer();
 
 	void Randomize(std::vector<int>& panels, int flags);
 	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
