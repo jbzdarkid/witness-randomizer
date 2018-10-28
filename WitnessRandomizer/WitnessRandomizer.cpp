@@ -13,6 +13,8 @@
  ** Think about: Jungle
  ** Hard: Monastery
  ** Do: Challenge
+ * Block swamp snipe w/ distance gate
+ * Turn off shadows 8
  * Randomize audio logs
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
@@ -44,88 +46,89 @@ int main(int argc, char** argv)
 	if (argc == 2) {
 		srand(atoi(argv[1])); // Seed from the command line
 	} else {
-		int seed = time(nullptr) % (1 << 16); // Seed from the time in milliseconds
+		srand(static_cast<unsigned int>(time(nullptr)));
+		int seed = rand() % (1 << 16); // Seed from the time in milliseconds
 		std::cout << "Selected seed: " << seed << std::endl;
 		srand(seed);
 	}
 
-//	randomizer.SwapPanels(0x28AC7, 0x00698, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 1
-//	randomizer.SwapPanels(0x28AC8, 0x0048F, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 2
-//	randomizer.SwapPanels(0x28ACA, 0x09F92, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 3
-//	randomizer.SwapPanels(0x28ACB, 0x0A036, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 4
-//	randomizer.SwapPanels(0x28ACC, 0x09DA6, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 5
-//	0x00079; // Symmetry Island Colored Dots 6
+	randomizer.SwapPanels(0x28AC7, 0x00698, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 1
+	randomizer.SwapPanels(0x28AC8, 0x0048F, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 2
+	randomizer.SwapPanels(0x28ACA, 0x09F92, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 3
+	randomizer.SwapPanels(0x28ACB, 0x0A036, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 4
+	randomizer.SwapPanels(0x28ACC, 0x09DA6, SWAP_LINES | SWAP_STYLE); // Symmetry Island Colored Dots 5
+	0x00079; // Symmetry Island Colored Dots 6
+
+	0x0005D; // Outside Tutorial Dots Tutorial 1
+	0x0005E; // Outside Tutorial Dots Tutorial 2
+	0x0005F; // Outside Tutorial Dots Tutorial 3
+	0x00060; // Outside Tutorial Dots Tutorial 4
+	0x00061; // Outside Tutorial Dots Tutorial 5
+
+
+
+//	// Content swaps -- must happen before squarePanels
+//	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
+//	randomizer.Randomize(leftForwardRightPanels, SWAP_LINES);
 //
-//	0x0005D; // Outside Tutorial Dots Tutorial 1
-//	0x0005E; // Outside Tutorial Dots Tutorial 2
-//	0x0005F; // Outside Tutorial Dots Tutorial 3
-//	0x00060; // Outside Tutorial Dots Tutorial 4
-//	0x00061; // Outside Tutorial Dots Tutorial 5
-
-
-
-	// Content swaps -- must happen before squarePanels
-	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
-	randomizer.Randomize(leftForwardRightPanels, SWAP_LINES);
-
-	randomizer.Randomize(squarePanels, SWAP_LINES | SWAP_STYLE);
-
-	// Frame swaps -- must happen after squarePanels
-	randomizer.Randomize(burnablePanels, SWAP_LINES | SWAP_STYLE);
-
-	// Target swaps, can happen whenever
-	randomizer.Randomize(lasers, SWAP_TARGETS);
-	// Read the target of keep front laser, and write it to keep back laser.
-	std::vector<int> keepFrontLaserTarget = randomizer.ReadPanelData<int>(0x0360E, TARGET, 1);
-	randomizer.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
-
-	std::vector<int> randomOrder;
-
-	/* Jungle
-	randomOrder = std::vector(junglePanels.size(), 0);
-	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	// Randomize Waves 2-7
-	// Waves 1 cannot be randomized, since no other panel can start on
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 7);
-	// Randomize Pitches 1-6 onto themselves
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 7, 13);
-	randomizer.ReassignTargets(junglePanels, randomOrder);
-	 */
-
-	/* Bunker */
-	randomOrder = std::vector(bunkerPanels.size(), 0);
-	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	// Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
-	// Tutorial 1 cannot be randomized, since no other panel can start on
-	// Glass 1 will become door + glass 1, due to the targetting system
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 10);
-	// Randomize Glass 1-3 into everything after the door
-	const size_t glassDoorIndex = find(randomOrder, 9) + 1;
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, glassDoorIndex, 12);
-	randomizer.ReassignTargets(bunkerPanels, randomOrder);
-
-	/* Shadows */
-	randomOrder = std::vector(shadowsPanels.size(), 0);
-	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 0, 8); // Tutorial
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 8, 16); // Avoid
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
-	randomizer.ReassignTargets(shadowsPanels, randomOrder);
-	// Turn off original starting panel
-	randomizer.WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
-	// Turn on new starting panel
-	randomizer.WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
-
-	/* Monastery
-	randomOrder = std::vector(monasteryPanels.size(), 0);
-	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 2, 6); // outer 2 & 3, inner 1
-	// Once outer 3 and right door are solved, inner 2-4 are accessible
-	int innerPanelsIndex = max(find(randomOrder, 2), find(randomOrder, 4));
-	randomizer.RandomizeRange(randomOrder, SWAP_NONE, innerPanelsIndex, 9); // Inner 2-4
-
-	randomizer.ReassignTargets(monasteryPanels, randomOrder);
-	*/
+//	randomizer.Randomize(squarePanels, SWAP_LINES | SWAP_STYLE);
+//
+//	// Frame swaps -- must happen after squarePanels
+//	randomizer.Randomize(burnablePanels, SWAP_LINES | SWAP_STYLE);
+//
+//	// Target swaps, can happen whenever
+//	randomizer.Randomize(lasers, SWAP_TARGETS);
+//	// Read the target of keep front laser, and write it to keep back laser.
+//	std::vector<int> keepFrontLaserTarget = randomizer.ReadPanelData<int>(0x0360E, TARGET, 1);
+//	randomizer.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
+//
+//	std::vector<int> randomOrder;
+//
+//	/* Jungle
+//	randomOrder = std::vector(junglePanels.size(), 0);
+//	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+//	// Randomize Waves 2-7
+//	// Waves 1 cannot be randomized, since no other panel can start on
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 7);
+//	// Randomize Pitches 1-6 onto themselves
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 7, 13);
+//	randomizer.ReassignTargets(junglePanels, randomOrder);
+//	 */
+//
+//	/* Bunker */
+//	randomOrder = std::vector(bunkerPanels.size(), 0);
+//	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+//	// Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
+//	// Tutorial 1 cannot be randomized, since no other panel can start on
+//	// Glass 1 will become door + glass 1, due to the targetting system
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 1, 10);
+//	// Randomize Glass 1-3 into everything after the door
+//	const size_t glassDoorIndex = find(randomOrder, 9) + 1;
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, glassDoorIndex, 12);
+//	randomizer.ReassignTargets(bunkerPanels, randomOrder);
+//
+//	/* Shadows */
+//	randomOrder = std::vector(shadowsPanels.size(), 0);
+//	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 0, 8); // Tutorial
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 8, 16); // Avoid
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
+//	randomizer.ReassignTargets(shadowsPanels, randomOrder);
+//	// Turn off original starting panel
+//	randomizer.WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
+//	// Turn on new starting panel
+//	randomizer.WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
+//
+//	/* Monastery
+//	randomOrder = std::vector(monasteryPanels.size(), 0);
+//	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, 2, 6); // outer 2 & 3, inner 1
+//	// Once outer 3 and right door are solved, inner 2-4 are accessible
+//	int innerPanelsIndex = max(find(randomOrder, 2), find(randomOrder, 4));
+//	randomizer.RandomizeRange(randomOrder, SWAP_NONE, innerPanelsIndex, 9); // Inner 2-4
+//
+//	randomizer.ReassignTargets(monasteryPanels, randomOrder);
+//	*/
 }
 
 WitnessRandomizer::WitnessRandomizer()
@@ -149,12 +152,12 @@ WitnessRandomizer::WitnessRandomizer()
 	WritePanelData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
 }
 
-void WitnessRandomizer::Randomize(const std::vector<int>& panels, int flags) {
+void WitnessRandomizer::Randomize(std::vector<int>& panels, int flags) {
 	return RandomizeRange(panels, flags, 0, panels.size());
 }
 
 // Range is [start, end)
-void WitnessRandomizer::RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex) {
+void WitnessRandomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex) {
 	if (panels.size() == 0) return;
 	if (startIndex >= endIndex) return;
 	if (endIndex >= panels.size()) endIndex = panels.size();

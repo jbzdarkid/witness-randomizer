@@ -2,7 +2,7 @@
 #include <vector>
 
 // Some of these (the puzzle ones) are duplicated elsewhere
-const std::vector<int> lasers = {
+std::vector<int> lasers = {
 	0x0360D, // Symmetry
 	0x03615, // Swamp
 	0x09DE0, // Bunker
@@ -18,24 +18,24 @@ const std::vector<int> lasers = {
 };
 
 // Note: Some of these (non-desert) are duplicated elsewhere
-const std::vector<int> burnablePanels = {
-//	0x17D9C, // Treehouse Yellow 7
-//	0x17DC2, // Treehouse Yellow 8
-//	0x17DC4, // Treehouse Yellow 9
-//	0x00999, // Swamp Discontinuous 1
-//	0x0099D, // Swamp Discontinuous 2
-//	0x009A0, // Swamp Discontinuous 3
-//	0x009A1, // Swamp Discontinuous 4
-//	0x00007, // Swamp Rotation Tutorial 1
-//	0x00008, // Swamp Rotation Tutorial 2
-//	0x00009, // Swamp Rotation Tutorial 3
-//	0x0000A, // Swamp Rotation Tutorial 4
-//	0x28AC7, // Town Blue 1
-//	0x28AC8, // Town Blue 2
-//	0x28ACA, // Town Blue 3
-//	0x28ACB, // Town Blue 4
-//	0x28ACC, // Town Blue 5
-//	0x17CF0, // Mill Discard
+std::vector<int> burnablePanels = {
+	0x17D9C, // Treehouse Yellow 7
+	0x17DC2, // Treehouse Yellow 8
+	0x17DC4, // Treehouse Yellow 9
+	0x00999, // Swamp Discontinuous 1
+	0x0099D, // Swamp Discontinuous 2
+	0x009A0, // Swamp Discontinuous 3
+	0x009A1, // Swamp Discontinuous 4
+	0x00007, // Swamp Rotation Tutorial 1
+	0x00008, // Swamp Rotation Tutorial 2
+	0x00009, // Swamp Rotation Tutorial 3
+	0x0000A, // Swamp Rotation Tutorial 4
+	0x28AC7, // Town Blue 1
+	0x28AC8, // Town Blue 2
+	0x28ACA, // Town Blue 3
+	0x28ACB, // Town Blue 4
+	0x28ACC, // Town Blue 5
+	0x17CF0, // Mill Discard
 
 	0x00698, // Desert Surface 1
 	0x0048F, // Desert Surface 2
@@ -63,7 +63,7 @@ const std::vector<int> burnablePanels = {
 
 // Note: Some of these (non-controls) are duplicated elsewhere
 // TODO: Gave up
-const std::vector<int> leftRightPanels = {
+std::vector<int> leftRightPanels = {
 	0x01A54, // Glass Factory Entry
 	0x00086, // Glass Factory Vertical Symmetry 1
 	0x00087, // Glass Factory Vertical Symmetry 2
@@ -77,7 +77,7 @@ const std::vector<int> leftRightPanels = {
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
-const std::vector<int> upDownPanels = {
+std::vector<int> upDownPanels = {
 	0x0008D, // Glass Factory Rotational Symmetry 1
 	0x00081, // Glass Factory Rotational Symmetry 2
 	0x00083, // Glass Factory Rotational Symmetry 3
@@ -100,7 +100,7 @@ const std::vector<int> upDownPanels = {
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
-const std::vector<int> leftForwardRightPanels = {
+std::vector<int> leftForwardRightPanels = {
 //	0x00075, // Symmetry Island Colored Dots 3
 //	0x288EA, // UTM Perspective 1
 //	0x288FC, // UTM Perspective 2
@@ -112,7 +112,7 @@ const std::vector<int> leftForwardRightPanels = {
 	0x17E52, // Treehouse Green 4
 };
 
-const std::vector<int> pillars = {
+std::vector<int> pillars = {
 	0x0383D, // Mountain 3 Left Pillar 1
 	0x0383F, // Mountain 3 Left Pillar 2
 	0x03859, // Mountain 3 Left Pillar 3
@@ -126,7 +126,7 @@ const std::vector<int> pillars = {
 //	0x1C319, // Challenge Right Pillar
 };
 
-const std::vector<int> mountainMultipanel = {
+std::vector<int> mountainMultipanel = {
 	0x09FCC, // Mountain 2 Multipanel 1
 	0x09FCE, // Mountain 2 Multipanel 2
 	0x09FCF, // Mountain 2 Multipanel 3
@@ -135,7 +135,7 @@ const std::vector<int> mountainMultipanel = {
 	0x09FD2, // Mountain 2 Multipanel 6
 };
 
-const std::vector<int> squarePanels = {
+std::vector<int> squarePanels = {
 	0x00064, // Tutorial Straight
 	0x00182, // Tutorial Bend
 	0x0A3B2, // Tutorial Back Right
@@ -449,11 +449,12 @@ const std::vector<int> squarePanels = {
 	0x00558, // UTM Blue Right Near 2
 	0x00567, // UTM Blue Right Near 3
 	0x006FE, // UTM Blue Right Near 4
+	0x0A16E, // UTM Challenge Entrance
 	0x039B4, // Tunnels Theater Catwalk
 	0x09E85, // Tunnels Town Shortcut
 };
 
-const std::vector<int> shadowsPanels = {
+std::vector<int> shadowsPanels = {
 	0x198B5, // Shadows Tutorial 1
 	0x198BD, // Shadows Tutorial 2
 	0x198BF, // Shadows Tutorial 3
@@ -478,7 +479,7 @@ const std::vector<int> shadowsPanels = {
 	0x19650, // Shadows Laser
 };
 
-const std::vector<int> monasteryPanels = {
+std::vector<int> monasteryPanels = {
 	0x00B10, // Monastery Left Door
 	0x00290, // Monastery Exterior 1
 	0x00C92, // Monastery Right Door
@@ -493,7 +494,7 @@ const std::vector<int> monasteryPanels = {
 	0x17CA4, // Monastery Laser
 };
 
-const std::vector<int> bunkerPanels = {
+std::vector<int> bunkerPanels = {
 	0x09F7D, // Bunker Tutorial 1
 	0x09FDC, // Bunker Tutorial 2
 	0x09FF7, // Bunker Tutorial 3
@@ -514,7 +515,7 @@ const std::vector<int> bunkerPanels = {
 	0x0A079, // Bunker Elevator
 };
 
-const std::vector<int> junglePanels = {
+std::vector<int> junglePanels = {
 	0x002C4, // Jungle Waves 1
 	0x00767, // Jungle Waves 2
 	0x002C6, // Jungle Waves 3
@@ -533,7 +534,7 @@ const std::vector<int> junglePanels = {
 };
 
 // There might be something to do with these, I haven't decided yet.
-const std::vector<int> nothingPanels = {
+std::vector<int> nothingPanels = {
 // Doors & Shortcuts & Shortcut doors & Door controls
 	0x0C339, // Desert Surface Door
 	0x0A249, // Desert Pond Exit Door
@@ -664,7 +665,6 @@ const std::vector<int> nothingPanels = {
 //	0x3C114, // Mountain 3 Right Open Door
 	0x09F7F, // Mountaintop Laser Box
 	0x17C34, // Mountaintop Perspective
-	0x0A16E, // UTM Challenge Entrance
 //	0x334E1, // UTM Secret Door Control
 //	0x2773D, // Tunnels Desert Shortcut
 //	0x27732, // Tunnels Theater Shortcut

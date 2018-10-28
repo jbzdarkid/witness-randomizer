@@ -1,7 +1,7 @@
 #pragma once
 
-//#define GLOBALS 0x5B28C0
-#define GLOBALS 0x62A080
+#define GLOBALS 0x5B28C0
+// #define GLOBALS 0x62A080
 
 int SWAP_NONE = 0x0;
 int SWAP_TARGETS = 0x1;
@@ -12,8 +12,8 @@ class WitnessRandomizer {
 public:
 	WitnessRandomizer();
 
-	void Randomize(const std::vector<int>& panels, int flags);
-	void RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex);
+	void Randomize(std::vector<int>& panels, int flags);
+	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);
 	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order);
 
