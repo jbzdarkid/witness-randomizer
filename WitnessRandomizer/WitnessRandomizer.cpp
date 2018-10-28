@@ -66,6 +66,7 @@ int main(int argc, char** argv)
 
 
 //	// Content swaps -- must happen before squarePanels
+//	randomizer.Randomize(tallUpDownPanels, SWAP_LINES | SWAP_STYLE);
 //	randomizer.Randomize(upDownPanels, SWAP_LINES | SWAP_STYLE);
 //	randomizer.Randomize(leftForwardRightPanels, SWAP_LINES);
 //

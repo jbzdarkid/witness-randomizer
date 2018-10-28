@@ -76,6 +76,14 @@ std::vector<int> leftRightPanels = {
 	0x17D02, // Town Windmill Control
 };
 
+// These panels are very tall (aka not square) and can't take symmetry panels on them.
+std::vector<int> tallUpDownPanels = {
+	0x335AB, // UTM In Elevator Control
+	0x3369D, // UTM Lower Elevator Control
+	0x335AC, // UTM Upper Elevator Control
+	0x09EEB, // Mountain 2 Elevator
+};
+
 // Note: Some of these (non-controls) are duplicated elsewhere
 std::vector<int> upDownPanels = {
 	0x0008D, // Glass Factory Rotational Symmetry 1
@@ -93,10 +101,6 @@ std::vector<int> upDownPanels = {
 
 	0x0A3B5, // Tutorial Back Left
 	0x17CC4, // Mill Elevator Control
-	0x335AB, // UTM In Elevator Control
-	0x3369D, // UTM Lower Elevator Control
-	0x335AC, // UTM Upper Elevator Control
-//	0x09EEB, // Mountain 2 Elevator
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
