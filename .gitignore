@@ -328,5 +328,5 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+Installer/WitnessRandomizerInstaller.msi
 Installer/setup.exe
-Installer/Installer.msi

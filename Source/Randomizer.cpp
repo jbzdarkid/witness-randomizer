@@ -4,6 +4,8 @@
  * Shipwreck vault is solved reversed?
  * Verify UTM perspective?
  * FEATURES:
+ * Speedrunner mode?
+ * Speed up some of the slow things (like swamp)
  * Determine if the user has entered the seed, and re-randomize it if not
  * Prevent re-randomization (?)
  * Clear "Randomized" state on NG (?)
