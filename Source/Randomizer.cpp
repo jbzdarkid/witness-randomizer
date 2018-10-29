@@ -1,7 +1,6 @@
 /*
  * BUGS:
  * Shipwreck vault is solved reversed?
- * Extra_back_distance to make pillar swaps work
  * Verify UTM perspective?
  * FEATURES:
  * Challenge randomization

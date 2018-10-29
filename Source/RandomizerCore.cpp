@@ -49,6 +49,7 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[PUSH_SYMBOL_COLORS] = sizeof(int);
 		offsets[OUTER_BACKGROUND] = 16;
 		offsets[OUTER_BACKGROUND_MODE] = sizeof(int);
+		offsets[EXTRA_BACK_DISTANCE] = sizeof(float);
 		offsets[TRACED_EDGES] = 16;
 		offsets[AUDIO_PREFIX] = sizeof(void*);
 //		offsets[IS_CYLINDER] = sizeof(int);
