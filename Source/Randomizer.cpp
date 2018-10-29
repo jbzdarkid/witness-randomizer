@@ -3,8 +3,7 @@
  * Shipwreck vault is solved reversed?
  * Verify UTM perspective?
  * FEATURES:
- * Challenge randomization
- * Randomize audio logs
+ * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
  * Start the game if it isn't running?
@@ -51,6 +50,7 @@ void Randomizer::Randomize()
 	RandomizeSwamp();
 	RandomizeMountain();
 	// RandomizeChallenge();
+	// RandomizeAudioLogs();
 }
 
 void Randomizer::RandomizeTutorial() {
@@ -163,7 +163,7 @@ void Randomizer::RandomizeMountain() {
 void Randomizer::RandomizeChallenge() {
 	std::vector<int> randomOrder(challengePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	_core.RandomizeRange(randomOrder, SWAP_NONE, 1, 11); // Easy maze - Triple 2
+	_core.RandomizeRange(randomOrder, SWAP_NONE, 1, 9); // Easy maze - Triple 2
 	std::vector<int> triple1Target = _core.ReadPanelData<int>(0x00C80, TARGET, 1);
 	_core.WritePanelData<int>(0x00CA1, TARGET, triple1Target);
 	_core.WritePanelData<int>(0x00CB9, TARGET, triple1Target);
@@ -171,4 +171,11 @@ void Randomizer::RandomizeChallenge() {
 	_core.WritePanelData<int>(0x00C59, TARGET, triple2Target);
 	_core.WritePanelData<int>(0x00C68, TARGET, triple2Target);
 	_core.ReassignTargets(challengePanels, randomOrder);
+}
+
+void Randomizer::RandomizeAudioLogs() {
+	std::vector<int> randomOrder(audiologs.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	_core.Randomize(randomOrder, SWAP_NONE);
+	_core.ReassignNames(audiologs, randomOrder);
 }

@@ -1,12 +1,13 @@
 #pragma once
 #include "Memory.h"
 
-// #define GLOBALS 0x5B28C0
-#define GLOBALS 0x62A080
+#define GLOBALS 0x5B28C0
+// #define GLOBALS 0x62A080
 
 __declspec(selectany) int SWAP_NONE = 0x0;
 __declspec(selectany) int SWAP_TARGETS = 0x1;
 __declspec(selectany) int SWAP_LINES = 0x2;
+__declspec(selectany) int SWAP_AUDIO_NAMES = 0x4;
 
 class RandomizerCore
 {
@@ -15,6 +16,7 @@ public:
 	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);
 	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order);
+	void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
 	template <class T>
 	std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
@@ -92,6 +94,7 @@ private:
 #define PANEL_TARGET 0x4B0
 #define SPECULAR_TEXTURE 0x4D8
 #define CABLE_TARGET_2 0xD8
+#define AUDIO_LOG_NAME 0xC8
 #elif GLOBALS == 0x62A080
 #define PATH_COLOR 0xC0
 #define REFLECTION_PATH_COLOR 0xD0

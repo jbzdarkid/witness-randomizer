@@ -15,7 +15,7 @@
 
 HINSTANCE hInst;
 WCHAR szWindowClass[MAX_LOADSTRING];
-HWND hwndSeed;
+HWND hwndSeed, hwndRandomize;
 
 // Forward declares
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -67,26 +67,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	WCHAR szTitle[MAX_LOADSTRING];
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+	HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+      400, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
 
-	if (!hWnd)
-	{
-		return FALSE;
-	}
+	if (!hWnd) return FALSE;
 
 	LoadLibrary(L"Msftedit.dll");
-	HWND label = CreateWindow(L"BUTTON", L"Enter a seed:",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		10, 10, 100, 26, hWnd, NULL, hInst, NULL);
+	HWND label = CreateWindow(L"STATIC", L"Enter a seed:",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		10, 15, 90, 16, hWnd, NULL, hInst, NULL);
 
 	hwndSeed = CreateWindowEx(0, MSFTEDIT_CLASS, L"",
-        ES_MULTILINE | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP, 
-        120, 10, 50, 26, hWnd, NULL, hInst, NULL);
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER, 
+        100, 10, 50, 26, hWnd, NULL, hInst, NULL);
 
-	HWND hwndRandomize = CreateWindow(L"BUTTON", L"Randomize",
+	hwndRandomize = CreateWindow(L"BUTTON", L"Randomize",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		180, 10, 100, 26, hWnd, (HMENU)IDC_RANDOMIZE, hInst, NULL);
+		160, 10, 100, 26, hWnd, (HMENU)IDC_RANDOMIZE, hInst, NULL);
 
 	HDC hdc = GetDC(hWnd);
 	RECT rect;
@@ -122,6 +119,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			srand(seed);
 			Randomizer().Randomize();
+			SetWindowText(hwndRandomize, L"Randomized!");
         }
 	}
     return DefWindowProc(hWnd, message, wParam, lParam);

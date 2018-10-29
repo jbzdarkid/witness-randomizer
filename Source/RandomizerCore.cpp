@@ -27,6 +27,9 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 	if (flags & SWAP_TARGETS) {
 		offsets[TARGET] = sizeof(int);
 	}
+	if (flags & SWAP_AUDIO_NAMES) {
+		offsets[AUDIO_LOG_NAME] = sizeof(void*);
+	}
 	if (flags & SWAP_LINES) {
 		offsets[PATH_COLOR] = 16;
 		offsets[REFLECTION_PATH_COLOR] = 16;
@@ -107,5 +110,16 @@ void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::
 		// Set the target of order[i] to order[i+1], using the "real" target as determined above.
 		const int panelTarget = targetToActivatePanel[order[i+1]];
 		WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
+	}
+}
+
+void RandomizerCore::ReassignNames(const std::vector<int>& panels, const std::vector<int>& order) {
+	std::vector<int64_t> names;
+	for (const int panel : panels) {
+		names.push_back(ReadPanelData<int64_t>(panel, AUDIO_LOG_NAME, 1)[0]);
+	}
+
+	for (int i=0; i<panels.size(); i++) {
+		WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
 	}
 }

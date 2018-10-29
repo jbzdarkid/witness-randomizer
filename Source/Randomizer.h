@@ -20,6 +20,7 @@ private:
 	void RandomizeSwamp();
 	void RandomizeMountain();
 	void RandomizeChallenge();
+	void RandomizeAudioLogs();
 
 	RandomizerCore _core;
 };
