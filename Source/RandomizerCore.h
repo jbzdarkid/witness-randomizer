@@ -1,8 +1,8 @@
 #pragma once
 #include "Memory.h"
 
-#define GLOBALS 0x5B28C0
-// #define GLOBALS 0x62A080
+// #define GLOBALS 0x5B28C0
+#define GLOBALS 0x62A080
 
 __declspec(selectany) int SWAP_NONE = 0x0;
 __declspec(selectany) int SWAP_TARGETS = 0x1;
@@ -157,4 +157,5 @@ private:
 #define PANEL_TARGET 0x4A8
 #define SPECULAR_TEXTURE 0x4D0
 #define CABLE_TARGET_2 0xD0
+#define AUDIO_LOG_NAME 0x0
 #endif

@@ -1,8 +1,13 @@
 /*
  * BUGS:
+ * Tutorial back left is not protected anymore
  * Shipwreck vault is solved reversed?
  * Verify UTM perspective?
  * FEATURES:
+ * Determine if the user has entered the seed, and re-randomize it if not
+ * Prevent re-randomization (?)
+ * Clear "Randomized" state on NG (?)
+ * Limit back distance to pillars (like before)
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
