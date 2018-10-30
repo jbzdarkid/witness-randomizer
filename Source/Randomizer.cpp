@@ -4,17 +4,13 @@
  * Swamp <-> symmetry has non-invisible background
  * Tutorial sounds don't always play
  * FEATURES:
- * Speed up some of the slow things (like swamp)
  * Prevent re-randomization (?)
  * Clear "Randomized" state on NG (?) -- Or on a short delay
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
  * Start the game if it isn't running?
- * SETTINGS:
- * Speeds of certain things
- * Speedrunner mode
- * Increase odds of mountain oranges garbage on other panels
+ * Stop swapping colors in desert
 */
 #include "Memory.h"
 #include "Randomizer.h"
@@ -61,11 +57,11 @@ void Randomizer::Randomize()
 
 void Randomizer::AdjustSpeed() {
 	// Desert Surface Final Control
-	_core.WritePanelData<float>(0x09F95, OPEN_RATE, {0.04}); // 4x
+	_core.WritePanelData<float>(0x09F95, OPEN_RATE, {0.04f}); // 4x
 	// Swamp Sliding Bridge
-	_core.WritePanelData<float>(0x0061A, OPEN_RATE, {0.1}); // 4x
+	_core.WritePanelData<float>(0x0061A, OPEN_RATE, {0.1f}); // 4x
 	// Mountain 2 Elevator
-	_core.WritePanelData<float>(0x09EEC, OPEN_RATE, {0.1}); // 4x
+	_core.WritePanelData<float>(0x09EEC, OPEN_RATE, {0.1f}); // 4x
 }
 
 void Randomizer::RandomizeTutorial() {
