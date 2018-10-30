@@ -61,7 +61,7 @@ void Randomizer::AdjustSpeed() {
 	// Swamp Sliding Bridge
 	_core.WritePanelData<float>(0x0061A, OPEN_RATE, {0.1f}); // 4x
 	// Mountain 2 Elevator
-	_core.WritePanelData<float>(0x09EEC, OPEN_RATE, {0.1f}); // 4x
+	_core.WritePanelData<float>(0x09EEC, OPEN_RATE, {0.075f}); // 3x
 }
 
 void Randomizer::RandomizeTutorial() {
