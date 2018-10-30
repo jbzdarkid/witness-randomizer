@@ -1,6 +1,8 @@
 /*
  * BUGS:
  * Shipwreck vault is solved reversed?
+ * Swamp <-> symmetry has non-invisible background
+ * Tutorial sounds don't always play
  * FEATURES:
  * Speed up some of the slow things (like swamp)
  * Determine if the user has entered the seed, and re-randomize it if not
