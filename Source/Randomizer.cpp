@@ -60,7 +60,12 @@ void Randomizer::Randomize()
 }
 
 void Randomizer::AdjustSpeed() {
-
+	// Desert Surface Final Control
+	_core.WritePanelData<float>(0x09F95, OPEN_RATE, {0.04}); // 4x
+	// Swamp Sliding Bridge
+	_core.WritePanelData<float>(0x0061A, OPEN_RATE, {0.1}); // 4x
+	// Mountain 2 Elevator
+	_core.WritePanelData<float>(0x09EEC, OPEN_RATE, {0.1}); // 4x
 }
 
 void Randomizer::RandomizeTutorial() {

@@ -124,7 +124,29 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	CreateWindow(L"STATIC", L"Place harder puzzles in annoying spots",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
-	*/
+
+	CreateWindow(L"BUTTON", L"",
+		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+		10, 52, 12, 12, hwnd, (HMENU)IDC_NORANDOMIZE, hInstance, NULL);
+	CreateWindow(L"STATIC", L"Do not randomize any puzzles",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
+
+	CreateWindow(L"BUTTON", L"",
+		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+		10, 52, 12, 12, hwnd, (HMENU)IDC_CASUAL, hInstance, NULL);
+	CreateWindow(L"STATIC", L"Don't randomize context-based puzzles",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
+
+	CreateWindow(L"BUTTON", L"",
+		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+		10, 52, 12, 12, hwnd, (HMENU)IDC_BANSNIPES, hInstance, NULL);
+	CreateWindow(L"STATIC", L"Prevent sniping certain puzzles",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
+		
+*/
 
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);

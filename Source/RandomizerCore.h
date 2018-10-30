@@ -94,6 +94,7 @@ private:
 #define SPECULAR_TEXTURE 0x4D8
 #define CABLE_TARGET_2 0xD8
 #define AUDIO_LOG_NAME 0xC8
+#define OPEN_RATE 0xE8
 #elif GLOBALS == 0x62A080
 #define PATH_COLOR 0xC0
 #define REFLECTION_PATH_COLOR 0xD0
@@ -156,4 +157,5 @@ private:
 #define SPECULAR_TEXTURE 0x4D0
 #define CABLE_TARGET_2 0xD0
 #define AUDIO_LOG_NAME 0x0
+#define OPEN_RATE 0xE0
 #endif
