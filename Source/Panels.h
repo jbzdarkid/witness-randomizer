@@ -72,10 +72,12 @@ std::vector<int> pillars = {
 	0x0383F, // Mountain 3 Left Pillar 2
 	0x03859, // Mountain 3 Left Pillar 3
 	0x339BB, // Mountain 3 Left Pillar 4
+	0x3C113, // Mountain 3 Left Open Door
 	0x0383A, // Mountain 3 Right Pillar 1
 	0x09E56, // Mountain 3 Right Pillar 2
 	0x09E5A, // Mountain 3 Right Pillar 3
 	0x33961, // Mountain 3 Right Pillar 4
+	0x3C114, // Mountain 3 Right Open Door
 //	0x09DD5, // UTM Challenge Pillar
 };
 

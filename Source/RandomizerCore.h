@@ -8,7 +8,6 @@ __declspec(selectany) int SWAP_NONE = 0x0;
 __declspec(selectany) int SWAP_TARGETS = 0x1;
 __declspec(selectany) int SWAP_LINES = 0x2;
 __declspec(selectany) int SWAP_AUDIO_NAMES = 0x4;
-__declspec(selectany) int SWAP_BACK_DISTANCE = 0x8;
 
 class RandomizerCore
 {
@@ -16,7 +15,7 @@ public:
 	void Randomize(std::vector<int>& panels, int flags);
 	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);
-	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order);
+	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
 	void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
 	template <class T>
@@ -55,7 +54,6 @@ private:
 #define PUSH_SYMBOL_COLORS 0x208
 #define OUTER_BACKGROUND 0x20C
 #define OUTER_BACKGROUND_MODE 0x21C
-#define EXTRA_BACK_DISTANCE 0x22C
 #define TRACED_EDGES 0x230
 #define AUDIO_PREFIX 0x278
 #define POWER 0x2A8
@@ -118,7 +116,6 @@ private:
 #define PUSH_SYMBOL_COLORS 0x200
 #define OUTER_BACKGROUND 0x204
 #define OUTER_BACKGROUND_MODE 0x214
-#define EXTRA_BACK_DISTANCE 0x224
 #define TRACED_EDGES 0x228
 #define AUDIO_PREFIX 0x270
 #define POWER 0x2A0

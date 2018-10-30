@@ -30,9 +30,6 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 	if (flags & SWAP_AUDIO_NAMES) {
 		offsets[AUDIO_LOG_NAME] = sizeof(void*);
 	}
-	if (flags & SWAP_BACK_DISTANCE) {
-		offsets[EXTRA_BACK_DISTANCE] = sizeof(float);
-	}
 	if (flags & SWAP_LINES) {
 		offsets[PATH_COLOR] = 16;
 		offsets[REFLECTION_PATH_COLOR] = 16;
@@ -99,18 +96,20 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 	}
 }
 
-void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order) {
-	// This list is offset by 1, so the target of the Nth panel is in position N (aka the N+1th element)
-	// The first panel may not have a wire to power it, so we use the panel ID itself.
-	std::vector<int> targetToActivatePanel = {panels[0] + 1};
-	for (const int panel : panels) {
-		int target = ReadPanelData<int>(panel, TARGET, 1)[0];
-		targetToActivatePanel.push_back(target);
+void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets) {
+	if (targets.empty()) {
+		// This list is offset by 1, so the target of the Nth panel is in position N (aka the N+1th element)
+		// The first panel may not have a wire to power it, so we use the panel ID itself.
+		targets = {panels[0] + 1};
+		for (const int panel : panels) {
+			int target = ReadPanelData<int>(panel, TARGET, 1)[0];
+			targets.push_back(target);
+		}
 	}
 
 	for (size_t i=0; i<order.size() - 1; i++) {
 		// Set the target of order[i] to order[i+1], using the "real" target as determined above.
-		const int panelTarget = targetToActivatePanel[order[i+1]];
+		const int panelTarget = targets[order[i+1]];
 		WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
 	}
 }

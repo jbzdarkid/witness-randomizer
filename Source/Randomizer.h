@@ -4,6 +4,7 @@
 class Randomizer {
 public:
 	void Randomize();
+	void AdjustSpeed();
 
 private:
 	void RandomizeTutorial();

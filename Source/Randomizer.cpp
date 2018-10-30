@@ -5,9 +5,8 @@
  * Tutorial sounds don't always play
  * FEATURES:
  * Speed up some of the slow things (like swamp)
- * Determine if the user has entered the seed, and re-randomize it if not
  * Prevent re-randomization (?)
- * Clear "Randomized" state on NG (?)
+ * Clear "Randomized" state on NG (?) -- Or on a short delay
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
@@ -58,6 +57,10 @@ void Randomizer::Randomize()
 	RandomizeMountain();
 	// RandomizeChallenge();
 	// RandomizeAudioLogs();
+}
+
+void Randomizer::AdjustSpeed() {
+
 }
 
 void Randomizer::RandomizeTutorial() {
@@ -158,9 +161,29 @@ void Randomizer::RandomizeSwamp() {
 }
 
 void Randomizer::RandomizeMountain() {
+	// Randomize lasers & some of mountain
 	_core.Randomize(lasers, SWAP_TARGETS);
-	_core.Randomize(pillars, SWAP_LINES | SWAP_BACK_DISTANCE);
 	_core.Randomize(mountainMultipanel, SWAP_LINES);
+
+	// Randomize final pillars order
+	std::vector<int> targets = {pillars[0] + 1};
+	for (const int pillar : pillars) {
+		int target = _core.ReadPanelData<int>(pillar, TARGET, 1)[0];
+		targets.push_back(target);
+	}
+	targets[5] = pillars[5] + 1;
+
+	std::vector<int> randomOrder(pillars.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	_core.RandomizeRange(randomOrder, SWAP_NONE, 0, 4); // Left Pillars 1-4
+	_core.RandomizeRange(randomOrder, SWAP_NONE, 5, 9); // Right Pillars 1-4
+	_core.ReassignTargets(pillars, randomOrder, targets);
+	// Turn off original starting panels
+	_core.WritePanelData<float>(pillars[0], POWER, {0.0f, 0.0f});
+	_core.WritePanelData<float>(pillars[5], POWER, {0.0f, 0.0f});
+	// Turn on new starting panels
+	_core.WritePanelData<float>(pillars[randomOrder[0]], POWER, {1.0f, 1.0f});
+	_core.WritePanelData<float>(pillars[randomOrder[5]], POWER, {1.0f, 1.0f});
 
 	// Read the target of keep front laser, and write it to keep back laser.
 	std::vector<int> keepFrontLaserTarget = _core.ReadPanelData<int>(0x0360E, TARGET, 1);
