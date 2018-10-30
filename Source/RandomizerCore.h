@@ -8,6 +8,7 @@ __declspec(selectany) int SWAP_NONE = 0x0;
 __declspec(selectany) int SWAP_TARGETS = 0x1;
 __declspec(selectany) int SWAP_LINES = 0x2;
 __declspec(selectany) int SWAP_AUDIO_NAMES = 0x4;
+__declspec(selectany) int SWAP_BACK_DISTANCE = 0x8;
 
 class RandomizerCore
 {

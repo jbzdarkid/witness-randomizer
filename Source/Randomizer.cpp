@@ -1,20 +1,19 @@
 /*
  * BUGS:
- * Tutorial back left is not protected anymore
  * Shipwreck vault is solved reversed?
- * Verify UTM perspective?
  * FEATURES:
- * Speedrunner mode?
  * Speed up some of the slow things (like swamp)
  * Determine if the user has entered the seed, and re-randomize it if not
  * Prevent re-randomization (?)
  * Clear "Randomized" state on NG (?)
- * Limit back distance to pillars (like before)
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
  * Start the game if it isn't running?
- * Increase odds of mountain oranges garbage on other panels? [setting]
+ * SETTINGS:
+ * Speeds of certain things
+ * Speedrunner mode
+ * Increase odds of mountain oranges garbage on other panels
 */
 #include "Memory.h"
 #include "Randomizer.h"
@@ -36,7 +35,6 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 void Randomizer::Randomize()
 {
 	// Content swaps -- must happen before squarePanels
-	_core.Randomize(tallUpDownPanels, SWAP_LINES);
 	_core.Randomize(upDownPanels, SWAP_LINES);
 	_core.Randomize(leftForwardRightPanels, SWAP_LINES);
 
@@ -159,7 +157,7 @@ void Randomizer::RandomizeSwamp() {
 
 void Randomizer::RandomizeMountain() {
 	_core.Randomize(lasers, SWAP_TARGETS);
-	_core.Randomize(pillars, SWAP_LINES);
+	_core.Randomize(pillars, SWAP_LINES | SWAP_BACK_DISTANCE);
 	_core.Randomize(mountainMultipanel, SWAP_LINES);
 
 	// Read the target of keep front laser, and write it to keep back laser.

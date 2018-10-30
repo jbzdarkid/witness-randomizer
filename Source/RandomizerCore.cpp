@@ -30,6 +30,9 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 	if (flags & SWAP_AUDIO_NAMES) {
 		offsets[AUDIO_LOG_NAME] = sizeof(void*);
 	}
+	if (flags & SWAP_BACK_DISTANCE) {
+		offsets[EXTRA_BACK_DISTANCE] = sizeof(float);
+	}
 	if (flags & SWAP_LINES) {
 		offsets[PATH_COLOR] = 16;
 		offsets[REFLECTION_PATH_COLOR] = 16;
@@ -52,7 +55,6 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[PUSH_SYMBOL_COLORS] = sizeof(int);
 		offsets[OUTER_BACKGROUND] = 16;
 		offsets[OUTER_BACKGROUND_MODE] = sizeof(int);
-		offsets[EXTRA_BACK_DISTANCE] = sizeof(float);
 		offsets[TRACED_EDGES] = 16;
 		offsets[AUDIO_PREFIX] = sizeof(void*);
 //		offsets[IS_CYLINDER] = sizeof(int);

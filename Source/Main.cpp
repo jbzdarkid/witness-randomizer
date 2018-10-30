@@ -118,7 +118,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				seed = _wtoi(text.c_str());
 			}
 			srand(seed);
-			Randomizer().Randomize();
+			Randomizer randomizer;
+			randomizer.Randomize();
+			/*
+			if (adjustSpeed.isChecked()) {
+				randomizer.AdjustSpeed();
+			}
+			*/
 			SetWindowText(hwndRandomize, L"Randomized!");
         }
 	}
