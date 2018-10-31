@@ -1,6 +1,7 @@
 #pragma once
+#include <chrono>
 
-static int s_seed;
+static int s_seed = time(nullptr); // Seed from the time in milliseconds
 
 class Random
 {

@@ -3,7 +3,7 @@
 
 class Randomizer {
 public:
-	void Randomize();
+	short Randomize(int seed);
 	void AdjustSpeed();
 
 private:

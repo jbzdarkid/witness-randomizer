@@ -3,6 +3,17 @@
 #include "Random.h"
 #include <sstream>
 
+static int lastKnownFrame = 1 << 30;
+
+RandomizerCore::RandomizerCore() {
+	int currentFrame = _memory.ReadData<int>({SCRIPT_FRAMES}, 1)[0];
+	if (currentFrame < lastKnownFrame) {
+		// Time went backwards, indicates new game
+		WriteMetadata(0);
+	}
+	lastKnownFrame = currentFrame;
+}
+
 void RandomizerCore::Randomize(std::vector<int>& panels, int flags) {
 	return RandomizeRange(panels, flags, 0, panels.size());
 }
@@ -124,4 +135,12 @@ void RandomizerCore::ReassignNames(const std::vector<int>& panels, const std::ve
 	for (int i=0; i<panels.size(); i++) {
 		WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
 	}
+}
+
+short RandomizerCore::ReadMetadata() {
+	return _memory.ReadData<short>({GLOBALS + METADATA}, 1)[0];
+}
+
+void RandomizerCore::WriteMetadata(short metadata) {
+	return _memory.WriteData<short>({GLOBALS + METADATA}, {metadata});
 }

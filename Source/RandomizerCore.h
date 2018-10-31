@@ -12,6 +12,8 @@ __declspec(selectany) int SWAP_AUDIO_NAMES = 0x4;
 class RandomizerCore
 {
 public:
+	RandomizerCore();
+
 	void Randomize(std::vector<int>& panels, int flags);
 	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);
@@ -27,6 +29,9 @@ public:
 	void WritePanelData(int panel, int offset, const std::vector<T>& data) {
 		_memory.WriteData<T>({GLOBALS, 0x18, panel*8, offset}, data);
 	}
+
+	short ReadMetadata();
+	void WriteMetadata(short metadata);
 
 private:
 	Memory _memory = Memory("witness64_d3d11.exe");
@@ -95,6 +100,8 @@ private:
 #define CABLE_TARGET_2 0xD8
 #define AUDIO_LOG_NAME 0xC8
 #define OPEN_RATE 0xE8
+#define METADATA 0xF2 // sizeof(short)
+#define SCRIPT_FRAMES 0x5BE3B0
 #elif GLOBALS == 0x62A080
 #define PATH_COLOR 0xC0
 #define REFLECTION_PATH_COLOR 0xD0
@@ -158,4 +165,6 @@ private:
 #define CABLE_TARGET_2 0xD0
 #define AUDIO_LOG_NAME 0x0
 #define OPEN_RATE 0xE0
+#define METADATA 0x13A // sizeof(short)
+#define SCRIPT_FRAMES 0x63651C
 #endif

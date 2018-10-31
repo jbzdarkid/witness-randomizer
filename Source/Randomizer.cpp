@@ -4,21 +4,21 @@
  * Swamp <-> symmetry has non-invisible background
  * Tutorial sounds don't always play
  * FEATURES:
- * Prevent re-randomization (?)
- * Clear "Randomized" state on NG (?) -- Or on a short delay
+ * Clear "Randomized" button after short delay
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard.
  * Start the game if it isn't running?
  * Stop swapping colors in desert
+ * Allow users to enter seed after randomly generating seed (aka detect user input in the text box)
 */
 #include "Memory.h"
 #include "Randomizer.h"
 #include "Panels.h"
+#include "Random.h"
 #include <string>
 #include <iostream>
 #include <numeric>
-#include <chrono>
 
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
@@ -29,8 +29,16 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	exit(-1);
 }
 
-void Randomizer::Randomize()
+short Randomizer::Randomize(int seed)
 {
+	short metadata = _core.ReadMetadata();
+	if (metadata & 0x1) {
+		// Already randomized -- exit.
+		return metadata;
+	}
+	_core.WriteMetadata(metadata | 0x1);
+	Random::SetSeed(seed);
+
 	// Content swaps -- must happen before squarePanels
 	_core.Randomize(upDownPanels, SWAP_LINES);
 	_core.Randomize(leftForwardRightPanels, SWAP_LINES);
@@ -53,6 +61,7 @@ void Randomizer::Randomize()
 	RandomizeMountain();
 	// RandomizeChallenge();
 	// RandomizeAudioLogs();
+	return metadata;
 }
 
 void Randomizer::AdjustSpeed() {

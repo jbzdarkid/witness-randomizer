@@ -1,8 +1,6 @@
 #include "windows.h"
-#include "resource.h"
 #include <Richedit.h>
 
-#include <ctime>
 #include <string>
 
 #include "Randomizer.h"
@@ -40,18 +38,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				GetWindowText(hwndSeed, &text[0], 100);
 				int seed = 0;
 				if (wasSeedRandomlyGenerated || wcslen(text.c_str()) == 0) {
-					Random::SetSeed(time(nullptr)); // Seed from the time in milliseconds
 					seed = Random::RandInt(0, 100000);
-					std::wstring seedString = std::to_wstring(seed);
-					SetWindowText(hwndSeed, seedString.c_str());
 					wasSeedRandomlyGenerated = true;
 				} else {
 					seed = _wtoi(text.c_str());
 					wasSeedRandomlyGenerated = false;
 				}
-				Random::SetSeed(seed);
+
 				Randomizer randomizer;
-				randomizer.Randomize();
+				short metadata = randomizer.Randomize(seed);
+				if (metadata & 0x1) break; // Was already randomized
+
+				std::wstring seedString = std::to_wstring(seed);
+				SetWindowText(hwndSeed, seedString.c_str());
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
 					randomizer.AdjustSpeed();
 				}
