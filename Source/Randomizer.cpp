@@ -23,7 +23,7 @@
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	for (size_t i=startIndex ; i<data.size(); i++) {
-		if (data[i] == search) return static_cast<int>(i);
+		if (data[i] == search) return i;
 	}
 	std::cout << "Couldn't find " << search << " in data!" << std::endl;
 	exit(-1);

@@ -1,10 +1,13 @@
+#include "windows.h"
 #include "resource.h"
 #include <Richedit.h>
+
 #include <ctime>
 #include <string>
+
 #include "Randomizer.h"
-#include "windows.h"
 #include "Version.h"
+#include "Random.h"
 
 #define IDC_RANDOMIZE 0x401
 #define IDC_TOGGLESPEED 0x402
@@ -37,9 +40,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				GetWindowText(hwndSeed, &text[0], 100);
 				int seed = 0;
 				if (wasSeedRandomlyGenerated || wcslen(text.c_str()) == 0) {
-					srand(static_cast<unsigned int>(time(nullptr))); // Seed from the time in milliseconds
-					rand(); // Increment RNG so that RNG isn't still using the time
-					seed = rand() % 100000;
+					Random::SetSeed(time(nullptr)); // Seed from the time in milliseconds
+					seed = Random::RandInt(0, 100000);
 					std::wstring seedString = std::to_wstring(seed);
 					SetWindowText(hwndSeed, seedString.c_str());
 					wasSeedRandomlyGenerated = true;
@@ -47,7 +49,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					seed = _wtoi(text.c_str());
 					wasSeedRandomlyGenerated = false;
 				}
-				srand(seed);
+				Random::SetSeed(seed);
 				Randomizer randomizer;
 				randomizer.Randomize();
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
@@ -79,8 +81,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	};
 	RegisterClassW(&wndClass);
 
+	RECT rect;
+    GetClientRect(GetDesktopWindow(), &rect);
 	HWND hwnd = CreateWindow(WINDOW_CLASS, PRODUCT_NAME, WS_OVERLAPPEDWINDOW,
-      400, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
+      rect.right - 550, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
 
 	CreateWindow(L"STATIC", L"Version: " VERSION_STR,
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,

@@ -1,5 +1,6 @@
 #include "RandomizerCore.h"
 #include "Memory.h"
+#include "Random.h"
 #include <sstream>
 
 void RandomizerCore::Randomize(std::vector<int>& panels, int flags) {
@@ -12,7 +13,7 @@ void RandomizerCore::RandomizeRange(std::vector<int> &panels, int flags, size_t 
 	if (startIndex >= endIndex) return;
 	if (endIndex >= panels.size()) endIndex = panels.size();
 	for (size_t i = endIndex-1; i > startIndex; i--) {
-		const size_t target = rand() % (i - startIndex) + startIndex;
+		const size_t target = Random::RandInt(startIndex, i);
 		if (i != target) {
 			// std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
 			SwapPanels(panels[i], panels[target], flags);
