@@ -5,7 +5,6 @@
 
 STRINGTABLE
 BEGIN
-    IDS_APP_TITLE           "Witness Randomizer"
     IDC_SOURCE              "SOURCE"
 END
 

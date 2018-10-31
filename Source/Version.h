@@ -9,4 +9,5 @@
 #define TO_STRING(s) #s
 #define VERSION_STR     TO_STRING(MAJOR) "." TO_STRING(MINOR) "." TO_STRING(PATCH) ".0"
 
-#define PRODUCT_NAME "Witness Randomizer"
+#define PRODUCT_NAME L"Witness Randomizer"
+#define WINDOW_CLASS L"WitnessRandomizer"

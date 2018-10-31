@@ -1,12 +1,10 @@
-// Source.cpp : Defines the entry point for the application.
-//
-
 #include "resource.h"
 #include <Richedit.h>
 #include <ctime>
 #include <string>
 #include "Randomizer.h"
 #include "windows.h"
+#include "Version.h"
 
 #define IDC_RANDOMIZE 0x401
 #define IDC_TOGGLESPEED 0x402
@@ -65,33 +63,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-	#define MAX_LOADSTRING 100
-	WCHAR szWindowClass[MAX_LOADSTRING];
-	LoadStringW(hInstance, IDC_SOURCE, szWindowClass, MAX_LOADSTRING);
+	LoadLibrary(L"Msftedit.dll");
 
-	WNDCLASSEXW wcex = {
-		sizeof(WNDCLASSEX),
+	WNDCLASSW wndClass = {
 		CS_HREDRAW | CS_VREDRAW,
 		WndProc,
 		0,
-	    0,
+		0,
 		hInstance,
-		LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SOURCE)),
+		NULL,
 		LoadCursor(nullptr, IDC_ARROW),
 		(HBRUSH)(COLOR_WINDOW+1),
-		MAKEINTRESOURCEW(IDC_SOURCE),
-		szWindowClass,
-		LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)),
+		WINDOW_CLASS,
+		WINDOW_CLASS,
 	};
-    RegisterClassExW(&wcex);
+	RegisterClassW(&wndClass);
 
-	WCHAR szTitle[MAX_LOADSTRING];
-	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	HWND hwnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	HWND hwnd = CreateWindow(WINDOW_CLASS, PRODUCT_NAME, WS_OVERLAPPEDWINDOW,
       400, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
-
-	LoadLibrary(L"Msftedit.dll");
-
 
 	CreateWindow(L"STATIC", L"Enter a seed:",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
