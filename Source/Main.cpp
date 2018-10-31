@@ -82,6 +82,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	HWND hwnd = CreateWindow(WINDOW_CLASS, PRODUCT_NAME, WS_OVERLAPPEDWINDOW,
       400, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
 
+	CreateWindow(L"STATIC", L"Version: " VERSION_STR,
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		390, 15, 90, 16, hwnd, NULL, hInstance, NULL);
+
 	CreateWindow(L"STATIC", L"Enter a seed:",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		10, 15, 90, 16, hwnd, NULL, hInstance, NULL);
