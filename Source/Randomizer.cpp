@@ -66,19 +66,19 @@ short Randomizer::Randomize(int seed)
 
 void Randomizer::AdjustSpeed() {
 	// Desert Surface Final Control
-	_core.WritePanelData<float>(0x09F95, OPEN_RATE, {0.04f}); // 4x
+	_core._memory.WritePanelData<float>(0x09F95, OPEN_RATE, {0.04f}); // 4x
 	// Swamp Sliding Bridge
-	_core.WritePanelData<float>(0x0061A, OPEN_RATE, {0.1f}); // 4x
+	_core._memory.WritePanelData<float>(0x0061A, OPEN_RATE, {0.1f}); // 4x
 	// Mountain 2 Elevator
-	_core.WritePanelData<float>(0x09EEC, OPEN_RATE, {0.075f}); // 3x
+	_core._memory.WritePanelData<float>(0x09EEC, OPEN_RATE, {0.075f}); // 3x
 }
 
 void Randomizer::RandomizeTutorial() {
 	// Disable tutorial cursor speed modifications (not working?)
-	_core.WritePanelData<float>(0x00295, CURSOR_SPEED_SCALE, {1.0});
-	_core.WritePanelData<float>(0x0C373, CURSOR_SPEED_SCALE, {1.0});
-	_core.WritePanelData<float>(0x00293, CURSOR_SPEED_SCALE, {1.0});
-	_core.WritePanelData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
+	_core._memory.WritePanelData<float>(0x00295, CURSOR_SPEED_SCALE, {1.0});
+	_core._memory.WritePanelData<float>(0x0C373, CURSOR_SPEED_SCALE, {1.0});
+	_core._memory.WritePanelData<float>(0x00293, CURSOR_SPEED_SCALE, {1.0});
+	_core._memory.WritePanelData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
 }
 
 void Randomizer::RandomizeSymmetry() {
@@ -88,11 +88,11 @@ void Randomizer::RandomizeDesert() {
 	_core.Randomize(desertPanels, SWAP_LINES);
 
 	// Turn off desert surface 8
-	_core.WritePanelData<float>(0x09F94, POWER, {0.0, 0.0});
+	_core._memory.WritePanelData<float>(0x09F94, POWER, {0.0, 0.0});
 	// Turn off desert flood final
-	_core.WritePanelData<float>(0x18076, POWER, {0.0, 0.0});
+	_core._memory.WritePanelData<float>(0x18076, POWER, {0.0, 0.0});
 	// Change desert floating target to desert flood final
-	_core.WritePanelData<int>(0x17ECA, TARGET, {0x18077});
+	_core._memory.WritePanelData<int>(0x17ECA, TARGET, {0x18077});
 }
 
 void Randomizer::RandomizeQuarry() {
@@ -100,14 +100,14 @@ void Randomizer::RandomizeQuarry() {
 
 void Randomizer::RandomizeTreehouse() {
 	// Ensure that whatever pivot panels we have are flagged as "pivotable"
-	int panelFlags = _core.ReadPanelData<int>(0x17DD1, STYLE_FLAGS, 1)[0];
-	_core.WritePanelData<int>(0x17DD1, STYLE_FLAGS, {panelFlags | 0x8000});
-	panelFlags = _core.ReadPanelData<int>(0x17CE3, STYLE_FLAGS, 1)[0];
-	_core.WritePanelData<int>(0x17CE3, STYLE_FLAGS, {panelFlags | 0x8000});
-	panelFlags = _core.ReadPanelData<int>(0x17DB7, STYLE_FLAGS, 1)[0];
-	_core.WritePanelData<int>(0x17DB7, STYLE_FLAGS, {panelFlags | 0x8000});
-	panelFlags = _core.ReadPanelData<int>(0x17E52, STYLE_FLAGS, 1)[0];
-	_core.WritePanelData<int>(0x17E52, STYLE_FLAGS, {panelFlags | 0x8000});
+	int panelFlags = _core._memory.ReadPanelData<int>(0x17DD1, STYLE_FLAGS, 1)[0];
+	_core._memory.WritePanelData<int>(0x17DD1, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _core._memory.ReadPanelData<int>(0x17CE3, STYLE_FLAGS, 1)[0];
+	_core._memory.WritePanelData<int>(0x17CE3, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _core._memory.ReadPanelData<int>(0x17DB7, STYLE_FLAGS, 1)[0];
+	_core._memory.WritePanelData<int>(0x17DB7, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _core._memory.ReadPanelData<int>(0x17E52, STYLE_FLAGS, 1)[0];
+	_core._memory.WritePanelData<int>(0x17E52, STYLE_FLAGS, {panelFlags | 0x8000});
 }
 
 void Randomizer::RandomizeKeep() {
@@ -115,11 +115,11 @@ void Randomizer::RandomizeKeep() {
 
 void Randomizer::RandomizeShadows() {
 	// Distance-gate shadows laser to prevent sniping through the bars
-	_core.WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
+	_core._memory.WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
 	// Change the shadows tutorial cable to only activate avoid
-	_core.WritePanelData<int>(0x319A8, CABLE_TARGET_2, {0});
+	_core._memory.WritePanelData<int>(0x319A8, CABLE_TARGET_2, {0});
 	// Change shadows avoid 8 to power shadows follow
-	_core.WritePanelData<int>(0x1972F, TARGET, {0x1C34C});
+	_core._memory.WritePanelData<int>(0x1972F, TARGET, {0x1C34C});
 
 	std::vector<int> randomOrder(shadowsPanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
@@ -128,9 +128,9 @@ void Randomizer::RandomizeShadows() {
 	_core.RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
 	_core.ReassignTargets(shadowsPanels, randomOrder);
 	// Turn off original starting panel
-	_core.WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
+	_core._memory.WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
 	// Turn on new starting panel
-	_core.WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
+	_core._memory.WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
 }
 
 void Randomizer::RandomizeTown() {
@@ -167,7 +167,7 @@ void Randomizer::RandomizeJungle() {
 
 void Randomizer::RandomizeSwamp() {
 	// Distance-gate swamp snipe 1 to prevent RNG swamp snipe
-	_core.WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {15.0});
+	_core._memory.WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {15.0});
 }
 
 void Randomizer::RandomizeMountain() {
@@ -178,7 +178,7 @@ void Randomizer::RandomizeMountain() {
 	// Randomize final pillars order
 	std::vector<int> targets = {pillars[0] + 1};
 	for (const int pillar : pillars) {
-		int target = _core.ReadPanelData<int>(pillar, TARGET, 1)[0];
+		int target = _core._memory.ReadPanelData<int>(pillar, TARGET, 1)[0];
 		targets.push_back(target);
 	}
 	targets[5] = pillars[5] + 1;
@@ -189,27 +189,27 @@ void Randomizer::RandomizeMountain() {
 	_core.RandomizeRange(randomOrder, SWAP_NONE, 5, 9); // Right Pillars 1-4
 	_core.ReassignTargets(pillars, randomOrder, targets);
 	// Turn off original starting panels
-	_core.WritePanelData<float>(pillars[0], POWER, {0.0f, 0.0f});
-	_core.WritePanelData<float>(pillars[5], POWER, {0.0f, 0.0f});
+	_core._memory.WritePanelData<float>(pillars[0], POWER, {0.0f, 0.0f});
+	_core._memory.WritePanelData<float>(pillars[5], POWER, {0.0f, 0.0f});
 	// Turn on new starting panels
-	_core.WritePanelData<float>(pillars[randomOrder[0]], POWER, {1.0f, 1.0f});
-	_core.WritePanelData<float>(pillars[randomOrder[5]], POWER, {1.0f, 1.0f});
+	_core._memory.WritePanelData<float>(pillars[randomOrder[0]], POWER, {1.0f, 1.0f});
+	_core._memory.WritePanelData<float>(pillars[randomOrder[5]], POWER, {1.0f, 1.0f});
 
 	// Read the target of keep front laser, and write it to keep back laser.
-	std::vector<int> keepFrontLaserTarget = _core.ReadPanelData<int>(0x0360E, TARGET, 1);
-	_core.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
+	std::vector<int> keepFrontLaserTarget = _core._memory.ReadPanelData<int>(0x0360E, TARGET, 1);
+	_core._memory.WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
 }
 
 void Randomizer::RandomizeChallenge() {
 	std::vector<int> randomOrder(challengePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
 	_core.RandomizeRange(randomOrder, SWAP_NONE, 1, 9); // Easy maze - Triple 2
-	std::vector<int> triple1Target = _core.ReadPanelData<int>(0x00C80, TARGET, 1);
-	_core.WritePanelData<int>(0x00CA1, TARGET, triple1Target);
-	_core.WritePanelData<int>(0x00CB9, TARGET, triple1Target);
-	std::vector<int> triple2Target = _core.ReadPanelData<int>(0x00C22, TARGET, 1);
-	_core.WritePanelData<int>(0x00C59, TARGET, triple2Target);
-	_core.WritePanelData<int>(0x00C68, TARGET, triple2Target);
+	std::vector<int> triple1Target = _core._memory.ReadPanelData<int>(0x00C80, TARGET, 1);
+	_core._memory.WritePanelData<int>(0x00CA1, TARGET, triple1Target);
+	_core._memory.WritePanelData<int>(0x00CB9, TARGET, triple1Target);
+	std::vector<int> triple2Target = _core._memory.ReadPanelData<int>(0x00C22, TARGET, 1);
+	_core._memory.WritePanelData<int>(0x00C59, TARGET, triple2Target);
+	_core._memory.WritePanelData<int>(0x00C68, TARGET, triple2Target);
 	_core.ReassignTargets(challengePanels, randomOrder);
 }
 

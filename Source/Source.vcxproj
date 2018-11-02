@@ -163,6 +163,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="Panel.h" />
     <ClInclude Include="Panels.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Randomizer.h" />
@@ -172,6 +173,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="Panel.cpp" />
     <ClCompile Include="Randomizer.cpp" />
     <ClCompile Include="RandomizerCore.cpp" />
   </ItemGroup>

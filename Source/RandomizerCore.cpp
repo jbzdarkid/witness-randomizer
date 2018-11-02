@@ -101,10 +101,10 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 	}
 
 	for (auto const& [offset, size] : offsets) {
-		std::vector<byte> panel1data = ReadPanelData<byte>(panel1, offset, size);
-		std::vector<byte> panel2data = ReadPanelData<byte>(panel2, offset, size);
-		WritePanelData<byte>(panel2, offset, panel1data);
-		WritePanelData<byte>(panel1, offset, panel2data);
+		std::vector<byte> panel1data = _memory.ReadPanelData<byte>(panel1, offset, size);
+		std::vector<byte> panel2data = _memory.ReadPanelData<byte>(panel2, offset, size);
+		_memory.WritePanelData<byte>(panel2, offset, panel1data);
+		_memory.WritePanelData<byte>(panel1, offset, panel2data);
 	}
 }
 
@@ -114,7 +114,7 @@ void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::
 		// The first panel may not have a wire to power it, so we use the panel ID itself.
 		targets = {panels[0] + 1};
 		for (const int panel : panels) {
-			int target = ReadPanelData<int>(panel, TARGET, 1)[0];
+			int target = _memory.ReadPanelData<int>(panel, TARGET, 1)[0];
 			targets.push_back(target);
 		}
 	}
@@ -122,18 +122,18 @@ void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::
 	for (size_t i=0; i<order.size() - 1; i++) {
 		// Set the target of order[i] to order[i+1], using the "real" target as determined above.
 		const int panelTarget = targets[order[i+1]];
-		WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
+		_memory.WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
 	}
 }
 
 void RandomizerCore::ReassignNames(const std::vector<int>& panels, const std::vector<int>& order) {
 	std::vector<int64_t> names;
 	for (const int panel : panels) {
-		names.push_back(ReadPanelData<int64_t>(panel, AUDIO_LOG_NAME, 1)[0]);
+		names.push_back(_memory.ReadPanelData<int64_t>(panel, AUDIO_LOG_NAME, 1)[0]);
 	}
 
 	for (int i=0; i<panels.size(); i++) {
-		WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
+		_memory.WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
 	}
 }
 

@@ -1,9 +1,6 @@
 #pragma once
 #include "Memory.h"
 
-// #define GLOBALS 0x5B28C0
-#define GLOBALS 0x62A080
-
 __declspec(selectany) int SWAP_NONE = 0x0;
 __declspec(selectany) int SWAP_TARGETS = 0x1;
 __declspec(selectany) int SWAP_LINES = 0x2;
@@ -20,20 +17,10 @@ public:
 	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
 	void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
-	template <class T>
-	std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
-		return _memory.ReadData<T>({GLOBALS, 0x18, panel*8, offset}, size);
-	}
-
-	template <class T>
-	void WritePanelData(int panel, int offset, const std::vector<T>& data) {
-		_memory.WriteData<T>({GLOBALS, 0x18, panel*8, offset}, data);
-	}
-
 	short ReadMetadata();
 	void WriteMetadata(short metadata);
 
-private:
+// private:
 	Memory _memory = Memory("witness64_d3d11.exe");
 };
 

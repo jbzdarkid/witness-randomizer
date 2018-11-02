@@ -6,13 +6,19 @@
 #include "Randomizer.h"
 #include "Version.h"
 #include "Random.h"
+#include "Panel.h"
 
 #define IDC_RANDOMIZE 0x401
 #define IDC_TOGGLESPEED 0x402
 #define IDC_SPEEDRUNNER 0x403
 #define IDC_HARDMODE 0x404
+#define IDC_READ 0x405
+#define IDC_RANDOM 0x406
+#define IDC_WRITE 0x407
 
 HWND hwndSeed, hwndRandomize;
+int panel = 0x12C9;
+std::shared_ptr<Panel> _panel;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -57,6 +63,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowText(hwndRandomize, L"Randomized!");
 				break;
 			}
+			case IDC_READ:
+				_panel = std::make_shared<Panel>(panel);
+				break;
+			case IDC_RANDOM:
+				_panel->Random();
+				break;
+			case IDC_WRITE:
+				_panel->Write(panel);
+				break;
 		}
 	}
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -98,6 +113,16 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	hwndRandomize = CreateWindow(L"BUTTON", L"Randomize",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		160, 10, 100, 26, hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
+
+	CreateWindow(L"BUTTON", L"READ",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		160, 100, 100, 26, hwnd, (HMENU)IDC_READ, hInstance, NULL);
+	CreateWindow(L"BUTTON", L"RANDOM",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		160, 130, 100, 26, hwnd, (HMENU)IDC_RANDOM, hInstance, NULL);
+	CreateWindow(L"BUTTON", L"WRITE",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		160, 160, 100, 26, hwnd, (HMENU)IDC_WRITE, hInstance, NULL);
 
 	CreateWindow(L"BUTTON", L"",
 		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
