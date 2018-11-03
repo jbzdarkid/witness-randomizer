@@ -15,9 +15,11 @@
 #define IDC_READ 0x405
 #define IDC_RANDOM 0x406
 #define IDC_WRITE 0x407
+#define IDC_DUMP 0x408
 
 HWND hwndSeed, hwndRandomize;
-int panel = 0x12C9;
+// int panel = 0x18AF;
+int panel = 0x33D4;
 std::shared_ptr<Panel> _panel;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -72,6 +74,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case IDC_WRITE:
 				_panel->Write(panel);
 				break;
+			case IDC_DUMP:
+				_panel->Serialize();
+				break;
 		}
 	}
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -123,6 +128,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	CreateWindow(L"BUTTON", L"WRITE",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		160, 160, 100, 26, hwnd, (HMENU)IDC_WRITE, hInstance, NULL);
+	CreateWindow(L"BUTTON", L"DUMP",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		160, 190, 100, 26, hwnd, (HMENU)IDC_DUMP, hInstance, NULL);
 
 	CreateWindow(L"BUTTON", L"",
 		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
