@@ -32,6 +32,12 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\localhost\Documents\GitHub\witness-randomizer\Source;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\localhost\Documents\GitHub\witness-randomizer\Source;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="OrderingTests.cpp" />
   </ItemGroup>

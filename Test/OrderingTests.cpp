@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
-#include "../Source/Randomizer.h"
-#include "../Source/Memory.h"
+#include "Randomizer.h"
+#include "Memory.h"
 
 TEST(OrderingTests, TestJungleOrder) {
 	Randomizer _randomizer;
