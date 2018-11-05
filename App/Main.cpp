@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include "Randomizer.h"
 #include "Version.h"
 #include "Random.h"
+#include "Randomizer.h"
 #include "Panel.h"
 
 #define IDC_RANDOMIZE 0x401
@@ -18,8 +18,8 @@
 #define IDC_DUMP 0x408
 
 HWND hwndSeed, hwndRandomize;
-// int panel = 0x18AF;
-int panel = 0x33D4;
+int panel = 0x18AF;
+// int panel = 0x33D4;
 std::shared_ptr<Panel> _panel;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -53,16 +53,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					wasSeedRandomlyGenerated = false;
 				}
 
-				Randomizer randomizer;
-				short metadata = randomizer.Randomize(seed);
-				if (metadata & 0x1) break; // Was already randomized
+ 				Randomizer randomizer;
+ 				short metadata = randomizer.Randomize(seed);
+ 				if (metadata & 0x1) break; // Was already randomized
 
-				std::wstring seedString = std::to_wstring(seed);
-				SetWindowText(hwndSeed, seedString.c_str());
-				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
-					randomizer.AdjustSpeed();
-				}
-				SetWindowText(hwndRandomize, L"Randomized!");
+ 				std::wstring seedString = std::to_wstring(seed);
+ 				SetWindowText(hwndSeed, seedString.c_str());
+ 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
+ 					randomizer.AdjustSpeed();
+ 				}
+ 				SetWindowText(hwndRandomize, L"Randomized!");
 				break;
 			}
 			case IDC_READ:
@@ -75,7 +75,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				_panel->Write(panel);
 				break;
 			case IDC_DUMP:
-				_panel->Serialize();
+				// _panel->Serialize();
 				break;
 		}
 	}
@@ -113,7 +113,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		10, 15, 90, 16, hwnd, NULL, hInstance, NULL);
 	hwndSeed = CreateWindow(MSFTEDIT_CLASS, L"",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER, 
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
         100, 10, 50, 26, hwnd, NULL, hInstance, NULL);
 	hwndRandomize = CreateWindow(L"BUTTON", L"Randomize",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
@@ -176,7 +176,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	CreateWindow(L"STATIC", L"Prevent sniping certain puzzles",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
-		
+
 */
 
 	ShowWindow(hwnd, nCmdShow);
