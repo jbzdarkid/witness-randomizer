@@ -1,5 +1,6 @@
 #include "Panel.h"
 #include "Random.h"
+#include "Memory.h"
 #include <sstream>
 
 template <class T>

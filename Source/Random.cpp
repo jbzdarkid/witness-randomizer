@@ -1,5 +1,4 @@
 #include <chrono>
-
 #include "Random.h"
 
 int Random::s_seed = time(nullptr); // Seed from the time in milliseconds
