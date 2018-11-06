@@ -1,5 +1,6 @@
 #pragma once
 #include "Memory.h"
+#include <memory>
 
 __declspec(selectany) int SWAP_NONE = 0x0;
 __declspec(selectany) int SWAP_TARGETS = 0x1;
@@ -9,8 +10,6 @@ __declspec(selectany) int SWAP_AUDIO_NAMES = 0x4;
 class RandomizerCore
 {
 public:
-	RandomizerCore();
-
 	void Randomize(std::vector<int>& panels, int flags);
 	void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
 	void SwapPanels(int panel1, int panel2, int flags);
@@ -19,9 +18,12 @@ public:
 
 	short ReadMetadata();
 	void WriteMetadata(short metadata);
+	int GetCurrentFrame();
+
+	void ClearOffsets() {_memory->ClearOffsets();}
 
 // private:
-	Memory _memory = Memory("witness64_d3d11.exe");
+	std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe");
 };
 
 #if GLOBALS == 0x5B28C0

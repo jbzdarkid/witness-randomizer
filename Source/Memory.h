@@ -64,6 +64,8 @@ public:
 		ThrowError();
 	}
 
+	void ClearOffsets() {_computedAddresses = std::map<uintptr_t, uintptr_t>();}
+
 private:
 
 	void ThrowError();

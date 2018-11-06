@@ -16,19 +16,26 @@
 #define IDC_RANDOM 0x406
 #define IDC_WRITE 0x407
 #define IDC_DUMP 0x408
+#define IDT_RANDOMIZED 0x409
 
 HWND hwndSeed, hwndRandomize;
 int panel = 0x18AF;
 // int panel = 0x33D4;
 std::shared_ptr<Panel> _panel;
+std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static bool wasSeedRandomlyGenerated;
+	static bool seedIsRNG = false;
 
 	if (message == WM_DESTROY) {
 		PostQuitMessage(0);
-	} else if (message == WM_COMMAND) {
+	} else if (message == WM_COMMAND || message == WM_TIMER) {
+		switch (HIWORD(wParam)) {
+			// Seed contents changed
+			case EN_CHANGE:
+				seedIsRNG = false;
+		}
 		switch (LOWORD(wParam)) {
 			// Speed checkbox
 			case IDC_TOGGLESPEED:
@@ -42,29 +49,41 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			// Randomize button
 			case IDC_RANDOMIZE:
 			{
-				std::wstring text(100, '\0');
+				std::wstring text;
+				text.reserve(100);
 				GetWindowText(hwndSeed, &text[0], 100);
-				int seed = 0;
-				if (wasSeedRandomlyGenerated || wcslen(text.c_str()) == 0) {
+				int seed = _wtoi(text.c_str());
+
+				if (seedIsRNG || text.empty()) {
 					seed = Random::RandInt(0, 100000);
-					wasSeedRandomlyGenerated = true;
-				} else {
-					seed = _wtoi(text.c_str());
-					wasSeedRandomlyGenerated = false;
+					seedIsRNG = true;
 				}
 
- 				Randomizer randomizer;
- 				short metadata = randomizer.Randomize(seed);
- 				if (metadata & 0x1) break; // Was already randomized
-
+				randomizer->ClearOffsets();
+				/* TODO:
+				if (!randomizer->GameIsRunning()) {
+					randomizer->StartGame(); // Try: CreateProcess(L"/path/to/TW.exe", ...);
+				}
+				*/
+				if (randomizer->GameIsRandomized()) break;
+				Random::SetSeed(seed);
  				std::wstring seedString = std::to_wstring(seed);
+ 				SetWindowText(hwndRandomize, L"Randomizing...");
  				SetWindowText(hwndSeed, seedString.c_str());
- 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
- 					randomizer.AdjustSpeed();
+				RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
+
+				randomizer->Randomize();
+				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
+ 					randomizer->AdjustSpeed();
  				}
  				SetWindowText(hwndRandomize, L"Randomized!");
+				SetTimer(hwnd, IDT_RANDOMIZED, 10000, NULL);
 				break;
 			}
+
+			case IDT_RANDOMIZED:
+				SetWindowText(hwndRandomize, L"Randomize");
+				break;
 			case IDC_READ:
 				_panel = std::make_shared<Panel>(panel);
 				break;
@@ -115,9 +134,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	hwndSeed = CreateWindow(MSFTEDIT_CLASS, L"",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
         100, 10, 50, 26, hwnd, NULL, hInstance, NULL);
+	SendMessage(hwndSeed, EM_SETEVENTMASK, NULL, ENM_CHANGE); // Notify on text change
+
 	hwndRandomize = CreateWindow(L"BUTTON", L"Randomize",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 10, 100, 26, hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
+		160, 10, 110, 26, hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
 
 #if GLOBALS == 0x5B28C0
 	CreateWindow(L"BUTTON", L"READ",

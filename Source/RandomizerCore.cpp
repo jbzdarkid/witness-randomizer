@@ -3,17 +3,6 @@
 #include "Random.h"
 #include <sstream>
 
-static int lastKnownFrame = 1 << 30;
-
-RandomizerCore::RandomizerCore() {
-	int currentFrame = _memory.ReadData<int>({SCRIPT_FRAMES}, 1)[0];
-	if (currentFrame < lastKnownFrame) {
-		// Time went backwards, indicates new game
-		WriteMetadata(0);
-	}
-	lastKnownFrame = currentFrame;
-}
-
 void RandomizerCore::Randomize(std::vector<int>& panels, int flags) {
 	return RandomizeRange(panels, flags, 0, panels.size());
 }
@@ -47,7 +36,7 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[REFLECTION_PATH_COLOR] = 16;
 		offsets[DOT_COLOR] = 16;
 		offsets[ACTIVE_COLOR] = 16;
-		offsets[BACKGROUND_REGION_COLOR] = 16;
+		offsets[BACKGROUND_REGION_COLOR] = 12; // Not copying alpha to preserve transparency.
 		offsets[SUCCESS_COLOR_A] = 16;
 		offsets[SUCCESS_COLOR_B] = 16;
 		offsets[STROBE_COLOR_A] = 16;
@@ -101,10 +90,10 @@ void RandomizerCore::SwapPanels(int panel1, int panel2, int flags) {
 	}
 
 	for (auto const& [offset, size] : offsets) {
-		std::vector<byte> panel1data = _memory.ReadPanelData<byte>(panel1, offset, size);
-		std::vector<byte> panel2data = _memory.ReadPanelData<byte>(panel2, offset, size);
-		_memory.WritePanelData<byte>(panel2, offset, panel1data);
-		_memory.WritePanelData<byte>(panel1, offset, panel2data);
+		std::vector<byte> panel1data = _memory->ReadPanelData<byte>(panel1, offset, size);
+		std::vector<byte> panel2data = _memory->ReadPanelData<byte>(panel2, offset, size);
+		_memory->WritePanelData<byte>(panel2, offset, panel1data);
+		_memory->WritePanelData<byte>(panel1, offset, panel2data);
 	}
 }
 
@@ -114,7 +103,7 @@ void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::
 		// The first panel may not have a wire to power it, so we use the panel ID itself.
 		targets = {panels[0] + 1};
 		for (const int panel : panels) {
-			int target = _memory.ReadPanelData<int>(panel, TARGET, 1)[0];
+			int target = _memory->ReadPanelData<int>(panel, TARGET, 1)[0];
 			targets.push_back(target);
 		}
 	}
@@ -122,25 +111,29 @@ void RandomizerCore::ReassignTargets(const std::vector<int>& panels, const std::
 	for (size_t i=0; i<order.size() - 1; i++) {
 		// Set the target of order[i] to order[i+1], using the "real" target as determined above.
 		const int panelTarget = targets[order[i+1]];
-		_memory.WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
+		_memory->WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
 	}
 }
 
 void RandomizerCore::ReassignNames(const std::vector<int>& panels, const std::vector<int>& order) {
 	std::vector<int64_t> names;
 	for (const int panel : panels) {
-		names.push_back(_memory.ReadPanelData<int64_t>(panel, AUDIO_LOG_NAME, 1)[0]);
+		names.push_back(_memory->ReadPanelData<int64_t>(panel, AUDIO_LOG_NAME, 1)[0]);
 	}
 
 	for (int i=0; i<panels.size(); i++) {
-		_memory.WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
+		_memory->WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
 	}
 }
 
 short RandomizerCore::ReadMetadata() {
-	return _memory.ReadData<short>({GLOBALS + METADATA}, 1)[0];
+	return _memory->ReadData<short>({GLOBALS + METADATA}, 1)[0];
 }
 
 void RandomizerCore::WriteMetadata(short metadata) {
-	return _memory.WriteData<short>({GLOBALS + METADATA}, {metadata});
+	return _memory->WriteData<short>({GLOBALS + METADATA}, {metadata});
+}
+
+int RandomizerCore::GetCurrentFrame() {
+	return _memory->ReadData<int>({SCRIPT_FRAMES}, 1)[0];
 }

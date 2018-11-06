@@ -3,10 +3,16 @@
 
 class Randomizer {
 public:
-	short Randomize(int seed);
+	void Randomize();
+	bool GameIsRandomized();
+
 	void AdjustSpeed();
 
+	void ClearOffsets() {_core.ClearOffsets();}
+
 private:
+
+	int _lastRandomizedFrame = 1 << 30;
 	void RandomizeTutorial();
 	void RandomizeSymmetry();
 	void RandomizeDesert();
