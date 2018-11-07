@@ -90,7 +90,7 @@ private:
 class Panel
 {
 public:
-	explicit Panel(int id);
+	Panel(int id);
 	// explicit Panel(nlohmann::json json);
 
 	void Write(int id);
@@ -109,6 +109,9 @@ public:
 	};
 
 private:
+	// For testing
+	Panel();
+
 	void ReadIntersections(int id);
 	void WriteIntersections(int id);
 	void ReadDecorations(int id);
@@ -116,6 +119,20 @@ private:
 
 	// TODO: Reflection data
 	// TODO: Decoration colors
+
+	std::tuple<int, int> loc_to_xy(int location) {
+		int x = 2 * (location % ((_width + 1) / 2));
+		int y = (_height - 1) - 2 * (location / ((_width + 1) / 2));
+		return {x, y};
+	}
+
+	int xy_to_loc(int x, int y) {
+		int height2 = (_height - 1) / 2;
+		int width2 = (_width + 1) / 2;
+
+		int rowsFromBottom = height2 - y/2;
+		return rowsFromBottom * width2 + x/2;
+	}
 
 	Memory _memory = Memory("witness64_d3d11.exe");
 
@@ -125,4 +142,6 @@ private:
 	std::vector<Endpoint> _endpoints;
 	std::vector<std::pair<int ,int>> _startpoints;
 	int _style;
+
+	friend class PanelExtractionTests;
 };

@@ -22,6 +22,9 @@ Panel::Panel(int id) {
 	ReadDecorations(id);
 }
 
+// For testing
+Panel::Panel() {}
+
 void Panel::Write(int id) {
 	WriteIntersections(id);
 	WriteDecorations(id);
@@ -147,8 +150,7 @@ void Panel::ReadIntersections(int id) {
 					} else {
 						dir = Endpoint::Direction::DOWN;
 					}
-					int x = 2 * (location % ((_width + 1) / 2));
-					int y = (_height - 1) - 2 * (location / ((_width + 1) / 2));
+					auto [x, y] = loc_to_xy(location);
 					_endpoints.push_back(Endpoint(x, y, dir));
 				}
 			}
@@ -163,15 +165,15 @@ void Panel::WriteIntersections(int id) {
 
 	double min = 0.1;
 	double max = 0.9;
-	double width_interval = (max - min) / (_width - 1);
-	double height_interval = (max - min) / (_height - 1);
+	double width_interval = (max - min) / (_width/2);
+	double height_interval = (max - min) / (_height/2);
 
-	for (int y=0; y<_height; y++) {
-		for (int x=0; x<_width; x++) {
+	for (int y=0; y<_height/2; y++) {
+		for (int x=0; x<_width/2; x++) {
 			intersections.push_back(static_cast<float>(min + x * width_interval));
 			intersections.push_back(static_cast<float>(min + y * height_interval));
 			int flags = 0;
-			if (find(_startpoints, {x, y}) != -1) flags |= IntersectionFlags::IS_STARTPOINT;
+			if (find(_startpoints, {2*x, 2*y}) != -1) flags |= IntersectionFlags::IS_STARTPOINT;
 			intersectionFlags.push_back(flags);
 			if (y > 0) {
 				connections.first.push_back(y * _width + x);
