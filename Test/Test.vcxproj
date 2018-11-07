@@ -35,7 +35,6 @@
   <ItemGroup>
     <ClCompile Include="Temp.cpp" />
     <ClCompile Include="RandomTests.cpp" />
-    <ClCompile Include="Swap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Source\Source.vcxproj">
