@@ -45,7 +45,7 @@ enum IntersectionFlags {
 	IS_ENDPOINT = 0x1,
 	IS_STARTPOINT = 0x2,
 	IS_GAP = 0x10000,
-	HAS_DOT = 0x8,
+	HAS_DOT = 0x20,
 	DOT_IS_BLUE = 0x100,
 	DOT_IS_ORANGE = 0x200,
 	DOT_IS_INVISIBLE = 0x1000,

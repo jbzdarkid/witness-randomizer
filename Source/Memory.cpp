@@ -18,8 +18,8 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (!_handle) {
-		std::cout << "Couldn't find " << processName.c_str() << ", is it open?" << std::endl;
-		exit(EXIT_FAILURE);
+		std::cerr << "Couldn't find " << processName.c_str() << ", is it open?" << std::endl;
+		throw std::exception("Unable to find process!");
 	}
 
 	// Next, get the process base address
@@ -27,19 +27,17 @@ Memory::Memory(const std::string& processName) {
 	std::vector<HMODULE> moduleList(1024);
 	EnumProcessModulesEx(_handle, &moduleList[0], static_cast<DWORD>(moduleList.size()), &numModules, 3);
 
-	std::string name(64, 0);
+	std::string name(64, '\0');
 	for (DWORD i = 0; i < numModules / sizeof(HMODULE); i++) {
-		GetModuleBaseNameA(_handle, moduleList[i], &name[0], sizeof(name));
-
-		// TODO: Filling with 0s still yeilds name.size() == 64...
-		if (strcmp(processName.c_str(), name.c_str()) == 0) {
+		int length = GetModuleBaseNameA(_handle, moduleList[i], &name[0], static_cast<DWORD>(name.size()));
+		name.resize(length);
+		if (processName == name) {
 			_baseAddress = (uintptr_t)moduleList[i];
 			break;
 		}
 	}
 	if (_baseAddress == 0) {
-		std::cout << "Couldn't find the base process address!" << std::endl;
-		exit(EXIT_FAILURE);
+		throw std::exception("Couldn't find the base process address!");
 	}
 }
 
@@ -47,11 +45,24 @@ Memory::~Memory() {
 	CloseHandle(_handle);
 }
 
+int Memory::GetCurrentFrame()
+{
+	int SCRIPT_FRAMES;
+	if (GLOBALS == 0x5B28C0) {
+		SCRIPT_FRAMES = 0x5BE3B0;
+	} else if (GLOBALS == 0x62A080) {
+		SCRIPT_FRAMES = 0x63651C;
+	} else {
+		throw std::exception("Unknown value for Globals!");
+	}
+	return ReadData<int>({SCRIPT_FRAMES}, 1)[0];
+}
+
 void Memory::ThrowError() {
 	std::string message(256, '\0');
-	FormatMessageA(4096, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.length()), nullptr);
-	std::cout << message.c_str() << std::endl;
-	exit(EXIT_FAILURE);
+	int length = FormatMessageA(4096, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.size()), nullptr);
+	message.resize(length);
+	throw std::exception(message.c_str());
 }
 
 void* Memory::ComputeOffset(std::vector<int> offsets)

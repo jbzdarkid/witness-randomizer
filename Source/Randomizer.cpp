@@ -5,7 +5,6 @@
  * FEATURES:
  * Start the game if it isn't running?
  * Stop swapping colors in desert
- * Look into valid panel swaps for keep walk-ons.
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard. (See: HARD_MODE)
@@ -24,11 +23,11 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 		if (data[i] == search) return static_cast<int>(i);
 	}
 	std::cout << "Couldn't find " << search << " in data!" << std::endl;
-	exit(-1);
+	throw std::exception("Couldn't find value in data!");
 }
 
 bool Randomizer::GameIsRandomized() {
-	int currentFrame = GetCurrentFrame();
+	int currentFrame = _memory->GetCurrentFrame();
 	if (currentFrame >= _lastRandomizedFrame) {
 		// Time went forwards, presumably we're still on the same save
 		_lastRandomizedFrame = currentFrame;
@@ -41,7 +40,7 @@ bool Randomizer::GameIsRandomized() {
 void Randomizer::Randomize()
 {
 	if (GameIsRandomized()) return;  // Nice sanity check, but should be unnecessary (since Main checks anyways)
-	_lastRandomizedFrame = GetCurrentFrame();
+	_lastRandomizedFrame = _memory->GetCurrentFrame();
 
 	// Content swaps -- must happen before squarePanels
 	Randomize(upDownPanels, SWAP::LINES);
@@ -344,16 +343,4 @@ void Randomizer::ReassignNames(const std::vector<int>& panels, const std::vector
 	for (int i=0; i<panels.size(); i++) {
 		_memory->WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
 	}
-}
-
-short Randomizer::ReadMetadata() {
-	return _memory->ReadData<short>({GLOBALS + METADATA}, 1)[0];
-}
-
-void Randomizer::WriteMetadata(short metadata) {
-	return _memory->WriteData<short>({GLOBALS + METADATA}, {metadata});
-}
-
-int Randomizer::GetCurrentFrame() {
-	return _memory->ReadData<int>({SCRIPT_FRAMES}, 1)[0];
 }

@@ -7,7 +7,6 @@ TEST(RandomTests, RandomInRange) {
 	ASSERT_NE(random1, random2);
 	if (random1 > random2) std::swap(random1, random2);
 	int random3 = Random::RandInt(random1, random2);
-	std::cout << random1 << " " << random2 << " " << random3 << std::endl;
 	ASSERT_GE(random3, random1);
 	ASSERT_LE(random3, random2);
 }

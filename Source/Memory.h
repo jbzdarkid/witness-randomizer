@@ -19,6 +19,7 @@ public:
 	Memory(const Memory& memory) = delete;
 	Memory& operator=(const Memory& other) = delete;
 
+	int GetCurrentFrame();
 
 	template <class T>
 	std::vector<T> ReadArray(int panel, int offset, int size) {
@@ -40,6 +41,9 @@ public:
 		WriteData<T>({GLOBALS, 0x18, panel*8, offset}, data);
 	}
 
+	void ClearOffsets() {_computedAddresses = std::map<uintptr_t, uintptr_t>();}
+
+private:
 	template<class T>
 	std::vector<T> ReadData(const std::vector<int>& offsets, size_t numItems) {
 		std::vector<T> data;
@@ -63,10 +67,6 @@ public:
 		}
 		ThrowError();
 	}
-
-	void ClearOffsets() {_computedAddresses = std::map<uintptr_t, uintptr_t>();}
-
-private:
 
 	void ThrowError();
 
