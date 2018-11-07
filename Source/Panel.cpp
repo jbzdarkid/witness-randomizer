@@ -1,12 +1,13 @@
 #include "Panel.h"
 #include "Random.h"
 #include "Memory.h"
+#include "Randomizer.h"
 #include <sstream>
 
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	for (size_t i=startIndex ; i<data.size(); i++) {
-		if (data[i] == search) return i;
+		if (data[i] == search) return static_cast<int>(i);
 	}
 	return -1;
 }
@@ -167,8 +168,8 @@ void Panel::WriteIntersections(int id) {
 
 	for (int y=0; y<_height; y++) {
 		for (int x=0; x<_width; x++) {
-			intersections.push_back(min + x * width_interval);
-			intersections.push_back(min + y * height_interval);
+			intersections.push_back(static_cast<float>(min + x * width_interval));
+			intersections.push_back(static_cast<float>(min + y * height_interval));
 			int flags = 0;
 			if (find(_startpoints, {x, y}) != -1) flags |= IntersectionFlags::IS_STARTPOINT;
 			intersectionFlags.push_back(flags);
@@ -184,22 +185,22 @@ void Panel::WriteIntersections(int id) {
 	}
 
 	for (Endpoint endpoint : _endpoints) {
-		float xPos = min + endpoint.GetX() * width_interval;
-		float yPos = min + endpoint.GetY() * height_interval;
+		double xPos = min + endpoint.GetX() * width_interval;
+		double yPos = min + endpoint.GetY() * height_interval;
 		if (endpoint.GetDir()== Endpoint::Direction::LEFT) {
-			xPos -= .05f;
+			xPos -= .05;
 		} else if (endpoint.GetDir() == Endpoint::Direction::RIGHT) {
-			xPos += .05f;
+			xPos += .05;
 		} else if (endpoint.GetDir() == Endpoint::Direction::UP) {
-			yPos += .05f; // Y position goes from 0 (bottom) to 1 (top), so this is reversed.
+			yPos += .05; // Y position goes from 0 (bottom) to 1 (top), so this is reversed.
 		} else if (endpoint.GetDir() == Endpoint::Direction::DOWN) {
-			yPos -= .05f;
+			yPos -= .05;
 		}
-		intersections.push_back(xPos);
-		intersections.push_back(yPos);
+		intersections.push_back(static_cast<float>(xPos));
+		intersections.push_back(static_cast<float>(yPos));
 
 		connections.first.push_back(endpoint.GetY() * _width + endpoint.GetX()); // Target to connect to
-		connections.second.push_back(intersectionFlags.size()); // This endpoint
+		connections.second.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 		intersectionFlags.push_back(IntersectionFlags::IS_ENDPOINT);
 	}
 

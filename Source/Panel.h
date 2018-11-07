@@ -1,6 +1,5 @@
 #pragma once
 #include "json.hpp"
-#include "RandomizerCore.h"
 #include "Memory.h"
 
 class Decoration

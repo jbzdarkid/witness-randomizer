@@ -9,6 +9,6 @@ GTEST_TEST(SwapTests, Shipwreck) {
 	int bu1 = 0x6;
 	int td1 = 0x5D;
 
-	randomizer.SwapPanels(si1, td1, SWAP_LINES);
+	randomizer.SwapPanels(si1, td1, Randomizer::SWAP::LINES);
 
 }

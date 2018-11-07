@@ -25,7 +25,7 @@ Memory::Memory(const std::string& processName) {
 	// Next, get the process base address
 	DWORD numModules;
 	std::vector<HMODULE> moduleList(1024);
-	EnumProcessModulesEx(_handle, &moduleList[0], moduleList.size(), &numModules, 3);
+	EnumProcessModulesEx(_handle, &moduleList[0], static_cast<DWORD>(moduleList.size()), &numModules, 3);
 
 	std::string name(64, 0);
 	for (DWORD i = 0; i < numModules / sizeof(HMODULE); i++) {
@@ -49,7 +49,7 @@ Memory::~Memory() {
 
 void Memory::ThrowError() {
 	std::string message(256, '\0');
-	FormatMessageA(4096, nullptr, GetLastError(), 1024, &message[0], message.length(), nullptr);
+	FormatMessageA(4096, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.length()), nullptr);
 	std::cout << message.c_str() << std::endl;
 	exit(EXIT_FAILURE);
 }

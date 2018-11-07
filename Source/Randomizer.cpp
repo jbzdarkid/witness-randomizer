@@ -21,7 +21,7 @@
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	for (size_t i=startIndex ; i<data.size(); i++) {
-		if (data[i] == search) return i;
+		if (data[i] == search) return static_cast<int>(i);
 	}
 	std::cout << "Couldn't find " << search << " in data!" << std::endl;
 	exit(-1);
@@ -44,10 +44,10 @@ void Randomizer::Randomize()
 	_lastRandomizedFrame = GetCurrentFrame();
 
 	// Content swaps -- must happen before squarePanels
-	Randomize(upDownPanels, SWAP_LINES);
-	Randomize(leftForwardRightPanels, SWAP_LINES);
+	Randomize(upDownPanels, SWAP::LINES);
+	Randomize(leftForwardRightPanels, SWAP::LINES);
 
-	Randomize(squarePanels, SWAP_LINES);
+	Randomize(squarePanels, SWAP::LINES);
 
 	// Individual area modifications
 	RandomizeTutorial();
@@ -88,7 +88,7 @@ void Randomizer::RandomizeSymmetry() {
 }
 
 void Randomizer::RandomizeDesert() {
-	Randomize(desertPanels, SWAP_LINES);
+	Randomize(desertPanels, SWAP::LINES);
 
 	// Turn off desert surface 8
 	_memory->WritePanelData<float>(0x09F94, POWER, {0.0, 0.0});
@@ -126,9 +126,9 @@ void Randomizer::RandomizeShadows() {
 
 	std::vector<int> randomOrder(shadowsPanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	RandomizeRange(randomOrder, SWAP_NONE, 0, 8); // Tutorial
-	RandomizeRange(randomOrder, SWAP_NONE, 8, 16); // Avoid
-	RandomizeRange(randomOrder, SWAP_NONE, 16, 21); // Follow
+	RandomizeRange(randomOrder, SWAP::NONE, 0, 8); // Tutorial
+	RandomizeRange(randomOrder, SWAP::NONE, 8, 16); // Avoid
+	RandomizeRange(randomOrder, SWAP::NONE, 16, 21); // Follow
 	ReassignTargets(shadowsPanels, randomOrder);
 	// Turn off original starting panel
 	_memory->WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
@@ -142,7 +142,7 @@ void Randomizer::RandomizeTown() {
 void Randomizer::RandomizeMonastery() {
 	std::vector<int> randomOrder(monasteryPanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	RandomizeRange(randomOrder, SWAP_NONE, 3, 9); // Outer 2 & 3, Inner 1-4
+	RandomizeRange(randomOrder, SWAP::NONE, 3, 9); // Outer 2 & 3, Inner 1-4
 	ReassignTargets(monasteryPanels, randomOrder);
 }
 
@@ -152,10 +152,10 @@ void Randomizer::RandomizeBunker() {
 	// Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
 	// Tutorial 1 cannot be randomized, since no other panel can start on
 	// Glass 1 will become door + glass 1, due to the targetting system
-	RandomizeRange(randomOrder, SWAP_NONE, 1, 10);
+	RandomizeRange(randomOrder, SWAP::NONE, 1, 10);
 	// Randomize Glass 1-3 into everything after the door/glass 1
 	const size_t glass1Index = find(randomOrder, 9);
-	RandomizeRange(randomOrder, SWAP_NONE, glass1Index + 1, 12);
+	RandomizeRange(randomOrder, SWAP::NONE, glass1Index + 1, 12);
 	ReassignTargets(bunkerPanels, randomOrder);
 }
 
@@ -163,8 +163,8 @@ void Randomizer::RandomizeJungle() {
 	std::vector<int> randomOrder(junglePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
 	// Waves 1 cannot be randomized, since no other panel can start on
-	RandomizeRange(randomOrder, SWAP_NONE, 1, 7); // Waves 2-7
-	RandomizeRange(randomOrder, SWAP_NONE, 8, 13); // Pitches 1-6
+	RandomizeRange(randomOrder, SWAP::NONE, 1, 7); // Waves 2-7
+	RandomizeRange(randomOrder, SWAP::NONE, 8, 13); // Pitches 1-6
 	ReassignTargets(junglePanels, randomOrder);
 }
 
@@ -175,8 +175,8 @@ void Randomizer::RandomizeSwamp() {
 
 void Randomizer::RandomizeMountain() {
 	// Randomize lasers & some of mountain
-	Randomize(lasers, SWAP_TARGETS);
-	Randomize(mountainMultipanel, SWAP_LINES);
+	Randomize(lasers, SWAP::TARGETS);
+	Randomize(mountainMultipanel, SWAP::LINES);
 
 	// Randomize final pillars order
 	std::vector<int> targets = {pillars[0] + 1};
@@ -188,8 +188,8 @@ void Randomizer::RandomizeMountain() {
 
 	std::vector<int> randomOrder(pillars.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	RandomizeRange(randomOrder, SWAP_NONE, 0, 4); // Left Pillars 1-4
-	RandomizeRange(randomOrder, SWAP_NONE, 5, 9); // Right Pillars 1-4
+	RandomizeRange(randomOrder, SWAP::NONE, 0, 4); // Left Pillars 1-4
+	RandomizeRange(randomOrder, SWAP::NONE, 5, 9); // Right Pillars 1-4
 	ReassignTargets(pillars, randomOrder, targets);
 	// Turn off original starting panels
 	_memory->WritePanelData<float>(pillars[0], POWER, {0.0f, 0.0f});
@@ -206,7 +206,7 @@ void Randomizer::RandomizeMountain() {
 void Randomizer::RandomizeChallenge() {
 	std::vector<int> randomOrder(challengePanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	RandomizeRange(randomOrder, SWAP_NONE, 1, 9); // Easy maze - Triple 2
+	RandomizeRange(randomOrder, SWAP::NONE, 1, 9); // Easy maze - Triple 2
 	std::vector<int> triple1Target = _memory->ReadPanelData<int>(0x00C80, TARGET, 1);
 	_memory->WritePanelData<int>(0x00CA1, TARGET, triple1Target);
 	_memory->WritePanelData<int>(0x00CB9, TARGET, triple1Target);
@@ -219,7 +219,7 @@ void Randomizer::RandomizeChallenge() {
 void Randomizer::RandomizeAudioLogs() {
 	std::vector<int> randomOrder(audiologs.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	Randomize(randomOrder, SWAP_NONE);
+	Randomize(randomOrder, SWAP::NONE);
 	ReassignNames(audiologs, randomOrder);
 }
 
@@ -231,9 +231,9 @@ void Randomizer::Randomize(std::vector<int>& panels, int flags) {
 void Randomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex) {
 	if (panels.size() == 0) return;
 	if (startIndex >= endIndex) return;
-	if (endIndex >= panels.size()) endIndex = panels.size();
+	if (endIndex >= panels.size()) endIndex = static_cast<int>(panels.size());
 	for (size_t i = endIndex-1; i > startIndex; i--) {
-		const size_t target = Random::RandInt(startIndex, i);
+		const int target = Random::RandInt(static_cast<int>(startIndex), static_cast<int>(i));
 		if (i != target) {
 			// std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
 			SwapPanels(panels[i], panels[target], flags);
@@ -245,13 +245,13 @@ void Randomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t star
 void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
 	std::map<int, int> offsets;
 
-	if (flags & SWAP_TARGETS) {
+	if (flags & SWAP::TARGETS) {
 		offsets[TARGET] = sizeof(int);
 	}
-	if (flags & SWAP_AUDIO_NAMES) {
+	if (flags & SWAP::AUDIO_NAMES) {
 		offsets[AUDIO_LOG_NAME] = sizeof(void*);
 	}
-	if (flags & SWAP_LINES) {
+	if (flags & SWAP::LINES) {
 		offsets[PATH_COLOR] = 16;
 		offsets[REFLECTION_PATH_COLOR] = 16;
 		offsets[DOT_COLOR] = 16;

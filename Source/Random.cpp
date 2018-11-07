@@ -1,7 +1,7 @@
 #include <chrono>
 #include "Random.h"
 
-int Random::s_seed = time(nullptr); // Seed from the time in milliseconds
+int Random::s_seed = static_cast<int>(time(nullptr)); // Seed from the time in milliseconds
 
 void Random::SetSeed(int seed) {
 	s_seed = seed;
