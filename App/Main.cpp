@@ -19,8 +19,8 @@
 #define IDT_RANDOMIZED 0x409
 
 HWND hwndSeed, hwndRandomize;
-int panel = 0x18AF;
-// int panel = 0x33D4;
+// int panel = 0x18AF;
+int panel = 0x33D4;
 std::shared_ptr<Panel> _panel;
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
 
@@ -94,7 +94,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				_panel->Write(panel);
 				break;
 			case IDC_DUMP:
-				// _panel->Serialize();
+				_panel->Serialize();
 				break;
 		}
 	}

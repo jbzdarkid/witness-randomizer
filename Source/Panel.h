@@ -45,7 +45,7 @@ enum IntersectionFlags {
 	IS_ENDPOINT = 0x1,
 	IS_STARTPOINT = 0x2,
 	IS_GAP = 0x10000,
-	HAS_DOT = 0x20,
+	HAS_DOT = 0x40020,
 	DOT_IS_BLUE = 0x100,
 	DOT_IS_ORANGE = 0x200,
 	DOT_IS_INVISIBLE = 0x1000,
@@ -110,7 +110,7 @@ public:
 
 private:
 	// For testing
-	Panel();
+	Panel() = default;
 
 	void ReadIntersections(int id);
 	void WriteIntersections(int id);
@@ -121,8 +121,11 @@ private:
 	// TODO: Decoration colors
 
 	std::tuple<int, int> loc_to_xy(int location) {
-		int x = 2 * (location % ((_width + 1) / 2));
-		int y = (_height - 1) - 2 * (location / ((_width + 1) / 2));
+		int height2 = (_height - 1) / 2;
+		int width2 = (_width + 1) / 2;
+
+		int x = 2 * (location % width2);
+		int y = 2 * (height2 - location / width2);
 		return {x, y};
 	}
 
@@ -134,7 +137,24 @@ private:
 		return rowsFromBottom * width2 + x/2;
 	}
 
-	Memory _memory = Memory("witness64_d3d11.exe");
+	std::tuple<int, int> dloc_to_xy(int location) {
+		int height2 = (_height - 3) / 2;
+		int width2 = (_width - 1) / 2;
+
+		int x = 2 * (location % width2) + 1;
+		int y = 2 * (height2 - location / width2) + 1;
+		return {x, y};
+	}
+
+	int xy_to_dloc(int x, int y) {
+		int height2 = (_height - 3) / 2;
+		int width2 = (_width - 1) / 2;
+
+		int rowsFromBottom = height2 - (y - 1)/2;
+		return rowsFromBottom * width2 + (x - 1)/2;
+	}
+
+	std::shared_ptr<Memory> _memory;
 
 	int _width, _height;
 

@@ -125,7 +125,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_8E9D847124D34D9D9008762077D816DE"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -163,7 +163,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Witness Randomizer"
         "ProductCode" = "8:{7DD620CA-9593-4E32-9D60-9D12069DA33C}"
-        "PackageCode" = "8:{90B5567A-BE63-4F98-A6C8-5FAC1942075A}"
+        "PackageCode" = "8:{BBA8F7F1-52D8-44B0-BC53-9AC3F0181E3D}"
         "UpgradeCode" = "8:{4CB5496B-A47E-41D3-B4A7-677E29AB7513}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -184,7 +184,7 @@
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
-        "TargetPlatform" = "3:0"
+        "TargetPlatform" = "3:1"
         "PreBuildEvent" = "8:"
         "PostBuildEvent" = "8:"
         "RunPostBuildEvent" = "3:0"
