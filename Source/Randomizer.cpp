@@ -2,6 +2,10 @@
  * BUGS:
  * Shipwreck vault is solved reversed? -> Not reversed, just "half", you can normally solve orange. Seems to need pattern name.
  * Tutorial sounds don't always play -> Unsure. Not controlled by pattern name.
+ * Make sure that monastery 1 isn't forced to trigger monastery 2
+ * Rainbow seems to be not copying background?
+ ** Rainbow 1 <-> Green 3 (the poly one) worked
+ ** Rainbow 2 <-> Treehouse Right Orange 1 didn't
  * FEATURES:
  * Start the game if it isn't running?
  * Stop swapping colors in desert
@@ -10,6 +14,12 @@
  * Make orange 7 (all of oranges?) hard. Like big = hard. (See: HARD_MODE)
  * Add a setting for "disable wonkavator and hotel", so that 100% runs are possible
  * Try to stabilize challenge/doors RNG
+ * I probably can randomize targets in bunker UV
+ * Random *rotation* of desert laser redirect?
+ * Add setting to disable laser randomization
+ * Try randomizing default-on for pitches & bunker
+ * Try turning on first half of wire in shadows once tutorial is done
+ * It might be possible to remove the texture on top of rainbow 5 (so that any panel can be placed there)
 */
 #include "Memory.h"
 #include "Randomizer.h"
