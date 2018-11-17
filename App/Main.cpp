@@ -54,7 +54,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				GetWindowText(hwndSeed, &text[0], 100);
 				int seed = _wtoi(text.c_str());
 
-				if (seedIsRNG || text.empty()) {
+				// TODO: text needs to be resized!
+				if (seedIsRNG || wcslen(text.c_str()) == 0) {
 					seed = Random::RandInt(0, 100000);
 					seedIsRNG = true;
 				}

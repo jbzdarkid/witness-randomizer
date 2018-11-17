@@ -8,6 +8,8 @@
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard. (See: HARD_MODE)
+ * Add a setting for "disable wonkavator and hotel", so that 100% runs are possible
+ * Try to stabilize challenge/doors RNG
 */
 #include "Memory.h"
 #include "Randomizer.h"

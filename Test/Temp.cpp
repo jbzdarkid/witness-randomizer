@@ -1,7 +1,21 @@
 #include "gtest/gtest.h"
 #include "Randomizer.h"
+#include <iostream>
+#include <fstream>
 
-GTEST_TEST(SwapTests, Shipwreck) {
+class Temp : public testing::Test
+{
+protected:
+	std::vector<char> ReadSubtitles(int size) {
+		Memory memory("witness64_d3d11.exe");
+		std::vector<char> data;
+		data.resize(size);
+		ReadProcessMemory(memory._handle, (LPVOID)0x3D89F000, &data[0], sizeof(char) * size, nullptr);
+		return data;
+	}
+};
+
+TEST(SwapTests, Shipwreck) {
 	Randomizer randomizer;
 	int shipwreck = 0xAFB;
 	int thEntry = 0x288C;
@@ -16,4 +30,19 @@ GTEST_TEST(SwapTests, Shipwreck) {
 
 	randomizer.SwapPanels(ypp, mill_upper_7, Randomizer::SWAP::LINES);
 
+}
+
+TEST_F(Temp, Extract) {
+//	std::vector<byte> data = ReadSubtitles(166480);
+	std::vector<char> data = ReadSubtitles(166480);
+	std::ofstream file("raw.txt");
+	ASSERT_TRUE(file.is_open());
+
+	std::string hex = "0123456789ABCDEF";
+	for (int i=0; i<data.size(); i++) {
+		if (data[i] == '\r') continue;
+		file << data[i];
+
+	}
+    file.close();
 }
