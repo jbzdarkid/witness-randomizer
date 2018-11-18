@@ -2,6 +2,7 @@
 #include <Richedit.h>
 
 #include <string>
+#include <sstream>
 
 #include "Version.h"
 #include "Random.h"
@@ -18,7 +19,7 @@
 #define IDC_DUMP 0x408
 #define IDT_RANDOMIZED 0x409
 
-HWND hwndSeed, hwndRandomize;
+HWND hwndSeed, hwndRandomize, hwndDebug;
 // int panel = 0x18AF;
 int panel = 0x33D4;
 std::shared_ptr<Panel> _panel;
@@ -68,12 +69,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				*/
 				if (randomizer->GameIsRandomized()) break;
 				Random::SetSeed(seed);
+
+
+				std::wstringstream debug;
+
  				std::wstring seedString = std::to_wstring(seed);
  				SetWindowText(hwndRandomize, L"Randomizing...");
  				SetWindowText(hwndSeed, seedString.c_str());
 				RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
 
 				randomizer->Randomize();
+				debug << Random::RandInt(0, 1000) << " ";
+				debug << Random::RandInt(0, 1000) << "\n";
+				debug << Random::RandInt(0, 1000) << " ";
+				debug << Random::RandInt(0, 1000);
+				SetWindowText(hwndDebug, debug.str().c_str());
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
  					randomizer->AdjustSpeed();
  				}
@@ -162,6 +172,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	CreateWindow(L"STATIC", L"Speed up various autoscrollers",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
+
+	hwndDebug = CreateWindow(L"STATIC", L"",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		200, 200, 100, 100, hwnd, NULL, hInstance, NULL);
 
 	/*
 	CreateWindow(L"BUTTON", L"",

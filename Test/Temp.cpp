@@ -32,6 +32,7 @@ TEST(SwapTests, Shipwreck) {
 
 }
 
+/*
 TEST_F(Temp, Extract) {
 //	std::vector<byte> data = ReadSubtitles(166480);
 	std::vector<char> data = ReadSubtitles(166480);
@@ -46,3 +47,4 @@ TEST_F(Temp, Extract) {
 	}
     file.close();
 }
+*/

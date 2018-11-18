@@ -1,0 +1,12 @@
+#pragma once
+#include "Memory.h"
+#include <memory>
+
+class ChallengeRandomizer {
+public:
+	ChallengeRandomizer(const std::shared_ptr<Memory>& memory, int seed);
+
+private:
+	void AdjustRng(int offset);
+	std::shared_ptr<Memory> _memory;
+};

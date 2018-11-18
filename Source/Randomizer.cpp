@@ -13,7 +13,6 @@
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard. (See: HARD_MODE)
  * Add a setting for "disable wonkavator and hotel", so that 100% runs are possible
- * Try to stabilize challenge/doors RNG
  * I probably can randomize targets in bunker UV
  * Random *rotation* of desert laser redirect?
  * Add setting to disable laser randomization
@@ -23,6 +22,7 @@
 */
 #include "Memory.h"
 #include "Randomizer.h"
+#include "ChallengeRandomizer.h"
 #include "Panels.h"
 #include "Random.h"
 #include <string>
@@ -54,6 +54,9 @@ void Randomizer::Randomize()
 	if (GameIsRandomized()) return;  // Nice sanity check, but should be unnecessary (since Main checks anyways)
 	_lastRandomizedFrame = _memory->GetCurrentFrame();
 
+	// Seed challenge first for future-proofing (?)
+	RandomizeChallenge();
+
 	// Content swaps -- must happen before squarePanels
 	Randomize(upDownPanels, SWAP::LINES);
 	Randomize(leftForwardRightPanels, SWAP::LINES);
@@ -74,7 +77,6 @@ void Randomizer::Randomize()
 	RandomizeJungle();
 	RandomizeSwamp();
 	RandomizeMountain();
-	// RandomizeChallenge();
 	// RandomizeAudioLogs();
 }
 
@@ -215,16 +217,7 @@ void Randomizer::RandomizeMountain() {
 }
 
 void Randomizer::RandomizeChallenge() {
-	std::vector<int> randomOrder(challengePanels.size(), 0);
-	std::iota(randomOrder.begin(), randomOrder.end(), 0);
-	RandomizeRange(randomOrder, SWAP::NONE, 1, 9); // Easy maze - Triple 2
-	std::vector<int> triple1Target = _memory->ReadPanelData<int>(0x00C80, TARGET, 1);
-	_memory->WritePanelData<int>(0x00CA1, TARGET, triple1Target);
-	_memory->WritePanelData<int>(0x00CB9, TARGET, triple1Target);
-	std::vector<int> triple2Target = _memory->ReadPanelData<int>(0x00C22, TARGET, 1);
-	_memory->WritePanelData<int>(0x00C59, TARGET, triple2Target);
-	_memory->WritePanelData<int>(0x00C68, TARGET, triple2Target);
-	ReassignTargets(challengePanels, randomOrder);
+	ChallengeRandomizer cr(_memory, Random::RandInt(1, 0x1000));
 }
 
 void Randomizer::RandomizeAudioLogs() {

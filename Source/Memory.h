@@ -3,8 +3,8 @@
 #include <map>
 #include <windows.h>
 
-// #define GLOBALS 0x5B28C0
-#define GLOBALS 0x62A080
+#define GLOBALS 0x5B28C0
+// #define GLOBALS 0x62A080
 
 // https://github.com/erayarslan/WriteProcessMemory-Example
 // http://stackoverflow.com/q/32798185
@@ -77,4 +77,5 @@ private:
 	HANDLE _handle = nullptr;
 
 	friend class Temp;
+	friend class ChallengeRandomizer;
 };
