@@ -18,8 +18,10 @@
 #define IDC_WRITE 0x407
 #define IDC_DUMP 0x408
 #define IDT_RANDOMIZED 0x409
+#define IDC_TOGGLELASERS 0x410
+#define IDC_TOGGLESNIPES 0x411
 
-HWND hwndSeed, hwndRandomize, hwndDebug;
+HWND hwndSeed, hwndRandomize;
 // int panel = 0x18AF;
 int panel = 0x33D4;
 std::shared_ptr<Panel> _panel;
@@ -38,13 +40,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				seedIsRNG = false;
 		}
 		switch (LOWORD(wParam)) {
-			// Speed checkbox
+			// Checkboxes
 			case IDC_TOGGLESPEED:
-				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
-					CheckDlgButton(hwnd, IDC_TOGGLESPEED, BST_UNCHECKED);
-				} else {
-					CheckDlgButton(hwnd, IDC_TOGGLESPEED, BST_CHECKED);
-				}
+				CheckDlgButton(hwnd, IDC_TOGGLESPEED, !IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED));
+				break;
+			case IDC_TOGGLELASERS:
+				CheckDlgButton(hwnd, IDC_TOGGLELASERS, !IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS));
+				break;
+			case IDC_TOGGLESNIPES:
+				CheckDlgButton(hwnd, IDC_TOGGLESNIPES, !IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES));
 				break;
 
 			// Randomize button
@@ -70,30 +74,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (randomizer->GameIsRandomized()) break;
 				Random::SetSeed(seed);
 
-
-				std::wstringstream debug;
-
+				// Show seed and force redraw
  				std::wstring seedString = std::to_wstring(seed);
  				SetWindowText(hwndRandomize, L"Randomizing...");
  				SetWindowText(hwndSeed, seedString.c_str());
 				RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
 
+				// Randomize, then apply settings
 				randomizer->Randomize();
-				debug << Random::RandInt(0, 1000) << " ";
-				debug << Random::RandInt(0, 1000) << "\n";
-				debug << Random::RandInt(0, 1000) << " ";
-				debug << Random::RandInt(0, 1000);
-				SetWindowText(hwndDebug, debug.str().c_str());
-				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) {
- 					randomizer->AdjustSpeed();
- 				}
- 				SetWindowText(hwndRandomize, L"Randomized!");
+				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
+				if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
+				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES)) randomizer->PreventSnipes();
+
+				// Cleanup, and set timer for "randomization done"
+				SetWindowText(hwndRandomize, L"Randomized!");
 				SetTimer(hwnd, IDT_RANDOMIZED, 10000, NULL);
 				break;
 			}
 
 			case IDT_RANDOMIZED:
 				SetWindowText(hwndRandomize, L"Randomize");
+				randomizer->GameIsRandomized(); // "Check" if the game is randomized to update the last known safe frame.
 				break;
 			case IDC_READ:
 				_panel = std::make_shared<Panel>(panel);
@@ -171,11 +172,22 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		10, 52, 12, 12, hwnd, (HMENU)IDC_TOGGLESPEED, hInstance, NULL);
 	CreateWindow(L"STATIC", L"Speed up various autoscrollers",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
+		27, 50, 210, 16, hwnd, NULL, hInstance, NULL);
 
-	hwndDebug = CreateWindow(L"STATIC", L"",
+	CreateWindow(L"BUTTON", L"",
+		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+		10, 72, 12, 12, hwnd, (HMENU)IDC_TOGGLELASERS, hInstance, NULL);
+	CreateWindow(L"STATIC", L"Randomize laser activations",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		200, 200, 100, 100, hwnd, NULL, hInstance, NULL);
+		27, 70, 210, 16, hwnd, NULL, hInstance, NULL);
+
+	CreateWindow(L"BUTTON", L"",
+		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+		10, 92, 12, 12, hwnd, (HMENU)IDC_TOGGLESNIPES, hInstance, NULL);
+	CheckDlgButton(hwnd, IDC_TOGGLESNIPES, TRUE);
+	CreateWindow(L"STATIC", L"Prevent sniping certain puzzles",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		27, 90, 210, 16, hwnd, NULL, hInstance, NULL);
 
 	/*
 	CreateWindow(L"BUTTON", L"",
@@ -203,13 +215,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
 		10, 52, 12, 12, hwnd, (HMENU)IDC_CASUAL, hInstance, NULL);
 	CreateWindow(L"STATIC", L"Don't randomize context-based puzzles",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 52, 12, 12, hwnd, (HMENU)IDC_BANSNIPES, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Prevent sniping certain puzzles",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
 

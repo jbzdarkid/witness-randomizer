@@ -8,6 +8,8 @@ public:
 	bool GameIsRandomized();
 
 	void AdjustSpeed();
+	void RandomizeLasers();
+	void PreventSnipes();
 
 	void ClearOffsets() {_memory->ClearOffsets();}
 
@@ -19,7 +21,6 @@ public:
 	};
 
 private:
-
 	int _lastRandomizedFrame = 1 << 30;
 	void RandomizeTutorial();
 	void RandomizeSymmetry();

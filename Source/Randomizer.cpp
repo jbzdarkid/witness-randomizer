@@ -89,6 +89,22 @@ void Randomizer::AdjustSpeed() {
 	_memory->WritePanelData<float>(0x09EEC, OPEN_RATE, {0.075f}); // 3x
 }
 
+void Randomizer::RandomizeLasers() {
+	Randomize(lasers, SWAP::TARGETS);
+	// Read the target of keep front laser, and write it to keep back laser.
+	std::vector<int> keepFrontLaserTarget = _memory->ReadPanelData<int>(0x0360E, TARGET, 1);
+	_memory->WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
+}
+
+void Randomizer::PreventSnipes()
+{
+	// Distance-gate swamp snipe 1 to prevent RNG swamp snipe
+	_memory->WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {15.0});
+	// Distance-gate shadows laser to prevent sniping through the bars
+	_memory->WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
+}
+
+// Private methods
 void Randomizer::RandomizeTutorial() {
 	// Disable tutorial cursor speed modifications (not working?)
 	_memory->WritePanelData<float>(0x00295, CURSOR_SPEED_SCALE, {1.0});
@@ -130,8 +146,6 @@ void Randomizer::RandomizeKeep() {
 }
 
 void Randomizer::RandomizeShadows() {
-	// Distance-gate shadows laser to prevent sniping through the bars
-	_memory->WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
 	// Change the shadows tutorial cable to only activate avoid
 	_memory->WritePanelData<int>(0x319A8, CABLE_TARGET_2, {0});
 	// Change shadows avoid 8 to power shadows follow
@@ -182,13 +196,10 @@ void Randomizer::RandomizeJungle() {
 }
 
 void Randomizer::RandomizeSwamp() {
-	// Distance-gate swamp snipe 1 to prevent RNG swamp snipe
-	_memory->WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {15.0});
 }
 
 void Randomizer::RandomizeMountain() {
-	// Randomize lasers & some of mountain
-	Randomize(lasers, SWAP::TARGETS);
+	// Randomize multipanel
 	Randomize(mountainMultipanel, SWAP::LINES);
 
 	// Randomize final pillars order
@@ -210,14 +221,10 @@ void Randomizer::RandomizeMountain() {
 	// Turn on new starting panels
 	_memory->WritePanelData<float>(pillars[randomOrder[0]], POWER, {1.0f, 1.0f});
 	_memory->WritePanelData<float>(pillars[randomOrder[5]], POWER, {1.0f, 1.0f});
-
-	// Read the target of keep front laser, and write it to keep back laser.
-	std::vector<int> keepFrontLaserTarget = _memory->ReadPanelData<int>(0x0360E, TARGET, 1);
-	_memory->WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
 }
 
 void Randomizer::RandomizeChallenge() {
-	ChallengeRandomizer cr(_memory, Random::RandInt(1, 0x1000));
+	ChallengeRandomizer cr(_memory, Random::RandInt(1, 0x7FFFFFFF)); // 0 will trigger an "RNG not initialized" block
 }
 
 void Randomizer::RandomizeAudioLogs() {
