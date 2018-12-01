@@ -162,15 +162,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Witness Randomizer"
-        "ProductCode" = "8:{2AC8C329-8190-4A51-9861-5C922763C6F3}"
-        "PackageCode" = "8:{05B49C89-4B7E-4E42-B061-3BAB51527E54}"
+        "ProductCode" = "8:{34E5DE4A-C207-4A1D-9539-BFB63EB4D6D0}"
+        "PackageCode" = "8:{549657D5-A233-4884-9751-D099E584FD5D}"
         "UpgradeCode" = "8:{4CB5496B-A47E-41D3-B4A7-677E29AB7513}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:5.0.0"
+        "ProductVersion" = "8:5.0.1"
         "Manufacturer" = "8:jbzdarkid"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://www.github.com/jbzdarkid/witness-randomizer/issues"
@@ -698,7 +698,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_F4835D5BBF3E437390127C4C49888F07"
             {
-            "SourcePath" = "8:..\\x64\\Debug\\WitnessRandomizer.exe"
+            "SourcePath" = "8:..\\GithubPackage\\WitnessRandomizer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_8E9D847124D34D9D9008762077D816DE"
