@@ -18,6 +18,7 @@ public:
 		TARGETS = 1,
 		LINES = 2,
 		AUDIO_NAMES = 4,
+		COLORS = 8,
 	};
 
 private:

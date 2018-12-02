@@ -1,24 +1,29 @@
 /*
+ * Random *rotation* of desert laser redirect?
+ * Disable wonkavator and hotel, so that 100% runs are possible
+ * Try to wire up both keep halves
+ * Wire up both halves of symmetry laser
+ * Turn off floating panel in desert
+
+
+ * Speed up *everything* ? Or maybe we'll just stop using this setting entirely.
+
+
  * BUGS:
  * Shipwreck vault is solved reversed? -> Not reversed, just "half", you can normally solve orange. Seems to need pattern name.
  * Tutorial sounds don't always play -> Unsure. Not controlled by pattern name.
- * Make sure that monastery 1 isn't forced to trigger monastery 2
  * Rainbow seems to be not copying background?
  ** Rainbow 1 <-> Green 3 (the poly one) worked
  ** Rainbow 2 <-> Treehouse Right Orange 1 didn't
  * FEATURES:
  * Start the game if it isn't running?
- * Stop swapping colors in desert
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard. (See: HARD_MODE)
- * Add a setting for "disable wonkavator and hotel", so that 100% runs are possible
- * I probably can randomize targets in bunker UV
- * Random *rotation* of desert laser redirect?
- * Add setting to disable laser randomization
  * Try randomizing default-on for pitches & bunker
  * Try turning on first half of wire in shadows once tutorial is done
  * It might be possible to remove the texture on top of rainbow 5 (so that any panel can be placed there)
+ * 20 challenges with 20 consecutive seeds
 */
 #include "Memory.h"
 #include "Randomizer.h"
@@ -58,10 +63,10 @@ void Randomizer::Randomize()
 	RandomizeChallenge();
 
 	// Content swaps -- must happen before squarePanels
-	Randomize(upDownPanels, SWAP::LINES);
-	Randomize(leftForwardRightPanels, SWAP::LINES);
+	Randomize(upDownPanels, SWAP::LINES | SWAP::COLORS);
+	Randomize(leftForwardRightPanels, SWAP::LINES | SWAP::COLORS);
 
-	Randomize(squarePanels, SWAP::LINES);
+	Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
 
 	// Individual area modifications
 	RandomizeTutorial();
@@ -200,7 +205,7 @@ void Randomizer::RandomizeSwamp() {
 
 void Randomizer::RandomizeMountain() {
 	// Randomize multipanel
-	Randomize(mountainMultipanel, SWAP::LINES);
+	Randomize(mountainMultipanel, SWAP::LINES | SWAP::COLORS);
 
 	// Randomize final pillars order
 	std::vector<int> targets = {pillars[0] + 1};
@@ -262,7 +267,7 @@ void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
 	if (flags & SWAP::AUDIO_NAMES) {
 		offsets[AUDIO_LOG_NAME] = sizeof(void*);
 	}
-	if (flags & SWAP::LINES) {
+	if (flags & SWAP::COLORS) {
 		offsets[PATH_COLOR] = 16;
 		offsets[REFLECTION_PATH_COLOR] = 16;
 		offsets[DOT_COLOR] = 16;
@@ -284,14 +289,19 @@ void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[PUSH_SYMBOL_COLORS] = sizeof(int);
 		offsets[OUTER_BACKGROUND] = 16;
 		offsets[OUTER_BACKGROUND_MODE] = sizeof(int);
+		// These two control the "burn intensity", but I can't swap out burn marks in new ver, so they should probably stay tied to each frame.
+		// offsets[SPECULAR_ADD] = sizeof(float);
+		// offsets[SPECULAR_POWER] = sizeof(int);
+		offsets[NUM_COLORED_REGIONS] = sizeof(int);
+		offsets[COLORED_REGIONS] = sizeof(void*);
+	}
+	if (flags & SWAP::LINES) {
 		offsets[TRACED_EDGES] = 16;
 		offsets[AUDIO_PREFIX] = sizeof(void*);
 //		offsets[IS_CYLINDER] = sizeof(int);
 //		offsets[CYLINDER_Z0] = sizeof(float);
 //		offsets[CYLINDER_Z1] = sizeof(float);
 //		offsets[CYLINDER_RADIUS] = sizeof(float);
-		offsets[SPECULAR_ADD] = sizeof(float);
-		offsets[SPECULAR_POWER] = sizeof(int);
 		offsets[PATH_WIDTH_SCALE] = sizeof(float);
 		offsets[STARTPOINT_SCALE] = sizeof(float);
 		offsets[NUM_DOTS] = sizeof(int);
@@ -314,8 +324,6 @@ void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
 		offsets[DOT_SEQUENCE] = sizeof(void*);
 		offsets[DOT_SEQUENCE_LEN_REFLECTION] = sizeof(int);
 		offsets[DOT_SEQUENCE_REFLECTION] = sizeof(void*);
-		offsets[NUM_COLORED_REGIONS] = sizeof(int);
-		offsets[COLORED_REGIONS] = sizeof(void*);
 		offsets[PANEL_TARGET] = sizeof(void*);
 		offsets[SPECULAR_TEXTURE] = sizeof(void*);
 	}
