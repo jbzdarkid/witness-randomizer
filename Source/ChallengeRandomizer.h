@@ -7,7 +7,7 @@ public:
 	ChallengeRandomizer(const std::shared_ptr<Memory>& memory, int seed);
 
 private:
-	void HandleSigScans(int i, const std::vector<byte>& data);
+	void HandleSigScans();
 
 	void AdjustRng(int offset);
 	std::shared_ptr<Memory> _memory;

@@ -39,6 +39,11 @@ Memory::Memory(const std::string& processName) {
 	if (_baseAddress == 0) {
 		throw std::exception("Couldn't find the base process address!");
 	}
+
+	// Unprotect regions of memory
+
+	DWORD oldProtect;
+	VirtualProtectEx(_handle, (LPVOID)_baseAddress, sizeof(DWORD), PAGE_READWRITE, &oldProtect); 
 }
 
 Memory::~Memory() {
@@ -56,6 +61,14 @@ int Memory::GetCurrentFrame()
 		throw std::exception("Unknown value for Globals!");
 	}
 	return ReadData<int>({SCRIPT_FRAMES}, 1)[0];
+}
+
+void Memory::SigScan(std::function<void(int offset, const std::vector<byte>& data)> scanFunc)
+{
+	for (int i=0; i<0x200000; i+=0x1000) {
+		std::vector<byte> data = ReadData<byte>({i}, 0x1100);
+		scanFunc(i, data);
+	}
 }
 
 void Memory::ThrowError() {

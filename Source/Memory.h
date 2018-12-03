@@ -1,6 +1,7 @@
 #pragma once
-#include <vector>
+#include <functional>
 #include <map>
+#include <vector>
 #include <windows.h>
 
 // #define GLOBALS 0x5B28C0
@@ -41,6 +42,8 @@ public:
 		WriteData<T>({GLOBALS, 0x18, panel*8, offset}, data);
 	}
 
+	void SigScan(std::function<void(int offset, const std::vector<byte>& data)> scanFunc);
+
 	void ClearOffsets() {_computedAddresses = std::map<uintptr_t, uintptr_t>();}
 
 private:
@@ -78,4 +81,5 @@ private:
 
 	friend class Temp;
 	friend class ChallengeRandomizer;
+	friend class Randomizer;
 };

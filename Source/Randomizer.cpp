@@ -1,6 +1,5 @@
 /*
  * Random *rotation* of desert laser redirect?
- * Disable wonkavator and hotel, so that 100% runs are possible
  * Try to wire up both keep halves
  * Wire up both halves of symmetry laser
  * Turn off floating panel in desert

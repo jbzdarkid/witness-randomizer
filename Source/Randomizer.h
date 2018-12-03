@@ -119,6 +119,7 @@ private:
 #define AUDIO_LOG_NAME 0xC8
 #define OPEN_RATE 0xE8
 #define METADATA 0xF2 // sizeof(short)
+#define HOTEL_EP_NAME 0x4BC640
 #elif GLOBALS == 0x62A080
 #define PATH_COLOR 0xC0
 #define REFLECTION_PATH_COLOR 0xD0
@@ -184,4 +185,5 @@ private:
 #define AUDIO_LOG_NAME 0x0
 #define OPEN_RATE 0xE0
 #define METADATA 0x13A // sizeof(short)
+#define HOTEL_EP_NAME 0x51E340
 #endif
