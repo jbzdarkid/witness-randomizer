@@ -1,8 +1,8 @@
 /*
- * Random *rotation* of desert laser redirect?
  * Try to wire up both keep halves
  * Wire up both halves of symmetry laser
  * Turn off floating panel in desert
+ * Try randomizing default-on for pitches & bunker
 
 
  * Speed up *everything* ? Or maybe we'll just stop using this setting entirely.
@@ -23,10 +23,10 @@
  * Randomize audio logs -- Hard, seem to be unloaded some times?
  * Swap sounds in jungle (along with panels) -- maybe impossible
  * Make orange 7 (all of oranges?) hard. Like big = hard. (See: HARD_MODE)
- * Try randomizing default-on for pitches & bunker
  * Try turning on first half of wire in shadows once tutorial is done
  * It might be possible to remove the texture on top of rainbow 5 (so that any panel can be placed there)
  * 20 challenges with 20 consecutive seeds
+ * Random *rotation* of desert laser redirect?
 */
 #include "Memory.h"
 #include "Randomizer.h"
@@ -201,6 +201,11 @@ void Randomizer::RandomizeJungle() {
 	RandomizeRange(randomOrder, SWAP::NONE, 1, 7); // Waves 2-7
 	RandomizeRange(randomOrder, SWAP::NONE, 8, 13); // Pitches 1-6
 	ReassignTargets(junglePanels, randomOrder);
+
+	// Fix the wall's target to point back to the cable, and the cable to point to the pitches panel.
+	// auto wallTarget = _memory->ReadPanelData<int>(junglePanels[7], TARGET, 1);
+	// _memory->WritePanelData<int>(junglePanels[7], TARGET, {0x3C113});
+	// _memory->WritePanelData<int>(0x3C112, CABLE_TARGET_1, wallTarget);
 }
 
 void Randomizer::RandomizeSwamp() {
