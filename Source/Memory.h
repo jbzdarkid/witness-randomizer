@@ -42,7 +42,8 @@ public:
 		WriteData<T>({GLOBALS, 0x18, panel*8, offset}, data);
 	}
 
-	void SigScan(std::function<void(int offset, const std::vector<byte>& data)> scanFunc);
+	void AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc);
+	int ExecuteSigScans();
 
 	void ClearOffsets() {_computedAddresses = std::map<uintptr_t, uintptr_t>();}
 
@@ -78,6 +79,11 @@ private:
 	std::map<uintptr_t, uintptr_t> _computedAddresses;
 	uintptr_t _baseAddress = 0;
 	HANDLE _handle = nullptr;
+	struct SigScan {
+		std::function<void(int)> scanFunc;
+		bool found;
+	};
+	std::map<std::vector<byte>, SigScan> _sigScans;
 
 	friend class Temp;
 	friend class ChallengeRandomizer;

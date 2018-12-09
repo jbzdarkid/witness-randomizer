@@ -7,6 +7,11 @@
 
  * Speed up *everything* ? Or maybe we'll just stop using this setting entirely.
 
+ * Disable "power off on fail" for challenge
+ * Add setting for "Don't reset the challenge seed on new challenge"
+ * Don't rerandomize anything outside of challenge on re-click
+ * Change re-randomization prevention?
+
 
  * BUGS:
  * Shipwreck vault is solved reversed? -> Not reversed, just "half", you can normally solve orange. Seems to need pattern name.

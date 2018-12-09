@@ -63,12 +63,45 @@ int Memory::GetCurrentFrame()
 	return ReadData<int>({SCRIPT_FRAMES}, 1)[0];
 }
 
-void Memory::SigScan(std::function<void(int offset, const std::vector<byte>& data)> scanFunc)
+void Memory::AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc)
+{
+	_sigScans[scanBytes] = {scanFunc, false};
+}
+
+int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t startIndex = 0) {
+	for (size_t i=startIndex; i<data.size() - search.size(); i++) {
+		bool match = true;
+		for (size_t j=0; j<search.size(); j++) {
+			if (data[i+j] == search[j]) {
+				continue;
+			}
+			match = false;
+			break;
+		}
+		if (match) return static_cast<int>(i);
+	}
+	return -1;
+}
+
+int Memory::ExecuteSigScans()
 {
 	for (int i=0; i<0x200000; i+=0x1000) {
 		std::vector<byte> data = ReadData<byte>({i}, 0x1100);
-		scanFunc(i, data);
+		
+		for (auto& [scanBytes, sigScan] : _sigScans) {
+			if (sigScan.found) continue;
+			int index = find(data, scanBytes);
+			if (index == -1) continue;
+			sigScan.scanFunc(i + index);
+			sigScan.found = true;
+		}
 	}
+
+	int notFound = 0;
+	for (auto it : _sigScans) {
+		if (it.second.found == false) notFound++;
+	}
+	return notFound;
 }
 
 void Memory::ThrowError() {
