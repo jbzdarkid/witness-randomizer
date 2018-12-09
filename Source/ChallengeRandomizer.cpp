@@ -94,8 +94,8 @@ ChallengeRandomizer::ChallengeRandomizer(const std::shared_ptr<Memory>& memory, 
 		});
 		// Entity_Record_Player::reroll_lotus_eater_stuff
 		_memory->AddSigScan({0xB8, 0xAB, 0xAA, 0xAA, 0xAA, 0x41, 0xC1, 0xE8}, [&](int index) {
-			AdjustRng(index - 0x52);
-			AdjustRng(index - 0xB);
+			AdjustRng(index - 0x13);
+			AdjustRng(index + 0x34);
 		});
 
 		// These disable the random locations on timer panels, which would otherwise increment the RNG.

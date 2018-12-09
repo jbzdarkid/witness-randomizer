@@ -76,6 +76,7 @@ private:
 #define AUDIO_PREFIX 0x278
 #define POWER 0x2A8
 #define TARGET 0x2BC
+#define POWER_OFF_ON_FAIL 0x2C0
 #define IS_CYLINDER 0x2FC
 #define CYLINDER_Z0 0x300
 #define CYLINDER_Z1 0x304
@@ -142,6 +143,7 @@ private:
 #define AUDIO_PREFIX 0x270
 #define POWER 0x2A0
 #define TARGET 0x2B4
+#define POWER_OFF_ON_FAIL 0x2B8
 #define IS_CYLINDER 0x2F4
 #define CYLINDER_Z0 0x2F8
 #define CYLINDER_Z1 0x2FC

@@ -7,7 +7,6 @@
 
  * Speed up *everything* ? Or maybe we'll just stop using this setting entirely.
 
- * Disable "power off on fail" for challenge
  * Add setting for "Don't reset the challenge seed on new challenge"
  * Don't rerandomize anything outside of challenge on re-click
  * Change re-randomization prevention?
@@ -234,6 +233,9 @@ void Randomizer::RandomizeMountain() {
 
 void Randomizer::RandomizeChallenge() {
 	ChallengeRandomizer cr(_memory, Random::RandInt(1, 0x7FFFFFFF)); // 0 will trigger an "RNG not initialized" block
+	for (int panel : challengePanels) {
+		_memory->WritePanelData<int>(panel, POWER_OFF_ON_FAIL, {0});
+	}
 }
 
 void Randomizer::RandomizeAudioLogs() {

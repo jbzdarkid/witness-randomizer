@@ -92,11 +92,11 @@ std::vector<int> challengePanels = {
 	0x00CDB, // Challenge Column Top Left
 	0x00CD4, // Challenge Column Far Panel
 	0x00C80, // Challenge Triple 1 Left
-//	0x00CA1, // Challenge Triple 1 Center
-//	0x00CB9, // Challenge Triple 1 Right
+	0x00CA1, // Challenge Triple 1 Center
+	0x00CB9, // Challenge Triple 1 Right
 	0x00C22, // Challenge Triple 2 Left
-//	0x00C59, // Challenge Triple 2 Center
-//	0x00C68, // Challenge Triple 2 Right
+	0x00C59, // Challenge Triple 2 Center
+	0x00C68, // Challenge Triple 2 Right
 //	0x04CB3, // Challenge Left Timer
 //	0x04CB5, // Challenge Middle Timer
 //	0x04CB6, // Challenge Right Timer
