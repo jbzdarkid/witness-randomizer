@@ -39,11 +39,6 @@ Memory::Memory(const std::string& processName) {
 	if (_baseAddress == 0) {
 		throw std::exception("Couldn't find the base process address!");
 	}
-
-	// Unprotect regions of memory
-
-	DWORD oldProtect;
-	VirtualProtectEx(_handle, (LPVOID)_baseAddress, sizeof(DWORD), PAGE_READWRITE, &oldProtect); 
 }
 
 Memory::~Memory() {
@@ -55,7 +50,7 @@ int Memory::GetCurrentFrame()
 	int SCRIPT_FRAMES;
 	if (GLOBALS == 0x5B28C0) {
 		SCRIPT_FRAMES = 0x5BE3B0;
-	} else if (GLOBALS == 0x62A080) {
+	} else if (GLOBALS == 0x62D0A0) {
 		SCRIPT_FRAMES = 0x63651C;
 	} else {
 		throw std::exception("Unknown value for Globals!");

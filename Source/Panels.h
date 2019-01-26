@@ -46,6 +46,7 @@ std::vector<int> upDownPanels = {
 	0x28ACB, // Town Blue 4
 	0x28ACC, // Town Blue 5
 	0x00029, // UTM Invisible Dots Symmetry 3
+	0x288AA, // UTM Perspective 4
 
 	0x0A3B5, // Tutorial Back Left
 	0x17CC4, // Mill Elevator Control

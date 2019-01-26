@@ -5,7 +5,7 @@
 #include <windows.h>
 
 // #define GLOBALS 0x5B28C0
-#define GLOBALS 0x62A080
+#define GLOBALS 0x62D0A0
 
 // https://github.com/erayarslan/WriteProcessMemory-Example
 // http://stackoverflow.com/q/32798185
