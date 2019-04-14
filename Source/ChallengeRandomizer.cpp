@@ -20,11 +20,13 @@ ChallengeRandomizer::ChallengeRandomizer(const std::shared_ptr<Memory>& memory, 
 
 	// do_success_side_effects
 	_memory->AddSigScan({0xFF, 0xC8, 0x99, 0x2B, 0xC2, 0xD1, 0xF8, 0x8B, 0xD0}, [&](int index) {
-		if (GLOBALS == 0x5B28C0) { // Version differences
+		if (GLOBALS == 0x5B28C0) { // Version differences.
 			index += 0x3E;
-		} else if (GLOBALS == 0x62A080) {
+		} else if (GLOBALS == 0x62D0A0) {
 			index += 0x42;
 		}
+		// Overwritten bytes start just after the movsxd rax, dword ptr ds:[rdi + 0x230]
+		// aka test eax, eax; jle 2C; imul rcx, rax, 34
 		_memory->WriteData<byte>({index}, {
 			0x8B, 0x0D, 0x00, 0x00, 0x00, 0x00,			// mov ecx, [0x00000000] ;This is going to be the address of the custom RNG
 			0x67, 0xC7, 0x01, 0x00, 0x00, 0x00, 0x00,	// mov dword ptr ds:[ecx], 0x00000000 ;This is going to be the seed value
@@ -33,25 +35,26 @@ ChallengeRandomizer::ChallengeRandomizer(const std::shared_ptr<Memory>& memory, 
 		});
 		int target = (GLOBALS + 0x30) - (index + 0x6); // +6 is for the length of the line
 		_memory->WriteData<int>({index + 0x2}, {target});
-		_memory->WriteData<int>({index + 0x9}, {seed});
-	});
-
-	// reveal_exit_hall
-	_memory->AddSigScan({0x45, 0x8B, 0xF7, 0x48, 0x8B, 0x4D}, [&](int index){
-		_memory->WriteData<byte>({index + 0x15}, {0xEB});
-	});
-
-	// begin_endgame_1
-	_memory->AddSigScan({0x83, 0x7C, 0x01, 0xD0, 0x04}, [&](int index){
-		if (GLOBALS == 0x5B28C0) { // Version differences
-			index += 0x75;
-		} else if (GLOBALS == 0x62A080) {
-			index += 0x86;
-		}
-		_memory->WriteData<byte>({index}, {0xEB});
+		_memory->WriteData<int>({index + 0x9}, {seed}); // Because we're resetting seed every challenge, we need to run this injection every time.
 	});
 
 	if (!alreadyInjected) {
+		// reveal_exit_hall
+		_memory->AddSigScan({0x45, 0x8B, 0xF7, 0x48, 0x8B, 0x4D}, [&](int index){
+			_memory->WriteData<byte>({index + 0x15}, {0xEB});
+		});
+
+		// begin_endgame_1
+		_memory->AddSigScan({0x83, 0x7C, 0x01, 0xD0, 0x04}, [&](int index){
+			if (GLOBALS == 0x5B28C0) { // Version differences.
+				index += 0x75;
+			} else if (GLOBALS == 0x62D0A0) {
+				index += 0x86;
+			}
+			// Overwriting a 74 12 opcode
+			_memory->WriteData<byte>({index}, {0xEB});
+		});
+
 		// shuffle_integers
 		_memory->AddSigScan({0x48, 0x89, 0x5C, 0x24, 0x10, 0x56, 0x48, 0x83, 0xEC, 0x20, 0x48, 0x63, 0xDA, 0x48, 0x8B, 0xF1, 0x83, 0xFB, 0x01}, [&](int index) {
 			AdjustRng(index + 0x23);
