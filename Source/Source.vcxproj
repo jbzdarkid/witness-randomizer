@@ -167,6 +167,7 @@
     <ClInclude Include="Randomizer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChallengeRandomizer.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Panel.cpp" />
     <ClCompile Include="Random.cpp" />
