@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #include "Version.h"
 #include "Random.h"
@@ -21,11 +22,44 @@
 #define IDC_TOGGLELASERS 0x410
 #define IDC_TOGGLESNIPES 0x411
 
-HWND hwndSeed, hwndRandomize;
-// int panel = 0x18AF;
-int panel = 0x33D4;
-std::shared_ptr<Panel> _panel;
+#define IDC_ADD 0x301
+#define IDC_REMOVE 0x302
+#define IDC_ROTATED 0x303
+#define IDC_NEGATIVE 0x304
+
+#define SHAPE_11 0x1000
+#define SHAPE_12 0x2000
+#define SHAPE_13 0x4000
+#define SHAPE_14 0x8000
+#define SHAPE_21 0x0100
+#define SHAPE_22 0x0200
+#define SHAPE_23 0x0400
+#define SHAPE_24 0x0800
+#define SHAPE_31 0x0010
+#define SHAPE_32 0x0020
+#define SHAPE_33 0x0040
+#define SHAPE_34 0x0080
+#define SHAPE_41 0x0001
+#define SHAPE_42 0x0002
+#define SHAPE_43 0x0004
+#define SHAPE_44 0x0008
+
+HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
+
+int panel = 0x17E4D; // Treehouse Green 2
+
+std::shared_ptr<Panel> _panel = std::make_shared<Panel>(panel);
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
+
+TCHAR text[30];
+int x, y;
+std::wstring str;
+Decoration::Shape symbol;
+Decoration::Color color;
+int currentShape;
+std::vector<long long> shapePos = { SHAPE_11, SHAPE_12, SHAPE_13, SHAPE_14, SHAPE_21, SHAPE_22, SHAPE_23, SHAPE_24,
+							  SHAPE_31, SHAPE_32, SHAPE_33, SHAPE_34, SHAPE_41, SHAPE_42, SHAPE_43, SHAPE_44 };
+std::vector<long long> defaultShape = { SHAPE_21, SHAPE_31, SHAPE_32, SHAPE_33 };
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -82,9 +116,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				// Randomize, then apply settings
 				randomizer->Randomize();
+				/*
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES)) randomizer->PreventSnipes();
+				*/
+				randomizer->AdjustSpeed();
+				randomizer->PreventSnipes();
 
 				// Cleanup, and set timer for "randomization done"
 				SetWindowText(hwndRandomize, L"Randomized!");
@@ -96,18 +134,97 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowText(hwndRandomize, L"Randomize");
 				randomizer->GameIsRandomized(); // "Check" if the game is randomized to update the last known safe frame.
 				break;
-			case IDC_READ:
-				_panel = std::make_shared<Panel>(panel);
-				break;
-			case IDC_RANDOM:
-				_panel->Random();
-				break;
-			case IDC_WRITE:
+			
+			case IDC_ADD:
+				memset(&text, 0, sizeof(text));
+				GetWindowText(hwndElem, text, 30);
+				if (wcscmp(text, L"Stone") == 0) symbol = Decoration::Shape::Stone;
+				if (wcscmp(text, L"Star") == 0) symbol = Decoration::Shape::Star;
+				if (wcscmp(text, L"Eraser") == 0) symbol = Decoration::Shape::Eraser;
+				if (wcscmp(text, L"Shape") == 0) symbol = Decoration::Shape::Poly;
+				if (wcscmp(text, L"Dot (Intersection)") == 0) symbol = Decoration::Shape::Dot_Intersection;
+				if (wcscmp(text, L"Dot (Row)") == 0) symbol = Decoration::Shape::Dot_Row;
+				if (wcscmp(text, L"Dot (Column)") == 0) symbol = Decoration::Shape::Dot_Column;
+				if (wcscmp(text, L"Gap (Row)") == 0) symbol = Decoration::Shape::Gap_Row;
+				if (wcscmp(text, L"Gap (Column)") == 0) symbol = Decoration::Shape::Gap_Column;
+				if (wcscmp(text, L"Start") == 0) symbol = Decoration::Shape::Start;
+				if (wcscmp(text, L"Exit") == 0) symbol = Decoration::Shape::Exit;
+				memset(&text, 0, sizeof(text));
+				GetWindowText(hwndColor, text, 30);
+				if (wcscmp(text, L"Black") == 0) color = Decoration::Color::Black;
+				if (wcscmp(text, L"White") == 0) color = Decoration::Color::White;
+				if (wcscmp(text, L"Red") == 0) color = Decoration::Color::Red;
+				if (wcscmp(text, L"Orange") == 0) color = Decoration::Color::Orange;
+				if (wcscmp(text, L"Yellow") == 0) color = Decoration::Color::Yellow;
+				if (wcscmp(text, L"Green") == 0) color = Decoration::Color::Green;
+				if (wcscmp(text, L"Cyan") == 0) color = Decoration::Color::Cyan;
+				if (wcscmp(text, L"Blue") == 0) color = Decoration::Color::Blue;
+				if (wcscmp(text, L"Purple") == 0) color = Decoration::Color::Purple;
+				if (wcscmp(text, L"Magenta") == 0) color = Decoration::Color::Magenta;
+				if (wcscmp(text, L"None") == 0) color = Decoration::Color::None;
+				if (wcscmp(text, L"???") == 0) color = Decoration::Color::X;
+				str.reserve(30);
+				GetWindowText(hwndCol, &str[0], 30);
+				x = _wtoi(str.c_str());
+				GetWindowText(hwndRow, &str[0], 30);
+				y = _wtoi(str.c_str());
+				if (symbol & IntersectionFlags::ROW || symbol & IntersectionFlags::COLUMN)
+					color = Decoration::Color::None;
+				if (symbol == Decoration::Shape::Poly) {
+					_panel->SetShape(x, y, currentShape, IsDlgButtonChecked(hwnd, IDC_ROTATED), IsDlgButtonChecked(hwnd, IDC_NEGATIVE), color);
+				}
+				else _panel->SetSymbol(x, y, symbol, color);
 				_panel->Write(panel);
 				break;
-			case IDC_DUMP:
-				_panel->Serialize();
+
+			case IDC_REMOVE:
+				GetWindowText(hwndCol, &str[0], 30);
+				x = _wtoi(str.c_str());
+				GetWindowText(hwndRow, &str[0], 30);
+				y = _wtoi(str.c_str());
+				GetWindowText(hwndElem, text, 30);
+				if (wcscmp(text, L"Dot (Intersection)") == 0 ||
+					wcscmp(text, L"Start") == 0 || wcscmp(text, L"Exit") == 0)
+					_panel->ClearGridSymbol(x * 2, y * 2);
+				else if (wcscmp(text, L"Gap (Column)") == 0 ||
+					wcscmp(text, L"Dot (Column)") == 0)
+					_panel->ClearGridSymbol(x * 2, y * 2 + 1);
+				else if (wcscmp(text, L"Gap (Row)") == 0 ||
+					wcscmp(text, L"Dot (Row)") == 0)
+					_panel->ClearGridSymbol(x * 2 + 1, y * 2);
+				else 
+					_panel->ClearSymbol(x, y);
+				_panel->Write(panel);
 				break;
+
+			case IDC_RANDOM:
+				_panel->Write(panel);
+				break;
+
+			case IDC_ROTATED:
+				CheckDlgButton(hwnd, IDC_ROTATED, !IsDlgButtonChecked(hwnd, IDC_ROTATED));
+				break;
+
+			case IDC_NEGATIVE:
+				CheckDlgButton(hwnd, IDC_NEGATIVE, !IsDlgButtonChecked(hwnd, IDC_NEGATIVE));
+				break;
+
+			case SHAPE_11: CheckDlgButton(hwnd, SHAPE_11, !IsDlgButtonChecked(hwnd, SHAPE_11)); currentShape ^= SHAPE_11; break;
+			case SHAPE_12: CheckDlgButton(hwnd, SHAPE_12, !IsDlgButtonChecked(hwnd, SHAPE_12)); currentShape ^= SHAPE_12; break;
+			case SHAPE_13: CheckDlgButton(hwnd, SHAPE_13, !IsDlgButtonChecked(hwnd, SHAPE_13)); currentShape ^= SHAPE_13; break;
+			case SHAPE_14: CheckDlgButton(hwnd, SHAPE_14, !IsDlgButtonChecked(hwnd, SHAPE_14)); currentShape ^= SHAPE_14; break;
+			case SHAPE_21: CheckDlgButton(hwnd, SHAPE_21, !IsDlgButtonChecked(hwnd, SHAPE_21)); currentShape ^= SHAPE_21; break;
+			case SHAPE_22: CheckDlgButton(hwnd, SHAPE_22, !IsDlgButtonChecked(hwnd, SHAPE_22)); currentShape ^= SHAPE_22; break;
+			case SHAPE_23: CheckDlgButton(hwnd, SHAPE_23, !IsDlgButtonChecked(hwnd, SHAPE_23)); currentShape ^= SHAPE_23; break;
+			case SHAPE_24: CheckDlgButton(hwnd, SHAPE_24, !IsDlgButtonChecked(hwnd, SHAPE_24)); currentShape ^= SHAPE_24; break;
+			case SHAPE_31: CheckDlgButton(hwnd, SHAPE_31, !IsDlgButtonChecked(hwnd, SHAPE_31)); currentShape ^= SHAPE_31; break;
+			case SHAPE_32: CheckDlgButton(hwnd, SHAPE_32, !IsDlgButtonChecked(hwnd, SHAPE_32)); currentShape ^= SHAPE_32; break;
+			case SHAPE_33: CheckDlgButton(hwnd, SHAPE_33, !IsDlgButtonChecked(hwnd, SHAPE_33)); currentShape ^= SHAPE_33; break;
+			case SHAPE_34: CheckDlgButton(hwnd, SHAPE_34, !IsDlgButtonChecked(hwnd, SHAPE_34)); currentShape ^= SHAPE_34; break;
+			case SHAPE_41: CheckDlgButton(hwnd, SHAPE_41, !IsDlgButtonChecked(hwnd, SHAPE_41)); currentShape ^= SHAPE_41; break;
+			case SHAPE_42: CheckDlgButton(hwnd, SHAPE_42, !IsDlgButtonChecked(hwnd, SHAPE_42)); currentShape ^= SHAPE_42; break;
+			case SHAPE_43: CheckDlgButton(hwnd, SHAPE_43, !IsDlgButtonChecked(hwnd, SHAPE_43)); currentShape ^= SHAPE_43; break;
+			case SHAPE_44: CheckDlgButton(hwnd, SHAPE_44, !IsDlgButtonChecked(hwnd, SHAPE_44)); currentShape ^= SHAPE_44; break;
 		}
 	}
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -152,73 +269,96 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		160, 10, 110, 26, hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
 
-#if GLOBALS == 0x5B28C0
-	CreateWindow(L"BUTTON", L"READ",
+	CreateWindow(L"STATIC", L"Col/Row:",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		160, 130, 100, 26, hwnd, NULL, hInstance, NULL);
+	hwndCol = CreateWindow(MSFTEDIT_CLASS, L"",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
+		220, 130, 50, 26, hwnd, NULL, hInstance, NULL);
+	hwndRow = CreateWindow(MSFTEDIT_CLASS, L"",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
+		270, 130, 50, 26, hwnd, NULL, hInstance, NULL);
+	SetWindowText(hwndCol, L"0");
+	SetWindowText(hwndRow, L"0");
+	
+	hwndElem = CreateWindow(L"COMBOBOX", L"",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_DROPDOWN | CBS_HASSTRINGS,
+		160, 160, 150, 300, hwnd, NULL, hInstance, NULL);
+
+	const int NUM_ELEMS = 14;
+	TCHAR elems[NUM_ELEMS][24] =
+	{
+		TEXT("Start"), TEXT("Exit"), TEXT("Gap (Row)"), TEXT("Gap (Column)"),
+		TEXT("Dot (Intersection)"), TEXT("Dot (Row)"), TEXT("Dot (Column)"),
+		TEXT("Stone"), TEXT("Star"), TEXT("Eraser"), TEXT("Shape"),
+		TEXT("Triangle 1"), TEXT("Triangle 2"), TEXT("Triangle 3")
+	};
+	TCHAR option[24];
+	memset(&option, 0, sizeof(option));
+	for (int i = 0; i < NUM_ELEMS; i++)
+	{
+		wcscpy_s(option, sizeof(option) / sizeof(TCHAR), (TCHAR*)elems[i]);
+		SendMessage(hwndElem, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)option);
+	}
+	SendMessage(hwndElem, CB_SETCURSEL, (WPARAM)7, (LPARAM)0);
+
+	hwndColor = CreateWindow(L"COMBOBOX", L"",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_DROPDOWN | CBS_HASSTRINGS,
+		160, 190, 150, 300, hwnd, NULL, hInstance, NULL);
+
+	const int NUM_COLORS = 12;
+	TCHAR colors[NUM_COLORS][24] =
+	{
+		TEXT("Black"), TEXT("White"), TEXT("Red"), TEXT("Orange"), TEXT("Yellow"), TEXT("Green"),
+		TEXT("Cyan"), TEXT("Blue"), TEXT("Purple"), TEXT("Magenta"), TEXT("None"), TEXT("???")
+	};
+	memset(&option, 0, sizeof(option));
+	for (int i = 0; i < NUM_COLORS; i++)
+	{
+		wcscpy_s(option, sizeof(option) / sizeof(TCHAR), (TCHAR*)colors[i]);
+		SendMessage(hwndColor, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)option);
+	}
+	SendMessage(hwndColor, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
+
+	CreateWindow(L"BUTTON", L"Place Symbol",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 100, 100, 26, hwnd, (HMENU)IDC_READ, hInstance, NULL);
-	CreateWindow(L"BUTTON", L"RANDOM",
+		160, 220, 150, 26, hwnd, (HMENU)IDC_ADD, hInstance, NULL);
+	CreateWindow(L"BUTTON", L"Remove Symbol",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 130, 100, 26, hwnd, (HMENU)IDC_RANDOM, hInstance, NULL);
-	CreateWindow(L"BUTTON", L"WRITE",
+		160, 250, 150, 26, hwnd, (HMENU)IDC_REMOVE, hInstance, NULL);
+	CreateWindow(L"BUTTON", L"Test",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 160, 100, 26, hwnd, (HMENU)IDC_WRITE, hInstance, NULL);
-	CreateWindow(L"BUTTON", L"DUMP",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 190, 100, 26, hwnd, (HMENU)IDC_DUMP, hInstance, NULL);
-#endif
+		160, 330, 150, 26, hwnd, (HMENU)IDC_RANDOM, hInstance, NULL);
+
+	CreateWindow(L"STATIC", L"Shape:",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		50, 150, 50, 16, hwnd, NULL, hInstance, NULL);
+
+	for (int x = 0; x < 4; x++) {
+		for (int y = 0; y < 4; y++) {
+			CreateWindow(L"BUTTON", L"",
+				WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+				50 + x * 15, 180 + y * 15, 12, 12, hwnd, (HMENU)shapePos[x + y * 4], hInstance, NULL);
+		}
+	}
+	for (long long chk : defaultShape) {
+		CheckDlgButton(hwnd, static_cast<int>(chk), TRUE);
+		currentShape |= chk;
+	}
 
 	CreateWindow(L"BUTTON", L"",
 		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 52, 12, 12, hwnd, (HMENU)IDC_TOGGLESPEED, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Speed up various autoscrollers",
+		50, 260, 12, 12, hwnd, (HMENU)IDC_ROTATED, hInstance, NULL);
+	CreateWindow(L"STATIC", L"Rotated",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 50, 210, 16, hwnd, NULL, hInstance, NULL);
+		65, 260, 80, 16, hwnd, NULL, hInstance, NULL);
 
 	CreateWindow(L"BUTTON", L"",
 		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 72, 12, 12, hwnd, (HMENU)IDC_TOGGLELASERS, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Randomize laser activations",
+		50, 280, 12, 12, hwnd, (HMENU)IDC_NEGATIVE, hInstance, NULL);
+	CreateWindow(L"STATIC", L"Negative",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 70, 210, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 92, 12, 12, hwnd, (HMENU)IDC_TOGGLESNIPES, hInstance, NULL);
-	CheckDlgButton(hwnd, IDC_TOGGLESNIPES, TRUE);
-	CreateWindow(L"STATIC", L"Prevent sniping certain puzzles",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 90, 210, 16, hwnd, NULL, hInstance, NULL);
-
-	/*
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 52, 12, 12, hwnd, (HMENU)IDC_SPEEDRUNNER, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Allow hard-to-identify panels to be shuffled",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 52, 12, 12, hwnd, (HMENU)IDC_HARDMODE, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Place harder puzzles in annoying spots",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 52, 12, 12, hwnd, (HMENU)IDC_NORANDOMIZE, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Do not randomize any puzzles",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		10, 52, 12, 12, hwnd, (HMENU)IDC_CASUAL, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Don't randomize context-based puzzles",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		27, 50, 205, 16, hwnd, NULL, hInstance, NULL);
-
-*/
+		65, 280, 80, 16, hwnd, NULL, hInstance, NULL);
 
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);

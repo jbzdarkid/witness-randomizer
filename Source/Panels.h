@@ -120,8 +120,8 @@ std::vector<int> mountainMultipanel = {
 std::vector<int> squarePanels = {
 	0x00064, // Tutorial Straight
 	0x00182, // Tutorial Bend
-	0x0A3B2, // Tutorial Back Right
-	0x00295, // Tutorial Center Left
+	0x0A3B2, // Tutorial Back Right (2 start points)
+	0x00295, // Tutorial Center Left (Big Maze)
 	0x00293, // Tutorial Front Center
 	0x002C2, // Tutorial Front Left
 	0x0005D, // Outside Tutorial Dots Tutorial 1
@@ -301,7 +301,7 @@ std::vector<int> squarePanels = {
 	0x28ACC, // Town Blue 5
 	0x28A0D, // Town Church Stars
 	0x28AD9, // Town Eraser
-	0x28998, // Town Green Door
+	0x28998, // Town Yellow Door
 	0x0A0C8, // Town Orange Crate
 	0x17D01, // Town Orange Crate Discard
 	0x03C08, // Town RGB Stars

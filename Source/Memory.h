@@ -4,7 +4,7 @@
 #include <vector>
 #include <windows.h>
 
-// #define GLOBALS 0x5B28C0
+//#define GLOBALS 0x5B28C0
 #define GLOBALS 0x62D0A0
 
 // https://github.com/erayarslan/WriteProcessMemory-Example
@@ -24,28 +24,36 @@ public:
 
 	template <class T>
 	std::vector<T> ReadArray(int panel, int offset, int size) {
-		return ReadData<T>({GLOBALS, 0x18, panel*8, offset, 0}, size);
+		if (size == 0) return std::vector<T>();
+		return ReadData<T>({ GLOBALS, 0x18, panel * 8, offset, 0 }, size);
 	}
 
 	template <class T>
 	void WriteArray(int panel, int offset, const std::vector<T>& data) {
-		WriteData<T>({GLOBALS, 0x18, panel*8, offset, 0}, data);
+		if (data.size() == 0) return;
+		WriteData<T>({ GLOBALS, 0x18, panel * 8, offset, 0 }, data);
 	}
 
 	template <class T>
 	std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
-		return ReadData<T>({GLOBALS, 0x18, panel*8, offset}, size);
+		if (size == 0) return std::vector<T>();
+		return ReadData<T>({ GLOBALS, 0x18, panel * 8, offset }, size);
+	}
+
+	template <class T>
+	T ReadPanelData(int panel, int offset) {
+		return ReadData<T>({ GLOBALS, 0x18, panel * 8, offset }, 1)[0];
 	}
 
 	template <class T>
 	void WritePanelData(int panel, int offset, const std::vector<T>& data) {
-		WriteData<T>({GLOBALS, 0x18, panel*8, offset}, data);
+		WriteData<T>({ GLOBALS, 0x18, panel * 8, offset }, data);
 	}
 
 	void AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc);
 	int ExecuteSigScans();
 
-	void ClearOffsets() {_computedAddresses = std::map<uintptr_t, uintptr_t>();}
+	void ClearOffsets() { _computedAddresses = std::map<uintptr_t, uintptr_t>(); }
 
 private:
 	template<class T>
