@@ -90,7 +90,6 @@ public:
 	Panel(int id);
 
 	void Write(int id);
-	nlohmann::json Serialize();
 
 	void SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color);
 	void SetShape(int x, int y, int shape, bool rotate, bool negative, Decoration::Color color);
@@ -164,6 +163,27 @@ private:
 		return (_width / 2 + 1) * (_height / 2 + 1);
 	}
 
+	std::tuple<int, int> get_sym_point(int x, int y)
+	{
+		if (_startpoints.size() < 2) return std::tuple<int, int>(x, y);
+		if (_startpoints[0].first == _startpoints[1].first) return std::tuple<int, int>(x, _height - 1 - y); 
+		if (_startpoints[0].second == _startpoints[1].second) return std::tuple<int, int>(_width - 1 - x, y);
+		return std::tuple<int, int>(_width - 1 - x, _height - 1 - y);
+	}
+
+	int locate_segment(int x, int y, std::vector<int> connections_a, std::vector<int> connections_b) {
+		
+		for (int i = 0; i < connections_a.size(); i++) {
+			auto[x1, y1] = loc_to_xy(connections_a[i]);
+			auto[x2, y2] = loc_to_xy(connections_b[i]);
+			if ((x1 == x - 1 && x2 == x + 1 && y1 == y && y2 == y) ||
+				(y1 == y - 1 && y2 == y + 1 && x1 == x && x2 == x)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	std::shared_ptr<Memory> _memory;
 
 	int _width, _height;
@@ -173,6 +193,7 @@ private:
 	std::vector<Endpoint> _endpoints;
 	float minx, miny, maxx, maxy;
 	int _style;
+	bool symmetry;
 
 	friend class PanelExtractionTests;
 };

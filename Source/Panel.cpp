@@ -120,6 +120,7 @@ void Panel::ReadAllData(int id) {
 	}
 	std::vector<int> colored = _memory->ReadArray<int>(id, COLORED_REGIONS, numColored);
 	int numConnections = _memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
+	int reflectionData = _memory->ReadPanelData<int>(id, REFLECTION_DATA);
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
 }
 
@@ -173,6 +174,12 @@ void Panel::ReadIntersections(int id) {
 		}
 	}
 
+	for (int y = 0; y < _height; y++) {
+		for (int x = 0; x < _width; x++) {
+			if (x % 2 == y % 2) continue;
+			_grid[x][y] = OPEN;
+		}
+	}
 	int numConnections = _memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
 	std::vector<int> connections_a = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
 	std::vector<int> connections_b = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
@@ -183,13 +190,7 @@ void Panel::ReadIntersections(int id) {
 		if (connections_a[i] >= num_grid_points() || connections_b[i] >= num_grid_points()) continue;
 		auto[x, y] = loc_to_xy(connections_a[i]);
 		auto[x2, y2] = loc_to_xy(connections_b[i]);
-		_grid[(x + x2) / 2][(y + y2) / 2] = OPEN;
-	}
-	for (int y = 0; y < _height; y++) {
-		for (int x = 0; x < _width; x++) {
-			if (x % 2 == y % 2) continue;
-			_grid[x][y] ^= OPEN; //Using 1 to mark non-existent connections
-		}
+		_grid[(x + x2) / 2][(y + y2) / 2] = 0;
 	}
 
 
@@ -209,8 +210,20 @@ void Panel::ReadIntersections(int id) {
 		if (intersectionFlags[i] & IntersectionFlags::GAP) {
 			float xd2 = (intersections[i * 2 + 2] - minx) / unitWidth;
 			float yd2 = (intersections[i * 2 + 3] - miny) / unitHeight;
-			x = std::clamp((int)std::round((xd + xd2)/2), 0, _width - 1);
+			x = std::clamp((int)std::round((xd + xd2) / 2), 0, _width - 1);
 			y = _height - 1 - std::clamp((int)std::round((yd + yd2) / 2), 0, _height - 1);
+			bool fake = false;
+			for (int j = 0; j < numConnections; j++) {
+				if (connections_a[j] == i && connections_b[j] == i + 1 ||
+					connections_a[j] == i + 1 && connections_b[j] == i) {
+					//Fake symmetry wall
+					fake = true;
+					_grid[x][y] = 0;
+					i++;
+					break;
+				}
+			}
+			if (fake) continue;
 			i++;
 		}
 		if (intersectionFlags[i] & IntersectionFlags::ENDPOINT) {
@@ -232,7 +245,10 @@ void Panel::ReadIntersections(int id) {
 					else {
 						dir = Endpoint::Direction::DOWN;
 					}
-					auto[x, y] = loc_to_xy(location);
+					xd = (intersections[location * 2] - minx) / unitWidth;
+					yd = (intersections[location * 2 + 1] - miny) / unitHeight;
+					x = std::clamp((int)std::round(xd), 0, _width - 1);
+					y = _height - 1 - std::clamp((int)std::round(yd), 0, _height - 1);
 					_endpoints.push_back(Endpoint(x, y, dir, intersectionFlags[i]));
 					break;
 				}
@@ -275,9 +291,31 @@ void Panel::WriteIntersections(int id) {
 		}
 	}
 
+	std::vector<std::string> out;
+	for (int i = 0; i < connections_a.size(); i++) {
+		auto[x1, y1] = loc_to_xy(connections_a[i]);
+		auto[x2, y2] = loc_to_xy(connections_b[i]);
+		out.push_back("(" + std::to_string(x1) + ", " + std::to_string(y1) + ") > (" +
+			std::to_string(x2) + ", " + std::to_string(y2) + ")");
+	}
+
 	for (Endpoint endpoint : _endpoints) {
-		connections_a.push_back(xy_to_loc(endpoint.GetX(), endpoint.GetY())); // Target to connect to
-		connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
+		int x = endpoint.GetX(); int y = endpoint.GetY();
+		if (x % 2 || y % 2) {
+			int i = locate_segment(x, y, connections_a, connections_b);
+			int other_connection = connections_b[i];
+			connections_b[i] = static_cast<int>(intersectionFlags.size());
+			connections_a.push_back(static_cast<int>(intersectionFlags.size()));
+			connections_b.push_back(other_connection);
+			intersections.push_back(static_cast<float>(minx + x * unitWidth));
+			intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
+			connections_a.push_back(static_cast<int>(intersectionFlags.size())); // Target to connect to
+			intersectionFlags.push_back(_grid[x][y]);
+		}
+		else {
+			connections_a.push_back(xy_to_loc(endpoint.GetX(), endpoint.GetY())); // Target to connect to
+		}
+		connections_b.push_back(static_cast<int>(intersectionFlags.size()));  // This endpoint
 
 		double xPos = minx + endpoint.GetX() * unitWidth;
 		double yPos = miny + (_height - 1 - endpoint.GetY()) * unitHeight;
@@ -297,53 +335,96 @@ void Panel::WriteIntersections(int id) {
 		intersections.push_back(static_cast<float>(yPos));
 		intersectionFlags.push_back(endpoint.GetFlags());
 	}
+
+	out.clear();
+	for (int i = 0; i < connections_a.size(); i++) {
+		auto[x1, y1] = loc_to_xy(connections_a[i]);
+		auto[x2, y2] = loc_to_xy(connections_b[i]);
+		out.push_back("(" + std::to_string(x1) + ", " + std::to_string(y1) + ") > (" +
+			std::to_string(x2) + ", " + std::to_string(y2) + ")");
+	}
 	
 	// Dots/Gaps
-	for (int y = 0; y < _height; y++) {
+	for (int y = _height - 1; y >= 0; y--) {
 		for (int x = 0; x < _width; x++) {
-			if (x % 2 == y % 2) continue;
-			if (_grid[x][y] == 0 || _grid[x][y] == OPEN) continue;
-
-			// Locate the segment we're breaking
+			out.clear();
 			for (int i = 0; i < connections_a.size(); i++) {
 				auto[x1, y1] = loc_to_xy(connections_a[i]);
 				auto[x2, y2] = loc_to_xy(connections_b[i]);
-				if ((x1 == x - 1 && x2 == x + 1 && y1 == y && y2 == y) ||
-					(y1 == y - 1 && y2 == y + 1 && x1 == x && x2 == x)) {
-					int other_connection = connections_b[i];
-					if (_grid[x][y] & IntersectionFlags::GAP) {
-						connections_b[i] = static_cast<int>(intersectionFlags.size());
-						connections_a.push_back(other_connection);
-						connections_b.push_back(static_cast<int>(intersectionFlags.size() + 1));
-					}
-					else {
-						connections_b[i] = static_cast<int>(intersectionFlags.size());
-						connections_a.push_back(static_cast<int>(intersectionFlags.size()));
-						connections_b.push_back(other_connection);
-					}
-					break;
-				}
+				out.push_back("(" + std::to_string(x1) + ", " + std::to_string(y1) + ") > (" +
+					std::to_string(x2) + ", " + std::to_string(y2) + ")");
 			}
-			
+			if (x % 2 == y % 2) continue;
+			auto[sx, sy] = get_sym_point(x, y);
+			if (_grid[x][y] == 0 || _grid[x][y] == OPEN) continue;
+			int i = locate_segment(x, y, connections_a, connections_b);
+			if (i == -1)
+				continue;
+			int other_connection = connections_b[i];
 			if (_grid[x][y] & IntersectionFlags::GAP) {
+				connections_b[i] = static_cast<int>(intersectionFlags.size());
+				connections_a.push_back(other_connection);
+				connections_b.push_back(static_cast<int>(intersectionFlags.size() + 1));
+				intersectionFlags.push_back(_grid[x][y]);
+				intersectionFlags.push_back(_grid[x][y]);
 				double xOffset = _grid[x][y] & IntersectionFlags::ROW ? 0.5 : 0;
 				double yOffset = _grid[x][y] & IntersectionFlags::COLUMN ? 0.5 : 0;
 				intersections.push_back(static_cast<float>(minx + (x - xOffset) * unitWidth));
 				intersections.push_back(static_cast<float>(miny + (_height - 1 - y + yOffset) * unitHeight));
-				intersectionFlags.push_back(_grid[x][y]);
 				intersections.push_back(static_cast<float>(minx + (x + xOffset) * unitWidth));
 				intersections.push_back(static_cast<float>(miny + (_height - 1 - y - yOffset) * unitHeight));
-				intersectionFlags.push_back(_grid[x][y]);
+				if (_style & Style::SYMMETRICAL && _grid[sx][sy] == 0) {
+					i = locate_segment(sx, sy, connections_a, connections_b);
+					other_connection = connections_b[i];
+					connections_b[i] = static_cast<int>(intersectionFlags.size());
+					connections_a.push_back(other_connection);
+					connections_b.push_back(static_cast<int>(intersectionFlags.size() + 1));
+					connections_a.push_back(static_cast<int>(intersectionFlags.size()));
+					connections_b.push_back(static_cast<int>(intersectionFlags.size() + 1));
+					intersectionFlags.push_back(_grid[x][y]);
+					intersectionFlags.push_back(_grid[x][y]);
+					xOffset = _grid[x][y] & IntersectionFlags::ROW ? 0.5 : 0;
+					yOffset = _grid[x][y] & IntersectionFlags::COLUMN ? 0.5 : 0;
+					intersections.push_back(static_cast<float>(minx + (sx - xOffset) * unitWidth));
+					intersections.push_back(static_cast<float>(miny + (_height - 1 - sy + yOffset) * unitHeight));
+					intersections.push_back(static_cast<float>(minx + (sx + xOffset) * unitWidth));
+					intersections.push_back(static_cast<float>(miny + (_height - 1 - sy - yOffset) * unitHeight));
+					if (x != sx && y % 2 == 0 || y != sy && x % 2 == 0) {
+						int swap = connections_b[i];
+						connections_b[i] = connections_b[connections_b.size() - 2];
+						connections_b[connections_b.size() - 2] = swap;
+						float swap2 = intersections[intersections.size() - 1];
+						intersections[intersections.size() - 1] = intersections[intersections.size() - 3];
+						intersections[intersections.size() - 3] = swap2;
+						swap2 = intersections[intersections.size() - 2];
+						intersections[intersections.size() - 2] = intersections[intersections.size() - 4];
+						intersections[intersections.size() - 4] = swap2;
+					}
+				}
 			}
 			else {
+				connections_b[i] = static_cast<int>(intersectionFlags.size());
+				connections_a.push_back(static_cast<int>(intersectionFlags.size()));
+				connections_b.push_back(other_connection);
+				intersectionFlags.push_back(_grid[x][y]);
 				intersections.push_back(static_cast<float>(minx + x * unitWidth));
 				intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
-				intersectionFlags.push_back(_grid[x][y]);
 				if (_grid[x][y] | DOT) _style |= HAS_DOTS;
+				if (_style & Style::SYMMETRICAL && _grid[sx][sy] == 0) {
+					i = locate_segment(sx, sy, connections_a, connections_b);
+					other_connection = connections_b[i];
+					connections_b[i] = static_cast<int>(intersectionFlags.size());
+					connections_a.push_back(static_cast<int>(intersectionFlags.size()));
+					connections_b.push_back(other_connection);
+					intersectionFlags.push_back(0);
+					intersections.push_back(static_cast<float>(minx + sx * unitWidth));
+					intersections.push_back(static_cast<float>(miny + (_height - 1 - sy) * unitHeight));
+				}
 			}
-			
 		}
 	}
+
+
 
 	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
 	_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
@@ -352,4 +433,3 @@ void Panel::WriteIntersections(int id) {
 	_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
 	_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
 }
-

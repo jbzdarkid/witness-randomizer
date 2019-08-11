@@ -46,7 +46,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x17E4D; // Treehouse Green 2
+int panel = 0x00083; // Glass Factory Rotational Symmetry 3
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>(panel);
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
