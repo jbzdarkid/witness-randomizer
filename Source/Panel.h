@@ -87,8 +87,10 @@ private:
 class Panel
 {
 public:
+	Panel() = default;
 	Panel(int id);
 
+	void Read(int id);
 	void Write(int id);
 
 	void SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color);
@@ -118,10 +120,22 @@ public:
 	enum Symmetry { //Want to add custom symmetry
 		None, Horizontal, Vertical, Rotational
 	};
+	Symmetry symmetry;
+
+	std::tuple<int, int> get_sym_point(int x, int y)
+	{
+		switch (symmetry) {
+		case None: return std::tuple<int, int>(x, y);
+		case Symmetry::Horizontal: return std::tuple<int, int>(x, _height - 1 - y);
+		case Symmetry::Vertical: return std::tuple<int, int>(_width - 1 - x, y);
+		case Symmetry::Rotational: return std::tuple<int, int>(_width - 1 - x, _height - 1 - y);
+		}
+		return std::tuple<int, int>(x, y);
+	}
 
 private:
 	// For testing
-	Panel() = default;
+	//Panel() = default;
 
 	void ReadAllData(int id);
 	void ReadIntersections(int id);
@@ -165,17 +179,6 @@ private:
 
 	int num_grid_points() {
 		return (_width / 2 + 1) * (_height / 2 + 1);
-	}
-
-	std::tuple<int, int> get_sym_point(int x, int y)
-	{
-		switch (symmetry) {
-		case None: return std::tuple<int, int>(x, y);
-		case Symmetry::Horizontal: return std::tuple<int, int>(x, _height - 1 - y);
-		case Symmetry::Vertical: return std::tuple<int, int>(_width - 1 - x, y);
-		case Symmetry::Rotational: return std::tuple<int, int>(_width - 1 - x, _height - 1 - y);
-		}
-		return std::tuple<int, int>(x, y);
 	}
 
 	std::vector<int> sym_data_v() {
@@ -230,7 +233,6 @@ private:
 	std::vector<Endpoint> _endpoints;
 	float minx, miny, maxx, maxy;
 	int _style;
-	Symmetry symmetry;
 
 	friend class PanelExtractionTests;
 };

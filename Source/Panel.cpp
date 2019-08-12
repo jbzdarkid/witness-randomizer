@@ -20,6 +20,10 @@ struct Color {
 };
 
 Panel::Panel(int id) {
+	Read(id);
+}
+
+void Panel::Read(int id) {
 	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X) - 1;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
@@ -104,6 +108,7 @@ void Panel::Random() {
 	//
 }
 
+//Only for testing
 void Panel::ReadAllData(int id) {
 	Color pathColor = _memory->ReadPanelData<Color>(id, PATH_COLOR);
 	Color rpathColor = _memory->ReadPanelData<Color>(id, REFLECTION_PATH_COLOR);
@@ -132,8 +137,6 @@ void Panel::ReadAllData(int id) {
 	int numDots = _memory->ReadPanelData<int>(id, NUM_DOTS);
 	int reflectionData = _memory->ReadPanelData<int>(id, REFLECTION_DATA);
 	if (reflectionData) std::vector<int> datas = _memory->ReadArray<int>(id, REFLECTION_DATA, numDots);
-	//Rotational - Descending rows, rows descending
-	//Horizontal - Ascending rows, rows descending
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
 }
 
@@ -171,8 +174,8 @@ void Panel::WriteDecorations(int id) {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { 0 });
 		return;
 	}
-	_memory->WritePanelData<int>(id, NUM_DECORATIONS, {static_cast<int>(decorations.size())});
-	if (decorations.size()) _memory->WriteArray<int>(id, DECORATIONS, decorations);
+	_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
+	_memory->WriteArray<int>(id, DECORATIONS, decorations);
 }
 
 void Panel::ReadIntersections(int id) {
@@ -473,5 +476,12 @@ void Panel::WriteIntersections(int id) {
 	_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connections_a.size()) });
 	_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
 	_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
-	if (symmetryData.size() > 0) _memory->WriteArray<int>(id, REFLECTION_DATA, symmetryData);
+	if (symmetryData.size() > 0) {
+		_style |= Style::SYMMETRICAL;
+		_memory->WriteArray<int>(id, REFLECTION_DATA, symmetryData);
+	}
+	else {
+		_style &= ~Style::SYMMETRICAL;
+		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 });
+	}
 }

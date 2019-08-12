@@ -26,6 +26,8 @@
 #define IDC_REMOVE 0x302
 #define IDC_ROTATED 0x303
 #define IDC_NEGATIVE 0x304
+#define IDC_SYMMETRYX 0x305
+#define IDC_SYMMETRYY 0x306
 
 #define SHAPE_11 0x1000
 #define SHAPE_12 0x2000
@@ -46,9 +48,9 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x00A52; // Symmetry Island Laser Yellow 1
+int panel = 0x00079; // Symmetry Island Colored Dots 6
 
-std::shared_ptr<Panel> _panel = std::make_shared<Panel>(panel);
+std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
 
 TCHAR text[30];
@@ -208,6 +210,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				CheckDlgButton(hwnd, IDC_NEGATIVE, !IsDlgButtonChecked(hwnd, IDC_NEGATIVE));
 				break;
 
+			case IDC_SYMMETRYX:
+				CheckDlgButton(hwnd, IDC_SYMMETRYX, !IsDlgButtonChecked(hwnd, IDC_SYMMETRYX));
+				if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX) && IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+					_panel->symmetry = Panel::Symmetry::Rotational;
+				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX))
+					_panel->symmetry = Panel::Symmetry::Horizontal;
+				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+					_panel->symmetry = Panel::Symmetry::Vertical;
+				else _panel->symmetry = Panel::Symmetry::None;
+				_panel->Write(panel);
+				break;
+
+			case IDC_SYMMETRYY:
+				CheckDlgButton(hwnd, IDC_SYMMETRYY, !IsDlgButtonChecked(hwnd, IDC_SYMMETRYY));
+				if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX) && IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+					_panel->symmetry = Panel::Symmetry::Rotational;
+				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX))
+					_panel->symmetry = Panel::Symmetry::Horizontal;
+				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+					_panel->symmetry = Panel::Symmetry::Vertical;
+				else _panel->symmetry = Panel::Symmetry::None;
+				_panel->Write(panel);
+				break;
+
 			case SHAPE_11: CheckDlgButton(hwnd, SHAPE_11, !IsDlgButtonChecked(hwnd, SHAPE_11)); currentShape ^= SHAPE_11; break;
 			case SHAPE_12: CheckDlgButton(hwnd, SHAPE_12, !IsDlgButtonChecked(hwnd, SHAPE_12)); currentShape ^= SHAPE_12; break;
 			case SHAPE_13: CheckDlgButton(hwnd, SHAPE_13, !IsDlgButtonChecked(hwnd, SHAPE_13)); currentShape ^= SHAPE_13; break;
@@ -358,6 +384,27 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	CreateWindow(L"STATIC", L"Negative",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		65, 280, 80, 16, hwnd, NULL, hInstance, NULL);
+
+	CreateWindow(L"BUTTON", L"",
+		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+		50, 320, 12, 12, hwnd, (HMENU)IDC_SYMMETRYX, hInstance, NULL);
+	CreateWindow(L"STATIC", L"H. Symmetry",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		65, 320, 90, 16, hwnd, NULL, hInstance, NULL);
+
+	CreateWindow(L"BUTTON", L"",
+		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+		50, 340, 12, 12, hwnd, (HMENU)IDC_SYMMETRYY, hInstance, NULL);
+	CreateWindow(L"STATIC", L"V. Symmetry",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		65, 340, 90, 16, hwnd, NULL, hInstance, NULL);
+
+	_panel->Read(panel);
+
+	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
+		CheckDlgButton(hwnd, IDC_SYMMETRYX, TRUE);
+	if (_panel->symmetry == Panel::Symmetry::Vertical|| _panel->symmetry == Panel::Symmetry::Rotational)
+		CheckDlgButton(hwnd, IDC_SYMMETRYY, TRUE);
 
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);

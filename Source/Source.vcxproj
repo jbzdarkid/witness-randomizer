@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ChallengeRandomizer.h" />
+    <ClInclude Include="Generate.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Panel.h" />
@@ -168,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChallengeRandomizer.cpp" />
+    <ClCompile Include="Generate.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Panel.cpp" />
     <ClCompile Include="Random.cpp" />
