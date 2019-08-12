@@ -115,6 +115,10 @@ public:
 		x20000000 = 0x20000000, //Jungle vault
 	};
 
+	enum Symmetry { //Want to add custom symmetry
+		None, Horizontal, Vertical, Rotational
+	};
+
 private:
 	// For testing
 	Panel() = default;
@@ -165,14 +169,47 @@ private:
 
 	std::tuple<int, int> get_sym_point(int x, int y)
 	{
-		if (_startpoints.size() < 2) return std::tuple<int, int>(x, y);
-		if (_startpoints[0].first == _startpoints[1].first) return std::tuple<int, int>(x, _height - 1 - y); 
-		if (_startpoints[0].second == _startpoints[1].second) return std::tuple<int, int>(_width - 1 - x, y);
-		return std::tuple<int, int>(_width - 1 - x, _height - 1 - y);
+		switch (symmetry) {
+		case None: return std::tuple<int, int>(x, y);
+		case Symmetry::Horizontal: return std::tuple<int, int>(x, _height - 1 - y);
+		case Symmetry::Vertical: return std::tuple<int, int>(_width - 1 - x, y);
+		case Symmetry::Rotational: return std::tuple<int, int>(_width - 1 - x, _height - 1 - y);
+		}
+		return std::tuple<int, int>(x, y);
+	}
+
+	std::vector<int> sym_data_v() {
+		std::vector<int> data;
+		for (int y = 0; y <= _height / 2; y++) {
+			for (int x = _width / 2 ; x >= 0; x--) {
+				data.push_back(y * (_width / 2 + 1) + x);
+			}
+		}
+		return data;
+	}
+
+	std::vector<int> sym_data_h() {
+		std::vector<int> data;
+		for (int y = _height / 2; y >= 0; y--) {
+			for (int x = 0; x <= _width / 2; x++) {
+				data.push_back(y * (_width / 2 + 1) + x);
+			}
+		}
+		return data;
+	}
+
+	std::vector<int> sym_data_r() {
+		std::vector<int> data;
+		for (int i = num_grid_points() - 1; i >= 0; i--) {
+			data.push_back(i);
+		}
+		return data;
 	}
 
 	int locate_segment(int x, int y, std::vector<int> connections_a, std::vector<int> connections_b) {
-		
+		if (x == 7 && y == 6) {
+			int swap = x;
+		}
 		for (int i = 0; i < connections_a.size(); i++) {
 			auto[x1, y1] = loc_to_xy(connections_a[i]);
 			auto[x2, y2] = loc_to_xy(connections_b[i]);
@@ -193,7 +230,7 @@ private:
 	std::vector<Endpoint> _endpoints;
 	float minx, miny, maxx, maxy;
 	int _style;
-	bool symmetry;
+	Symmetry symmetry;
 
 	friend class PanelExtractionTests;
 };

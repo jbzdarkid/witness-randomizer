@@ -120,7 +120,11 @@ void Panel::ReadAllData(int id) {
 	}
 	std::vector<int> colored = _memory->ReadArray<int>(id, COLORED_REGIONS, numColored);
 	int numConnections = _memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
+	int numDots = _memory->ReadPanelData<int>(id, NUM_DOTS);
 	int reflectionData = _memory->ReadPanelData<int>(id, REFLECTION_DATA);
+	if (reflectionData) std::vector<int> datas = _memory->ReadArray<int>(id, REFLECTION_DATA, numDots);
+	//Rotational - Descending rows, rows descending
+	//Horizontal - Ascending rows, rows descending
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
 }
 
@@ -145,7 +149,8 @@ void Panel::WriteDecorations(int id) {
 	for (int y=_height-2; y>0; y-=2) {
 		for (int x=1; x<_width - 1; x+=2) {
 			decorations.push_back(_grid[x][y]);
-			if (_grid[x][y] != 0 && _grid[x][y] != OPEN) any = true;
+			if (_grid[x][y])
+				any = true;
 			if ((_grid[x][y] & Decoration::Shape::Stone) == Decoration::Shape::Stone) _style |= HAS_STONES;
 			if ((_grid[x][y] & Decoration::Shape::Star) == Decoration::Shape::Star) _style |= HAS_STARS;
 			if ((_grid[x][y] & Decoration::Shape::Poly) == Decoration::Shape::Poly) _style |= HAS_SHAPERS;
@@ -163,11 +168,24 @@ void Panel::WriteDecorations(int id) {
 
 void Panel::ReadIntersections(int id) {
 	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
+	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
+	int num_grid_points = this->num_grid_points();
+	minx = intersections[0]; miny = intersections[1];
+	maxx = intersections[num_grid_points * 2 - 2]; maxy = intersections[num_grid_points * 2 - 1];
+	float unitWidth = (maxx - minx) / (_width - 1);
+	float unitHeight = (maxy - miny) / (_height - 1);
 	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
-	int i = 0;
-	
-	for (; i < num_grid_points(); i++) {
-		auto [x, y] = loc_to_xy(i);
+	std::vector<int> symmetryData = _memory->ReadPanelData<int>(id, REFLECTION_DATA) ? 
+		_memory->ReadArray<int>(id, REFLECTION_DATA, numIntersections) : std::vector<int>();
+	if (symmetryData.size() == 0) symmetry = Symmetry::None;
+	else if (symmetryData[0] == num_grid_points - 1) symmetry = Symmetry::Rotational;
+	else if (symmetryData[0] == _width / 2 && intersections[1] == intersections[3]) symmetry = Symmetry::Vertical;
+	else symmetry = Symmetry::Horizontal;
+
+	for (int i = 0; i < num_grid_points; i++) {
+		//auto [x, y] = loc_to_xy(i);
+		int x = static_cast<int>(std::round((intersections[i * 2] - minx) / unitWidth));
+		int y = _height - 1 - static_cast<int>(std::round((intersections[i * 2 + 1] - miny) / unitHeight));
 		_grid[x][y] = intersectionFlags[i];
 		if (intersectionFlags[i] & IntersectionFlags::STARTPOINT) {
 			_startpoints.push_back({x, y});
@@ -187,22 +205,18 @@ void Panel::ReadIntersections(int id) {
 	std::vector<std::string> out;
 	for (int i = 0; i < connections_a.size(); i++) {
 		out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
-		if (connections_a[i] >= num_grid_points() || connections_b[i] >= num_grid_points()) continue;
-		auto[x, y] = loc_to_xy(connections_a[i]);
-		auto[x2, y2] = loc_to_xy(connections_b[i]);
+		if (connections_a[i] >= num_grid_points || connections_b[i] >= num_grid_points) continue;
+		int x = static_cast<int>(std::round((intersections[connections_a[i] * 2] - minx) / unitWidth));
+		int y = _height - 1 - static_cast<int>(std::round((intersections[connections_a[i] * 2 + 1] - miny) / unitHeight));
+		int x2 = static_cast<int>(std::round((intersections[connections_b[i] * 2] - minx) / unitWidth));
+		int y2 = _height - 1 - static_cast<int>(std::round((intersections[connections_b[i] * 2 + 1] - miny) / unitHeight));
+		//auto[x, y] = loc_to_xy(connections_a[i]);
+		//auto[x2, y2] = loc_to_xy(connections_b[i]);
 		_grid[(x + x2) / 2][(y + y2) / 2] = 0;
 	}
 
-
-	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections*2);
-	int num_grid_points = this->num_grid_points();
-	minx = intersections[0]; miny = intersections[1];
-	maxx = intersections[num_grid_points * 2 - 2]; maxy = intersections[num_grid_points * 2 - 1];
-
 	// Iterate the remaining intersections (endpoints, dots, gaps)
-	float unitWidth = (maxx - minx) / (_width - 1);
-	float unitHeight = (maxy - miny) / (_height - 1);
-	for (i = num_grid_points; i < numIntersections; i++) {
+	for (int i = num_grid_points; i < numIntersections; i++) {
 		float xd = (intersections[i * 2] - minx) / unitWidth;
 		float yd = (intersections[i * 2 + 1] - miny) / unitHeight;
 		int x = std::clamp((int)std::round(xd), 0, _width - 1);
@@ -266,6 +280,12 @@ void Panel::WriteIntersections(int id) {
 	std::vector<int> intersectionFlags;
 	std::vector<int> connections_a;
 	std::vector<int> connections_b;
+	std::vector<int> symmetryData;
+	switch (symmetry) {
+	case Symmetry::Horizontal: symmetryData = sym_data_h(); break;
+	case Symmetry::Vertical: symmetryData = sym_data_v(); break;
+	case Symmetry::Rotational: symmetryData = sym_data_r(); break;
+	}
 
 	float unitWidth = (maxx - minx) / (_width - 1);
 	float unitHeight = (maxy - miny) / (_height - 1);
@@ -291,15 +311,17 @@ void Panel::WriteIntersections(int id) {
 		}
 	}
 
+	
 	std::vector<std::string> out;
-	for (int i = 0; i < connections_a.size(); i++) {
+	/*for (int i = 0; i < connections_a.size(); i++) {
 		auto[x1, y1] = loc_to_xy(connections_a[i]);
 		auto[x2, y2] = loc_to_xy(connections_b[i]);
 		out.push_back("(" + std::to_string(x1) + ", " + std::to_string(y1) + ") > (" +
 			std::to_string(x2) + ", " + std::to_string(y2) + ")");
-	}
+	}*/
 
-	for (Endpoint endpoint : _endpoints) {
+	for (int i = 0; i < _endpoints.size(); i++) {
+		Endpoint endpoint = _endpoints[i];
 		int x = endpoint.GetX(); int y = endpoint.GetY();
 		if (x % 2 || y % 2) {
 			int i = locate_segment(x, y, connections_a, connections_b);
@@ -316,7 +338,6 @@ void Panel::WriteIntersections(int id) {
 			connections_a.push_back(xy_to_loc(endpoint.GetX(), endpoint.GetY())); // Target to connect to
 		}
 		connections_b.push_back(static_cast<int>(intersectionFlags.size()));  // This endpoint
-
 		double xPos = minx + endpoint.GetX() * unitWidth;
 		double yPos = miny + (_height - 1 - endpoint.GetY()) * unitHeight;
 		if (endpoint.GetDir() == Endpoint::Direction::LEFT) {
@@ -334,25 +355,32 @@ void Panel::WriteIntersections(int id) {
 		intersections.push_back(static_cast<float>(xPos));
 		intersections.push_back(static_cast<float>(yPos));
 		intersectionFlags.push_back(endpoint.GetFlags());
+		if (symmetry && i % 2 == 1) {
+			//Link pairs of exits in symmetry data
+			symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 1);
+			symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 2);
+		}
 	}
 
-	out.clear();
+	/*out.clear();
 	for (int i = 0; i < connections_a.size(); i++) {
 		auto[x1, y1] = loc_to_xy(connections_a[i]);
 		auto[x2, y2] = loc_to_xy(connections_b[i]);
 		out.push_back("(" + std::to_string(x1) + ", " + std::to_string(y1) + ") > (" +
 			std::to_string(x2) + ", " + std::to_string(y2) + ")");
-	}
+	}*/
 	
 	// Dots/Gaps
 	for (int y = _height - 1; y >= 0; y--) {
 		for (int x = 0; x < _width; x++) {
 			out.clear();
 			for (int i = 0; i < connections_a.size(); i++) {
+				/*
 				auto[x1, y1] = loc_to_xy(connections_a[i]);
 				auto[x2, y2] = loc_to_xy(connections_b[i]);
 				out.push_back("(" + std::to_string(x1) + ", " + std::to_string(y1) + ") > (" +
-					std::to_string(x2) + ", " + std::to_string(y2) + ")");
+					std::to_string(x2) + ", " + std::to_string(y2) + ")");*/
+				out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
 			}
 			if (x % 2 == y % 2) continue;
 			auto[sx, sy] = get_sym_point(x, y);
@@ -362,18 +390,18 @@ void Panel::WriteIntersections(int id) {
 				continue;
 			int other_connection = connections_b[i];
 			if (_grid[x][y] & IntersectionFlags::GAP) {
-				connections_b[i] = static_cast<int>(intersectionFlags.size());
+				connections_b[i] = static_cast<int>(intersectionFlags.size() + 1);
 				connections_a.push_back(other_connection);
-				connections_b.push_back(static_cast<int>(intersectionFlags.size() + 1));
+				connections_b.push_back(static_cast<int>(intersectionFlags.size()));
 				intersectionFlags.push_back(_grid[x][y]);
 				intersectionFlags.push_back(_grid[x][y]);
 				double xOffset = _grid[x][y] & IntersectionFlags::ROW ? 0.5 : 0;
 				double yOffset = _grid[x][y] & IntersectionFlags::COLUMN ? 0.5 : 0;
-				intersections.push_back(static_cast<float>(minx + (x - xOffset) * unitWidth));
-				intersections.push_back(static_cast<float>(miny + (_height - 1 - y + yOffset) * unitHeight));
 				intersections.push_back(static_cast<float>(minx + (x + xOffset) * unitWidth));
 				intersections.push_back(static_cast<float>(miny + (_height - 1 - y - yOffset) * unitHeight));
-				if (_style & Style::SYMMETRICAL && _grid[sx][sy] == 0) {
+				intersections.push_back(static_cast<float>(minx + (x - xOffset) * unitWidth));
+				intersections.push_back(static_cast<float>(miny + (_height - 1 - y + yOffset) * unitHeight));
+				if (symmetry) {
 					i = locate_segment(sx, sy, connections_a, connections_b);
 					other_connection = connections_b[i];
 					connections_b[i] = static_cast<int>(intersectionFlags.size());
@@ -389,7 +417,11 @@ void Panel::WriteIntersections(int id) {
 					intersections.push_back(static_cast<float>(miny + (_height - 1 - sy + yOffset) * unitHeight));
 					intersections.push_back(static_cast<float>(minx + (sx + xOffset) * unitWidth));
 					intersections.push_back(static_cast<float>(miny + (_height - 1 - sy - yOffset) * unitHeight));
-					if (x != sx && y % 2 == 0 || y != sy && x % 2 == 0) {
+					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 2);
+					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 1);
+					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 4);
+					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 3);
+					if (symmetry == Symmetry::Horizontal && y % 2 == 0 || symmetry == Symmetry::Vertical && x % 2 == 0) {
 						int swap = connections_b[i];
 						connections_b[i] = connections_b[connections_b.size() - 2];
 						connections_b[connections_b.size() - 2] = swap;
@@ -402,29 +434,29 @@ void Panel::WriteIntersections(int id) {
 					}
 				}
 			}
-			else {
+			else if (_grid[x][y] & IntersectionFlags::DOT) {
 				connections_b[i] = static_cast<int>(intersectionFlags.size());
 				connections_a.push_back(static_cast<int>(intersectionFlags.size()));
 				connections_b.push_back(other_connection);
 				intersectionFlags.push_back(_grid[x][y]);
 				intersections.push_back(static_cast<float>(minx + x * unitWidth));
 				intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
-				if (_grid[x][y] | DOT) _style |= HAS_DOTS;
-				if (_style & Style::SYMMETRICAL && _grid[sx][sy] == 0) {
+				_style |= HAS_DOTS;
+				if (symmetry) {
 					i = locate_segment(sx, sy, connections_a, connections_b);
 					other_connection = connections_b[i];
 					connections_b[i] = static_cast<int>(intersectionFlags.size());
 					connections_a.push_back(static_cast<int>(intersectionFlags.size()));
 					connections_b.push_back(other_connection);
-					intersectionFlags.push_back(0);
+					intersectionFlags.push_back(_grid[sx][sy]);
 					intersections.push_back(static_cast<float>(minx + sx * unitWidth));
 					intersections.push_back(static_cast<float>(miny + (_height - 1 - sy) * unitHeight));
+					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 1);
+					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 2);
 				}
 			}
 		}
 	}
-
-
 
 	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
 	_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
@@ -432,4 +464,5 @@ void Panel::WriteIntersections(int id) {
 	_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connections_a.size()) });
 	_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
 	_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
+	if (symmetryData.size() > 0) _memory->WriteArray<int>(id, REFLECTION_DATA, symmetryData);
 }
