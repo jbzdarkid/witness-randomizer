@@ -46,7 +46,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x00024; // Symmetry Island Black Dots 3
+int panel = 0x00A52; // Symmetry Island Laser Yellow 1
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>(panel);
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -168,8 +168,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				x = _wtoi(str.c_str());
 				GetWindowText(hwndRow, &str[0], 30);
 				y = _wtoi(str.c_str());
-				if (symbol & IntersectionFlags::ROW || symbol & IntersectionFlags::COLUMN)
-					color = Decoration::Color::None;
+				
 				if (symbol == Decoration::Shape::Poly) {
 					_panel->SetShape(x, y, currentShape, IsDlgButtonChecked(hwnd, IDC_ROTATED), IsDlgButtonChecked(hwnd, IDC_NEGATIVE), color);
 				}

@@ -46,6 +46,15 @@ void Panel::Write(int id) {
 
 void Panel::SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color)
 {
+	if (symbol & IntersectionFlags::DOT) {
+		if (color == Decoration::Color::Blue || color == Decoration::Color::Cyan)
+			color = static_cast<Decoration::Color>(IntersectionFlags::DOT_IS_BLUE);
+		else if (color == Decoration::Color::Orange || color == Decoration::Color::Yellow)
+			color = static_cast<Decoration::Color>(IntersectionFlags::DOT_IS_ORANGE);
+		else color = Decoration::Color::None;
+	}
+	else if (symbol & IntersectionFlags::ROW || symbol & IntersectionFlags::COLUMN)
+		color = Decoration::Color::None;
 	SetGridSymbol(x * 2 + 1, y * 2 + 1, symbol, color);
 }
 
