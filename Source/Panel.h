@@ -44,7 +44,9 @@ enum IntersectionFlags {
 	INTERSECTION = 0x600000,
 	ENDPOINT = 0x1,
 	STARTPOINT = 0x2,
-	OPEN = 0x3,
+	OPEN = 0x3, //Puzzle loader flag - not to be written out
+	PATH = 0x4, //Generator use only
+	PATH2 = 0x5, //Generator use only
 	GAP = 0x100000,
 	DOT = 0x20,
 	DOT_IS_BLUE = 0x100,
@@ -235,4 +237,5 @@ private:
 	int _style;
 
 	friend class PanelExtractionTests;
+	friend class Generate;
 };

@@ -9,6 +9,7 @@
 #include "Random.h"
 #include "Randomizer.h"
 #include "Panel.h"
+#include "Generate.h"
 
 #define IDC_RANDOMIZE 0x401
 #define IDC_TOGGLESPEED 0x402
@@ -48,10 +49,11 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x00079; // Symmetry Island Colored Dots 6
+int panel = 0x0001F; // Outside Tutorial Stones Tutorial 7
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
+std::shared_ptr<Generate> generator = std::make_shared<Generate>();
 
 TCHAR text[30];
 int x, y;
@@ -400,6 +402,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		65, 340, 90, 16, hwnd, NULL, hInstance, NULL);
 
 	_panel->Read(panel);
+	generator->readPanel(_panel);
+	generator->test();
+
 
 	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
 		CheckDlgButton(hwnd, IDC_SYMMETRYX, TRUE);
