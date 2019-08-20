@@ -23,21 +23,13 @@ public:
 	std::vector<std::vector<int>> getRandomPath(int minLength, int maxLength);
 	void readPanel(std::shared_ptr<Panel> panel);
 	void setPath(std::vector<std::vector<int>> path);	
-	void setGridSize(int width, int height);
+	void setGridSize(int width, int height); //Doesn't actually work right now due to array overflow
 	void setSymmetry(Panel::Symmetry symmetry);
 	void setNumColoredDots(int amount);
 	void setStartLocation(int x, int y);
 	void setExitLocation(int x, int y);
 	void resetConfig();
-	void test() {
-		/*
-		//srand(static_cast<unsigned int>(time(NULL)));
-		srand(3);
-		generate(0x0001F,
-			Decoration::Stone | Decoration::Color::Black, 7,
-			Decoration::Stone | Decoration::Color::White, 5);
-			*/
-	}
+	void stealArrays();
 
 private:
 	std::shared_ptr<Panel> _panel;
@@ -46,6 +38,8 @@ private:
 	Panel::Symmetry _symmetry;
 	std::vector<Point> _starts, _exits;
 	std::set<Point> _gridpos;
+	bool _fullGaps;
+
 	std::pair<int, int> to_vertex(int x, int y);
 	std::pair<int, int> to_grid(int x, int y);
 	std::pair<int, int> to_vertex(Point pos);
@@ -87,6 +81,7 @@ private:
 	std::vector<int> get_symbols_in_region(std::set<Point> region);
 	void place_start(int amount);
 	void place_exit(int amount);
+	bool can_place_gap(Point pos);
 	bool place_gaps(int amount);
 	bool place_dots(int amount, int num_colored);
 	bool place_stones(int color, int amount);

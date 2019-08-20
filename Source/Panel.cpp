@@ -138,15 +138,21 @@ void Panel::ReadAllData(int id) {
 	int reflectionData = _memory->ReadPanelData<int>(id, REFLECTION_DATA);
 	if (reflectionData) std::vector<int> datas = _memory->ReadArray<int>(id, REFLECTION_DATA, numDots);
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
+	int ptr1 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_A);
+	int ptr2 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_B);
+	std::vector<int> connections_a = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections * 3);
+	std::vector<int> connections_b = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections * 3);
+	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
+	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2 * 3);
+	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections * 3);
+	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations * 3);
+	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations * 3);
 }
 
 void Panel::ReadDecorations(int id) {
 	int numDecorations = _memory->ReadPanelData<int>(id, NUM_DECORATIONS);
 	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
 	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations);
-	int ptr = _memory->ReadPanelData<int>(id, DECORATION_COLORS);
-	if (ptr) std::vector<Color> decorationColors = _memory->ReadArray<Color>(id, DECORATION_COLORS, numDecorations);
-	Color color = _memory->ReadPanelData<Color>(id, PATH_COLOR);
 
 	for (int i=0; i<numDecorations; i++) {
 		auto [x, y] = dloc_to_xy(i);
@@ -216,7 +222,7 @@ void Panel::ReadIntersections(int id) {
 	//Remove non-existent connections
 	std::vector<std::string> out;
 	for (int i = 0; i < connections_a.size(); i++) {
-		out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
+		//out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
 		if (connections_a[i] >= num_grid_points || connections_b[i] >= num_grid_points) continue;
 		int x = static_cast<int>(std::round((intersections[connections_a[i] * 2] - minx) / unitWidth));
 		int y = _height - 1 - static_cast<int>(std::round((intersections[connections_a[i] * 2 + 1] - miny) / unitHeight));

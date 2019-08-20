@@ -1,4 +1,5 @@
 #include "Generate.h"
+#include "Randomizer.h"
 
 void Generate::generate(int id, int symbol, int amount) {
 	generate(id, { std::make_pair(symbol, amount) });
@@ -26,18 +27,49 @@ std::vector<Point> Generate::_8DIRECTIONS = { Point(0, 2), Point(0, -2), Point(2
 void Generate::readPanel(std::shared_ptr<Panel> panel) {
 	_panel = panel;
 	_starts = _panel->_startpoints;
+	_exits.clear();
 	for (Endpoint e : _panel->_endpoints) {
 		_exits.push_back(Point(e.GetX(), e.GetY()));
 	}
+	_gridpos.clear();
 	for (int x = 1; x < panel->_width; x += 2) {
 		for (int y = 1; y < panel->_height; y += 2) {
 			_gridpos.insert(Point(x, y));
 		}
 	}
+	_fullGaps = false;
+	for (int x = 0; x < panel->_width; x++) {
+		for (int y = 0; y < panel->_height; y++) {
+			if (panel->_grid[x][y] == OPEN) {
+				_fullGaps = true;
+				return;
+			}
+		}
+	}
 }
+
+void Generate::setGridSize(int width, int height) {
+	_width = width * 2 + 1; _height = height * 2 + 1;
+}
+
+//Public
 
 void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
+	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
+		for (Point &s : _panel->_startpoints) {
+			if (s.first == _panel->_width - 1) s.first = _width - 1;
+			if (s.second == _panel->_height - 1) s.second = _height - 1;
+		}
+		for (Endpoint &e : _panel->_endpoints) {
+			if (e.GetX() == _panel->_width - 1) e.SetX(_width - 1);
+			if (e.GetY() == _panel->_height - 1) e.SetY(_height - 1);
+		}
+		_panel->_width = _width;
+		_panel->_height = _height;
+		_panel->_grid.resize(_width);
+		for (auto& row : _panel->_grid) row.resize(_height);
+	}
 	readPanel(_panel);
 	generate_path();
 	for (std::pair<int, int> s : symbols) {
@@ -160,29 +192,42 @@ std::vector<int> Generate::get_symbols_in_region(std::set<Point> region) {
 	return symbols;
 }
 
+bool Generate::can_place_gap(Point pos) {
+	std::vector<Point> checkPoints = (pos.first % 2 == 0 ? std::vector<Point>({ Point(pos.first, pos.second - 1), Point(pos.first, pos.second + 1) })
+		: std::vector<Point>({ Point(pos.first - 1, pos.second), Point(pos.first + 1, pos.second) }));
+	for (Point check : checkPoints) {
+		int valid = 4;
+		for (Point dir : DIRECTIONS) {
+			Point p = Point(check.first + dir.first / 2, check.second + dir.second / 2);
+			if (off_edge(p) || _panel->_grid[p.first][p.second] & GAP || _panel->_grid[p.first][p.second] == OPEN) {
+				if (--valid <= 2) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
 bool Generate::place_gaps(int amount) {
 	std::set<Point> open;
 	for (int y = 0; y < _panel->_height; y++) {
 		for (int x = y % 2 + 1; x < _panel->_width; x += 2) {
-			if (_panel->_grid[x][y] == 0) {
+			if (_panel->_grid[x][y] == 0 && !on_edge(Point(x, y))) {
 				open.insert(Point(x, y));
 			}
 		}
 	}
 
-	//Get rid of corner points
-	open.erase(Point(0, 1)); open.erase(Point(1, 0)); open.erase(Point(0, _panel->_height - 2)); open.erase(Point(_panel->_width - 2, 0));
-	open.erase(Point(1, _panel->_height - 1)); open.erase(Point(_panel->_width - 1, 1));
-	open.erase(Point(_panel->_width - 1, _panel->_height - 2)); open.erase(Point(_panel->_width - 2, _panel->_height - 1));
-
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
 		Point pos = pick_random(open);
-		//_panel->_grid[pos.first][pos.second] = (pos.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
-		_panel->_grid[pos.first][pos.second] = OPEN;
+		if (can_place_gap(pos)) {
+			_panel->_grid[pos.first][pos.second] = (_fullGaps ? OPEN : pos.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+			amount--;
+		}
 		open.erase(pos);
-		amount--;
 	}
 	return true;
 }
@@ -233,4 +278,12 @@ bool Generate::place_stones(int color, int amount) {
 	}
 	_panel->_style |= Panel::Style::HAS_STONES;
 	return true;
+}
+
+void Generate::stealArrays() {
+	std::vector<int> ptrs;
+	std::vector<int> take_from = { 0x17D72, 0x17D8F, 0x17D74, 0x17DAC, 0x17D9E, 0x17DB9 };
+	for (int p : take_from) {
+		ptrs.push_back(_panel->_memory->ReadPanelData<int>(p, DECORATION_COLORS));
+	}
 }

@@ -206,12 +206,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				srand(static_cast<unsigned int>(time(NULL)));
 				//srand(ctr++);
 				//srand(2);
-				/*
-				generator->generate(panel,
-					Decoration::Stone | Decoration::Color::White, 5,
-					Decoration::Stone | Decoration::Color::Black, 7
-				);*/
-				
+				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 				generator->generate(panel,
 					//Decoration::Dot_Intersection, 6,
 					Decoration::Gap, 3
@@ -417,7 +412,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
 	_panel->Read(panel);
 	generator->readPanel(_panel);
-	generator->test();
+	generator->stealArrays();
 
 
 	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
