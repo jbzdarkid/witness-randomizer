@@ -157,7 +157,7 @@ void Panel::ReadDecorations(int id) {
 void Panel::WriteDecorations(int id) {
 	std::vector<int> decorations;
 	bool any = false;
-	_style &= ~HAS_STONES & ~HAS_STARS & ~HAS_SHAPERS & ~HAS_ERASERS & ~HAS_TRIANGLES; //Remove all element flags
+	_style &= ~0x2f40; //Remove all element flags
 	for (int y=_height-2; y>0; y-=2) {
 		for (int x=1; x<_width - 1; x+=2) {
 			decorations.push_back(_grid[x][y]);
@@ -308,8 +308,9 @@ void Panel::WriteIntersections(int id) {
 		for (int x = 0; x <_width; x += 2) {
 			intersections.push_back(static_cast<float>(minx + x * unitWidth));
 			intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
-			intersectionFlags.push_back(_grid[x][y]);
-			if (_grid[x][y] | DOT) _style |= HAS_DOTS;
+			intersectionFlags.push_back(_grid[x][y] | IntersectionFlags::INTERSECTION);
+			if (_grid[x][y] & DOT)
+				_style |= HAS_DOTS;
 
 			// Create connections for this intersection -- always write low -> high
 			if (y > 0 && _grid[x][y - 1] != OPEN) {

@@ -2,6 +2,10 @@
 #include "Panel.h"
 #include <stdlib.h>
 #include <time.h>
+#include <set>
+#include <algorithm>
+
+typedef std::pair<int, int> Point;
 
 class Generate
 {
@@ -10,9 +14,10 @@ public:
 		_width = _height = _colored = 0;
 		_symmetry = Panel::Symmetry::None;
 	}
-	void generate(int id, Decoration::Shape symbol, int amount);
-	void generate(int id, Decoration::Shape symbol1, int amount1, Decoration::Shape symbol2, int amount2);
-	void generate(int id, Decoration::Shape symbol1, int amount1, Decoration::Shape symbol2, int amount2, Decoration::Shape symbol3, int amount3);
+	void generate(int id, int symbol, int amount);
+	void generate(int id, int symbol1, int amount1, int symbol2, int amount2);
+	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3);
+	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4);
 	void generateMaze(int id, int width, int height, bool fullGaps);
 	std::vector<std::vector<int>> getLongestPath(int length);
 	std::vector<std::vector<int>> getRandomPath(int minLength, int maxLength);
@@ -25,8 +30,13 @@ public:
 	void setExitLocation(int x, int y);
 	void resetConfig();
 	void test() {
-		srand(static_cast<unsigned int>(time(NULL)));
-		generate_path();
+		/*
+		//srand(static_cast<unsigned int>(time(NULL)));
+		srand(3);
+		generate(0x0001F,
+			Decoration::Stone | Decoration::Color::Black, 7,
+			Decoration::Stone | Decoration::Color::White, 5);
+			*/
 	}
 
 private:
@@ -34,15 +44,16 @@ private:
 	std::vector<std::vector<int>> _cpath;
 	int _width, _height, _colored;
 	Panel::Symmetry _symmetry;
-	std::vector<std::pair<int, int>> _starts, _exits;
-	std::tuple<int> to_vertex(int x, int y);
-	std::tuple<int> to_grid(int x, int y);
-	std::tuple<int> to_vertex(std::pair<int, int> pos);
-	std::tuple<int> to_grid(std::pair<int, int> pos);
-	int get(std::pair<int, int> pos) {
+	std::vector<Point> _starts, _exits;
+	std::set<Point> _gridpos;
+	std::pair<int, int> to_vertex(int x, int y);
+	std::pair<int, int> to_grid(int x, int y);
+	std::pair<int, int> to_vertex(Point pos);
+	std::pair<int, int> to_grid(Point pos);
+	int get(Point pos) {
 		return _panel->_grid[pos.first][pos.second];
 	}
-	void set(std::pair<int, int> pos, int val) {
+	void set(Point pos, int val) {
 		_panel->_grid[pos.first][pos.second] = val;
 	}
 	void clear() {
@@ -51,22 +62,37 @@ private:
 				_panel->_grid[x][y] = 0;
 			}
 		}
+		_panel->_style &= ~0x2ff8; //Remove all element flags
 	}
-	static std::vector<std::pair<int, int>> DIRECTIONS;
+	template <class T> T pick_random(std::set<T>& set) {
+		auto it = set.begin();
+		std::advance(it, rand() % set.size());
+		return *it;
+	}
+	bool on_edge(Point p) {
+		return (p.first == 0 || p.first + 1 == _panel->_width || p.second == 0 || p.second + 1 == _panel->_height);
+	}
+	bool off_edge(Point p) {
+		return (p.first < 0 || p.first >= _panel->_width || p.second < 0 || p.second >= _panel->_height);
+	}
+	static std::vector<Point> DIRECTIONS;
+	static std::vector<Point> _8DIRECTIONS;
 	void generate(int id, std::vector<std::pair<int, int>> symbols);
 	void generate_path();
 	void generate_path(int minLength);
+	void generate_path_regions(int minRegions);
 	void generate_longest_path();
-	std::vector<int> get_symbols_in_region(int x, int y);
-	std::vector<std::tuple<int>> get_region(int x, int y);
+	std::set<Point> get_region(Point pos);
+	std::vector<int> get_symbols_in_region(Point pos);
+	std::vector<int> get_symbols_in_region(std::set<Point> region);
 	void place_start(int amount);
 	void place_exit(int amount);
-	void place_gaps(int amount);
-	void place_dots(int amount, int num_colored);
-	void place_stones(int color, int amount);
-	void place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect);
-	void place_stars(int color, int amount);
-	void place_triangles(int color, int amount);
-	void place_eraser(int color);
+	bool place_gaps(int amount);
+	bool place_dots(int amount, int num_colored);
+	bool place_stones(int color, int amount);
+	bool place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect);
+	bool place_stars(int color, int amount);
+	bool place_triangles(int color, int amount);
+	bool place_eraser(int color);
 };
 
