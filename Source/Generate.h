@@ -25,7 +25,6 @@ public:
 	void setPath(std::vector<std::vector<int>> path);	
 	void setGridSize(int width, int height); //Doesn't actually work right now due to array overflow
 	void setSymmetry(Panel::Symmetry symmetry);
-	void setNumColoredDots(int amount);
 	void setStartLocation(int x, int y);
 	void setExitLocation(int x, int y);
 	void resetConfig();
@@ -83,11 +82,13 @@ private:
 	void place_exit(int amount);
 	bool can_place_gap(Point pos);
 	bool place_gaps(int amount);
-	bool place_dots(int amount, int num_colored);
+	bool can_place_dot(Point pos);
+	bool place_dots(int amount, int numColored, bool intersectionOnly);
 	bool place_stones(int color, int amount);
 	bool place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);
 	bool place_eraser(int color);
+	template <class T> int alloc_array(int numItems);
 };
 

@@ -55,6 +55,16 @@ public:
 
 	void ClearOffsets() { _computedAddresses = std::map<uintptr_t, uintptr_t>(); }
 
+	template <class T>
+	void* AllocArray(int numItems) {
+		return static_cast<void*>(VirtualAllocEx(_handle, 0, numItems * sizeof(T), MEM_COMMIT, PAGE_READWRITE));
+	}
+
+	template <class T>
+	void* AllocArray(size_t numItems) {
+		return AllocArray<T>(static_cast<int>(numItems));
+	}
+
 private:
 	template<class T>
 	std::vector<T> ReadData(const std::vector<int>& offsets, size_t numItems) {

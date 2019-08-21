@@ -78,6 +78,11 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
+		if ((s.first & Decoration::Dot) && !place_dots(s.second, 0, s.first == Decoration::Dot_Intersection)) {
+			generate(id, symbols); return;
+		}
+	}
+	for (std::pair<int, int> s : symbols) {
 		if ((s.first & Decoration::Gap) && !place_gaps(s.second)) {
 			generate(id, symbols); return;
 		}
@@ -225,6 +230,50 @@ bool Generate::place_gaps(int amount) {
 		Point pos = pick_random(open);
 		if (can_place_gap(pos)) {
 			_panel->_grid[pos.first][pos.second] = (_fullGaps ? OPEN : pos.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+			amount--;
+		}
+		open.erase(pos);
+	}
+	return true;
+}
+
+bool Generate::can_place_dot(Point pos) {
+	for (Point dir : _8DIRECTIONS) {
+		Point p = Point(pos.first + dir.first / 2, pos.second + dir.second / 2);
+		if (!off_edge(p) && _panel->_grid[p.first][p.second] & DOT) {
+			return false;
+		}
+	}
+	if (rand() % 10 > 0) {
+		for (Point dir : DIRECTIONS) {
+			Point p = pos + dir;
+			if (!off_edge(p) && _panel->_grid[p.first][p.second] & DOT) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool Generate::place_dots(int amount, int numColored, bool intersectionOnly) {
+	std::set<Point> open;
+	for (int x = 0; x < _panel->_width; x += (intersectionOnly ? 2 : 1)) {
+		for (int y = 0; y < _panel->_height; y += (intersectionOnly ? 2 : 1)) {
+			if (_panel->_grid[x][y] == PATH)
+				open.insert(Point(x, y));
+		}
+	}
+
+	for (Point p : _starts) open.erase(p);
+	for (Point p : _exits) open.erase(p);
+
+	while (amount > 0) {
+		if (open.size() == 0)
+			return false;
+		Point pos = pick_random(open);
+		if (can_place_dot(pos)) {
+			_panel->_grid[pos.first][pos.second] = (pos.first % 2 == 1 ? Decoration::Dot_Row :
+				pos.second % 2 == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection);
 			amount--;
 		}
 		open.erase(pos);

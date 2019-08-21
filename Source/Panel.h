@@ -16,7 +16,7 @@ public:
 		Triangle =	0x600,
 		Can_Rotate = 0x1000,
 		Negative = 0x2000,
-		Gap = 0x200000,
+		Gap = 0x100000,
 		Gap_Row = 0x300000,
 		Gap_Column = 0x500000,
 		Dot = 0x20,

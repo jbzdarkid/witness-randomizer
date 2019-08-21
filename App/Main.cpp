@@ -49,7 +49,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x0005F; // Outside Tutorial Dots Tutorial 3
+int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -206,11 +206,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				srand(static_cast<unsigned int>(time(NULL)));
 				//srand(ctr++);
 				//srand(2);
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
-				generator->generate(panel,
-					//Decoration::Dot_Intersection, 6,
-					Decoration::Gap, 3
-				);
+				generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
+				//generator->generate(panel, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
 				break;
 
 			case IDC_ROTATED:

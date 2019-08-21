@@ -140,13 +140,14 @@ void Panel::ReadAllData(int id) {
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
 	int ptr1 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_A);
 	int ptr2 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_B);
-	std::vector<int> connections_a = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections * 3);
-	std::vector<int> connections_b = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections * 3);
+	std::vector<int> connections_a = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
+	std::vector<int> connections_b = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
 	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
-	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2 * 3);
-	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections * 3);
-	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations * 3);
-	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations * 3);
+	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
+	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
+	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
+	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
+	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations);
 }
 
 void Panel::ReadDecorations(int id) {
@@ -181,6 +182,9 @@ void Panel::WriteDecorations(int id) {
 		return;
 	}
 	_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
+	void* ptr = _memory->AllocArray<int>(decorations.size());
+	_memory->WritePanelData<void*>(id, DECORATIONS, { ptr });
+	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
 	_memory->WriteArray<int>(id, DECORATIONS, decorations);
 }
 

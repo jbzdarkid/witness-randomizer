@@ -1,4 +1,5 @@
 #include "Memory.h"
+#include "Memoryapi.h"
 #include <psapi.h>
 #include <tlhelp32.h>
 #include <iostream>
