@@ -55,7 +55,9 @@ void Generate::setGridSize(int width, int height) {
 //Public
 
 void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
+
 	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
+
 	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
 		for (Point &s : _panel->_startpoints) {
 			if (s.first == _panel->_width - 1) s.first = _width - 1;

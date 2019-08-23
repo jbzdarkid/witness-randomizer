@@ -25,6 +25,10 @@ Panel::Panel(int id) {
 
 void Panel::Read(int id) {
 	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
+
+	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
+	std::vector<int> test2 = _memory->ReadArray<int>(id, DECORATIONS, 100);
+
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X) - 1;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
 	_grid.resize(_width);
@@ -46,6 +50,7 @@ void Panel::Write(int id) {
 	_memory->WritePanelData<int>(id, GRID_SIZE_X, {(_width + 1)/2});
 	_memory->WritePanelData<int>(id, GRID_SIZE_Y, {(_height + 1)/2});
 	_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+	std::vector<int> test2 = _memory->ReadArray<int>(id, DECORATIONS, static_cast<int>(100));
 }
 
 void Panel::SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color)
@@ -140,14 +145,14 @@ void Panel::ReadAllData(int id) {
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
 	int ptr1 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_A);
 	int ptr2 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_B);
-	std::vector<int> connections_a = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
-	std::vector<int> connections_b = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
+	std::vector<int> connections_a = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections * 10);
+	std::vector<int> connections_b = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections * 10);
 	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
-	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
-	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
+	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2 * 10);
+	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections * 10);
 	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
-	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
-	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations);
+	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations * 10);
+	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations * 10);
 }
 
 void Panel::ReadDecorations(int id) {
@@ -182,9 +187,6 @@ void Panel::WriteDecorations(int id) {
 		return;
 	}
 	_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-	void* ptr = _memory->AllocArray<int>(decorations.size());
-	_memory->WritePanelData<void*>(id, DECORATIONS, { ptr });
-	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
 	_memory->WriteArray<int>(id, DECORATIONS, decorations);
 }
 

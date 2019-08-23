@@ -23,14 +23,33 @@ public:
 	int GetCurrentFrame();
 
 	template <class T>
+	uintptr_t AllocArray(int id, int numItems) {
+		uintptr_t ptr = reinterpret_cast<uintptr_t>(VirtualAllocEx(_handle, 0, numItems * sizeof(T), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		return ptr;
+	}
+
+	template <class T>
+	uintptr_t AllocArray(int id, size_t numItems) {
+		return AllocArray<T>(id, static_cast<int>(numItems));
+	}
+
+	template <class T>
 	std::vector<T> ReadArray(int panel, int offset, int size) {
 		if (size == 0) return std::vector<T>();
+		_arraySizes[std::make_pair(panel, offset)] = size;
 		return ReadData<T>({ GLOBALS, 0x18, panel * 8, offset, 0 }, size);
 	}
 
 	template <class T>
 	void WriteArray(int panel, int offset, const std::vector<T>& data) {
 		if (data.size() == 0) return;
+		if (data.size() > _arraySizes[std::make_pair(panel, offset)]) {
+			//Invalidate cache entry for old array address
+			_computedAddresses.erase(reinterpret_cast<uintptr_t>(ComputeOffset({ GLOBALS, 0x18, panel * 8, offset })));
+			//Allocate new array in process memory
+			uintptr_t ptr = AllocArray<T>(panel, data.size());
+			WritePanelData<uintptr_t>(panel, offset, { ptr });
+		}
 		WriteData<T>({ GLOBALS, 0x18, panel * 8, offset, 0 }, data);
 	}
 
@@ -54,16 +73,6 @@ public:
 	int ExecuteSigScans();
 
 	void ClearOffsets() { _computedAddresses = std::map<uintptr_t, uintptr_t>(); }
-
-	template <class T>
-	void* AllocArray(int numItems) {
-		return static_cast<void*>(VirtualAllocEx(_handle, 0, numItems * sizeof(T), MEM_COMMIT, PAGE_READWRITE));
-	}
-
-	template <class T>
-	void* AllocArray(size_t numItems) {
-		return AllocArray<T>(static_cast<int>(numItems));
-	}
 
 private:
 	template<class T>
@@ -95,6 +104,7 @@ private:
 	void* ComputeOffset(std::vector<int> offsets);
 
 	std::map<uintptr_t, uintptr_t> _computedAddresses;
+	std::map<std::pair<int, int>, int> _arraySizes;
 	uintptr_t _baseAddress = 0;
 	HANDLE _handle = nullptr;
 	struct SigScan {
