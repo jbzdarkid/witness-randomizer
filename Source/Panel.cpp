@@ -26,9 +26,6 @@ Panel::Panel(int id) {
 void Panel::Read(int id) {
 	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
 
-	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
-	std::vector<int> test2 = _memory->ReadArray<int>(id, DECORATIONS, 100);
-
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X) - 1;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
 	_grid.resize(_width);
@@ -50,7 +47,6 @@ void Panel::Write(int id) {
 	_memory->WritePanelData<int>(id, GRID_SIZE_X, {(_width + 1)/2});
 	_memory->WritePanelData<int>(id, GRID_SIZE_Y, {(_height + 1)/2});
 	_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
-	std::vector<int> test2 = _memory->ReadArray<int>(id, DECORATIONS, static_cast<int>(100));
 }
 
 void Panel::SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color)

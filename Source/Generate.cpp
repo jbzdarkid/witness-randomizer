@@ -86,6 +86,11 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
+		if ((s.first & Decoration::Star) && !place_stars(s.first & 0xf, s.second)) {
+			generate(id, symbols); return;
+		}
+	}
+	for (std::pair<int, int> s : symbols) {
 		if ((s.first & Decoration::Dot) && !place_dots(s.second, 0, s.first == Decoration::Dot_Intersection)) {
 			generate(id, symbols); return;
 		}
@@ -386,5 +391,45 @@ bool Generate::place_stones(int color, int amount) {
 		amount--;
 	}
 	_panel->_style |= Panel::Style::HAS_STONES;
+	return true;
+}
+
+bool Generate::place_stars(int color, int amount)
+{
+	std::set<Point> open = _gridpos;
+	std::set<Point> open2;
+	while (amount > 0) {
+		if (open.size() == 0)
+			return false;
+		Point pos = pick_random(open);
+		std::set<Point> region = get_region(pos);
+		std::vector<int> symbols = get_symbols_in_region(region);
+		open2.clear();
+		int count = 0;
+		for (int s : symbols) {
+			if ((s & 0xf) == color) {
+				count++;
+			}
+		}
+		for (Point p : region) {
+			if (open.erase(p)) open2.insert(p);
+		}
+		if (count >= 2) continue;
+		if (open2.size() + count < 2) continue;
+		if (count == 0 && amount == 1) continue;
+		_panel->_grid[pos.first][pos.second] = Decoration::Star | color;
+		_gridpos.erase(pos);
+		amount--;
+		if (count == 0) {
+			open2.erase(pos);
+			if (open2.size() == 0)
+				return false;
+			pos = pick_random(open2);
+			_panel->_grid[pos.first][pos.second] = Decoration::Star | color;
+			_gridpos.erase(pos);
+			amount--;
+		}
+	}
+	_panel->_style |= Panel::Style::HAS_STARS;
 	return true;
 }
