@@ -52,7 +52,7 @@ void Generate::setGridSize(int width, int height) {
 	_width = width * 2 + 1; _height = height * 2 + 1;
 }
 
-//Public
+//----------------------Private--------------------------
 
 void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 
@@ -73,6 +73,12 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		for (auto& row : _panel->_grid) row.resize(_height);
 	}
 	readPanel(_panel);
+	for (std::pair<int, int> s : symbols) {
+		if (s.first == Decoration::Start)
+			while (!place_start(s.second));
+		if (s.first == Decoration::Exit)
+			while (!place_exit(s.second));
+	}
 	generate_path();
 	for (std::pair<int, int> s : symbols) {
 		if ((s.first & Decoration::Stone) && !place_stones(s.first & 0xf, s.second)) {
@@ -197,6 +203,58 @@ std::vector<int> Generate::get_symbols_in_region(std::set<Point> region) {
 		if (flag) symbols.push_back(flag);
 	}
 	return symbols;
+}
+
+bool Generate::place_start(int amount)
+{
+	_starts.clear();
+	_panel->_startpoints.clear();
+	std::set<Point> open;
+	for (int y = 0; y < _panel->_height; y += 2) {
+		for (int x = 0; x < _panel->_width; x += 2) {
+			if (std::find(_starts.begin(), _starts.end(), Point(x, y)) == _starts.end()) {
+				open.insert(Point(x, y));
+			}
+		}
+	}
+	for (amount; amount > 0; amount--) {
+		if (open.size() == 0)
+			return false;
+		Point pos = pick_random(open);
+		_starts.push_back(pos);
+		_panel->SetGridSymbol(pos.first, pos.second, Decoration::Start, Decoration::Color::None);
+		open.erase(pos);
+		for (Point dir : _8DIRECTIONS) {
+			open.erase(pos + dir);
+		}
+	}
+	return true;
+}
+
+bool Generate::place_exit(int amount)
+{
+	_exits.clear();
+	_panel->_endpoints.clear();
+	std::set<Point> open;
+	for (int y = 0; y < _panel->_height; y += 2) {
+		for (int x = 0; x < _panel->_width; x += 2) {
+			if (on_edge(Point(x, y)) && std::find(_exits.begin(), _exits.end(), Point(x, y)) == _exits.end() && std::find(_starts.begin(), _starts.end(), Point(x, y)) == _starts.end()) {
+				open.insert(Point(x, y));
+			}
+		}
+	}
+	for (amount; amount > 0; amount--) {
+		if (open.size() == 0)
+			return false;
+		Point pos = pick_random(open);
+		_exits.push_back(pos);
+		_panel->SetGridSymbol(pos.first, pos.second, Decoration::Exit, Decoration::Color::None);
+		open.erase(pos);
+		for (Point dir : _8DIRECTIONS) {
+			open.erase(pos + dir);
+		}
+	}
+	return true;
 }
 
 bool Generate::can_place_gap(Point pos) {
@@ -329,12 +387,4 @@ bool Generate::place_stones(int color, int amount) {
 	}
 	_panel->_style |= Panel::Style::HAS_STONES;
 	return true;
-}
-
-void Generate::stealArrays() {
-	std::vector<int> ptrs;
-	std::vector<int> take_from = { 0x17D72, 0x17D8F, 0x17D74, 0x17DAC, 0x17D9E, 0x17DB9 };
-	for (int p : take_from) {
-		ptrs.push_back(_panel->_memory->ReadPanelData<int>(p, DECORATION_COLORS));
-	}
 }

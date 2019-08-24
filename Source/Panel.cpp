@@ -64,7 +64,7 @@ void Panel::SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color 
 	}
 	else if (symbol & IntersectionFlags::ROW || symbol & IntersectionFlags::COLUMN)
 		color = Decoration::Color::None;
-	SetGridSymbol(x * 2 + 1, y * 2 + 1, symbol, color);
+	SetGridSymbol(x * 2 + (symbol & IntersectionFlags::COLUMN ? 0 : 1), y * 2 + (symbol & IntersectionFlags::ROW ? 0 : 1), symbol, color);
 }
 
 void Panel::SetShape(int x, int y, int shape, bool rotate, bool negative, Decoration::Color color)
@@ -88,8 +88,6 @@ void Panel::ClearSymbol(int x, int y)
 
 void Panel::SetGridSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color)
 {
-	if (symbol & IntersectionFlags::COLUMN) x--;
-	if (symbol & IntersectionFlags::ROW) y--;
 	if (symbol == Decoration::Start) _startpoints.push_back({ x, y });
 	if (symbol == Decoration::Exit) {
 		Endpoint::Direction dir;
@@ -234,8 +232,6 @@ void Panel::ReadIntersections(int id) {
 		int y = _height - 1 - static_cast<int>(std::round((intersections[connections_a[i] * 2 + 1] - miny) / unitHeight));
 		int x2 = static_cast<int>(std::round((intersections[connections_b[i] * 2] - minx) / unitWidth));
 		int y2 = _height - 1 - static_cast<int>(std::round((intersections[connections_b[i] * 2 + 1] - miny) / unitHeight));
-		//auto[x, y] = loc_to_xy(connections_a[i]);
-		//auto[x2, y2] = loc_to_xy(connections_b[i]);
 		_grid[(x + x2) / 2][(y + y2) / 2] = 0;
 	}
 

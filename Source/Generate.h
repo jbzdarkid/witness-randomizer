@@ -23,12 +23,11 @@ public:
 	std::vector<std::vector<int>> getRandomPath(int minLength, int maxLength);
 	void readPanel(std::shared_ptr<Panel> panel);
 	void setPath(std::vector<std::vector<int>> path);	
-	void setGridSize(int width, int height); //Doesn't actually work right now due to array overflow
+	void setGridSize(int width, int height);
 	void setSymmetry(Panel::Symmetry symmetry);
 	void setStartLocation(int x, int y);
 	void setExitLocation(int x, int y);
 	void resetConfig();
-	void stealArrays();
 
 private:
 	std::shared_ptr<Panel> _panel;
@@ -78,8 +77,8 @@ private:
 	std::set<Point> get_region(Point pos);
 	std::vector<int> get_symbols_in_region(Point pos);
 	std::vector<int> get_symbols_in_region(std::set<Point> region);
-	void place_start(int amount);
-	void place_exit(int amount);
+	bool place_start(int amount);
+	bool place_exit(int amount);
 	bool can_place_gap(Point pos);
 	bool place_gaps(int amount);
 	bool can_place_dot(Point pos);
