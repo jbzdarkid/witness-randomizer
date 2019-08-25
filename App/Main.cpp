@@ -49,7 +49,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x0001F; // Outside Tutorial Stones Tutorial 7
+int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -147,6 +147,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (wcscmp(text, L"Star") == 0) symbol = Decoration::Shape::Star;
 				if (wcscmp(text, L"Eraser") == 0) symbol = Decoration::Shape::Eraser;
 				if (wcscmp(text, L"Shape") == 0) symbol = Decoration::Shape::Poly;
+				if (wcscmp(text, L"Triangle 1") == 0) symbol = Decoration::Shape::Triangle1;
+				if (wcscmp(text, L"Triangle 2") == 0) symbol = Decoration::Shape::Triangle2;
+				if (wcscmp(text, L"Triangle 3") == 0) symbol = Decoration::Shape::Triangle3;
 				if (wcscmp(text, L"Dot (Intersection)") == 0) symbol = Decoration::Shape::Dot_Intersection;
 				if (wcscmp(text, L"Dot (Row)") == 0) symbol = Decoration::Shape::Dot_Row;
 				if (wcscmp(text, L"Dot (Column)") == 0) symbol = Decoration::Shape::Dot_Column;
@@ -211,8 +214,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 				//generator->generate(panel, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
 				//generator->generate(panel, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 6);
-				generator->generate(panel, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
-										   Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 3);
+				//generator->generate(panel, Decoration::Star | Decoration::Color::White, 4, Decoration::Star | Decoration::Color::Black, 4);
+				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
+				//						   Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 3);
+				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8);
+				generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Orange, 4);
 				break;
 
 			case IDC_ROTATED:

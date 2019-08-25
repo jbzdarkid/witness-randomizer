@@ -81,12 +81,17 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	}
 	generate_path();
 	for (std::pair<int, int> s : symbols) {
-		if ((s.first & Decoration::Stone) && !place_stones(s.first & 0xf, s.second)) {
+		if (((s.first & ~0xf) == Decoration::Stone) && !place_stones(s.first & 0xf, s.second)) {
 			generate(id, symbols); return;
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
-		if ((s.first & Decoration::Star) && !place_stars(s.first & 0xf, s.second)) {
+		if (((s.first & ~0xf) == Decoration::Triangle) && !place_triangles(s.first & 0xf, s.second)) {
+			generate(id, symbols); return;
+		}
+	}
+	for (std::pair<int, int> s : symbols) {
+		if (((s.first & ~0xf) == Decoration::Star) && !place_stars(s.first & 0xf, s.second)) {
 			generate(id, symbols); return;
 		}
 	}
@@ -96,7 +101,7 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
-		if ((s.first & Decoration::Gap) && !place_gaps(s.second)) {
+		if (((s.first & ~0xf) == Decoration::Gap) && !place_gaps(s.second)) {
 			generate(id, symbols); return;
 		}
 	}
@@ -431,5 +436,30 @@ bool Generate::place_stars(int color, int amount)
 		}
 	}
 	_panel->_style |= Panel::Style::HAS_STARS;
+	return true;
+}
+
+bool Generate::place_triangles(int color, int amount)
+{
+	std::set<Point> open = _gridpos;
+	while (amount > 0) {
+		if (open.size() == 0)
+			return false;
+		Point pos = pick_random(open);
+		int count = 0;
+		for (Point dir : DIRECTIONS) {
+			Point p = Point(pos.first + dir.first / 2, pos.second + dir.second / 2);
+			bool test = off_edge(p);
+			if (!off_edge(p) && _panel->_grid[p.first][p.second] == PATH) {
+				count++;
+			}
+		}
+		open.erase(pos);
+		if (count == 0)
+			continue;
+		_panel->_grid[pos.first][pos.second] = Decoration::Triangle | color | (count * 0x10000);
+		_gridpos.erase(pos);
+		amount--;
+	}
 	return true;
 }

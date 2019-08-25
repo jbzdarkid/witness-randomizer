@@ -88,6 +88,5 @@ private:
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);
 	bool place_eraser(int color);
-	template <class T> int alloc_array(int numItems);
 };
 
