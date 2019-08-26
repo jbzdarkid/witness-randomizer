@@ -86,6 +86,11 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
+		if (((s.first & ~0xf) == Decoration::Poly) && !place_shapes({ s.first & 0xf }, s.second, 0, 0, false)) {
+			generate(id, symbols); return;
+		}
+	}
+	for (std::pair<int, int> s : symbols) {
 		if (((s.first & ~0xf) == Decoration::Triangle) && !place_triangles(s.first & 0xf, s.second)) {
 			generate(id, symbols); return;
 		}
@@ -119,8 +124,8 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 
 void Generate::generate_path()
 {
-	//generate_path((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1) * 2 / 3);
-	generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2);
+	generate_path((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1) * 2 / 3);
+	//generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2);
 }
 
 void Generate::generate_path(int minLength)
@@ -399,23 +404,135 @@ bool Generate::place_stones(int color, int amount) {
 	return true;
 }
 
+Shape Generate::generate_shape(std::set<Point>& region, int maxSize, bool disconnect)
+{
+	Shape shape;
+	Point pos = pick_random(region);
+	shape.insert(pos);
+	region.erase(pos);
+	while (shape.size() < maxSize && region.size() > 0) {
+		pos = pick_random(shape);
+		int i = 0;
+		for (; i < 10; i++) {
+			Point dir = pick_random(DIRECTIONS);
+			Point p = pos + dir;
+			if (region.count(p)) {
+				shape.insert(p);
+				region.erase(p);
+				break;
+			}
+		}
+		if (i == 10)
+			return shape;
+	}
+	return shape;
+}
+
+int Generate::make_shape_symbol(Shape shape)
+{
+	int xmin = INT_MAX, xmax = 0, ymin = INT_MAX, ymax = 0;
+	for (Point p : shape) {
+		if (p.first < xmin) xmin = p.first;
+		if (p.first > xmax) xmax = p.first;
+		if (p.second < ymin) ymin = p.second;
+		if (p.second > ymax) ymax = p.second;
+	}
+	if (xmax - xmin > 8 || ymax - ymin > 8)
+		return 0; //Shapes cannot be more than 4 in width and height
+	int symbol = static_cast<int>(Decoration::Shape::Poly);
+	for (Point p : shape) {
+		symbol |= (1 << ((p.first - xmin) / 2 + (ymax  - p.second) * 2)) << 16;
+	}
+	return symbol;
+}
+
+bool Generate::place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect)
+{
+	std::set<Point> open = _gridpos;
+	int targetArea = amount * 3, totalArea = 0;
+	while (amount > 0) {
+		if (open.size() == 0)
+			return false;
+		Point pos = pick_random(open);
+		std::set<Point> region = get_region(pos);
+		std::set<Point> open2;
+		for (Point p : region) {
+			if (open.erase(p)) open2.insert(p);
+		}
+		std::vector<Shape> shapes;
+		int numShapes = max(1, min(static_cast<int>(region.size()) / 3, amount));
+		if (region.size() > numShapes * 5) continue;
+		if (open2.size() < numShapes) continue;
+		for (; numShapes > 0; numShapes--) {
+			if (region.size() == 0) break;
+			shapes.push_back(generate_shape(region, 4, false));
+		}
+		//Take remaining area and try to stick it to existing shapes
+multibreak:
+		while (region.size() > 0) {
+			pos = pick_random(region);
+			for (Shape& shape : shapes) {
+				if (shape.size() >= 5) continue;
+				for (Point p : shape) {
+					for (Point dir : DIRECTIONS) {
+						if (pos + dir == p) {
+							shape.insert(pos);
+							region.erase(pos);
+							goto multibreak;
+						}
+					}
+				}
+			}
+			//Failed to cover entire region, need to pick a different region
+			break;
+		}
+		if (region.size() > 0) continue;
+		for (Shape& shape : shapes) {
+			totalArea += static_cast<int>(shape.size());
+			int symbol = make_shape_symbol(shape);
+			if (symbol == 0)
+				return false;
+			//Attempt not to put shapes adjacent
+			Point pos;
+			for (int i = 0; i < 10; i++) {
+				pos = pick_random(open2);
+				bool pass = true;
+				for (Point dir : _8DIRECTIONS) {
+					Point p = pos + dir;
+					if (!off_edge(p) && _panel->_grid[p.first][p.second] & Decoration::Poly) {
+						pass = false;
+						break;
+					}
+				}
+				if (pass) break;
+			}
+			_panel->_grid[pos.first][pos.second] = symbol | pick_random(colors);
+			open2.erase(pos);
+			_gridpos.erase(pos);
+			amount--;
+		}
+	}
+	if (totalArea < targetArea)
+		return false;
+	return true;
+}
+
 bool Generate::place_stars(int color, int amount)
 {
 	std::set<Point> open = _gridpos;
-	std::set<Point> open2;
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
 		Point pos = pick_random(open);
 		std::set<Point> region = get_region(pos);
 		std::vector<int> symbols = get_symbols_in_region(region);
-		open2.clear();
 		int count = 0;
 		for (int s : symbols) {
 			if ((s & 0xf) == color) {
 				count++;
 			}
 		}
+		std::set<Point> open2;
 		for (Point p : region) {
 			if (open.erase(p)) open2.insert(p);
 		}
@@ -435,7 +552,6 @@ bool Generate::place_stars(int color, int amount)
 			amount--;
 		}
 	}
-	_panel->_style |= Panel::Style::HAS_STARS;
 	return true;
 }
 

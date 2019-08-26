@@ -6,6 +6,7 @@
 #include <algorithm>
 
 typedef std::pair<int, int> Point;
+typedef std::set<Point> Shape;
 
 class Generate
 {
@@ -56,6 +57,9 @@ private:
 		}
 		_panel->_style &= ~0x2ff8; //Remove all element flags
 	}
+	template <class T> T pick_random(std::vector<T>& vec) {
+		return vec[rand() % vec.size()];
+	}
 	template <class T> T pick_random(std::set<T>& set) {
 		auto it = set.begin();
 		std::advance(it, rand() % set.size());
@@ -84,6 +88,8 @@ private:
 	bool can_place_dot(Point pos);
 	bool place_dots(int amount, int numColored, bool intersectionOnly);
 	bool place_stones(int color, int amount);
+	Shape generate_shape(std::set<Point>& region, int maxSize, bool disconnect);
+	int make_shape_symbol(Shape shape);
 	bool place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);
