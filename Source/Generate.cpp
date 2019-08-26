@@ -473,6 +473,7 @@ bool Generate::place_shapes(std::vector<int> colors, int amount, int numRotated,
 {
 	std::set<Point> open = _gridpos;
 	int targetArea = amount * 3, totalArea = 0;
+	int colorIndex = rand() % colors.size();
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
@@ -529,7 +530,7 @@ multibreak:
 				}
 				if (pass) break;
 			}
-			_panel->_grid[pos.first][pos.second] = symbol | pick_random(colors);
+			_panel->_grid[pos.first][pos.second] = symbol | colors[(colorIndex++) % colors.size()];
 			open2.erase(pos);
 			_gridpos.erase(pos);
 			amount--;

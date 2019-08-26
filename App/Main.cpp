@@ -219,7 +219,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//						   Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 3);
 				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8);
 				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Orange, 3);
-				generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Green, 3);
+				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Green, 3);
+				generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Magenta, 1,
+					Decoration::Shape::Poly | Decoration::Color::Yellow, 2);
 				break;
 
 			case IDC_ROTATED:
