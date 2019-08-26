@@ -88,8 +88,8 @@ private:
 	bool can_place_dot(Point pos);
 	bool place_dots(int amount, int numColored, bool intersectionOnly);
 	bool place_stones(int color, int amount);
-	Shape generate_shape(std::set<Point>& region, int maxSize, bool disconnect);
-	int make_shape_symbol(Shape shape);
+	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize, bool disconnect);
+	int make_shape_symbol(Shape shape, bool rotated, bool negative);
 	bool place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);

@@ -81,22 +81,32 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	}
 	generate_path();
 	for (std::pair<int, int> s : symbols) {
-		if (((s.first & ~0xf) == Decoration::Stone) && !place_stones(s.first & 0xf, s.second)) {
+		if (((s.first & 0x700) == Decoration::Stone) && !place_stones(s.first & 0xf, s.second)) {
+			generate(id, symbols); return;
+		}
+	}
+	int numShapes = 0, numRotate = 0, numNegative = 0;
+	std::vector<int> colors;
+	for (std::pair<int, int> s : symbols) {
+		if ((s.first & 0x700) == Decoration::Poly) {
+			for (int i = 0; i < s.second; i++) {
+				numShapes++;
+				colors.push_back(s.first & 0xf);
+				if (s.first & Decoration::Can_Rotate) numRotate++;
+				if (s.first & Decoration::Negative) numNegative++;
+			}
+		}
+	}
+	if (numShapes > 0 && !place_shapes(colors, numShapes, numRotate, numNegative, false)) {
+		generate(id, symbols); return;
+	}
+	for (std::pair<int, int> s : symbols) {
+		if (((s.first & 0x700) == Decoration::Triangle) && !place_triangles(s.first & 0xf, s.second)) {
 			generate(id, symbols); return;
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
-		if (((s.first & ~0xf) == Decoration::Poly) && !place_shapes({ s.first & 0xf }, s.second, 0, 0, false)) {
-			generate(id, symbols); return;
-		}
-	}
-	for (std::pair<int, int> s : symbols) {
-		if (((s.first & ~0xf) == Decoration::Triangle) && !place_triangles(s.first & 0xf, s.second)) {
-			generate(id, symbols); return;
-		}
-	}
-	for (std::pair<int, int> s : symbols) {
-		if (((s.first & ~0xf) == Decoration::Star) && !place_stars(s.first & 0xf, s.second)) {
+		if (((s.first & 0x700) == Decoration::Star) && !place_stars(s.first & 0xf, s.second)) {
 			generate(id, symbols); return;
 		}
 	}
@@ -404,10 +414,9 @@ bool Generate::place_stones(int color, int amount) {
 	return true;
 }
 
-Shape Generate::generate_shape(std::set<Point>& region, int maxSize, bool disconnect)
+Shape Generate::generate_shape(std::set<Point>& region, Point pos, int maxSize, bool disconnect)
 {
 	Shape shape;
-	Point pos = pick_random(region);
 	shape.insert(pos);
 	region.erase(pos);
 	while (shape.size() < maxSize && region.size() > 0) {
@@ -428,9 +437,24 @@ Shape Generate::generate_shape(std::set<Point>& region, int maxSize, bool discon
 	return shape;
 }
 
-int Generate::make_shape_symbol(Shape shape)
+int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative)
 {
-	int xmin = INT_MAX, xmax = 0, ymin = INT_MAX, ymax = 0;
+	int symbol = static_cast<int>(Decoration::Shape::Poly);
+	if (rotated && shape.size() > 1) {
+		symbol |= Decoration::Can_Rotate;
+		Shape newShape;
+		int rotation = rand() % 4;
+		for (Point p : shape) {
+			switch (rotation) {
+			case 0: newShape.insert(p); break;
+			case 1: newShape.insert(Point(p.second, -p.first)); break;
+			case 2: newShape.insert(Point(-p.second, p.first)); break;
+			case 3: newShape.insert(Point(-p.first, -p.second)); break;
+			}
+		}
+		shape = newShape;
+	}
+	int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
 	for (Point p : shape) {
 		if (p.first < xmin) xmin = p.first;
 		if (p.first > xmax) xmax = p.first;
@@ -439,7 +463,6 @@ int Generate::make_shape_symbol(Shape shape)
 	}
 	if (xmax - xmin > 8 || ymax - ymin > 8)
 		return 0; //Shapes cannot be more than 4 in width and height
-	int symbol = static_cast<int>(Decoration::Shape::Poly);
 	for (Point p : shape) {
 		symbol |= (1 << ((p.first - xmin) / 2 + (ymax  - p.second) * 2)) << 16;
 	}
@@ -465,7 +488,7 @@ bool Generate::place_shapes(std::vector<int> colors, int amount, int numRotated,
 		if (open2.size() < numShapes) continue;
 		for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
-			shapes.push_back(generate_shape(region, 4, false));
+			shapes.push_back(generate_shape(region, pick_random(region), 4, false));
 		}
 		//Take remaining area and try to stick it to existing shapes
 multibreak:
@@ -489,7 +512,7 @@ multibreak:
 		if (region.size() > 0) continue;
 		for (Shape& shape : shapes) {
 			totalArea += static_cast<int>(shape.size());
-			int symbol = make_shape_symbol(shape);
+			int symbol = make_shape_symbol(shape, (numRotated-- > 0), false);
 			if (symbol == 0)
 				return false;
 			//Attempt not to put shapes adjacent
