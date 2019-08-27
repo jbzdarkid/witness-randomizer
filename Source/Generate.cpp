@@ -37,6 +37,7 @@ void Generate::readPanel(std::shared_ptr<Panel> panel) {
 			_gridpos.insert(Point(x, y));
 		}
 	}
+	_openpos = _gridpos;
 	_fullGaps = false;
 	for (int x = 0; x < panel->_width; x++) {
 		for (int y = 0; y < panel->_height; y++) {
@@ -86,18 +87,23 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		}
 	}
 	int numShapes = 0, numRotate = 0, numNegative = 0;
-	std::vector<int> colors;
+	std::vector<int> colors, negativeColors;
 	for (std::pair<int, int> s : symbols) {
 		if ((s.first & 0x700) == Decoration::Poly) {
 			for (int i = 0; i < s.second; i++) {
-				numShapes++;
-				colors.push_back(s.first & 0xf);
 				if (s.first & Decoration::Can_Rotate) numRotate++;
-				if (s.first & Decoration::Negative) numNegative++;
+				if (s.first & Decoration::Negative) {
+					numNegative++;
+					negativeColors.push_back(s.first & 0xf);
+				}
+				else {
+					numShapes++;
+					colors.push_back(s.first & 0xf);
+				}
 			}
 		}
 	}
-	if (numShapes > 0 && !place_shapes(colors, numShapes, numRotate, numNegative, false)) {
+	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative, false)) {
 		generate(id, symbols); return;
 	}
 	for (std::pair<int, int> s : symbols) {
@@ -120,11 +126,17 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 			generate(id, symbols); return;
 		}
 	}
-	for (int x = 0; x < _panel->_width; x++) {
-		for (int y = 0; y < _panel->_height; y++) {
-			if (_panel->_grid[x][y] == PATH)
+	std::vector<std::string> solution;
+	for (int y = 0; y < _panel->_height; y++) {
+		std::string row;
+		for (int x = 0; x < _panel->_width; x++) {
+			if (_panel->_grid[x][y] == PATH) {
+				row += "x";
 				_panel->_grid[x][y] = 0;
+			}
+			else row += "  ";
 		}
+		solution.push_back(row);
 	}
 	for (Point p : _starts) {
 		_panel->_grid[p.first][p.second] |= STARTPOINT;
@@ -367,7 +379,7 @@ bool Generate::place_dots(int amount, int numColored, bool intersectionOnly) {
 }
 
 bool Generate::place_stones(int color, int amount) {
-	std::set<Point> open = _gridpos;
+	std::set<Point> open = _openpos;
 	std::set<Point> open2;
 	while (amount > 0) {
 		if (open.size() == 0) {
@@ -375,7 +387,7 @@ bool Generate::place_stones(int color, int amount) {
 				return false;
 			Point pos = pick_random(open2);
 			_panel->_grid[pos.first][pos.second] = Decoration::Stone | color;
-			_gridpos.erase(pos);
+			_openpos.erase(pos);
 			open2.erase(pos);
 			amount--;
 			continue;
@@ -396,7 +408,7 @@ bool Generate::place_stones(int color, int amount) {
 		}
 		if (!pass) continue;
 		_panel->_grid[pos.first][pos.second] = Decoration::Stone | color;
-		_gridpos.erase(pos);
+		_openpos.erase(pos);
 		if (_panel->_style == 0)
 			for (Point p : region) {
 				for (Point dir : _8DIRECTIONS) {
@@ -414,20 +426,22 @@ bool Generate::place_stones(int color, int amount) {
 	return true;
 }
 
-Shape Generate::generate_shape(std::set<Point>& region, Point pos, int maxSize, bool disconnect)
+Shape Generate::generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize, bool disconnect)
 {
 	Shape shape;
 	shape.insert(pos);
-	region.erase(pos);
+	if (!bufferRegion.erase(pos))
+		region.erase(pos);
 	while (shape.size() < maxSize && region.size() > 0) {
 		pos = pick_random(shape);
 		int i = 0;
 		for (; i < 10; i++) {
 			Point dir = pick_random(DIRECTIONS);
 			Point p = pos + dir;
-			if (region.count(p)) {
+			if (region.count(p) && !shape.count(p)) {
 				shape.insert(p);
-				region.erase(p);
+				if (!bufferRegion.erase(p))
+					region.erase(p);
 				break;
 			}
 		}
@@ -439,7 +453,7 @@ Shape Generate::generate_shape(std::set<Point>& region, Point pos, int maxSize, 
 
 int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative)
 {
-	int symbol = static_cast<int>(Decoration::Shape::Poly);
+	int symbol = static_cast<int>(Decoration::Poly);
 	if (rotated && shape.size() > 1) {
 		symbol |= Decoration::Can_Rotate;
 		Shape newShape;
@@ -454,6 +468,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative)
 		}
 		shape = newShape;
 	}
+	if (negative) symbol |= Decoration::Negative;
 	int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
 	for (Point p : shape) {
 		if (p.first < xmin) xmin = p.first;
@@ -469,27 +484,65 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative)
 	return symbol;
 }
 
-bool Generate::place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect)
+bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative, bool disconnect)
 {
-	std::set<Point> open = _gridpos;
+	std::set<Point> open = _openpos;
 	int targetArea = amount * 3, totalArea = 0;
 	int colorIndex = rand() % colors.size();
+	int colorNIndex = rand() % (negativeColors.size() + 1);
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
 		Point pos = pick_random(open);
 		std::set<Point> region = get_region(pos);
+		std::set<Point> bufferRegion;
 		std::set<Point> open2;
 		for (Point p : region) {
 			if (open.erase(p)) open2.insert(p);
 		}
 		std::vector<Shape> shapes;
-		int numShapes = max(1, min(static_cast<int>(region.size()) / 3, amount));
+		std::vector<Shape> antishapes;
+		int negativeShapes = min(rand() % (numNegative + 1), static_cast<int>(region.size()) / 3);
+		bool balance = rand() % 3 == 0;
+		if (negativeShapes) {
+			std::set<Point> antiregion = _gridpos;
+			if (balance) {
+				region = generate_shape(antiregion, bufferRegion, pos, rand() % 3 + negativeShapes, false);
+				shapes.push_back(region);
+				for (; negativeShapes > 0; negativeShapes--) {
+					Shape shape = generate_shape(region, bufferRegion, pos, min(rand() % 3 + 1, static_cast<int>(region.size()) - negativeShapes + 1), false);
+					antishapes.push_back(shape);
+					for (Point p : shape) {
+						region.erase(p);
+					}
+				}
+				if (region.size() > 0) continue;
+			}
+			else {
+				for (; negativeShapes > 0; negativeShapes--) {
+					pos = pick_random(region);
+					for (int i = 0; i < 10; i++) {
+						Point p = pos + pick_random(DIRECTIONS);
+						if (!on_edge(pos) && !region.count(p)) {
+							pos = p;
+							break;
+						}
+					}
+					Shape shape = generate_shape(antiregion, bufferRegion, pos, rand() % 3 + 1, false);
+					antishapes.push_back(shape);
+					for (Point p : shape) {
+						if (region.count(p)) bufferRegion.insert(p);
+						else region.insert(p);
+					}
+				}
+			}
+		}
+		int numShapes = balance ? 0 : max(1, min(static_cast<int>(region.size() + bufferRegion.size()) / 3, amount));
+		if (open2.size() < numShapes + negativeShapes) continue;
 		if (region.size() > numShapes * 5) continue;
-		if (open2.size() < numShapes) continue;
 		for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
-			shapes.push_back(generate_shape(region, pick_random(region), 4, false));
+			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), 4, false));
 		}
 		//Take remaining area and try to stick it to existing shapes
 multibreak:
@@ -499,9 +552,10 @@ multibreak:
 				if (shape.size() >= 5) continue;
 				for (Point p : shape) {
 					for (Point dir : DIRECTIONS) {
-						if (pos + dir == p) {
+						if (pos + dir == p && shape.count(p) == 0) {
 							shape.insert(pos);
-							region.erase(pos);
+							if (!bufferRegion.erase(pos))
+								region.erase(pos);
 							goto multibreak;
 						}
 					}
@@ -511,9 +565,13 @@ multibreak:
 			break;
 		}
 		if (region.size() > 0) continue;
+		numNegative -= static_cast<int>(antishapes.size());
+		numShapes = static_cast<int>(shapes.size());
+		for (Shape& shape : antishapes) {
+			shapes.push_back(shape);
+		}
 		for (Shape& shape : shapes) {
-			totalArea += static_cast<int>(shape.size());
-			int symbol = make_shape_symbol(shape, (numRotated-- > 0), false);
+			int symbol = make_shape_symbol(shape, (numRotated-- > 0), (numShapes-- <= 0));
 			if (symbol == 0)
 				return false;
 			//Attempt not to put shapes adjacent
@@ -530,20 +588,24 @@ multibreak:
 				}
 				if (pass) break;
 			}
-			_panel->_grid[pos.first][pos.second] = symbol | colors[(colorIndex++) % colors.size()];
+			if (symbol & Decoration::Negative) _panel->_grid[pos.first][pos.second] = symbol | negativeColors[(colorNIndex++) % negativeColors.size()];
+			else {
+				_panel->_grid[pos.first][pos.second] = symbol | colors[(colorIndex++) % colors.size()];
+				totalArea += static_cast<int>(shape.size());
+			}
 			open2.erase(pos);
-			_gridpos.erase(pos);
+			_openpos.erase(pos);
 			amount--;
 		}
 	}
-	if (totalArea < targetArea)
+	if (totalArea < targetArea || numNegative > 0)
 		return false;
 	return true;
 }
 
 bool Generate::place_stars(int color, int amount)
 {
-	std::set<Point> open = _gridpos;
+	std::set<Point> open = _openpos;
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
@@ -564,7 +626,7 @@ bool Generate::place_stars(int color, int amount)
 		if (open2.size() + count < 2) continue;
 		if (count == 0 && amount == 1) continue;
 		_panel->_grid[pos.first][pos.second] = Decoration::Star | color;
-		_gridpos.erase(pos);
+		_openpos.erase(pos);
 		amount--;
 		if (count == 0) {
 			open2.erase(pos);
@@ -572,7 +634,7 @@ bool Generate::place_stars(int color, int amount)
 				return false;
 			pos = pick_random(open2);
 			_panel->_grid[pos.first][pos.second] = Decoration::Star | color;
-			_gridpos.erase(pos);
+			_openpos.erase(pos);
 			amount--;
 		}
 	}
@@ -581,7 +643,7 @@ bool Generate::place_stars(int color, int amount)
 
 bool Generate::place_triangles(int color, int amount)
 {
-	std::set<Point> open = _gridpos;
+	std::set<Point> open = _openpos;
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
@@ -598,8 +660,13 @@ bool Generate::place_triangles(int color, int amount)
 		if (count == 0)
 			continue;
 		_panel->_grid[pos.first][pos.second] = Decoration::Triangle | color | (count * 0x10000);
-		_gridpos.erase(pos);
+		_openpos.erase(pos);
 		amount--;
 	}
+	return true;
+}
+
+bool Generate::place_eraser(int color, int toErase)
+{
 	return true;
 }

@@ -37,6 +37,7 @@ private:
 	Panel::Symmetry _symmetry;
 	std::vector<Point> _starts, _exits;
 	std::set<Point> _gridpos;
+	std::set<Point> _openpos;
 	bool _fullGaps;
 
 	std::pair<int, int> to_vertex(int x, int y);
@@ -88,11 +89,11 @@ private:
 	bool can_place_dot(Point pos);
 	bool place_dots(int amount, int numColored, bool intersectionOnly);
 	bool place_stones(int color, int amount);
-	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize, bool disconnect);
+	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize, bool disconnect);
 	int make_shape_symbol(Shape shape, bool rotated, bool negative);
-	bool place_shapes(std::vector<int> colors, int amount, int numRotated, int numNegative, bool disconnect);
+	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative, bool disconnect);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);
-	bool place_eraser(int color);
+	bool place_eraser(int color, int toErase);
 };
 
