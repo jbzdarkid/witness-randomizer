@@ -90,7 +90,10 @@ private:
 	bool place_dots(int amount, int numColored, bool intersectionOnly);
 	bool place_stones(int color, int amount);
 	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize, bool disconnect);
-	int make_shape_symbol(Shape shape, bool rotated, bool negative);
+	int make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation);
+	int make_shape_symbol(Shape shape, bool rotated, bool negative) {
+		return make_shape_symbol(shape, rotated, negative, -1);
+	}
 	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative, bool disconnect);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);

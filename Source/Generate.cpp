@@ -131,10 +131,10 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		std::string row;
 		for (int x = 0; x < _panel->_width; x++) {
 			if (_panel->_grid[x][y] == PATH) {
-				row += "x";
+				row += "xx";
 				_panel->_grid[x][y] = 0;
 			}
-			else row += "  ";
+			else row += "    ";
 		}
 		solution.push_back(row);
 	}
@@ -451,13 +451,17 @@ Shape Generate::generate_shape(std::set<Point>& region, std::set<Point>& bufferR
 	return shape;
 }
 
-int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative)
+int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation)
 {
 	int symbol = static_cast<int>(Decoration::Poly);
-	if (rotated && shape.size() > 1) {
+	if (rotated) {
+		if (rotation == -1) {
+			if (make_shape_symbol(shape, rotated, negative, 0) == make_shape_symbol(shape, rotated, negative, 1))
+				return 0; //Check to make sure the shape is not the same when rotated
+			rotation = rand() % 4;
+		}
 		symbol |= Decoration::Can_Rotate;
 		Shape newShape;
-		int rotation = rand() % 4;
 		for (Point p : shape) {
 			switch (rotation) {
 			case 0: newShape.insert(p); break;
@@ -489,7 +493,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 	std::set<Point> open = _openpos;
 	int targetArea = amount * 3, totalArea = 0;
 	int colorIndex = rand() % colors.size();
-	int colorNIndex = rand() % (negativeColors.size() + 1);
+	int colorIndexN = rand() % (negativeColors.size() + 1);
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
@@ -501,58 +505,76 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			if (open.erase(p)) open2.insert(p);
 		}
 		std::vector<Shape> shapes;
-		std::vector<Shape> antishapes;
-		int negativeShapes = min(rand() % (numNegative + 1), static_cast<int>(region.size()) / 3);
-		bool balance = rand() % 3 == 0;
-		if (negativeShapes) {
-			std::set<Point> antiregion = _gridpos;
-			if (balance) {
-				region = generate_shape(antiregion, bufferRegion, pos, rand() % 3 + negativeShapes, false);
-				shapes.push_back(region);
-				for (; negativeShapes > 0; negativeShapes--) {
-					Shape shape = generate_shape(region, bufferRegion, pos, min(rand() % 3 + 1, static_cast<int>(region.size()) - negativeShapes + 1), false);
-					antishapes.push_back(shape);
-					for (Point p : shape) {
-						region.erase(p);
+		std::vector<Shape> shapesN;
+		int numShapesN = min(rand() % (numNegative + 1), static_cast<int>(region.size()) / 3);
+		if (amount == 1) numShapesN = numNegative;
+		if (numShapesN) {
+			std::set<Point> regionN = _gridpos;
+			int maxSize = static_cast<int>(region.size()) - numShapesN * 3;
+			if (maxSize == 0) maxSize = 1;
+			for (int i = 0; i < numShapesN; i++) {
+				pos = pick_random(region);
+				for (int i = 0; i < 10; i++) {
+					Point p = pos + pick_random(DIRECTIONS);
+					if (regionN.count(p) && !region.count(p)) {
+						pos = p;
+						break;
 					}
 				}
-				if (region.size() > 0) continue;
-			}
-			else {
-				for (; negativeShapes > 0; negativeShapes--) {
-					pos = pick_random(region);
-					for (int i = 0; i < 10; i++) {
-						Point p = pos + pick_random(DIRECTIONS);
-						if (!on_edge(pos) && !region.count(p)) {
-							pos = p;
-							break;
-						}
-					}
-					Shape shape = generate_shape(antiregion, bufferRegion, pos, rand() % 3 + 1, false);
-					antishapes.push_back(shape);
-					for (Point p : shape) {
-						if (region.count(p)) bufferRegion.insert(p);
-						else region.insert(p);
-					}
+				if (!regionN.count(pos)) return false;
+				Shape shape = generate_shape(regionN, bufferRegion, pos, min(rand() % 3 + 1, maxSize), false);
+				shapesN.push_back(shape);
+				for (Point p : shape) {
+					if (region.count(p)) bufferRegion.insert(p);
+					else region.insert(p);
 				}
 			}
 		}
-		int numShapes = balance ? 0 : max(1, min(static_cast<int>(region.size() + bufferRegion.size()) / 3, amount));
-		if (open2.size() < numShapes + negativeShapes) continue;
-		if (region.size() > numShapes * 5) continue;
-		for (; numShapes > 0; numShapes--) {
+		int numShapes = static_cast<int>(region.size() + bufferRegion.size()) / 5 + 1;
+		if (numShapes == 1 && bufferRegion.size() > 0) numShapes++;
+		if (numShapes < amount && region.size() >= 5 && (rand() & 1) == 1)
+			numShapes++; //Adds more variation to the shape sizes
+		bool balance = false;
+		if (numShapes > amount) {
+			if (numNegative < 2) continue;
+			//Make balancing shapes - Positive and negative will be switched so that code can be reused
+			balance = true;
+			std::set<Point> regionN = _gridpos;
+			numShapes = max(2, rand() % numNegative + 1);			//Actually the negative shapes
+			numShapesN = min(amount, numShapes * 2 / 5 + 1);		//Actually the positive shapes
+			if (numShapesN >= numShapes * 3 || numShapesN * 5 <= numShapes) continue;
+			shapes.clear();
+			shapesN.clear();
+			region.clear();
+			bufferRegion.clear();
+			for (int i = 0; i < numShapesN; i++) {
+				Shape shape = generate_shape(regionN, bufferRegion, pick_random(regionN), min(5, numShapes * 2 / numShapesN + rand() % 3 - 1), false);
+				shapesN.push_back(shape);
+				for (Point p : shape) {
+					region.insert(p);
+				}
+			}
+			//Let the rest of the algorithm create the cancelling shapes
+		}
+		
+		if (open2.size() < numShapes + numShapesN) continue;
+		if (numShapes == 1) {
+			shapes.push_back(region);
+			region.clear();
+		}
+		else for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
-			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), 4, false));
+			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), balance ? rand() % 3 + 1 : 4, false));
 		}
 		//Take remaining area and try to stick it to existing shapes
-multibreak:
+		multibreak:
 		while (region.size() > 0) {
 			pos = pick_random(region);
 			for (Shape& shape : shapes) {
-				if (shape.size() >= 5) continue;
+				if (shape.size() >= 5 || shape.count(pos) > 0) continue;
 				for (Point p : shape) {
 					for (Point dir : DIRECTIONS) {
-						if (pos + dir == p && shape.count(p) == 0) {
+						if (pos + dir == p) {
 							shape.insert(pos);
 							if (!bufferRegion.erase(pos))
 								region.erase(pos);
@@ -565,9 +587,14 @@ multibreak:
 			break;
 		}
 		if (region.size() > 0) continue;
-		numNegative -= static_cast<int>(antishapes.size());
+		if (balance) { //Undo swap for balancing shapes
+			std::vector<Shape> swap = shapes;
+			shapes = shapesN;
+			shapesN = swap;
+		}
+		numNegative -= static_cast<int>(shapesN.size());
 		numShapes = static_cast<int>(shapes.size());
-		for (Shape& shape : antishapes) {
+		for (Shape& shape : shapesN) {
 			shapes.push_back(shape);
 		}
 		for (Shape& shape : shapes) {
@@ -588,14 +615,14 @@ multibreak:
 				}
 				if (pass) break;
 			}
-			if (symbol & Decoration::Negative) _panel->_grid[pos.first][pos.second] = symbol | negativeColors[(colorNIndex++) % negativeColors.size()];
+			if (symbol & Decoration::Negative) _panel->_grid[pos.first][pos.second] = symbol | negativeColors[(colorIndexN++) % negativeColors.size()];
 			else {
 				_panel->_grid[pos.first][pos.second] = symbol | colors[(colorIndex++) % colors.size()];
 				totalArea += static_cast<int>(shape.size());
+				amount--;
 			}
 			open2.erase(pos);
 			_openpos.erase(pos);
-			amount--;
 		}
 	}
 	if (totalArea < targetArea || numNegative > 0)

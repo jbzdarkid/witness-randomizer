@@ -208,7 +208,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
 				srand(ctr++);
-				//srand(0);
+				//srand(3);
 				generator->setGridSize(4, 4);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
@@ -220,10 +220,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8);
 				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Orange, 3);
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Green, 3);
-				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Magenta, 1,
+				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1,
 				//	Decoration::Shape::Poly | Decoration::Color::Yellow, 2);
-				generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 2,
-										   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 1);
+				generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
+										   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2);
 				break;
 
 			case IDC_ROTATED:
