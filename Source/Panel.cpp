@@ -177,7 +177,13 @@ void Panel::WriteDecorations(int id) {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { 0 });
 	}
 	else _memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-	if (any || ptr) _memory->WriteArray<int>(id, DECORATIONS, decorations);
+	if (any || ptr) {
+		_memory->WriteArray<int>(id, DECORATIONS, decorations);
+		std::vector<int> test = _memory->ReadArray<int>(id, DECORATIONS, static_cast<int>(decorations.size()));
+		for (int i = 0; i < decorations.size(); i++) decorations[i] = 0;
+		_memory->WriteArray<int>(id, DECORATION_FLAGS, decorations);
+		std::vector<int> test2 = _memory->ReadArray<int>(id, DECORATION_FLAGS, static_cast<int>(decorations.size()));
+	}
 }
 
 void Panel::ReadIntersections(int id) {

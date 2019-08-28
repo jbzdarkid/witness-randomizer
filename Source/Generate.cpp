@@ -57,6 +57,11 @@ void Generate::setGridSize(int width, int height) {
 	_width = width * 2 + 1; _height = height * 2 + 1;
 }
 
+void Generate::setSymmetry(Panel::Symmetry symmetry)
+{
+	_symmetry = symmetry;
+}
+
 //----------------------Private--------------------------
 
 void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
