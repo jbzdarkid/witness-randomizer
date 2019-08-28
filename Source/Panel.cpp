@@ -172,12 +172,12 @@ void Panel::WriteDecorations(int id) {
 			if ((_grid[x][y] & Decoration::Shape::Triangle) == Decoration::Shape::Triangle) _style |= HAS_TRIANGLES;
 		}
 	}
+	int ptr = _memory->ReadPanelData<int>(id, DECORATIONS);
 	if (!any) {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { 0 });
-		return;
 	}
-	_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-	_memory->WriteArray<int>(id, DECORATIONS, decorations);
+	else _memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
+	if (any || ptr) _memory->WriteArray<int>(id, DECORATIONS, decorations);
 }
 
 void Panel::ReadIntersections(int id) {

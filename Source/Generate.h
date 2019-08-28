@@ -19,6 +19,7 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4);
+	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5);
 	void generateMaze(int id, int width, int height, bool fullGaps);
 	std::vector<std::vector<int>> getLongestPath(int length);
 	std::vector<std::vector<int>> getRandomPath(int minLength, int maxLength);
@@ -38,7 +39,7 @@ private:
 	std::vector<Point> _starts, _exits;
 	std::set<Point> _gridpos;
 	std::set<Point> _openpos;
-	bool _fullGaps;
+	bool _fullGaps, _bisect;
 
 	std::pair<int, int> to_vertex(int x, int y);
 	std::pair<int, int> to_grid(int x, int y);
@@ -90,6 +91,10 @@ private:
 	bool place_dots(int amount, int numColored, bool intersectionOnly);
 	bool place_stones(int color, int amount);
 	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize, bool disconnect);
+	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize, bool disconnect) {
+		std::set<Point> buffer;
+		return generate_shape(region, buffer, pos, maxSize, disconnect);
+	}
 	int make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation);
 	int make_shape_symbol(Shape shape, bool rotated, bool negative) {
 		return make_shape_symbol(shape, rotated, negative, -1);
@@ -97,6 +102,6 @@ private:
 	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative, bool disconnect);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);
-	bool place_eraser(int color, int toErase);
+	bool place_eraser(int color, int toErase); //No "amount" variable because multiple erasers do not work consistently in the Witness
 };
 
