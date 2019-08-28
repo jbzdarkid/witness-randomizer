@@ -36,7 +36,7 @@ private:
 	std::vector<std::vector<int>> _cpath;
 	int _width, _height, _colored;
 	Panel::Symmetry _symmetry;
-	std::vector<Point> _starts, _exits;
+	std::set<Point> _starts, _exits;
 	std::set<Point> _gridpos;
 	std::set<Point> _openpos;
 	bool _fullGaps, _bisect;

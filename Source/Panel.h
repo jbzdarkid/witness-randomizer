@@ -222,9 +222,6 @@ private:
 	}
 
 	int locate_segment(int x, int y, std::vector<int> connections_a, std::vector<int> connections_b) {
-		if (x == 7 && y == 6) {
-			int swap = x;
-		}
 		for (int i = 0; i < connections_a.size(); i++) {
 			auto[x1, y1] = loc_to_xy(connections_a[i]);
 			auto[x2, y2] = loc_to_xy(connections_b[i]);

@@ -208,6 +208,8 @@ void Panel::ReadIntersections(int id) {
 	int num_grid_points = this->num_grid_points();
 	minx = intersections[0]; miny = intersections[1];
 	maxx = intersections[num_grid_points * 2 - 2]; maxy = intersections[num_grid_points * 2 - 1];
+	if (minx > maxx) std::swap(minx, maxx);
+	if (miny > maxy) std::swap(miny, maxy);
 	float unitWidth = (maxx - minx) / (_width - 1);
 	float unitHeight = (maxy - miny) / (_height - 1);
 	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
@@ -456,16 +458,10 @@ void Panel::WriteIntersections(int id) {
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 1);
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 4);
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 3);
-					if (symmetry == Symmetry::Horizontal && y % 2 == 0 || symmetry == Symmetry::Vertical && x % 2 == 0) {
-						int swap = connections_b[i];
-						connections_b[i] = connections_b[connections_b.size() - 2];
-						connections_b[connections_b.size() - 2] = swap;
-						float swap2 = intersections[intersections.size() - 1];
-						intersections[intersections.size() - 1] = intersections[intersections.size() - 3];
-						intersections[intersections.size() - 3] = swap2;
-						swap2 = intersections[intersections.size() - 2];
-						intersections[intersections.size() - 2] = intersections[intersections.size() - 4];
-						intersections[intersections.size() - 4] = swap2;
+					if (symmetry == Symmetry::Horizontal && (y & 1) == 0 || symmetry == Symmetry::Vertical && (x & 1) == 0) {
+						std::swap(connections_b[i], connections_b[connections_b.size() - 2]);
+						std::swap(intersections[intersections.size() - 1], intersections[intersections.size() - 3]);
+						std::swap(intersections[intersections.size() - 2], intersections[intersections.size() - 4]);
 					}
 				}
 			}

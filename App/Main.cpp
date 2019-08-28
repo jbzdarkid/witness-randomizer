@@ -49,8 +49,8 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
-//int panel = 0x00026; // Symmetry Island Black Dots 5
+//int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
+int panel = 0x00025; // Symmetry Island Black Dots 4
 //int panel = 0x000B0; // Symmetry Island Door 1
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
@@ -223,7 +223,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//generator->generate(panel, Decoration::Star | Decoration::Color::White, 4, Decoration::Star | Decoration::Color::Black, 4);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
 				//						   Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 3);
-				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8);
+				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8, Decoration::Start, 3, Decoration::Exit, 3 );
 				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Orange, 3);
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Green, 3);
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1,
