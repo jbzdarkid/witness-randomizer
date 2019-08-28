@@ -3,6 +3,8 @@
 #include "Memory.h"
 #include <stdint.h>
 
+typedef std::pair<int, int> Point;
+
 class Decoration
 {
 public:
@@ -94,7 +96,7 @@ private:
 class Panel
 {
 public:
-	Panel() = default;
+	Panel();
 	Panel(int id);
 
 	void Read(int id);
@@ -129,15 +131,15 @@ public:
 	};
 	Symmetry symmetry;
 
-	std::tuple<int, int> get_sym_point(int x, int y)
+	Point get_sym_point(int x, int y)
 	{
 		switch (symmetry) {
-		case None: return std::tuple<int, int>(x, y);
-		case Symmetry::Horizontal: return std::tuple<int, int>(x, _height - 1 - y);
-		case Symmetry::Vertical: return std::tuple<int, int>(_width - 1 - x, y);
-		case Symmetry::Rotational: return std::tuple<int, int>(_width - 1 - x, _height - 1 - y);
+		case None: return Point(x, y);
+		case Symmetry::Horizontal: return Point(x, _height - 1 - y);
+		case Symmetry::Vertical: return Point(_width - 1 - x, y);
+		case Symmetry::Rotational: return Point(_width - 1 - x, _height - 1 - y);
 		}
-		return std::tuple<int, int>(x, y);
+		return Point(x, y);
 	}
 
 private:
@@ -236,7 +238,7 @@ private:
 	int _width, _height;
 
 	std::vector<std::vector<int>> _grid;
-	std::vector<std::pair<int, int>> _startpoints;
+	std::vector<Point> _startpoints;
 	std::vector<Endpoint> _endpoints;
 	float minx, miny, maxx, maxy;
 	int _style;

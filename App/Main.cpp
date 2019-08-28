@@ -50,8 +50,8 @@
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
 //int panel = 0x00021; // Outside Tutorial Stones Tutorial 9
-//int panel = 0x00026; // Symmetry Island Black Dots 5
-int panel = 0x000B0; // Symmetry Island Door 1
+int panel = 0x00026; // Symmetry Island Black Dots 5
+//int panel = 0x000B0; // Symmetry Island Door 1
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -179,6 +179,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				GetWindowText(hwndRow, &str[0], 30);
 				y = _wtoi(str.c_str());
 				
+				_panel->Read(panel);
 				if (symbol == Decoration::Shape::Poly) {
 					_panel->SetShape(x, y, currentShape, IsDlgButtonChecked(hwnd, IDC_ROTATED), IsDlgButtonChecked(hwnd, IDC_NEGATIVE), color);
 				}
@@ -192,6 +193,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				GetWindowText(hwndRow, &str[0], 30);
 				y = _wtoi(str.c_str());
 				GetWindowText(hwndElem, text, 30);
+
+				_panel->Read(panel);
 				if (wcscmp(text, L"Dot (Intersection)") == 0 ||
 					wcscmp(text, L"Start") == 0 || wcscmp(text, L"Exit") == 0)
 					_panel->ClearGridSymbol(x * 2, y * 2);
@@ -212,7 +215,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				srand(ctr++);
 				//srand(2);
 				
-				generator->setGridSize(5, 5);
+				//generator->setGridSize(4, 4);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 				//generator->generate(panel, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);

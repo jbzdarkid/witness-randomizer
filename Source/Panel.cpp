@@ -19,17 +19,27 @@ struct Color {
 	int a;
 };
 
+Panel::Panel() {
+	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
+}
+
 Panel::Panel(int id) {
+	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
 	Read(id);
 }
 
 void Panel::Read(int id) {
-	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
-
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X) - 1;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
 	_grid.resize(_width);
 	for (auto& row : _grid) row.resize(_height);
+	for (int x = 0; x < _width; x++) {
+		for (int y = 0; y < _height; y++) {
+			_grid[x][y] = 0;
+		}
+	}
+	_startpoints.clear();
+	_endpoints.clear();
 
 	_style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
 	ReadAllData(id);
@@ -51,16 +61,22 @@ void Panel::Write(int id) {
 
 void Panel::SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color)
 {
+	int gridx = x * 2 + (symbol & IntersectionFlags::COLUMN ? 0 : 1);
+	int gridy = y * 2 + (symbol & IntersectionFlags::ROW ? 0 : 1);
 	if (symbol & IntersectionFlags::DOT) {
 		if (color == Decoration::Color::Blue || color == Decoration::Color::Cyan)
 			color = static_cast<Decoration::Color>(IntersectionFlags::DOT_IS_BLUE);
 		else if (color == Decoration::Color::Orange || color == Decoration::Color::Yellow)
 			color = static_cast<Decoration::Color>(IntersectionFlags::DOT_IS_ORANGE);
 		else color = Decoration::Color::None;
+		if (symmetry != Symmetry::None) {
+			Point sp = get_sym_point(gridx, gridy);
+			SetGridSymbol(sp.first, sp.second, static_cast<Decoration::Shape>(symbol & ~Decoration::Dot), Decoration::Color::None);
+		}
 	}
 	else if (symbol & IntersectionFlags::ROW || symbol & IntersectionFlags::COLUMN)
 		color = Decoration::Color::None;
-	SetGridSymbol(x * 2 + (symbol & IntersectionFlags::COLUMN ? 0 : 1), y * 2 + (symbol & IntersectionFlags::ROW ? 0 : 1), symbol, color);
+	SetGridSymbol(gridx, gridy, symbol, color);
 }
 
 void Panel::SetShape(int x, int y, int shape, bool rotate, bool negative, Decoration::Color color)

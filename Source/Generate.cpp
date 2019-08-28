@@ -187,8 +187,8 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 
 void Generate::generate_path()
 {
-	//generate_path((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1) * 2 / 3);
-	generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
+	generate_path((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1) * 2 / 3);
+	//generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
 }
 
 void Generate::generate_path(int minLength)
@@ -412,8 +412,14 @@ bool Generate::place_dots(int amount, int numColored, bool intersectionOnly) {
 			return false;
 		Point pos = pick_random(open);
 		if (can_place_dot(pos)) {
-			_panel->_grid[pos.first][pos.second] = ((pos.first & 1) == 1 ? Decoration::Dot_Row :
-				(pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection);
+			int symbol = (pos.first & 1) == 1 ? Decoration::Dot_Row : (pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
+			_panel->_grid[pos.first][pos.second] = symbol;
+			if (_panel->symmetry) {
+				Point sp = _panel->get_sym_point(pos.first, pos.second);
+				symbol = (sp.first & 1) == 1 ? Decoration::Dot_Row : (sp.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
+				_panel->_grid[sp.first][sp.second] = symbol & ~Decoration::Dot;
+				open.erase(sp);
+			}
 			amount--;
 		}
 		open.erase(pos);
