@@ -407,8 +407,8 @@ bool Generate::place_dots(int amount, int numColored, bool intersectionOnly) {
 			return false;
 		Point pos = pick_random(open);
 		if (can_place_dot(pos)) {
-			_panel->_grid[pos.first][pos.second] = (pos.first % 2 == 1 ? Decoration::Dot_Row :
-				pos.second % 2 == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection);
+			_panel->_grid[pos.first][pos.second] = ((pos.first & 1) == 1 ? Decoration::Dot_Row :
+				(pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection);
 			amount--;
 		}
 		open.erase(pos);
@@ -790,15 +790,17 @@ bool Generate::place_eraser(int color, int toErase)
 			if (openEdge.size() == 0) return false;
 			pos = pick_random(openEdge);
 			toErase &= ~IntersectionFlags::INTERSECTION;
-			if ((pos.first & 1) == 0) toErase |= IntersectionFlags::COLUMN;
-			if ((pos.second & 1) == 0) toErase |= IntersectionFlags::ROW;
-			_panel->_grid[pos.first][pos.second] = toErase;
+			toErase &= ~0x40000;
+			if ((pos.first & 1) == 0 && (pos.second & 1) == 0) toErase |= Decoration::Dot_Intersection;
+			else if ((pos.second & 1) == 0) toErase |= Decoration::Dot_Row;
+			_panel->_grid[pos.first][pos.second] = ((pos.first & 1) == 1 ? Decoration::Dot_Row :
+				(pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection) | (toErase & 0xffff);
 		}
 		else if ((toErase & 0x700) == Decoration::Poly) {
 			int symbol = 0;
 			while (symbol == 0) {
 				std::set<Point> area = _gridpos;
-				Shape shape = generate_shape(area, pick_random(area), rand() % 5 + 1, false);
+				Shape shape = generate_shape(area, pick_random(area), rand() % (toErase & Decoration::Negative ? 3 : 5) + 1, false);
 				if (shape.size() == region.size()) continue;
 				symbol = make_shape_symbol(shape, toErase & Decoration::Can_Rotate, toErase & Decoration::Negative);
 			}

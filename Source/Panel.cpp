@@ -218,7 +218,7 @@ void Panel::ReadIntersections(int id) {
 	//Remove non-existent connections
 	std::vector<std::string> out;
 	for (int i = 0; i < connections_a.size(); i++) {
-		//out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
+		out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
 		if (connections_a[i] >= num_grid_points || connections_b[i] >= num_grid_points) continue;
 		int x = static_cast<int>(std::round((intersections[connections_a[i] * 2] - minx) / unitWidth));
 		int y = _height - 1 - static_cast<int>(std::round((intersections[connections_a[i] * 2 + 1] - miny) / unitHeight));

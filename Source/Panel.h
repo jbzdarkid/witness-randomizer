@@ -23,8 +23,8 @@ public:
 		Gap_Row = 0x300000,
 		Gap_Column = 0x500000,
 		Dot = 0x20,
-		Dot_Row = 0x200020,
-		Dot_Column = 0x400020,
+		Dot_Row = 0x240020,
+		Dot_Column = 0x440020,
 		Dot_Intersection = 0x600020,
 	};
 	enum Color {

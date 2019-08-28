@@ -49,7 +49,8 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
-int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
+// int panel = 0x014E8; // Mill Lower Row 6
+int panel = 0x00021; // Outside Tutorial Stones Tutorial 9
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -205,11 +206,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_RANDOM:
-				//_panel->Write(panel);
+				_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
 				srand(ctr++);
 				//srand(2);
-				generator->setGridSize(4, 4);
+				//generator->setGridSize(4, 4);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 				//generator->generate(panel, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
@@ -224,10 +225,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//	Decoration::Shape::Poly | Decoration::Color::Yellow, 2);
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
 				//						   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2);
+				generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7,
+											Decoration::Dot, 10);
 
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 6, Decoration::Stone | Decoration::Color::Black, 7,
 				//						   Decoration::Eraser | Decoration::Color::White, 1);
-				//generator->generate(panel, Decoration::Dot, 12, Decoration::Eraser | Decoration::Color::White, 1); //******************BROKEN*****************
+				//generator->generate(panel, Decoration::Dot, 12, Decoration::Eraser | Decoration::Color::White, 1);
 				//generator->generate(panel, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Star | Decoration::Color::Magenta, 6,
 				//							Decoration::Eraser | Decoration::Color::Orange, 1);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
@@ -236,9 +239,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8, Decoration::Eraser | Decoration::Color::White, 1);
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1,
 				//							Decoration::Shape::Poly | Decoration::Color::Yellow, 2, Decoration::Eraser | Decoration::Color::White, 1);
-				generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
-										   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2,
-											Decoration::Eraser | Decoration::Color::White, 1);
+				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
+				//						   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2,
+				//							Decoration::Eraser | Decoration::Color::White, 1);
 				break;
 
 			case IDC_ROTATED:
