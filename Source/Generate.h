@@ -45,11 +45,13 @@ private:
 	std::pair<int, int> to_grid(int x, int y);
 	std::pair<int, int> to_vertex(Point pos);
 	std::pair<int, int> to_grid(Point pos);
-	int get(Point pos) {
-		return _panel->_grid[pos.first][pos.second];
-	}
-	void set(Point pos, int val) {
-		_panel->_grid[pos.first][pos.second] = val;
+	int get(Point pos) { return _panel->_grid[pos.first][pos.second]; }
+	void set(Point pos, int val) { _panel->_grid[pos.first][pos.second] = val; }
+	int get(int x, int y) { return _panel->_grid[x][y]; }
+	void set(int x, int y, int val) { _panel->_grid[x][y] = val; }
+	int get_symbol_type(int flags) { return flags & 0x700; }
+	Point get_sym_point(Point pos) {
+		return _panel->get_sym_point(pos);
 	}
 	void clear() {
 		for (int x = 0; x < _panel->_width; x++) {
@@ -73,8 +75,10 @@ private:
 	bool off_edge(Point p) {
 		return (p.first < 0 || p.first >= _panel->_width || p.second < 0 || p.second >= _panel->_height);
 	}
-	static std::vector<Point> DIRECTIONS;
-	static std::vector<Point> _8DIRECTIONS;
+	static std::vector<Point> _DIRECTIONS1;
+	static std::vector<Point> _8DIRECTIONS1;
+	static std::vector<Point> _DIRECTIONS2;
+	static std::vector<Point> _8DIRECTIONS2;
 	void generate(int id, std::vector<std::pair<int, int>> symbols);
 	void generate_path();
 	void generate_path(int minLength);

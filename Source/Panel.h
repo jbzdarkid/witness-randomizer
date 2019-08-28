@@ -141,6 +141,9 @@ public:
 		}
 		return Point(x, y);
 	}
+	Point get_sym_point(Point p) {
+		return get_sym_point(p.first, p.second);
+	}
 
 private:
 	// For testing
