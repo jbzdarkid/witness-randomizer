@@ -90,7 +90,11 @@ void Generate::generateMaze(int id)
 				set(x, y, _fullGaps ? OPEN : x % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
 				if (_panel->symmetry) {
 					Point sp = get_sym_point(Point(x, y));
-					if (sp.first == x && sp.second == y || rand() % 2 == 0) {
+					if (sp.first == x && sp.second == y || sp.first == x && x % 2 == 0 && abs(sp.second - y) <= 2 ||
+						sp.second == y && y % 2 == 0 && abs(sp.first - x) <= 2 || abs(sp.first - x) == 1) {
+						set(x, y, PATH);
+					}
+					else if (rand() % 2 == 0) {
 						set(sp, PATH);
 					}
 					else {

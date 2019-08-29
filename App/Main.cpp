@@ -51,7 +51,7 @@ HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
 //int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
 //int panel = 0x0A3B2; // Tutorial Back Right (2 start points)
-int panel = 0x0005C; // Glass Factory Vertical Symmetry 5
+int panel = 0x00084; // Glass Factory Melting 1
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
