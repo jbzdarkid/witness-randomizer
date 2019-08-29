@@ -50,7 +50,7 @@
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
 //int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
-int panel = 0x00025; // Symmetry Island Black Dots 4
+int panel = 0x00076; // Symmetry Island Fading Lines 7
 //int panel = 0x000B0; // Symmetry Island Door 1
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
@@ -231,6 +231,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
 				//						   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2);
 				//generator->generate(panel, Decoration::Dot, 10);
+				generator->generate(panel, Decoration::Dot, 4, Decoration::Dot | Decoration::Blue, 1, Decoration::Dot | Decoration::Yellow, 2,
+											Decoration::Eraser | Decoration::Color::White, 1);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7,
 				//							Decoration::Dot, 10);
 
@@ -247,9 +249,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8, Decoration::Eraser | Decoration::Color::White, 1);
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1,
 				//							Decoration::Shape::Poly | Decoration::Color::Yellow, 2, Decoration::Eraser | Decoration::Color::White, 1);
-				generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
-										   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2,
-											Decoration::Eraser | Decoration::Color::White, 1);
+				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
+				//						   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2,
+				//							Decoration::Eraser | Decoration::Color::White, 1);
 				break;
 
 			case IDC_ROTATED:

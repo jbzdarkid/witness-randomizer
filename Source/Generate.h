@@ -12,7 +12,7 @@ class Generate
 {
 public:
 	Generate() {
-		_width = _height = _colored = 0;
+		_width = _height = 0;
 		_symmetry = Panel::Symmetry::None;
 	}
 	void generate(int id, int symbol, int amount);
@@ -34,22 +34,29 @@ public:
 private:
 	std::shared_ptr<Panel> _panel;
 	std::vector<std::vector<int>> _cpath;
-	int _width, _height, _colored;
+	int _width, _height;
 	Panel::Symmetry _symmetry;
 	std::set<Point> _starts, _exits;
-	std::set<Point> _gridpos;
-	std::set<Point> _openpos;
+	std::set<Point> _gridpos, _openpos;
+	std::set<Point> _path, _path1, _path2;
 	bool _fullGaps, _bisect;
 
-	std::pair<int, int> to_vertex(int x, int y);
-	std::pair<int, int> to_grid(int x, int y);
-	std::pair<int, int> to_vertex(Point pos);
-	std::pair<int, int> to_grid(Point pos);
 	int get(Point pos) { return _panel->_grid[pos.first][pos.second]; }
 	void set(Point pos, int val) { _panel->_grid[pos.first][pos.second] = val; }
 	int get(int x, int y) { return _panel->_grid[x][y]; }
 	void set(int x, int y, int val) { _panel->_grid[x][y] = val; }
 	int get_symbol_type(int flags) { return flags & 0x700; }
+	void set_path(Point pos) {
+		_panel->_grid[pos.first][pos.second] = PATH;
+		_path.insert(pos);
+		if (_panel->symmetry) {
+			_path1.insert(pos);
+			Point sp = get_sym_point(pos);
+			_panel->_grid[sp.first][sp.second] = PATH;
+			_path.insert(sp);
+			_path2.insert(sp);
+		}
+	}
 	Point get_sym_point(Point pos) {
 		return _panel->get_sym_point(pos);
 	}
@@ -60,6 +67,7 @@ private:
 			}
 		}
 		_panel->_style &= ~0x2ff8; //Remove all element flags
+		_path.clear(); _path1.clear(); _path2.clear();
 	}
 	template <class T> T pick_random(std::vector<T>& vec) {
 		return vec[rand() % vec.size()];
@@ -92,7 +100,7 @@ private:
 	bool can_place_gap(Point pos);
 	bool place_gaps(int amount);
 	bool can_place_dot(Point pos);
-	bool place_dots(int amount, int numColored, bool intersectionOnly);
+	bool place_dots(int amount, int color, bool intersectionOnly);
 	bool place_stones(int color, int amount);
 	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize, bool disconnect);
 	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize, bool disconnect) {

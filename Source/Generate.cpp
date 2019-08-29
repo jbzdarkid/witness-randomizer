@@ -166,7 +166,7 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
-		if ((s.first & Decoration::Dot) && !place_dots(s.second, 0, s.first == Decoration::Dot_Intersection)) {
+		if ((s.first & Decoration::Dot) && !place_dots(s.second, (s.first & 0xf), s.first == Decoration::Dot_Intersection)) {
 			generate(id, backupSymbols); return;
 		}
 	}
@@ -175,15 +175,15 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 			generate(id, symbols); return;
 		}
 	}
-	for (Point p : _starts) {
-		set(p, get(p) | STARTPOINT);
-	}
 	for (int y = 0; y < _panel->_height; y++) {
 		for (int x = 0; x < _panel->_width; x++) {
 			if (get(x, y) == PATH) {
 				set(x, y, 0);
 			}
 		}
+	}
+	for (Point p : _starts) {
+		set(p, get(p) | STARTPOINT);
 	}
 	_panel->Write(id);
 }
@@ -201,26 +201,19 @@ void Generate::generate_path(int minLength)
 	int length = 1;
 	Point pos = pick_random(_starts);
 	Point exit = pick_random(_exits);
-	set(pos, PATH);
-	if (_panel->symmetry) {
-		set(get_sym_point(pos), PATH);
-	}
+	set_path(pos);
 	while (pos != exit) {
 		Point dir = _DIRECTIONS2[rand() % 4];
 		Point newPos = pos + dir;
 		if (off_edge(newPos)) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		if (get(newPos) == 0 && !(newPos == exit && length + 1 < minLength)) {
-			set(newPos, PATH);
-			set(pos + Point(dir.first / 2, dir.second / 2), PATH);
-			if (_panel->symmetry) {
-				set(get_sym_point(newPos), PATH);
-				set(get_sym_point(pos + Point(dir.first / 2, dir.second / 2)), PATH);
-				length++;
-			}
+			set_path(newPos);
+			set_path(pos + Point(dir.first / 2, dir.second / 2));
+			length++;
+			if (_panel->symmetry) length++;
 			pos = newPos;
 			fails = 0;
-			length++;
 		}
 		else {
 			if (fails++ > 10) {
@@ -238,22 +231,18 @@ void Generate::generate_path_regions(int minRegions)
 	int regions = 1;
 	Point pos = pick_random(_starts);
 	Point exit = pick_random(_exits);
-	set(pos, PATH);
+	set_path(pos);
 	while (pos != exit) {
 		Point dir = _DIRECTIONS2[rand() % 4];
 		Point newPos = pos + dir;
 		if (off_edge(newPos)) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		if (get(newPos) == 0 && !(newPos == exit && regions < minRegions)) {
-			set(newPos, PATH);
-			set(pos + Point(dir.first / 2, dir.second / 2), PATH);
+			set_path(newPos);
+			set_path(pos + Point(dir.first / 2, dir.second / 2));
 			if (!on_edge(newPos) && on_edge(pos)) {
 				regions++;
 				if (_panel->symmetry) regions++;
-			}
-			if (_panel->symmetry) {
-				set(get_sym_point(newPos), PATH);
-				set(get_sym_point(pos + Point(dir.first / 2, dir.second / 2)), PATH);
 			}
 			pos = newPos;
 			fails = 0;
@@ -385,6 +374,8 @@ bool Generate::place_gaps(int amount) {
 }
 
 bool Generate::can_place_dot(Point pos) {
+	if (get(pos) & DOT)
+		return false;
 	for (Point dir : _8DIRECTIONS1) {
 		Point p = pos + dir;
 		if (!off_edge(p) && get(p) & DOT) {
@@ -404,15 +395,14 @@ bool Generate::can_place_dot(Point pos) {
 	return true;
 }
 
-bool Generate::place_dots(int amount, int numColored, bool intersectionOnly) {
-	std::set<Point> open;
-	for (int x = 0; x < _panel->_width; x += (intersectionOnly ? 2 : 1)) {
-		for (int y = 0; y < _panel->_height; y += (intersectionOnly ? 2 : 1)) {
-			if (get(x, y) == PATH)
-				open.insert(Point(x, y));
-		}
-	}
+bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
+	if (color == Decoration::Color::Blue || color == Decoration::Color::Cyan)
+		color = IntersectionFlags::DOT_IS_BLUE;
+	else if (color == Decoration::Color::Yellow || color == Decoration::Color::Orange)
+		color = IntersectionFlags::DOT_IS_ORANGE;
+	else color = 0;
 
+	std::set<Point>& open = (color == 0 ? _path : color == IntersectionFlags::DOT_IS_BLUE ? _path1 : _path2);
 	for (Point p : _starts) open.erase(p);
 	for (Point p : _exits) open.erase(p);
 
@@ -422,9 +412,10 @@ bool Generate::place_dots(int amount, int numColored, bool intersectionOnly) {
 		Point pos = pick_random(open);
 		if (can_place_dot(pos)) {
 			int symbol = (pos.first & 1) == 1 ? Decoration::Dot_Row : (pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
-			set(pos, symbol);
+			set(pos, symbol | color);
 			for (Point dir : _DIRECTIONS1) {
 				open.erase(pos + dir);
+				_path.erase(pos + dir);
 			}
 			if (_panel->symmetry) {
 				Point sp = get_sym_point(pos);
@@ -432,12 +423,16 @@ bool Generate::place_dots(int amount, int numColored, bool intersectionOnly) {
 				set(sp, symbol & ~Decoration::Dot);
 				open.erase(sp);
 				for (Point dir : _DIRECTIONS1) {
+					if (color == IntersectionFlags::DOT_IS_BLUE) _path2.erase(sp + dir);
+					else _path1.erase(sp + dir);
 					open.erase(sp + dir);
+					_path.erase(sp + dir);
 				}
 			}
 			amount--;
 		}
 		open.erase(pos);
+		_path.erase(pos);
 	}
 	return true;
 }
@@ -814,10 +809,13 @@ bool Generate::place_eraser(int color, int toErase)
 					}
 				}
 			}
-			if (openEdge.size() == 0) return false;
+			if (openEdge.size() == 0)
+				return false;
 			pos = pick_random(openEdge);
 			toErase &= ~IntersectionFlags::INTERSECTION;
-			toErase &= ~0x40000;
+			if ((toErase & 0xf) == Decoration::Color::Blue || (toErase & 0xf) == Decoration::Color::Cyan) toErase |= IntersectionFlags::DOT_IS_BLUE;
+			if ((toErase & 0xf) == Decoration::Color::Yellow || (toErase & 0xf) == Decoration::Color::Orange) toErase |= IntersectionFlags::DOT_IS_ORANGE;
+			toErase &= ~0x4000f;
 			if ((pos.first & 1) == 0 && (pos.second & 1) == 0) toErase |= Decoration::Dot_Intersection;
 			else if ((pos.second & 1) == 0) toErase |= Decoration::Dot_Row;
 			set(pos, ((pos.first & 1) == 1 ? Decoration::Dot_Row : (pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection) | (toErase & 0xffff));

@@ -333,8 +333,11 @@ void Panel::WriteIntersections(int id) {
 			intersections.push_back(static_cast<float>(minx + x * unitWidth));
 			intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
 			intersectionFlags.push_back(_grid[x][y] | IntersectionFlags::INTERSECTION);
-			if (_grid[x][y] & DOT)
+			if (_grid[x][y] & DOT) {
 				_style |= HAS_DOTS;
+				if (_grid[x][y] & IntersectionFlags::DOT_IS_BLUE || _grid[x][y] & IntersectionFlags::DOT_IS_ORANGE)
+					_style |= IS_2COLOR;
+			}
 
 			// Create connections for this intersection -- always write low -> high
 			if (y > 0 && _grid[x][y - 1] != OPEN) {
@@ -473,6 +476,8 @@ void Panel::WriteIntersections(int id) {
 				intersections.push_back(static_cast<float>(minx + x * unitWidth));
 				intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
 				_style |= HAS_DOTS;
+				if (_grid[x][y] & IntersectionFlags::DOT_IS_BLUE || _grid[x][y] & IntersectionFlags::DOT_IS_ORANGE)
+					_style |= IS_2COLOR;
 				if (symmetry) {
 					i = locate_segment(sx, sy, connections_a, connections_b);
 					other_connection = connections_b[i];
