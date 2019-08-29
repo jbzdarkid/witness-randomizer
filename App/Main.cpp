@@ -50,8 +50,8 @@
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
 //int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
-int panel = 0x0A3B2; // Tutorial Back Right (2 start points)
-//int panel = 0x000B0; // Symmetry Island Door 1
+//int panel = 0x0A3B2; // Tutorial Back Right (2 start points)
+int panel = 0x0005C; // Glass Factory Vertical Symmetry 5
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -215,7 +215,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				srand(ctr++);
 				//srand(4);
 				
-				//generator->setGridSize(4, 4);
+				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 				//generator->generate(panel, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
@@ -455,7 +455,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		65, 340, 90, 16, hwnd, NULL, hInstance, NULL);
 
 	_panel->Read(panel);
-	generator->readPanel(_panel);
+	generator->initPanel(_panel);
 
 	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
 		CheckDlgButton(hwnd, IDC_SYMMETRYX, TRUE);

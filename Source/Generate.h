@@ -23,7 +23,7 @@ public:
 	void generateMaze(int id);
 	std::vector<std::vector<int>> getLongestPath(int length);
 	std::vector<std::vector<int>> getRandomPath(int minLength, int maxLength);
-	void readPanel(std::shared_ptr<Panel> panel);
+	void initPanel(std::shared_ptr<Panel> panel);
 	void setPath(std::vector<std::vector<int>> path);	
 	void setGridSize(int width, int height);
 	void setSymmetry(Panel::Symmetry symmetry);
@@ -69,19 +69,19 @@ private:
 		_panel->_style &= ~0x2ff8; //Remove all element flags
 		_path.clear(); _path1.clear(); _path2.clear();
 	}
-	void resize() {
-		for (Point &s : _panel->_startpoints) {
-			if (s.first == _panel->_width - 1) s.first = _width - 1;
-			if (s.second == _panel->_height - 1) s.second = _height - 1;
+	void resize(std::shared_ptr<Panel> panel) {
+		for (Point &s : panel->_startpoints) {
+			if (s.first == panel->_width - 1) s.first = _width - 1;
+			if (s.second == panel->_height - 1) s.second = _height - 1;
 		}
-		for (Endpoint &e : _panel->_endpoints) {
-			if (e.GetX() == _panel->_width - 1) e.SetX(_width - 1);
-			if (e.GetY() == _panel->_height - 1) e.SetY(_height - 1);
+		for (Endpoint &e : panel->_endpoints) {
+			if (e.GetX() == panel->_width - 1) e.SetX(_width - 1);
+			if (e.GetY() == panel->_height - 1) e.SetY(_height - 1);
 		}
-		_panel->_width = _width;
-		_panel->_height = _height;
-		_panel->_grid.resize(_width);
-		for (auto& row : _panel->_grid) row.resize(_height);
+		panel->_width = _width;
+		panel->_height = _height;
+		panel->_grid.resize(_width);
+		for (auto& row : panel->_grid) row.resize(_height);
 	}
 	template <class T> T pick_random(std::vector<T>& vec) {
 		return vec[rand() % vec.size()];

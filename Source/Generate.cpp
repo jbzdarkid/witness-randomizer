@@ -33,20 +33,21 @@ std::vector<Point> Generate::_8DIRECTIONS2 = { Point(0, 2), Point(0, -2), Point(
 void Generate::generateMaze(int id)
 {
 	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
+
 	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		resize();
+		resize(_panel);
 	}
-	readPanel(_panel);
-	generate_path((_panel->_width + _panel->_height) * 2 / 3);
+	initPanel(_panel);
+	generate_path(_panel->_width + _panel->_height);
 
 	std::set<Point> extraStarts;
 	for (Point pos : _starts) {
-		set(pos, PATH);
 		if (!_path.count(pos)) {
 			extraStarts.insert(pos);
 		}
+		set_path(pos);
 	}
-	if (extraStarts.size() != _starts.size() - 1) {
+	if (extraStarts.size() != (_panel->symmetry ? _starts.size() / 2 - 1 : _starts.size() - 1)) {
 		generateMaze(id);
 		return;
 	}
@@ -75,8 +76,8 @@ void Generate::generateMaze(int id)
 			}
 			Point dir = pick_random(validDir);
 			Point newPos = pos + dir;
-			set(newPos, PATH);
-			set(Point(pos.first + dir.first / 2, pos.second + dir.second / 2), PATH);
+			set_path(newPos);
+			set_path(Point(pos.first + dir.first / 2, pos.second + dir.second / 2));
 			check.insert(newPos);
 			pos = newPos;
 		}
@@ -87,6 +88,16 @@ void Generate::generateMaze(int id)
 		for (int x = (y + 1) % 2; x < _panel->_width; x += 2) {
 			if (get(x, y) != PATH) {
 				set(x, y, _fullGaps ? OPEN : x % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+				if (_panel->symmetry) {
+					Point sp = get_sym_point(Point(x, y));
+					if (sp.first == x && sp.second == y || rand() % 2 == 0) {
+						set(sp, PATH);
+					}
+					else {
+						set(x, y, PATH);
+						set(sp, _fullGaps ? OPEN : x % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+					}
+				}
 			}
 		}
 	}
@@ -104,7 +115,7 @@ void Generate::generateMaze(int id)
 	_panel->Write(id);
 }
 
-void Generate::readPanel(std::shared_ptr<Panel> panel) {
+void Generate::initPanel(std::shared_ptr<Panel> panel) {
 	_panel = panel;
 	_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
 	_exits.clear();
@@ -145,10 +156,10 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
 
 	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		resize();
+		resize(_panel);
 	}
 
-	readPanel(_panel);
+	initPanel(_panel);
 	for (std::pair<int, int> s : symbols) {
 		if (s.first == Decoration::Start)
 			while (!place_start(s.second));
