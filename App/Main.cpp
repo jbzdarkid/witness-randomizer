@@ -50,7 +50,7 @@
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
 
 //int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
-int panel = 0x00076; // Symmetry Island Fading Lines 7
+int panel = 0x0A3B2; // Tutorial Back Right (2 start points)
 //int panel = 0x000B0; // Symmetry Island Door 1
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
@@ -213,7 +213,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
 				srand(ctr++);
-				//srand(2);
+				//srand(4);
 				
 				//generator->setGridSize(4, 4);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
@@ -231,10 +231,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
 				//						   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2);
 				//generator->generate(panel, Decoration::Dot, 10);
-				generator->generate(panel, Decoration::Dot, 4, Decoration::Dot | Decoration::Blue, 1, Decoration::Dot | Decoration::Yellow, 2,
-											Decoration::Eraser | Decoration::Color::White, 1);
+				//generator->generate(panel, Decoration::Dot, 4, Decoration::Dot | Decoration::Blue, 1, Decoration::Dot | Decoration::Yellow, 2,
+				//							Decoration::Eraser | Decoration::Color::White, 1);
+				//generator->generate(panel, Decoration::Dot | Decoration::Blue, 1, Decoration::Dot | Decoration::Yellow, 2,
+				//							Decoration::Star | Decoration::Color::Cyan, 4, Decoration::Star | Decoration::Color::Yellow, 4);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7,
 				//							Decoration::Dot, 10);
+				generator->generateMaze(panel);
 
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 6, Decoration::Stone | Decoration::Color::Black, 7,
 				//						   Decoration::Eraser | Decoration::Color::White, 1);

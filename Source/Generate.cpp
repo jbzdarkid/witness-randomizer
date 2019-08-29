@@ -30,6 +30,80 @@ std::vector<Point> Generate::_8DIRECTIONS1 = { Point(0, 1), Point(0, -1), Point(
 std::vector<Point> Generate::_DIRECTIONS2 = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0) };
 std::vector<Point> Generate::_8DIRECTIONS2 = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0), Point(2, 2), Point(2, -2), Point(-2, -2), Point(-2, 2) };
 
+void Generate::generateMaze(int id)
+{
+	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
+	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
+		resize();
+	}
+	readPanel(_panel);
+	generate_path((_panel->_width + _panel->_height) * 2 / 3);
+
+	std::set<Point> extraStarts;
+	for (Point pos : _starts) {
+		set(pos, PATH);
+		if (!_path.count(pos)) {
+			extraStarts.insert(pos);
+		}
+	}
+	if (extraStarts.size() != _starts.size() - 1) {
+		generateMaze(id);
+		return;
+	}
+	std::set<Point> check;
+	for (Point p : _path) {
+		if (p.first % 2 == 0 && p.second % 2 == 0)
+			check.insert(p);
+	}
+	while (check.size() > 0) {
+		Point randomPos = (extraStarts.size() > 0 ? pick_random(extraStarts) : pick_random(check));
+		Point pos = randomPos;
+		for (int i = (extraStarts.size() > 0 ? 7 : rand() % 5); i >= 0; i--) {
+			std::vector<Point> validDir;
+			for (Point dir : _DIRECTIONS2) {
+				if (!off_edge(pos + dir) && get(pos + dir) != PATH) {
+					validDir.push_back(dir);
+				}
+			}
+			if (validDir.size() < 2) check.erase(pos);
+			if (validDir.size() == 0) {
+				if (extraStarts.size() > 0) {
+					generateMaze(id);
+					return;
+				}
+				break;
+			}
+			Point dir = pick_random(validDir);
+			Point newPos = pos + dir;
+			set(newPos, PATH);
+			set(Point(pos.first + dir.first / 2, pos.second + dir.second / 2), PATH);
+			check.insert(newPos);
+			pos = newPos;
+		}
+		if (extraStarts.size() > 0) extraStarts.erase(randomPos);
+	}
+	
+	for (int y = 0; y < _panel->_height; y++) {
+		for (int x = (y + 1) % 2; x < _panel->_width; x += 2) {
+			if (get(x, y) != PATH) {
+				set(x, y, _fullGaps ? OPEN : x % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+			}
+		}
+	}
+
+	for (int y = 0; y < _panel->_height; y++) {
+		for (int x = 0; x < _panel->_width; x++) {
+			if (get(x, y) == PATH) {
+				set(x, y, 0);
+			}
+		}
+	}
+	for (Point p : _starts) {
+		set(p, get(p) | STARTPOINT);
+	}
+	_panel->Write(id);
+}
+
 void Generate::readPanel(std::shared_ptr<Panel> panel) {
 	_panel = panel;
 	_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
@@ -71,19 +145,9 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
 
 	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		for (Point &s : _panel->_startpoints) {
-			if (s.first == _panel->_width - 1) s.first = _width - 1;
-			if (s.second == _panel->_height - 1) s.second = _height - 1;
-		}
-		for (Endpoint &e : _panel->_endpoints) {
-			if (e.GetX() == _panel->_width - 1) e.SetX(_width - 1);
-			if (e.GetY() == _panel->_height - 1) e.SetY(_height - 1);
-		}
-		_panel->_width = _width;
-		_panel->_height = _height;
-		_panel->_grid.resize(_width);
-		for (auto& row : _panel->_grid) row.resize(_height);
+		resize();
 	}
+
 	readPanel(_panel);
 	for (std::pair<int, int> s : symbols) {
 		if (s.first == Decoration::Start)
@@ -91,11 +155,10 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		if (s.first == Decoration::Exit)
 			while (!place_exit(s.second));
 	}
-	generate_path();
 
+	generate_path();
 	
 	std::vector<std::string> solution; //For debugging only
-
 	for (int y = 0; y < _panel->_height; y++) {
 		std::string row;
 		for (int x = 0; x < _panel->_width; x++) {
@@ -353,7 +416,7 @@ bool Generate::can_place_gap(Point pos) {
 bool Generate::place_gaps(int amount) {
 	std::set<Point> open;
 	for (int y = 0; y < _panel->_height; y++) {
-		for (int x = y % 2 + 1; x < _panel->_width; x += 2) {
+		for (int x = (y + 1) % 2; x < _panel->_width; x += 2) {
 			if (get(x, y) == 0 && (!_fullGaps || !on_edge(Point(x, y)))) {
 				open.insert(Point(x, y));
 			}

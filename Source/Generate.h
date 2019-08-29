@@ -20,7 +20,7 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5);
-	void generateMaze(int id, int width, int height, bool fullGaps);
+	void generateMaze(int id);
 	std::vector<std::vector<int>> getLongestPath(int length);
 	std::vector<std::vector<int>> getRandomPath(int minLength, int maxLength);
 	void readPanel(std::shared_ptr<Panel> panel);
@@ -68,6 +68,20 @@ private:
 		}
 		_panel->_style &= ~0x2ff8; //Remove all element flags
 		_path.clear(); _path1.clear(); _path2.clear();
+	}
+	void resize() {
+		for (Point &s : _panel->_startpoints) {
+			if (s.first == _panel->_width - 1) s.first = _width - 1;
+			if (s.second == _panel->_height - 1) s.second = _height - 1;
+		}
+		for (Endpoint &e : _panel->_endpoints) {
+			if (e.GetX() == _panel->_width - 1) e.SetX(_width - 1);
+			if (e.GetY() == _panel->_height - 1) e.SetY(_height - 1);
+		}
+		_panel->_width = _width;
+		_panel->_height = _height;
+		_panel->_grid.resize(_width);
+		for (auto& row : _panel->_grid) row.resize(_height);
 	}
 	template <class T> T pick_random(std::vector<T>& vec) {
 		return vec[rand() % vec.size()];
