@@ -52,6 +52,7 @@ void Generate::generateMaze(int id)
 		return;
 	}
 	std::set<Point> check;
+	std::vector<Point> deadEndH, deadEndV;
 	for (Point p : _path) {
 		if (p.first % 2 == 0 && p.second % 2 == 0)
 			check.insert(p);
@@ -71,6 +72,19 @@ void Generate::generateMaze(int id)
 				if (extraStarts.size() > 0) {
 					generateMaze(id);
 					return;
+				}
+				if (_fullGaps && !_exits.count(pos) && !_starts.count(pos)) {
+					int countOpenRow = 0, countOpenColumn = 0;
+					for (Point dir2 : _DIRECTIONS1) {
+						if (!off_edge(pos + dir2) && get(pos + dir2) == PATH) {
+							if (dir2.first == 0) countOpenColumn++;
+							else countOpenRow++;
+						}
+					}
+					if (countOpenRow + countOpenColumn == 1) {
+						if (countOpenRow) deadEndH.push_back(pos);
+						else deadEndV.push_back(pos);
+					}
 				}
 				break;
 			}
@@ -115,6 +129,12 @@ void Generate::generateMaze(int id)
 	}
 	for (Point p : _starts) {
 		set(p, get(p) | STARTPOINT);
+	}
+	for (Point p : deadEndH) {
+		set(p, Decoration::Gap_Row);
+	}
+	for (Point p : deadEndV) {
+		set(p, Decoration::Gap_Column);
 	}
 	_panel->Write(id);
 }

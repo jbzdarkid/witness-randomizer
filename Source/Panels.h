@@ -121,9 +121,9 @@ std::vector<int> squarePanels = {
 	0x00064, // Tutorial Straight
 	0x00182, // Tutorial Bend
 	0x0A3B2, // Tutorial Back Right (2 start points)
-	0x00295, // Tutorial Center Left (Big Maze)
+	0x00295, // Tutorial Center Left 
 	0x00293, // Tutorial Front Center
-	0x002C2, // Tutorial Front Left
+	0x002C2, // Tutorial Front Left (Big Maze)
 	0x0005D, // Outside Tutorial Dots Tutorial 1
 	0x0005E, // Outside Tutorial Dots Tutorial 2
 	0x0005F, // Outside Tutorial Dots Tutorial 3

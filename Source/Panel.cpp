@@ -31,6 +31,10 @@ Panel::Panel(int id) {
 void Panel::Read(int id) {
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X) - 1;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
+	if (_width <= 0 || _height <= 0) {
+		int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
+		_width = _height = static_cast<int>(std::round(sqrt(numIntersections))) * 2 - 1;
+	}
 	_grid.resize(_width);
 	for (auto& row : _grid) row.resize(_height);
 	for (int x = 0; x < _width; x++) {
