@@ -5,6 +5,8 @@
 class Randomizer {
 public:
 	void Randomize();
+	void GenerateNormal(HWND loadingHandle);
+	void GenerateHard(HWND loadingHandle);
 	bool GameIsRandomized();
 
 	void AdjustSpeed();

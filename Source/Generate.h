@@ -14,6 +14,9 @@ public:
 	Generate() {
 		_width = _height = 0;
 		_symmetry = Panel::Symmetry::None;
+		setFullGaps = false;
+		_areaTotal = _genTotal = _totalPuzzles = _areaPuzzles = 0;
+		_handle = NULL;
 	}
 	void generate(int id, int symbol, int amount);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2);
@@ -21,6 +24,7 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5);
 	void generateMaze(int id);
+	void generateMaze(int id, int numStarts, int numExits);
 	std::vector<std::vector<int>> getLongestPath(int length);
 	std::vector<std::vector<int>> getRandomPath(int minLength, int maxLength);
 	void initPanel(std::shared_ptr<Panel> panel);
@@ -30,6 +34,20 @@ public:
 	void setStartLocation(int x, int y);
 	void setExitLocation(int x, int y);
 	void resetConfig();
+	void setLoadingHandle(HWND handle) {
+		_handle = handle;
+	}
+	void setLoadingData(int totalPuzzles) {
+		_totalPuzzles = totalPuzzles;
+		_genTotal = 0;
+	}
+	void setLoadingData(std::wstring areaName, int numPuzzles) {
+		_areaName = areaName;
+		_areaPuzzles = numPuzzles;
+		_areaTotal = 0;
+	}
+
+	bool setFullGaps;
 
 private:
 	std::shared_ptr<Panel> _panel;
@@ -40,6 +58,9 @@ private:
 	std::set<Point> _gridpos, _openpos;
 	std::set<Point> _path, _path1, _path2;
 	bool _fullGaps, _bisect;
+	HWND _handle;
+	int _areaTotal, _genTotal, _areaPuzzles, _totalPuzzles;
+	std::wstring _areaName;
 
 	int get(Point pos) { return _panel->_grid[pos.first][pos.second]; }
 	void set(Point pos, int val) { _panel->_grid[pos.first][pos.second] = val; }
@@ -77,6 +98,14 @@ private:
 		for (Endpoint &e : panel->_endpoints) {
 			if (e.GetX() == panel->_width - 1) e.SetX(_width - 1);
 			if (e.GetY() == panel->_height - 1) e.SetY(_height - 1);
+		}
+		if (panel->_width != panel->_height) {
+			float maxDim = max(panel->maxx - panel->minx, panel->maxy - panel->miny);
+			float unitSize = maxDim / max(_width, _height);
+			panel->minx = 0.5f - unitSize * _width / 2;
+			panel->maxx = 0.5f + unitSize * _width / 2;
+			panel->miny = 0.5f - unitSize * _height / 2;
+			panel->maxy = 0.5f + unitSize * _height / 2;
 		}
 		panel->_width = _width;
 		panel->_height = _height;

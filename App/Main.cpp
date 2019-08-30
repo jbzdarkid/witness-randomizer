@@ -10,13 +10,14 @@
 #include "Randomizer.h"
 #include "Panel.h"
 #include "Generate.h"
+#include "PuzzleList.h"
 
 #define IDC_RANDOMIZE 0x401
 #define IDC_TOGGLESPEED 0x402
 #define IDC_SPEEDRUNNER 0x403
 #define IDC_HARDMODE 0x404
 #define IDC_READ 0x405
-#define IDC_RANDOM 0x406
+#define IDC_TEST 0x406
 #define IDC_WRITE 0x407
 #define IDC_DUMP 0x408
 #define IDT_RANDOMIZED 0x409
@@ -47,11 +48,11 @@
 #define SHAPE_43 0x0004
 #define SHAPE_44 0x0008
 
-HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor;
+HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText;
 
 //int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
 //int panel = 0x0A3B2; // Tutorial Back Right (2 start points)
-int panel = 0x002C2; // Tutorial Front Left (Big Maze)
+int panel = 0x00060; // Outside Tutorial Dots Tutorial 4
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -93,6 +94,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 
 			// Randomize button
+
 			case IDC_RANDOMIZE:
 			{
 				std::wstring text;
@@ -112,7 +114,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					randomizer->StartGame(); // Try: CreateProcess(L"/path/to/TW.exe", ...);
 				}
 				*/
-				if (randomizer->GameIsRandomized()) break;
+				//if (randomizer->GameIsRandomized()) break;
 				Random::SetSeed(seed);
 
 				// Show seed and force redraw
@@ -122,12 +124,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
 
 				// Randomize, then apply settings
-				randomizer->Randomize();
+				//randomizer->Randomize();
+				randomizer->GenerateNormal(hwndLoadingText);
 				/*
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
 				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES)) randomizer->PreventSnipes();
 				*/
+
 				randomizer->AdjustSpeed();
 				randomizer->PreventSnipes();
 
@@ -209,12 +213,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				_panel->Write(panel);
 				break;
 
-			case IDC_RANDOM:
+			case IDC_TEST:
 				//_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
-				srand(ctr++);
+				//srand(ctr++);
 				//srand(4);
 				
+				//generator->setGridSize(4, 4);
+				//generator->generate(0x012C9, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
+
+				generator->setGridSize(5, 5);
+				generator->generate(0x0001C, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 10, Decoration::Start, 3);
+
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
@@ -237,7 +247,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//							Decoration::Star | Decoration::Color::Cyan, 4, Decoration::Star | Decoration::Color::Yellow, 4);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7,
 				//							Decoration::Dot, 10);
-				generator->generateMaze(panel);
+				//generator->generateMaze(panel);
 
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 6, Decoration::Stone | Decoration::Color::Black, 7,
 				//						   Decoration::Eraser | Decoration::Color::White, 1);
@@ -349,6 +359,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		160, 10, 110, 26, hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
 
+	hwndLoadingText = CreateWindow(L"STATIC", L"",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		135, 50, 160, 16, hwnd, NULL, hInstance, NULL);
+
 	CreateWindow(L"STATIC", L"Col/Row:",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		160, 130, 100, 26, hwnd, NULL, hInstance, NULL);
@@ -408,7 +422,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		160, 250, 150, 26, hwnd, (HMENU)IDC_REMOVE, hInstance, NULL);
 	CreateWindow(L"BUTTON", L"Test",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 330, 150, 26, hwnd, (HMENU)IDC_RANDOM, hInstance, NULL);
+		160, 330, 150, 26, hwnd, (HMENU)IDC_TEST, hInstance, NULL);
 
 	CreateWindow(L"STATIC", L"Shape:",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,

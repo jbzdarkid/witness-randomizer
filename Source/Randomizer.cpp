@@ -33,9 +33,22 @@
 #include "ChallengeRandomizer.h"
 #include "Panels.h"
 #include "Random.h"
+#include "PuzzleList.h"
 #include <string>
 #include <iostream>
 #include <numeric>
+
+void Randomizer::GenerateNormal(HWND loadingHandle) {
+	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
+	puzzles->setLoadingHandle(loadingHandle);
+	puzzles->GenerateAllN();
+}
+
+void Randomizer::GenerateHard(HWND loadingHandle) {
+	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
+	puzzles->setLoadingHandle(loadingHandle);
+	puzzles->GenerateAllH();
+}
 
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
