@@ -133,10 +133,10 @@ private:
 	static std::vector<Point> _8DIRECTIONS2;
 	bool generate_maze(int id, int numStarts, int numExits);
 	bool generate(int id, std::vector<std::pair<int, int>> symbols);
-	bool place_all_symbols(std::vector<std::pair<int, int>>& symbols, int toErase);
-	bool check_path(Point lastPoint);
+	bool place_all_symbols(std::vector<std::pair<int, int>>& symbols);
+	//std::vector<Point> get_valid_edge_dir(Point lastPoint, Point exit);
 	bool generate_path();
-	bool generate_path(int minLength);
+	bool generate_path_length(int minLength);
 	bool generate_path_regions(int minRegions);
 	bool generate_longest_path();
 	std::set<Point> get_region(Point pos);

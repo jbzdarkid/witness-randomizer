@@ -219,12 +219,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				srand(static_cast<unsigned int>(time(NULL)));
 				//srand(ctr++);
 				//srand(4);
-				
-				//generator->setGridSize(4, 4);
-				//generator->generate(0x012C9, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 
-				generator->setGridSize(5, 5);
-				generator->generate(0x0001C, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 10, Decoration::Start, 3);
+				generator->setGridSize(4, 4);
+				generator->generate(0x0001B, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5);
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
@@ -470,7 +467,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		65, 340, 90, 16, hwnd, NULL, hInstance, NULL);
 
 	_panel->Read(panel);
-	generator->initPanel(_panel);
+	//generator->initPanel(_panel);
 
 	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
 		CheckDlgButton(hwnd, IDC_SYMMETRYX, TRUE);
