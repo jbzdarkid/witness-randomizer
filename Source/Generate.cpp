@@ -2,23 +2,23 @@
 #include "Randomizer.h"
 
 void Generate::generate(int id, int symbol, int amount) {
-	generate(id, { std::make_pair(symbol, amount) });
+	while (!generate(id, { std::make_pair(symbol, amount) }));
 }
 
 void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2) {
-	generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2) });
+	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2) }));
 }
 
 void Generate::generate(int id, int symbol1, int amount1,  int symbol2, int amount2, int symbol3, int amount3) {
-	generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3) });
+	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3) }));
 }
 
 void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4) {
-	generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4) });
+	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4) }));
 }
 
 void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5) {
-	generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5) });
+	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5) }));
 }
 
 Point operator+(const Point& l, const Point& r) {
@@ -31,24 +31,72 @@ std::vector<Point> Generate::_DIRECTIONS2 = { Point(0, 2), Point(0, -2), Point(2
 std::vector<Point> Generate::_8DIRECTIONS2 = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0), Point(2, 2), Point(2, -2), Point(-2, -2), Point(-2, 2) };
 
 void Generate::generateMaze(int id) {
-	generateMaze(id, 0, 0);
+	while (!generate_maze(id, 0, 0));
 }
 
 void Generate::generateMaze(int id, int numStarts, int numExits)
 {
-	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
+	while (!generate_maze(id, numStarts, numExits));
+}
 
-	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		resize(_panel);
+void Generate::initPanel(std::shared_ptr<Panel> panel) {
+	_panel = panel;
+	_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
+	_exits.clear();
+	for (Endpoint e : _panel->_endpoints) {
+		_exits.insert(Point(e.GetX(), e.GetY()));
 	}
+	_gridpos.clear();
+	for (int x = 1; x < panel->_width; x += 2) {
+		for (int y = 1; y < panel->_height; y += 2) {
+			_gridpos.insert(Point(x, y));
+		}
+	}
+	_openpos = _gridpos;
+	if (setFullGaps) _fullGaps = true;
+	else {
+		_fullGaps = false;
+		for (int x = 0; x < panel->_width; x++) {
+			for (int y = 0; y < panel->_height; y++) {
+				if (panel->_grid[x][y] == OPEN) {
+					_fullGaps = true;
+					return;
+				}
+			}
+		}
+	}
+}
 
-restart:
+void Generate::setGridSize(int width, int height) {
+	if (width <= 0 || height <= 0) {
+		_width = 0; _height = 0;
+	}
+	else {
+		_width = width * 2 + 1; _height = height * 2 + 1;
+	}
+}
+
+void Generate::setSymmetry(Panel::Symmetry symmetry)
+{
+	_symmetry = symmetry;
+}
+
+//----------------------Private--------------------------
+
+bool Generate::generate_maze(int id, int numStarts, int numExits)
+{
+	if (!_panel) {
+		_panel = std::make_shared<Panel>(id);
+		if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
+			resize(_panel);
+		}
+	}
 
 	if (numStarts > 0) place_start(numStarts);
 	if (numExits > 0) place_exit(numExits);
 
 	initPanel(_panel);
-	generate_path(_panel->_width + _panel->_height);
+	while (!generate_path(_panel->_width + _panel->_height));
 
 	std::set<Point> extraStarts;
 	for (Point pos : _starts) {
@@ -57,9 +105,9 @@ restart:
 		}
 		set_path(pos);
 	}
-	if (extraStarts.size() != (_panel->symmetry ? _starts.size() / 2 - 1 : _starts.size() - 1)) {
-		goto restart;
-	}
+	if (extraStarts.size() != (_panel->symmetry ? _starts.size() / 2 - 1 : _starts.size() - 1))
+		return false;
+
 	std::set<Point> check;
 	std::vector<Point> deadEndH, deadEndV;
 	for (Point p : _path) {
@@ -79,7 +127,7 @@ restart:
 			if (validDir.size() < 2) check.erase(pos);
 			if (validDir.size() == 0) {
 				if (extraStarts.size() > 0) {
-					goto restart;
+					return false;
 				}
 				if (_fullGaps && !_exits.count(pos) && !_starts.count(pos)) {
 					int countOpenRow = 0, countOpenColumn = 0;
@@ -105,7 +153,7 @@ restart:
 		}
 		if (extraStarts.size() > 0) extraStarts.erase(randomPos);
 	}
-	
+
 	for (int y = 0; y < _panel->_height; y++) {
 		for (int x = (y + 1) % 2; x < _panel->_width; x += 2) {
 			if (get(x, y) != PATH) {
@@ -154,67 +202,18 @@ restart:
 	}
 
 	_panel->Write(id);
+	_panel = NULL;
+	return true;
 }
 
-void Generate::initPanel(std::shared_ptr<Panel> panel) {
-	_panel = panel;
-	_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
-	_exits.clear();
-	for (Endpoint e : _panel->_endpoints) {
-		_exits.insert(Point(e.GetX(), e.GetY()));
-	}
-	_gridpos.clear();
-	for (int x = 1; x < panel->_width; x += 2) {
-		for (int y = 1; y < panel->_height; y += 2) {
-			_gridpos.insert(Point(x, y));
+bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
+
+	if (!_panel) {
+		_panel = std::make_shared<Panel>(id);
+		if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
+			resize(_panel);
 		}
 	}
-	_openpos = _gridpos;
-	if (setFullGaps) _fullGaps = true;
-	else {
-		_fullGaps = false;
-		for (int x = 0; x < panel->_width; x++) {
-			for (int y = 0; y < panel->_height; y++) {
-				if (panel->_grid[x][y] == OPEN) {
-					_fullGaps = true;
-					return;
-				}
-			}
-		}
-	}
-}
-
-void Generate::setGridSize(int width, int height) {
-	if (width <= 0 || height <= 0) {
-		_width = 0; _height = 0;
-	}
-	else {
-		_width = width * 2 + 1; _height = height * 2 + 1;
-	}
-}
-
-void Generate::setSymmetry(Panel::Symmetry symmetry)
-{
-	_symmetry = symmetry;
-}
-
-//----------------------Private--------------------------
-
-void Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
-
-	std::shared_ptr<Panel> _panel = std::make_shared<Panel>(id);
-
-	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		resize(_panel);
-	}
-
-	int attempts = 0;
-
-restart:
-
-	attempts++;
-	if (attempts > 100)
-		attempts++; //For catching infinite loops in the debugger
 
 	initPanel(_panel);
 	for (std::pair<int, int> s : symbols) {
@@ -226,8 +225,8 @@ restart:
 
 	std::vector<std::pair<int, int>> backupSymbols;
 
-	generate_path();
-	
+	while (!generate_path());
+
 	std::vector<std::string> solution; //For debugging only
 	for (int y = 0; y < _panel->_height; y++) {
 		std::string row;
@@ -243,7 +242,7 @@ restart:
 	if (backupSymbols.size() > 0)
 		symbols = backupSymbols;
 	else backupSymbols = symbols; //Have to do this because eraser modifies symbols list
-	
+
 	int toErase = 0;
 	for (std::pair<int, int> s : symbols) {
 		if (get_symbol_type(s.first) == Decoration::Eraser) {
@@ -258,6 +257,35 @@ restart:
 		}
 	}
 
+	if (!place_all_symbols(symbols, toErase))
+		return false;
+
+	for (int y = 0; y < _panel->_height; y++) {
+		for (int x = 0; x < _panel->_width; x++) {
+			if (get(x, y) == PATH) {
+				set(x, y, 0);
+			}
+		}
+	}
+
+	for (Point p : _starts) {
+		set(p, get(p) | STARTPOINT);
+	}
+
+	_areaTotal++;
+	_genTotal++;
+	if (_handle) {
+		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
+		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
+		SetWindowText(_handle, text.c_str());
+	}
+	_panel->Write(id);
+	_panel = NULL; //This is needed for the generator to read in the next panel
+	return true;
+}
+
+bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols, int toErase)
+{
 	int numShapes = 0, numRotate = 0, numNegative = 0;
 	std::vector<int> colors, negativeColors;
 	for (std::pair<int, int> s : symbols) {
@@ -275,71 +303,60 @@ restart:
 			}
 		}
 	}
-	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative, false)) {
-		goto restart;
-	}
+	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative, false))
+		return false;
 
 	_bisect = true;
 	for (std::pair<int, int> s : symbols) {
 		if (get_symbol_type(s.first) == Decoration::Stone && !place_stones(s.first & 0xf, s.second)) {
-			goto restart;
+			return false;
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
 		if (get_symbol_type(s.first) == Decoration::Triangle && !place_triangles(s.first & 0xf, s.second)) {
-			goto restart;
+			return false;
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
 		if (get_symbol_type(s.first) == Decoration::Star && !place_stars(s.first & 0xf, s.second)) {
-			goto restart;
+			return false;
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
 		if (get_symbol_type(s.first) == Decoration::Eraser && !place_eraser(s.first & 0xf, toErase)) {
-			goto restart;
+			return false;
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
 		if ((s.first & Decoration::Dot) && !place_dots(s.second, (s.first & 0xf), s.first == Decoration::Dot_Intersection)) {
-			goto restart;
+			return false;
 		}
 	}
 	for (std::pair<int, int> s : symbols) {
 		if ((s.first & ~0xf) == Decoration::Gap && !place_gaps(s.second)) {
-			goto restart;
+			return false;
 		}
 	}
-	for (int y = 0; y < _panel->_height; y++) {
-		for (int x = 0; x < _panel->_width; x++) {
-			if (get(x, y) == PATH) {
-				set(x, y, 0);
-			}
-		}
-	}
-	for (Point p : _starts) {
-		set(p, get(p) | STARTPOINT);
-	}
-
-	_areaTotal++;
-	_genTotal++;
-	if (_handle) {
-		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
-		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
-		SetWindowText(_handle, text.c_str());
-	}
-	_panel->Write(id);
+	return true;
 }
 
-void Generate::generate_path()
+bool Generate::check_path(Point lastPoint)
 {
-	generate_path((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1) * 3 / 4);
+	std::vector<Point> validDir;
+	for (Point dir : _DIRECTIONS2) {
+
+	}
+	return true;
+}
+
+bool Generate::generate_path()
+{
+	return generate_path((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1) * 3 / 4);
 	//generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
 }
 
-void Generate::generate_path(int minLength)
+bool Generate::generate_path(int minLength)
 {
-restart:
 	clear();
 	int fails = 0;
 	int length = 1;
@@ -347,11 +364,11 @@ restart:
 	Point exit = pick_random(_exits);
 	set_path(pos);
 	while (pos != exit) {
-		Point dir = _DIRECTIONS2[rand() % 4];
+		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
 		if (off_edge(newPos)) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
-		if (get(newPos) == 0 && !(newPos == exit && length + 1 < minLength)) {
+		if (get(newPos) == 0 && !(newPos == exit && length + 1 < minLength)) { //If we hit the exit early, don't go that direction
 			set_path(newPos);
 			set_path(pos + Point(dir.first / 2, dir.second / 2));
 			length++;
@@ -360,16 +377,14 @@ restart:
 			fails = 0;
 		}
 		else {
-			if (fails++ > 10) {
-				goto restart;
-			}
+			if (fails++ > 10) return false;
 		}
 	}
+	return true;
 }
 
-void Generate::generate_path_regions(int minRegions)
+bool Generate::generate_path_regions(int minRegions)
 {
-restart:
 	clear();
 	int fails = 0;
 	int regions = 1;
@@ -377,11 +392,11 @@ restart:
 	Point exit = pick_random(_exits);
 	set_path(pos);
 	while (pos != exit) {
-		Point dir = _DIRECTIONS2[rand() % 4];
+		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
 		if (off_edge(newPos)) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
-		if (get(newPos) == 0 && !(newPos == exit && regions < minRegions)) {
+		if (get(newPos) == 0 && !(newPos == exit && regions < minRegions)) { //If we hit an exit early, don't go that direction
 			set_path(newPos);
 			set_path(pos + Point(dir.first / 2, dir.second / 2));
 			if (!on_edge(newPos) && on_edge(pos)) {
@@ -392,11 +407,10 @@ restart:
 			fails = 0;
 		}
 		else {
-			if (fails++ > 10) {
-				goto restart;
-			}
+			if (fails++ > 10) return false;
 		}
 	}
+	return true;
 }
 
 std::set<Point> Generate::get_region(Point pos) {
@@ -531,7 +545,11 @@ bool Generate::can_place_dot(Point pos) {
 	for (Point dir : _8DIRECTIONS1) {
 		Point p = pos + dir;
 		if (!off_edge(p) && get(p) & DOT) {
-			if (dir.first == 0 || dir.second == 0 || rand() % 2 > 0) //Add some variation
+			//Don't allow horizontally adjacent dots
+			if (dir.first == 0 || dir.second == 0)
+				return false;
+			//Allow diagonal placement some of the time
+			if (rand() % 2 > 0)
 				return false;
 		}
 	}

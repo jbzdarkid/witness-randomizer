@@ -115,7 +115,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				*/
 				//if (randomizer->GameIsRandomized()) break;
-				Random::SetSeed(seed);
+				//Random::SetSeed(seed);
+				srand(seed);
 
 				// Show seed and force redraw
  				std::wstring seedString = std::to_wstring(seed);

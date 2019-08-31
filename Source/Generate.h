@@ -17,6 +17,7 @@ public:
 		setFullGaps = false;
 		_areaTotal = _genTotal = _totalPuzzles = _areaPuzzles = 0;
 		_handle = NULL;
+		_panel = NULL;
 	}
 	void generate(int id, int symbol, int amount);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2);
@@ -130,11 +131,14 @@ private:
 	static std::vector<Point> _8DIRECTIONS1;
 	static std::vector<Point> _DIRECTIONS2;
 	static std::vector<Point> _8DIRECTIONS2;
-	void generate(int id, std::vector<std::pair<int, int>> symbols);
-	void generate_path();
-	void generate_path(int minLength);
-	void generate_path_regions(int minRegions);
-	void generate_longest_path();
+	bool generate_maze(int id, int numStarts, int numExits);
+	bool generate(int id, std::vector<std::pair<int, int>> symbols);
+	bool place_all_symbols(std::vector<std::pair<int, int>>& symbols, int toErase);
+	bool check_path(Point lastPoint);
+	bool generate_path();
+	bool generate_path(int minLength);
+	bool generate_path_regions(int minRegions);
+	bool generate_longest_path();
 	std::set<Point> get_region(Point pos);
 	std::vector<int> get_symbols_in_region(Point pos);
 	std::vector<int> get_symbols_in_region(std::set<Point> region);
