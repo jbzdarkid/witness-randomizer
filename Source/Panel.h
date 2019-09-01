@@ -141,9 +141,6 @@ public:
 		}
 		return Point(x, y);
 	}
-	Point get_sym_point(Point p) {
-		return get_sym_point(p.first, p.second);
-	}
 
 private:
 	// For testing
@@ -154,6 +151,22 @@ private:
 	void WriteIntersections(int id);
 	void ReadDecorations(int id);
 	void WriteDecorations(int id);
+
+	Point get_sym_point(Point p) {
+		return get_sym_point(p.first, p.second);
+	}
+
+	int get_num_grid_points() {
+		return (_width / 2 + 1) * (_height / 2 + 1);
+	}
+
+	int get_num_grid_blocks() {
+		return (_width / 2 - 1) * (_height / 2 - 1);
+	}
+
+	int get_parity() {
+		return (get_num_grid_points() + 1) % 2;
+	}
 
 	std::tuple<int, int> loc_to_xy(int location) {
 		int height2 = (_height - 1) / 2;
@@ -189,10 +202,6 @@ private:
 		return rowsFromBottom * width2 + (x - 1)/2;
 	}
 
-	int num_grid_points() {
-		return (_width / 2 + 1) * (_height / 2 + 1);
-	}
-
 	std::vector<int> sym_data_v() {
 		std::vector<int> data;
 		for (int y = 0; y <= _height / 2; y++) {
@@ -215,7 +224,7 @@ private:
 
 	std::vector<int> sym_data_r() {
 		std::vector<int> data;
-		for (int i = num_grid_points() - 1; i >= 0; i--) {
+		for (int i = get_num_grid_points() - 1; i >= 0; i--) {
 			data.push_back(i);
 		}
 		return data;

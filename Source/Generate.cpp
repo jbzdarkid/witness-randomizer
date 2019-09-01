@@ -97,6 +97,7 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 	if (numExits > 0) place_exit(numExits);
 
 	initPanel(_panel);
+
 	while (!generate_path_length(_panel->_width + _panel->_height));
 
 	std::set<Point> extraStarts;
@@ -218,14 +219,28 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	}
 
 	initPanel(_panel);
+
+	int numStarts = 0, numExits = 0;
 	for (std::pair<int, int> s : symbols) {
-		if (s.first == Decoration::Start)
-			while (!place_start(s.second));
-		if (s.first == Decoration::Exit)
-			while (!place_exit(s.second));
+		if (s.first == Decoration::Start) numStarts += s.second;
+		if (s.first == Decoration::Exit) numExits += s.second;
 	}
 
-	while (!generate_path());
+	_parity = -1;
+	for (auto s : symbols) {
+		if ((s.first & Decoration::Dot) && s.second >= _panel->get_num_grid_points() - 2) {
+			_parity = (_panel->get_parity() + (numStarts == 0 ? get_parity(pick_random(_starts))
+				: numExits == 0 ? get_parity(pick_random(_exits)) : rand() % 2)) % 2;
+		}
+	}
+
+	if (numStarts) place_start(numStarts);
+	if (numExits) place_exit(numExits);
+
+	int fails = 0;
+	while (!generate_path(symbols)) {
+		if (fails++ > 20) return false;
+	}
 
 	std::vector<std::string> solution; //For debugging only
 	for (int y = 0; y < _panel->_height; y++) {
@@ -337,11 +352,23 @@ bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
 	return true;
 }
 
-bool Generate::generate_path()
+bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 {
-	return generate_path_length((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1) * 3 / 4);
-	//return generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
-	//return generate_longest_path();
+	if (_parity != -1) {
+		return generate_longest_path();
+	}
+	bool dotPuzzle = false;
+	for (auto s : symbols) {
+		if (get_symbol_type(s.first) == Decoration::Stone)
+			dotPuzzle = true;
+		else if (s.first != Decoration::Start && s.first != Decoration::Exit) {
+			dotPuzzle = false;
+			break;
+		}
+	}
+	if (dotPuzzle)
+		return generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
+	return generate_path_length(_panel->get_num_grid_points() * 3 / 4);
 }
 
 bool Generate::generate_path_length(int minLength)
@@ -395,10 +422,10 @@ bool Generate::generate_longest_path()
 {
 	Point pos = pick_random(_starts);
 	Point exit = pick_random(_exits);
-	if ((pos.first + pos.second + exit.first + exit.second) / 2 % 2 == ((_panel->_width / 2 + 1) * (_panel->_height / 2 + 1)) % 2) return false; //Parity check
+	if (get_parity(pos + exit) != _panel->get_parity()) return false;
 	clear();
 	int fails = 0;
-	int reqLength = (_panel->_width / 2 + 1) * (_panel->_height / 2 + 1);
+	int reqLength = _panel->get_num_grid_points();
 	bool centerFlag = !on_edge(pos);
 	set_path(pos);
 	while (pos != exit) {
@@ -483,6 +510,7 @@ bool Generate::place_start(int amount)
 	_panel->_startpoints.clear();
 	while (amount > 0) {
 		Point pos = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
+		if (_parity != -1 && get_parity(pos) != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
 		bool adjacent = false;
 		for (Point dir : _8DIRECTIONS2) {
@@ -516,6 +544,7 @@ bool Generate::place_exit(int amount)
 		case 2: pos.first = _panel->_width - 1; break;
 		case 3: pos.second = _panel->_height - 1; break;
 		}
+		if (_parity != -1 && (get_parity(pos) + _panel->get_parity()) % 2 != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
 		_exits.insert(pos);
 		_panel->SetGridSymbol(pos.first, pos.second, Decoration::Exit, Decoration::Color::None);
@@ -596,6 +625,17 @@ bool Generate::can_place_dot(Point pos) {
 }
 
 bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
+	if (_parity != -1) {
+		for (int x = 0; x < _panel->_width; x += 2) {
+			for (int y = 0; y < _panel->_height; y += 2) {
+				if (_starts.size() == 1 && _starts.count(Point(x, y))) continue;
+				if (_exits.size() == 1 && _exits.count(Point(x, y))) continue;
+				set(x, y, Decoration::Dot_Intersection);
+			}
+		}
+		return true;
+	}
+
 	if (color == Decoration::Color::Blue || color == Decoration::Color::Cyan)
 		color = IntersectionFlags::DOT_IS_BLUE;
 	else if (color == Decoration::Color::Yellow || color == Decoration::Color::Orange)

@@ -209,7 +209,7 @@ void Panel::WriteDecorations(int id) {
 void Panel::ReadIntersections(int id) {
 	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
 	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
-	int num_grid_points = this->num_grid_points();
+	int num_grid_points = this->get_num_grid_points();
 	minx = intersections[0]; miny = intersections[1];
 	maxx = intersections[num_grid_points * 2 - 2]; maxy = intersections[num_grid_points * 2 - 1];
 	if (minx > maxx) std::swap(minx, maxx);
@@ -225,7 +225,6 @@ void Panel::ReadIntersections(int id) {
 	else symmetry = Symmetry::Horizontal;
 
 	for (int i = 0; i < num_grid_points; i++) {
-		//auto [x, y] = loc_to_xy(i);
 		int x = static_cast<int>(std::round((intersections[i * 2] - minx) / unitWidth));
 		int y = _height - 1 - static_cast<int>(std::round((intersections[i * 2 + 1] - miny) / unitHeight));
 		_grid[x][y] = intersectionFlags[i];
@@ -281,11 +280,11 @@ void Panel::ReadIntersections(int id) {
 			i++;
 		}
 		if (intersectionFlags[i] & IntersectionFlags::ENDPOINT) {
-			for (int j = 0; j<numConnections; j++) {
-				int location = 0;
+			for (int j = 0; j < numConnections; j++) {
+				int location = -1;
 				if (connections_a[j] == i) location = connections_b[j];
 				if (connections_b[j] == i) location = connections_a[j];
-				if (location != 0) {
+				if (location != -1) {
 					Endpoint::Direction dir;
 					if (intersections[2 * i] < intersections[2 * location]) { // Our (i) x coordinate is less than the target's (location)
 						dir = Endpoint::Direction::LEFT;
@@ -313,6 +312,7 @@ void Panel::ReadIntersections(int id) {
 			_grid[x][y] = intersectionFlags[i];
 		}
 	}	
+
 }
 
 void Panel::WriteIntersections(int id) {

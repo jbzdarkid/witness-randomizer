@@ -18,6 +18,7 @@ public:
 		_areaTotal = _genTotal = _totalPuzzles = _areaPuzzles = 0;
 		_handle = NULL;
 		_panel = NULL;
+		_parity = -1;
 	}
 	void generate(int id, int symbol, int amount);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2);
@@ -59,6 +60,7 @@ private:
 	std::set<Point> _gridpos, _openpos;
 	std::set<Point> _path, _path1, _path2;
 	bool _fullGaps, _bisect;
+	int _parity;
 	HWND _handle;
 	int _areaTotal, _genTotal, _areaPuzzles, _totalPuzzles;
 	std::wstring _areaName;
@@ -81,6 +83,9 @@ private:
 	}
 	Point get_sym_point(Point pos) {
 		return _panel->get_sym_point(pos);
+	}
+	int get_parity(Point pos) {
+		return (pos.first / 2 + pos.second / 2) % 2;
 	}
 	void clear() {
 		for (int x = 0; x < _panel->_width; x++) {
@@ -135,7 +140,7 @@ private:
 	bool generate(int id, std::vector<std::pair<int, int>> symbols);
 	bool place_all_symbols(std::vector<std::pair<int, int>>& symbols);
 	//std::vector<Point> get_valid_edge_dir(Point lastPoint, Point exit);
-	bool generate_path();
+	bool generate_path(std::vector<std::pair<int, int>>& symbols);
 	bool generate_path_length(int minLength);
 	bool generate_path_regions(int minRegions);
 	bool generate_longest_path();

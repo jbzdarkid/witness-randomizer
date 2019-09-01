@@ -218,10 +218,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
 				//srand(ctr++);
-				//srand(4);
+				//srand(1);
 
-				generator->setGridSize(4, 4);
-				generator->generate(0x0001B, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5);
+				//generator->setGridSize(4, 4);
+				generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);

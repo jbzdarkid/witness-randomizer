@@ -61,9 +61,8 @@ void PuzzleList::GenerateTutorialN()
 	//2 exits maze
 	generator->generateMaze(0x0A3B5);
 	//Secret back area
-	//TODO: Make full dot puzzles work
-	//gen->generate(0x0A171, Decoration::Dot_Intersection, 16, Decoration::Gap, 3);
-	//gen->generate(0x04CA4, Decoration::Dot_Intersection, 16, Decoration::Gap, 4);
+	generator->generate(0x0A171, Decoration::Dot_Intersection, 25, Decoration::Gap, 4);
+	generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
 	//Dots Tutorial
 	generator->setFullGaps = true;
 	generator->setGridSize(3, 3);
