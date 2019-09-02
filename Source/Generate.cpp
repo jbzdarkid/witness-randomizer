@@ -41,11 +41,26 @@ void Generate::generateMaze(int id, int numStarts, int numExits)
 
 void Generate::initPanel(std::shared_ptr<Panel> panel) {
 	_panel = panel;
-	_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
-	_exits.clear();
-	for (Endpoint e : _panel->_endpoints) {
-		_exits.insert(Point(e.GetX(), e.GetY()));
+	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
+		resize(_panel);
 	}
+	if (_custom_grid.size() > 0) {
+		if (_custom_grid.size() < _panel->_width) {
+			_custom_grid.resize(panel->_width, std::vector<int>());
+		}
+		if (_custom_grid[_custom_grid.size() - 1].size() < _panel->_height) {
+			for (auto& row : _custom_grid) {
+				row.resize(panel->_height, 0);
+			}
+		}
+		_panel->_grid = _custom_grid;
+	}
+	if (_starts.size() == 0)
+		_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
+	if (_exits.size() == 0)
+		for (Endpoint e : _panel->_endpoints) {
+			_exits.insert(Point(e.GetX(), e.GetY()));
+		}
 	_gridpos.clear();
 	for (int x = 1; x < panel->_width; x += 2) {
 		for (int y = 1; y < panel->_height; y += 2) {
@@ -53,18 +68,25 @@ void Generate::initPanel(std::shared_ptr<Panel> panel) {
 		}
 	}
 	_openpos = _gridpos;
-	if (setFullGaps) _fullGaps = true;
-	else {
-		_fullGaps = false;
-		for (int x = 0; x < panel->_width; x++) {
-			for (int y = 0; y < panel->_height; y++) {
-				if (panel->_grid[x][y] == OPEN) {
-					_fullGaps = true;
-					return;
-				}
-			}
+	_fullGaps = setFullGaps;
+	if (_symmetry) _panel->symmetry = _symmetry;
+	if (pathWidth != 1) _panel->pathWidth = pathWidth;
+}
+
+void Generate::setSymbol(Decoration::Shape symbol, int x, int y)
+{
+	if (_custom_grid.size() < x + 1) {
+		_custom_grid.resize(x + 1, std::vector<int>());
+	}
+	if (_custom_grid[x].size() < y + 1) {
+		for (auto& row : _custom_grid) {
+			row.resize(y + 1, 0);
 		}
 	}
+
+	if (symbol == Decoration::Start) _starts.insert(Point(x, y));
+	if (symbol == Decoration::Exit) _exits.insert(Point(x, y));
+	else _custom_grid[x][y] = symbol; //Only exits are not set into the grid
 }
 
 void Generate::setGridSize(int width, int height) {
@@ -81,7 +103,73 @@ void Generate::setSymmetry(Panel::Symmetry symmetry)
 	_symmetry = symmetry;
 }
 
+void Generate::write(int id)
+{
+	_panel->Write(id);
+	_panel = NULL; //This is needed for the generator to read in the next panel
+	_starts.clear();
+	_exits.clear();
+	_custom_grid.clear();
+}
+
+void Generate::resetConfig()
+{
+	setGridSize(0, 0);
+	_symmetry = Panel::Symmetry::None;
+	setFullGaps = false;
+	centralStart = true;
+	pathWidth = 1;
+}
+
 //----------------------Private--------------------------
+
+void Generate::set_path(Point pos)
+{
+	_panel->_grid[pos.first][pos.second] = PATH;
+	_path.insert(pos);
+	if (_panel->symmetry) {
+		_path1.insert(pos);
+		Point sp = get_sym_point(pos);
+		_panel->_grid[sp.first][sp.second] = PATH;
+		_path.insert(sp);
+		_path2.insert(sp);
+	}
+}
+
+void Generate::clear()
+{
+	for (int x = 0; x < _panel->_width; x++) {
+		for (int y = 0; y < _panel->_height; y++) {
+			_panel->_grid[x][y] = 0;
+		}
+	}
+	_panel->_style &= ~0x2ff8; //Remove all element flags
+	_path.clear(); _path1.clear(); _path2.clear();
+}
+
+void Generate::resize(std::shared_ptr<Panel> panel)
+{
+	for (Point &s : panel->_startpoints) {
+		if (s.first == panel->_width - 1) s.first = _width - 1;
+		if (s.second == panel->_height - 1) s.second = _height - 1;
+	}
+	for (Endpoint &e : panel->_endpoints) {
+		if (e.GetX() == panel->_width - 1) e.SetX(_width - 1);
+		if (e.GetY() == panel->_height - 1) e.SetY(_height - 1);
+	}
+	if (panel->_width != panel->_height) {
+		float maxDim = max(panel->maxx - panel->minx, panel->maxy - panel->miny);
+		float unitSize = maxDim / max(_width, _height);
+		panel->minx = 0.5f - unitSize * _width / 2;
+		panel->maxx = 0.5f + unitSize * _width / 2;
+		panel->miny = 0.5f - unitSize * _height / 2;
+		panel->maxy = 0.5f + unitSize * _height / 2;
+	}
+	panel->_width = _width;
+	panel->_height = _height;
+	panel->_grid.resize(_width);
+	for (auto& row : panel->_grid) row.resize(_height);
+}
 
 bool Generate::generate_maze(int id, int numStarts, int numExits)
 {
@@ -89,14 +177,14 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 		_panel = std::make_shared<Panel>(id);
 	}
 
-	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		resize(_panel);
-	}
+	initPanel(_panel);
 
 	if (numStarts > 0) place_start(numStarts);
 	if (numExits > 0) place_exit(numExits);
 
-	initPanel(_panel);
+	for (Point p : _starts)
+		if (_exits.count(p))
+			return false;
 
 	while (!generate_path_length(_panel->_width + _panel->_height));
 
@@ -203,8 +291,7 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 		SetWindowText(_handle, text.c_str());
 	}
 
-	_panel->Write(id);
-	_panel = NULL; //This is needed for the generator to read in the next panel
+	if (writePuzzle) write(id);
 	return true;
 }
 
@@ -212,10 +299,6 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 
 	if (!_panel) {
 		_panel = std::make_shared<Panel>(id);
-	}
-
-	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		resize(_panel);
 	}
 
 	initPanel(_panel);
@@ -236,6 +319,10 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 
 	if (numStarts) place_start(numStarts);
 	if (numExits) place_exit(numExits);
+
+	for (Point p : _starts)
+		if (_exits.count(p))
+			return false;
 
 	int fails = 0;
 	while (!generate_path(symbols)) {
@@ -276,8 +363,8 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
 		SetWindowText(_handle, text.c_str());
 	}
-	_panel->Write(id);
-	_panel = NULL; //This is needed for the generator to read in the next panel
+
+	if (writePuzzle) write(id);
 	return true;
 }
 
@@ -510,6 +597,13 @@ bool Generate::place_start(int amount)
 	_panel->_startpoints.clear();
 	while (amount > 0) {
 		Point pos = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
+		if (!centralStart)
+		switch (rand() % 4) {
+		case 0: pos.first = 0; break;
+		case 1: pos.second = 0; break;
+		case 2: pos.first = _panel->_width - 1; break;
+		case 3: pos.second = _panel->_height - 1; break;
+		}
 		if (_parity != -1 && get_parity(pos) != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
 		bool adjacent = false;
@@ -546,6 +640,14 @@ bool Generate::place_exit(int amount)
 		}
 		if (_parity != -1 && (get_parity(pos) + _panel->get_parity()) % 2 != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
+		bool adjacent = false;
+		for (Point dir : _8DIRECTIONS2) {
+			if (!off_edge(pos + dir) && get(pos + dir) == Decoration::Start) {
+				adjacent = true;
+				break;
+			}
+		}
+		if (adjacent) continue;
 		_exits.insert(pos);
 		_panel->SetGridSymbol(pos.first, pos.second, Decoration::Exit, Decoration::Color::None);
 		amount--;
@@ -658,28 +760,32 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 		if (open.size() == 0)
 			return false;
 		Point pos = pick_random(open);
-		if (can_place_dot(pos)) {
-			int symbol = (pos.first & 1) == 1 ? Decoration::Dot_Row : (pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
-			set(pos, symbol | color);
-			for (Point dir : _DIRECTIONS1) {
-				open.erase(pos + dir);
-				_path.erase(pos + dir);
-			}
-			if (_panel->symmetry) {
-				Point sp = get_sym_point(pos);
-				symbol = (sp.first & 1) == 1 ? Decoration::Dot_Row : (sp.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
-				set(sp, symbol & ~Decoration::Dot);
-				open.erase(sp);
-				for (Point dir : _DIRECTIONS1) {
-					if (color == IntersectionFlags::DOT_IS_BLUE) _path2.erase(sp + dir);
-					else _path1.erase(sp + dir);
-					open.erase(sp + dir);
-					_path.erase(sp + dir);
-				}
-			}
-			amount--;
+		if (_panel->symmetry && !_path.count(pos)) {
+			open.erase(pos);
+			continue;
 		}
 		open.erase(pos);
+		if (!can_place_dot(pos)) continue;
+		int symbol = (pos.first & 1) == 1 ? Decoration::Dot_Row : (pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
+		set(pos, symbol | color);
+		for (Point dir : _DIRECTIONS1) {
+			open.erase(pos + dir);
+			_path.erase(pos + dir);
+		}
+		if (_panel->symmetry) {
+			Point sp = get_sym_point(pos);
+			symbol = (sp.first & 1) == 1 ? Decoration::Dot_Row : (sp.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
+			set(sp, symbol & ~Decoration::Dot);
+			open.erase(sp);
+			_path.erase(sp);
+			for (Point dir : _DIRECTIONS1) {
+				if (color == IntersectionFlags::DOT_IS_BLUE) _path2.erase(sp + dir);
+				else _path1.erase(sp + dir);
+				open.erase(sp + dir);
+				_path.erase(sp + dir);
+			}
+		}
+		amount--;
 		_path.erase(pos);
 	}
 	return true;

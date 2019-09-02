@@ -167,6 +167,7 @@
     <ClInclude Include="PuzzleList.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Randomizer.h" />
+    <ClInclude Include="Special.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChallengeRandomizer.cpp" />
@@ -176,6 +177,7 @@
     <ClCompile Include="PuzzleList.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Randomizer.cpp" />
+    <ClCompile Include="Special.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

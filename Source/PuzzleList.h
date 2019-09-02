@@ -1,5 +1,6 @@
 #pragma once
 #include "Generate.h"
+#include "Special.h"
 
 class PuzzleList {
 
@@ -10,10 +11,12 @@ public:
 
 	PuzzleList() {
 		generator = std::make_shared<Generate>();
+		specialCase = std::make_shared<Special>(generator);
 	}
 
 	PuzzleList(std::shared_ptr<Generate> generator) {
 		this->generator = generator;
+		this->specialCase = std::make_shared<Special>(generator);
 	}
 
 	void setLoadingHandle(HWND handle) {
@@ -67,5 +70,20 @@ public:
 
 private:
 	std::shared_ptr<Generate> generator;
+	std::shared_ptr<Special> specialCase;
 	HWND _handle;
+
+	template <class T> T pop_random(std::vector<T>& vec) {
+		int i = rand() % vec.size();
+		T item = vec[i];
+		vec.erase(vec.begin() + i);
+		return item;
+	}
+	template <class T> T pop_random(std::set<T>& set) {
+		auto it = set.begin();
+		std::advance(it, rand() % set.size());
+		T item = *it;
+		set.erase(item);
+		return item;
+	}
 };

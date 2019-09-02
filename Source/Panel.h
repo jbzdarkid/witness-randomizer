@@ -126,21 +126,13 @@ public:
 		x20000000 = 0x20000000, //Jungle vault
 	};
 
-	enum Symmetry { //Want to add custom symmetry
-		None, Horizontal, Vertical, Rotational
+	enum Symmetry { //NOTE - Not all of these are valid symmetries for certain puzzles
+		None, Horizontal, Vertical, Rotational,
+		RotateLeft, RotateRight, FlipXY, FlipNegXY, ParallelH, ParallelV, ParallelHFlip, ParallelVFlip
 	};
 	Symmetry symmetry;
 
-	Point get_sym_point(int x, int y)
-	{
-		switch (symmetry) {
-		case None: return Point(x, y);
-		case Symmetry::Horizontal: return Point(x, _height - 1 - y);
-		case Symmetry::Vertical: return Point(_width - 1 - x, y);
-		case Symmetry::Rotational: return Point(_width - 1 - x, _height - 1 - y);
-		}
-		return Point(x, y);
-	}
+	float pathWidth;
 
 private:
 	// For testing
@@ -152,21 +144,31 @@ private:
 	void ReadDecorations(int id);
 	void WriteDecorations(int id);
 
-	Point get_sym_point(Point p) {
-		return get_sym_point(p.first, p.second);
+	Point get_sym_point(int x, int y, Symmetry symmetry)
+	{
+		switch (symmetry) {
+		case None: return Point(x, y);
+		case Symmetry::Horizontal: return Point(x, _height - 1 - y);
+		case Symmetry::Vertical: return Point(_width - 1 - x, y);
+		case Symmetry::Rotational: return Point(_width - 1 - x, _height - 1 - y);
+		case Symmetry::RotateLeft: return Point(y, _width - 1 - x);
+		case Symmetry::RotateRight: return Point(_height - 1 - y, x);
+		case Symmetry::FlipXY: return Point(y, x);
+		case Symmetry::FlipNegXY: return Point(_height - 1 - y, _width - 1 - x);
+		case Symmetry::ParallelH: return Point(x, (y + (_height + 1) / 2) % _height);
+		case Symmetry::ParallelV: return Point((x + (_width + 1) / 2) % _width, y);
+		case Symmetry::ParallelHFlip: return Point(_width - 1 - x, (y + (_height + 1) / 2) % _height);
+		case Symmetry::ParallelVFlip: return Point((x + (_width + 1) / 2) % _width, _height - 1 - y);
+		}
+		return Point(x, y);
 	}
 
-	int get_num_grid_points() {
-		return (_width / 2 + 1) * (_height / 2 + 1);
-	}
-
-	int get_num_grid_blocks() {
-		return (_width / 2 - 1) * (_height / 2 - 1);
-	}
-
-	int get_parity() {
-		return (get_num_grid_points() + 1) % 2;
-	}
+	Point get_sym_point(int x, int y) { return get_sym_point(x, y, symmetry); }
+	Point get_sym_point(Point p) { return get_sym_point(p.first, p.second, symmetry); }
+	Point get_sym_point(Point p, Symmetry symmetry) { return get_sym_point(p.first, p.second, symmetry); }
+	int get_num_grid_points() { return (_width / 2 + 1) * (_height / 2 + 1);  }
+	int get_num_grid_blocks() { return (_width / 2 - 1) * (_height / 2 - 1);  }
+	int get_parity() { return (get_num_grid_points() + 1) % 2; }
 
 	std::tuple<int, int> loc_to_xy(int location) {
 		int height2 = (_height - 1) / 2;
@@ -254,4 +256,5 @@ private:
 
 	friend class PanelExtractionTests;
 	friend class Generate;
+	friend class Special;
 };

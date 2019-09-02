@@ -49,17 +49,20 @@ void Panel::Read(int id) {
 	ReadAllData(id);
 	ReadIntersections(id);
 	ReadDecorations(id);
+	pathWidth = 1;
 }
 
 void Panel::Write(int id) {
 	WriteIntersections(id);
 	WriteDecorations(id);
 	
+	//_style &= ~NO_BLINK;
 	//_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
 	_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
-	_memory->WritePanelData<int>(id, STYLE_FLAGS, { _style & ~NO_BLINK });
+	_memory->WritePanelData<int>(id, STYLE_FLAGS, { _style });
 	_memory->WritePanelData<int>(id, GRID_SIZE_X, {(_width + 1)/2});
 	_memory->WritePanelData<int>(id, GRID_SIZE_Y, {(_height + 1)/2});
+	if (pathWidth != 1) _memory->WritePanelData<float>(id, PATH_WIDTH_SCALE, { pathWidth });
 	_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
 }
 
@@ -163,6 +166,7 @@ void Panel::ReadAllData(int id) {
 	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
 	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
 	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations);
+	float width = _memory->ReadPanelData<float>(id, PATH_WIDTH_SCALE);
 }
 
 void Panel::ReadDecorations(int id) {
@@ -312,7 +316,6 @@ void Panel::ReadIntersections(int id) {
 			_grid[x][y] = intersectionFlags[i];
 		}
 	}	
-
 }
 
 void Panel::WriteIntersections(int id) {
@@ -424,7 +427,7 @@ void Panel::WriteIntersections(int id) {
 				auto[x2, y2] = loc_to_xy(connections_b[i]);
 				out.push_back("(" + std::to_string(x1) + ", " + std::to_string(y1) + ") > (" +
 					std::to_string(x2) + ", " + std::to_string(y2) + ")");*/
-				out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
+				//out.push_back("(" + std::to_string(connections_a[i]) + ", " + std::to_string(connections_b[i]) + ")");
 			}
 			if (x % 2 == y % 2) continue;
 			auto[sx, sy] = get_sym_point(x, y);

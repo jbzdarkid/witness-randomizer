@@ -10,6 +10,7 @@
 #include "Randomizer.h"
 #include "Panel.h"
 #include "Generate.h"
+#include "Special.h"
 #include "PuzzleList.h"
 
 #define IDC_RANDOMIZE 0x401
@@ -57,6 +58,7 @@ int panel = 0x00060; // Outside Tutorial Dots Tutorial 4
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
 std::shared_ptr<Generate> generator = std::make_shared<Generate>();
+std::shared_ptr<Special> specialCase = std::make_shared<Special>(generator);
 
 int ctr = 0;
 TCHAR text[30];
@@ -216,12 +218,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			case IDC_TEST:
 				//_panel->Write(panel);
-				srand(static_cast<unsigned int>(time(NULL)));
-				//srand(ctr++);
+				//srand(static_cast<unsigned int>(time(NULL)));
+				srand(ctr++);
 				//srand(1);
 
-				//generator->setGridSize(4, 4);
-				generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
+				//generator->setGridSize(6, 6);
+				//generator->setSymmetry(Panel::Symmetry::Rotational);
+				//generator->centralStart = false;
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
