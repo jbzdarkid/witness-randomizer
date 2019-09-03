@@ -218,13 +218,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			case IDC_TEST:
 				//_panel->Write(panel);
-				//srand(static_cast<unsigned int>(time(NULL)));
-				srand(ctr++);
-				//srand(1);
+				srand(static_cast<unsigned int>(time(NULL)));
+				//srand(ctr++);
+				//srand(3);
 
 				//generator->setGridSize(6, 6);
 				//generator->setSymmetry(Panel::Symmetry::Rotational);
 				//generator->centralStart = false;
+
+				//generator->config |= Generate::Config::ResetColors;
+				//generator->generate(0x0A3D0, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Poly | Decoration::Color::Orange, 3, Decoration::Eraser | Decoration::White, 1);
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
@@ -469,7 +472,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		65, 340, 90, 16, hwnd, NULL, hInstance, NULL);
 
-	_panel->Read(panel);
+	//_panel->Read(panel);
 	//generator->initPanel(_panel);
 
 	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)

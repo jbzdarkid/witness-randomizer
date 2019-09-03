@@ -13,15 +13,11 @@ class Generate
 public:
 	Generate() {
 		_width = _height = 0;
-		_symmetry = Panel::Symmetry::None;
-		setFullGaps = false;
-		centralStart = true;
-		writePuzzle = true;
 		_areaTotal = _genTotal = _totalPuzzles = _areaPuzzles = 0;
 		_handle = NULL;
 		_panel = NULL;
 		_parity = -1;
-		pathWidth = 1;
+		resetConfig();
 	}
 	void generate(int id, int symbol, int amount);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2);
@@ -50,8 +46,18 @@ public:
 		_areaTotal = 0;
 	}
 
-	bool setFullGaps, centralStart, writePuzzle;
 	float pathWidth;
+	int config;
+	enum Config {
+		FullGaps = 0x1,
+		StartEdgeOnly = 0x2,
+		DisableWrite = 0x4,
+		PreserveStructure = 0x8,
+		MakeStonesUnsolvable = 0x10,
+		FullAreaEraser = 0x20,
+		DisconnectShapes = 0x40,
+		ResetColors = 0x80,
+	};
 
 private:
 	std::shared_ptr<Panel> _panel;
@@ -62,6 +68,8 @@ private:
 	std::set<Point> _gridpos, _openpos;
 	std::set<Point> _path, _path1, _path2;
 	bool _fullGaps, _bisect;
+	int stoneTypes;
+
 	int _parity;
 	HWND _handle;
 	int _areaTotal, _genTotal, _areaPuzzles, _totalPuzzles;
@@ -95,10 +103,7 @@ private:
 	bool off_edge(Point p) {
 		return (p.first < 0 || p.first >= _panel->_width || p.second < 0 || p.second >= _panel->_height);
 	}
-	static std::vector<Point> _DIRECTIONS1;
-	static std::vector<Point> _8DIRECTIONS1;
-	static std::vector<Point> _DIRECTIONS2;
-	static std::vector<Point> _8DIRECTIONS2;
+	static std::vector<Point> _DIRECTIONS1, _8DIRECTIONS1, _DIRECTIONS2, _8DIRECTIONS2, _SHAPEDIRECTIONS, _DISCONNECT;
 	bool generate_maze(int id, int numStarts, int numExits);
 	bool generate(int id, std::vector<std::pair<int, int>> symbols); //************************************************************
 	bool place_all_symbols(std::vector<std::pair<int, int>>& symbols);
@@ -117,16 +122,16 @@ private:
 	bool can_place_dot(Point pos);
 	bool place_dots(int amount, int color, bool intersectionOnly);
 	bool place_stones(int color, int amount);
-	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize, bool disconnect);
-	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize, bool disconnect) {
+	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize);
+	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize) {
 		std::set<Point> buffer;
-		return generate_shape(region, buffer, pos, maxSize, disconnect);
+		return generate_shape(region, buffer, pos, maxSize);
 	}
 	int make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation);
 	int make_shape_symbol(Shape shape, bool rotated, bool negative) {
 		return make_shape_symbol(shape, rotated, negative, -1);
 	}
-	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative, bool disconnect);
+	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);
 	bool place_eraser(int color, int toErase); //No "amount" variable because multiple erasers do not work consistently in the Witness

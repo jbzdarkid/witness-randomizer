@@ -53,7 +53,7 @@ enum IntersectionFlags {
 	STARTPOINT = 0x2,
 	OPEN = 0x3, //Puzzle loader flag - not to be written out
 	PATH = 0x4, //Generator use only
-	PATH2 = 0x5, //Generator use only
+	NO_POINT = 0x8, //Points that nothing connects to
 	GAP = 0x100000,
 	DOT = 0x20,
 	DOT_IS_BLUE = 0x100,
@@ -167,7 +167,7 @@ private:
 	Point get_sym_point(Point p) { return get_sym_point(p.first, p.second, symmetry); }
 	Point get_sym_point(Point p, Symmetry symmetry) { return get_sym_point(p.first, p.second, symmetry); }
 	int get_num_grid_points() { return (_width / 2 + 1) * (_height / 2 + 1);  }
-	int get_num_grid_blocks() { return (_width / 2 - 1) * (_height / 2 - 1);  }
+	int get_num_grid_blocks() { return (_width / 2) * (_height / 2);  }
 	int get_parity() { return (get_num_grid_points() + 1) % 2; }
 
 	std::tuple<int, int> loc_to_xy(int location) {

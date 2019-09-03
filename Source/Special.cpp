@@ -2,7 +2,7 @@
 
 void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry)
 {
-	_generator->writePuzzle = false;
+	_generator->config |= Generate::Config::DisableWrite;
 	_generator->generate(id1, symbols);
 	std::shared_ptr<Panel> puzzle = _generator->_panel;
 	std::shared_ptr<Panel> flippedPuzzle = std::make_shared<Panel>(id2);
