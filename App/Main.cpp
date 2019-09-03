@@ -222,12 +222,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//srand(ctr++);
 				//srand(3);
 
-				//generator->setGridSize(6, 6);
-				//generator->setSymmetry(Panel::Symmetry::Rotational);
-				//generator->centralStart = false;
-
-				//generator->config |= Generate::Config::ResetColors;
-				//generator->generate(0x0A3D0, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Poly | Decoration::Color::Orange, 3, Decoration::Eraser | Decoration::White, 1);
+				generator->setGridSize(3, 3);
+				generator->generate(0x00469, Decoration::Poly, 1, Decoration::Gap, 3);
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);

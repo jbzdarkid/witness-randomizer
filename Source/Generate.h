@@ -88,7 +88,6 @@ private:
 		return (pos.first / 2 + pos.second / 2) % 2;
 	}
 	void clear();
-	void resize(std::shared_ptr<Panel> panel);
 	template <class T> T pick_random(std::vector<T>& vec) {
 		return vec[rand() % vec.size()];
 	}

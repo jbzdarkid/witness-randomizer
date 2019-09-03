@@ -50,14 +50,23 @@ void Panel::Read(int id) {
 	ReadIntersections(id);
 	ReadDecorations(id);
 	pathWidth = 1;
+	_resized = false;
 }
 
 void Panel::Write(int id) {
+
+	if (_resized && _memory->ReadPanelData<int>(id, NUM_COLORED_REGIONS) > 0) {
+		//Make two triangles that cover the whole panel
+		std::vector<int> newRegions = { 0, xy_to_loc(_width - 1, 0), xy_to_loc(0, 0), 0, xy_to_loc(_width - 1, _height - 1), xy_to_loc(_width - 1, 0), 0, 0 };
+		_memory->WritePanelData<int>(id, NUM_COLORED_REGIONS, { 2 });
+		_memory->WriteArray(id, COLORED_REGIONS, newRegions);
+	}
+
 	WriteIntersections(id);
 	WriteDecorations(id);
-	
+
 	//_style &= ~NO_BLINK;
-	//_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
+
 	_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
 	_memory->WritePanelData<int>(id, STYLE_FLAGS, { _style });
 	_memory->WritePanelData<int>(id, GRID_SIZE_X, {(_width + 1)/2});
@@ -126,8 +135,30 @@ void Panel::ClearGridSymbol(int x, int y)
 	_grid[x][y] = 0;
 }
 
-void Panel::Random() {
-	//
+void Panel::Resize(int width, int height)
+{
+	if (_width == width && _height == height) return;
+	for (Point &s : _startpoints) {
+		if (s.first == _width - 1) s.first = width - 1;
+		if (s.second == _height - 1) s.second = height - 1;
+	}
+	for (Endpoint &e : _endpoints) {
+		if (e.GetX() == _width - 1) e.SetX(width - 1);
+		if (e.GetY() == _height - 1) e.SetY(height - 1);
+	}
+	if (_width != _height || width != height) {
+		float maxDim = max(maxx - minx, maxy - miny);
+		float unitSize = maxDim / max(width, height);
+		minx = 0.5f - unitSize * width / 2;
+		maxx = 0.5f + unitSize * width / 2;
+		miny = 0.5f - unitSize * height / 2;
+		maxy = 0.5f + unitSize * height / 2;
+	}
+	_width = width;
+	_height = height;
+	_grid.resize(width);
+	for (auto& row : _grid) row.resize(height);
+	_resized = true;
 }
 
 //Only for testing
@@ -150,7 +181,7 @@ void Panel::ReadAllData(int id) {
 	Color ppColorB = _memory->ReadPanelData<Color>(id, PATTERN_POINT_COLOR_B);
 	int pushSymbolColors = _memory->ReadPanelData<int>(id, PUSH_SYMBOL_COLORS);
 	int numColored = _memory->ReadPanelData<int>(id, NUM_COLORED_REGIONS);
-	std::vector<int> colored = _memory->ReadArray<int>(id, COLORED_REGIONS, numColored);
+	std::vector<int> colored = _memory->ReadArray<int>(id, COLORED_REGIONS, numColored * 4);
 	int numConnections = _memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
 	int numDots = _memory->ReadPanelData<int>(id, NUM_DOTS);
 	int reflectionData = _memory->ReadPanelData<int>(id, REFLECTION_DATA);
@@ -167,6 +198,8 @@ void Panel::ReadAllData(int id) {
 	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
 	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations);
 	float width = _memory->ReadPanelData<float>(id, PATH_WIDTH_SCALE);
+	int seqLen = _memory->ReadPanelData<int>(id, SEQUENCE_LEN);
+	std::vector<int> seq = _memory->ReadArray<int>(id, SEQUENCE, seqLen);
 }
 
 void Panel::ReadDecorations(int id) {

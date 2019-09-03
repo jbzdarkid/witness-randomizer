@@ -48,7 +48,7 @@ void Generate::generateMaze(int id, int numStarts, int numExits)
 void Generate::initPanel(std::shared_ptr<Panel> panel) {
 	_panel = panel;
 	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		resize(_panel);
+		_panel->Resize(_width, _height);
 	}
 	if (_custom_grid.size() > 0) {
 		if (_custom_grid.size() < _panel->_width) {
@@ -160,30 +160,6 @@ void Generate::clear()
 	}
 	_panel->_style &= ~0x2ff8; //Remove all element flags
 	_path.clear(); _path1.clear(); _path2.clear();
-}
-
-void Generate::resize(std::shared_ptr<Panel> panel)
-{
-	for (Point &s : panel->_startpoints) {
-		if (s.first == panel->_width - 1) s.first = _width - 1;
-		if (s.second == panel->_height - 1) s.second = _height - 1;
-	}
-	for (Endpoint &e : panel->_endpoints) {
-		if (e.GetX() == panel->_width - 1) e.SetX(_width - 1);
-		if (e.GetY() == panel->_height - 1) e.SetY(_height - 1);
-	}
-	if (panel->_width != panel->_height || _width != _height) {
-		float maxDim = max(panel->maxx - panel->minx, panel->maxy - panel->miny);
-		float unitSize = maxDim / max(_width, _height);
-		panel->minx = 0.5f - unitSize * _width / 2;
-		panel->maxx = 0.5f + unitSize * _width / 2;
-		panel->miny = 0.5f - unitSize * _height / 2;
-		panel->maxy = 0.5f + unitSize * _height / 2;
-	}
-	panel->_width = _width;
-	panel->_height = _height;
-	panel->_grid.resize(_width);
-	for (auto& row : panel->_grid) row.resize(_height);
 }
 
 bool Generate::generate_maze(int id, int numStarts, int numExits)

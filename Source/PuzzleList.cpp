@@ -244,6 +244,10 @@ void PuzzleList::GenerateBunkerN()
 
 void PuzzleList::GenerateSwampN()
 {
+	//First row
+	generator->generate(0x00469, Decoration::Poly, 1, Decoration::Gap, 3);
+
+	//TODO: Turn off bridge panel until both rows solved
 }
 
 void PuzzleList::GenerateTreehouseN()

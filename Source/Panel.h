@@ -107,7 +107,7 @@ public:
 	void ClearSymbol(int x, int y);
 	void SetGridSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color);
 	void ClearGridSymbol(int x, int y);
-	void Random();
+	void Resize(int width, int height);
 
 	enum Style {
 		SYMMETRICAL = 0x2, //Not on the town symmetry puzzles? IDK why.
@@ -253,6 +253,7 @@ private:
 	std::vector<Endpoint> _endpoints;
 	float minx, miny, maxx, maxy;
 	int _style;
+	bool _resized;
 
 	friend class PanelExtractionTests;
 	friend class Generate;
