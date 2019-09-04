@@ -234,7 +234,7 @@ private:
 		return data;
 	}
 
-	int locate_segment(int x, int y, std::vector<int> connections_a, std::vector<int> connections_b) {
+	int locate_segment(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b) {
 		for (int i = 0; i < connections_a.size(); i++) {
 			auto[x1, y1] = loc_to_xy(connections_a[i]);
 			auto[x2, y2] = loc_to_xy(connections_b[i]);
@@ -246,6 +246,44 @@ private:
 		return -1;
 	}
 
+	void break_segment(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
+		int i = locate_segment(x, y, connections_a, connections_b);
+		if (i == -1) {
+			return;
+		}
+		int other_connection = connections_b[i];
+		connections_b[i] = static_cast<int>(intersectionFlags.size());
+		connections_a.push_back(static_cast<int>(intersectionFlags.size()));
+		connections_b.push_back(other_connection);
+		intersections.push_back(static_cast<float>(minx + x * unitWidth));
+		intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
+		intersectionFlags.push_back(_grid[x][y]);
+	}
+
+	void break_segment_gap(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
+		int i = locate_segment(x, y, connections_a, connections_b);
+		if (i == -1) {
+			return;
+		}
+		int other_connection = connections_b[i];
+		connections_b[i] = static_cast<int>(intersectionFlags.size() + 1);
+		connections_a.push_back(other_connection);
+		connections_b.push_back(static_cast<int>(intersectionFlags.size()));
+		if (!(_grid[x][y] & IntersectionFlags::GAP)) {
+			_grid[x][y] |= (x % 2 == 0 ? IntersectionFlags::COLUMN : IntersectionFlags::ROW);
+			connections_a.push_back(static_cast<int>(intersectionFlags.size()));
+			connections_b.push_back(static_cast<int>(intersectionFlags.size() + 1));
+		}
+		double xOffset = _grid[x][y] & IntersectionFlags::ROW ? 0.5 : 0;
+		double yOffset = _grid[x][y] & IntersectionFlags::COLUMN ? 0.5 : 0;
+		intersections.push_back(static_cast<float>(minx + (x + xOffset) * unitWidth));
+		intersections.push_back(static_cast<float>(miny + (_height - 1 - y - yOffset) * unitHeight));
+		intersections.push_back(static_cast<float>(minx + (x - xOffset) * unitWidth));
+		intersections.push_back(static_cast<float>(miny + (_height - 1 - y + yOffset) * unitHeight));
+		intersectionFlags.push_back(_grid[x][y]);
+		intersectionFlags.push_back(_grid[x][y]);
+	}
+
 	std::shared_ptr<Memory> _memory;
 
 	int _width, _height;
@@ -253,7 +291,7 @@ private:
 	std::vector<std::vector<int>> _grid;
 	std::vector<Point> _startpoints;
 	std::vector<Endpoint> _endpoints;
-	float minx, miny, maxx, maxy;
+	float minx, miny, maxx, maxy, unitWidth, unitHeight;
 	int _style;
 	bool _resized;
 	int id;

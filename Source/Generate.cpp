@@ -62,10 +62,51 @@ void Generate::initPanel(std::shared_ptr<Panel> panel) {
 	}
 	if (_starts.size() == 0)
 		_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
+	else
+		_panel->_startpoints = std::vector<Point>(_starts.begin(), _starts.end());
 	if (_exits.size() == 0)
 		for (Endpoint e : _panel->_endpoints) {
 			_exits.insert(Point(e.GetX(), e.GetY()));
 		}
+	else
+		for (Point e : _exits) {
+			_panel->SetGridSymbol(e.first, e.second, Decoration::Exit, Decoration::Color::None);
+		}
+	if (config & Config::TreehouseLayout) {
+		bool pivot = _exits.size() > 2;
+		_panel->_startpoints.clear();
+		_panel->SetGridSymbol(_panel->_width / 2, _panel->_height - 1, Decoration::Start, Decoration::Color::None);
+		_panel->_endpoints.clear();
+		_panel->SetGridSymbol(_panel->_width / 2, 0, Decoration::Exit, Decoration::Color::None);
+		if (pivot) {
+			_panel->SetGridSymbol(_panel->_width - 1, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
+			_panel->SetGridSymbol(0, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
+		}
+		_starts.clear();
+		_exits.clear();
+		if ((_panel->_width / 2) % 2 == 1) {
+			_starts.insert(Point(_panel->_width / 2 - 1, _panel->_height - 1));
+			_starts.insert(Point(_panel->_width / 2 + 1, _panel->_height - 1));
+			_exits.insert(Point(_panel->_width / 2 - 1, 0));
+			_exits.insert(Point(_panel->_width / 2 + 1, 0));
+		}
+		else {
+			_starts.insert(Point(_panel->_width / 2, _panel->_height - 1));
+			_exits.insert(Point(_panel->_width / 2, 0));
+		}
+		if (pivot) {
+			if ((_panel->_height / 2) % 2 == 1) {
+				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 - 1));
+				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 + 1));
+				_exits.insert(Point(0, _panel->_height / 2 - 1));
+				_exits.insert(Point(0, _panel->_height / 2 + 1));
+			}
+			else {
+				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2));
+				_exits.insert(Point(0, _panel->_height / 2));
+			}
+		}
+	}
 	_gridpos.clear();
 	for (int x = 1; x < panel->_width; x += 2) {
 		for (int y = 1; y < panel->_height; y += 2) {
@@ -388,6 +429,18 @@ bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
 
 bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 {
+	clear();
+	if (config & Config::TreehouseLayout) {
+		if (_starts.size() == 2) {
+			set(_panel->_width / 2, 0, PATH);
+			set(_panel->_width / 2, _panel->_height - 1, PATH);
+		}
+		if (_exits.size() == 6) { //Pivot panel
+			set(0, _panel->_height / 2, PATH);
+			set(_panel->_width - 1, _panel->_height / 2,  PATH);
+		}
+	}
+
 	if (_parity != -1) {
 		return generate_longest_path();
 	}
@@ -426,7 +479,6 @@ bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 
 bool Generate::generate_path_length(int minLength)
 {
-	clear();
 	int fails = 0;
 	Point pos = pick_random(_starts);
 	Point exit = pick_random(_exits);
@@ -435,7 +487,8 @@ bool Generate::generate_path_length(int minLength)
 		if (fails++ > 20) return false;
 		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
-		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0 || newPos == exit && _path.size() / 2 + 2 < minLength) continue;
+		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) == OPEN || get(pos.first + dir.first / 2, pos.second + dir.second / 2) & Decoration::Gap
+			|| newPos == exit && _path.size() / 2 + 2 < minLength) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		set_path(newPos);
 		set_path(pos + Point(dir.first / 2, dir.second / 2));
@@ -447,7 +500,6 @@ bool Generate::generate_path_length(int minLength)
 
 bool Generate::generate_path_regions(int minRegions)
 {
-	clear();
 	int fails = 0;
 	int regions = 1;
 	Point pos = pick_random(_starts);
@@ -457,7 +509,8 @@ bool Generate::generate_path_regions(int minRegions)
 		if (fails++ > 20) return false;
 		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
-		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0 || newPos == exit && regions < minRegions) continue;
+		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) == OPEN || get(pos.first + dir.first / 2, pos.second + dir.second / 2) & Decoration::Gap
+			|| newPos == exit && regions < minRegions) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		set_path(newPos);
 		set_path(pos + Point(dir.first / 2, dir.second / 2));
@@ -476,7 +529,6 @@ bool Generate::generate_longest_path()
 	Point pos = pick_random(_starts);
 	Point exit = pick_random(_exits);
 	if (get_parity(pos + exit) != _panel->get_parity()) return false;
-	clear();
 	int fails = 0;
 	int reqLength = _panel->get_num_grid_points();
 	bool centerFlag = !on_edge(pos);
@@ -500,7 +552,8 @@ bool Generate::generate_longest_path()
 			}
 		}
 		Point newPos = pos + dir;
-		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0 || newPos == exit && _path.size() / 2 + 2 < reqLength) continue;
+		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) == OPEN || get(pos.first + dir.first / 2, pos.second + dir.second / 2) & Decoration::Gap
+			|| newPos == exit && _path.size() / 2 + 2 < reqLength) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		if (on_edge(newPos) && (off_edge(newPos + dir) || get(newPos + dir) != 0)) {
 			if (centerFlag && off_edge(newPos + dir)) {

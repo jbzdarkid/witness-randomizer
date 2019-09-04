@@ -62,6 +62,7 @@ public:
 		KeepPath = 0x400,
 		DisableCombineShapes = 0x800,
 		RequireCombineShapes = 0x1000,
+		TreehouseLayout = 0x2000,
 	};
 
 private:
@@ -111,7 +112,6 @@ private:
 	bool generate_maze(int id, int numStarts, int numExits);
 	bool generate(int id, std::vector<std::pair<int, int>> symbols); //************************************************************
 	bool place_all_symbols(std::vector<std::pair<int, int>>& symbols);
-	//std::vector<Point> get_valid_edge_dir(Point lastPoint, Point exit);
 	bool generate_path(std::vector<std::pair<int, int>>& symbols);
 	bool generate_path_length(int minLength);
 	bool generate_path_regions(int minRegions);

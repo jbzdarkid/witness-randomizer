@@ -167,9 +167,13 @@ void PuzzleList::GenerateQuarryN()
 	generator->setLoadingData(L"Quarry", 39);
 	//Entry Gates
 	generator->resetConfig();
-	generator->generate(0x09E57, Decoration::Stone | Decoration::Color::White, 6, Decoration::Stone | Decoration::Color::Black, 6, Decoration::Dot_Intersection, 6);
-	generator->generate(0x17C09, Decoration::Poly, 2, Decoration::Dot, 3);
+	generator->setGridSize(5, 5);
+	generator->generate(0x09E57, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 10);
+	generator->setGridSize(4, 4);
+	generator->config |= Generate::Config::RequireCombineShapes;
+	generator->generate(0x17C09, Decoration::Poly, 2, Decoration::Gap, 5);
 	//Mill Entry Door
+	generator->resetConfig();
 	generator->generate(0x01E5A, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 	generator->config |= Generate::Config::PreserveStructure;
 	generator->generate(0x01E59, Decoration::Dot, 15);
@@ -208,8 +212,10 @@ void PuzzleList::GenerateQuarryN()
 		Decoration::Dot, 10, Decoration::Eraser | Decoration::Color::Purple, 1, Decoration::Start, 3);
 	//Boathouse Ramp Activation
 	generator->generate(0x034D4, Decoration::Star | Decoration::White, 10, Decoration::Star | Decoration::Black, 6);
-	generator->generate(0x021D5, Decoration::Poly, 2, Decoration::Poly | Decoration::Can_Rotate, 1, Decoration::Gap, 3);
+	generator->config |= Generate::Config::RequireCombineShapes;
+	generator->generate(0x021D5, Decoration::Poly, 1, Decoration::Poly | Decoration::Can_Rotate, 1, Decoration::Gap, 5);
 	//Eraser + Shapes
+	generator->resetConfig();
 	generator->generate(0x021B3, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x021B4, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x021B0, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::Green, 1);
@@ -364,6 +370,10 @@ void PuzzleList::GenerateSwampN()
 
 void PuzzleList::GenerateTreehouseN()
 {
+	generator->resetConfig();
+	generator->generate(0x02886, Decoration::Star | Decoration::Color::Orange, 2, Decoration::Gap, 5);
+	//Yellow Bridge
+
 }
 
 void PuzzleList::GenerateTownN()

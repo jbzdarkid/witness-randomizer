@@ -219,14 +219,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case IDC_TEST:
 				//_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
-				//srand(ctr++);
-				//srand(8);
+				srand(ctr++);
+				//srand(5);
 
 				generator->resetConfig();
-				generator->setGridSize(4, 4);
-				generator->pathWidth = 0.65f;
-				generator->config |= Generate::Config::DisableCombineShapes;
-				generator->generate(0x00474, Decoration::Poly, 2, Decoration::Gap, 8);
+				generator->setGridSize(3, 3);
+				generator->config |= Generate::Config::TreehouseLayout;
+				generator->generate(0x17D72, Decoration::Star | Decoration::Color::Orange, 2, Decoration::Gap, 5);
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
