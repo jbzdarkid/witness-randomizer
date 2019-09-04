@@ -53,7 +53,7 @@ HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoading
 
 //int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
 //int panel = 0x0A3B2; // Tutorial Back Right (2 start points)
-int panel = 0x00060; // Outside Tutorial Dots Tutorial 4
+int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -220,14 +220,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				//_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
 				//srand(ctr++);
-				//srand(3);
+				//srand(8);
 
-				generator->setGridSize(3, 3);
-				generator->generate(0x00469, Decoration::Poly, 1, Decoration::Gap, 3);
+				generator->resetConfig();
+				generator->setGridSize(4, 4);
+				generator->pathWidth = 0.65f;
+				generator->config |= Generate::Config::DisableCombineShapes;
+				generator->generate(0x00474, Decoration::Poly, 2, Decoration::Gap, 8);
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
+				//generator->generate(0x00609, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 				//generator->generate(panel, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
 				//generator->generate(panel, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 6);
 				//generator->generate(panel, Decoration::Star | Decoration::Color::White, 4, Decoration::Star | Decoration::Color::Black, 4);

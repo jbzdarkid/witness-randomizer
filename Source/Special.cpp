@@ -33,3 +33,44 @@ void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pai
 	_generator->write(id1);
 	flippedPuzzle->Write(id2);
 }
+
+void Special::generateAntiPuzzle(int id)
+{
+	while (true) {
+		_generator->config |= Generate::Config::DisableWrite;
+		_generator->generate(id, Decoration::Poly | Decoration::Can_Rotate, 2);
+		std::set<Point> open = _generator->_gridpos;
+		std::vector<int> symbols;
+		for (int x = 1; x < _generator->_panel->_width; x += 2) {
+			for (int y = 1; y < _generator->_panel->_height; y += 2) {
+				if (_generator->get_symbol_type(_generator->get(x, y)) == Decoration::Poly) {
+					symbols.push_back(_generator->get(x, y));
+					_generator->set(x, y, 0);
+					for (Point p : _generator->get_region(Point(x, y))) {
+						open.erase(p);
+					}
+				}
+			}
+		}
+		if (open.size() == 0) continue;
+		std::set<Point> region = _generator->get_region(*open.begin());
+		if (region.size() != open.size() || open.size() < symbols.size() + 1) continue;
+		for (int s : symbols) {
+			Point p = _generator->pick_random(open);
+			_generator->set(p, s | Decoration::Negative);
+			open.erase(p);
+		}
+		_generator->set(_generator->pick_random(open), Decoration::Poly | 0xffff0000); //Full block
+		_generator->write(id);
+		_generator->resetConfig();
+		return;
+	}
+}
+
+void Special::deactivateAndTarget(int targetPuzzle, int targetFrom)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	panel->_memory->WritePanelData<float>(targetPuzzle, POWER, { 0.0, 0.0 });
+	panel->_memory->WritePanelData<int>(targetFrom, TARGET, { targetPuzzle + 1 });
+	panel->_memory->WritePanelData<float>(0x0061A, OPEN_RATE, { 0.1f });
+}

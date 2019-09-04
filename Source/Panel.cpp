@@ -13,10 +13,10 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 }
 
 struct Color {
-	int r;
-	int g;
-	int b;
-	int a;
+	float r;
+	float g;
+	float b;
+	float a;
 };
 
 Panel::Panel() {
@@ -28,7 +28,7 @@ Panel::Panel(int id) {
 	Read(id);
 }
 
-void Panel::Read(int id) {
+void Panel::Read() {
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X) - 1;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
 	if (_width <= 0 || _height <= 0) {
@@ -46,14 +46,14 @@ void Panel::Read(int id) {
 	_endpoints.clear();
 
 	_style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
-	ReadAllData(id);
-	ReadIntersections(id);
-	ReadDecorations(id);
+	ReadAllData();
+	ReadIntersections();
+	ReadDecorations();
 	pathWidth = 1;
 	_resized = false;
 }
 
-void Panel::Write(int id) {
+void Panel::Write() {
 
 	if (_resized && _memory->ReadPanelData<int>(id, NUM_COLORED_REGIONS) > 0) {
 		//Make two triangles that cover the whole panel
@@ -62,8 +62,8 @@ void Panel::Write(int id) {
 		_memory->WriteArray(id, COLORED_REGIONS, newRegions);
 	}
 
-	WriteIntersections(id);
-	WriteDecorations(id);
+	WriteIntersections();
+	WriteDecorations();
 
 	//_style &= ~NO_BLINK;
 
@@ -162,7 +162,7 @@ void Panel::Resize(int width, int height)
 }
 
 //Only for testing
-void Panel::ReadAllData(int id) {
+void Panel::ReadAllData() {
 	Color pathColor = _memory->ReadPanelData<Color>(id, PATH_COLOR);
 	Color rpathColor = _memory->ReadPanelData<Color>(id, REFLECTION_PATH_COLOR);
 	std::vector<byte> pathColorb = _memory->ReadPanelData<byte>(id, PATH_COLOR, 16);
@@ -200,9 +200,11 @@ void Panel::ReadAllData(int id) {
 	float width = _memory->ReadPanelData<float>(id, PATH_WIDTH_SCALE);
 	int seqLen = _memory->ReadPanelData<int>(id, SEQUENCE_LEN);
 	std::vector<int> seq = _memory->ReadArray<int>(id, SEQUENCE, seqLen);
+	float power = _memory->ReadPanelData<float>(id, POWER);
+	float openRate = _memory->ReadPanelData<float>(id, OPEN_RATE);
 }
 
-void Panel::ReadDecorations(int id) {
+void Panel::ReadDecorations() {
 	int numDecorations = _memory->ReadPanelData<int>(id, NUM_DECORATIONS);
 	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
 	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations);
@@ -213,7 +215,7 @@ void Panel::ReadDecorations(int id) {
 	}
 }
 
-void Panel::WriteDecorations(int id) {
+void Panel::WriteDecorations() {
 	std::vector<int> decorations;
 	bool any = false;
 	_style &= ~0x2f40; //Remove all element flags
@@ -243,7 +245,7 @@ void Panel::WriteDecorations(int id) {
 	}
 }
 
-void Panel::ReadIntersections(int id) {
+void Panel::ReadIntersections() {
 	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
 	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
 	int num_grid_points = this->get_num_grid_points();
@@ -351,7 +353,7 @@ void Panel::ReadIntersections(int id) {
 	}	
 }
 
-void Panel::WriteIntersections(int id) {
+void Panel::WriteIntersections() {
 	std::vector<float> intersections;
 	std::vector<int> intersectionFlags;
 	std::vector<int> connections_a;
@@ -365,6 +367,10 @@ void Panel::WriteIntersections(int id) {
 
 	float unitWidth = (maxx - minx) / (_width - 1);
 	float unitHeight = (maxy - miny) / (_height - 1);
+
+	for (Point p : _startpoints) {
+		_grid[p.first][p.second] |= STARTPOINT;
+	}
 
 	_style &= ~HAS_DOTS;
 

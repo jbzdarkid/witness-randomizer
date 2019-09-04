@@ -32,7 +32,6 @@ std::vector<Point> Generate::_8DIRECTIONS2 = { Point(0, 2), Point(0, -2), Point(
 std::vector<Point> Generate::_DISCONNECT = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0), Point(2, 2), Point(2, -2), Point(-2, -2), Point(-2, 2), 
 	Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0), Point(2, 2), Point(2, -2), Point(-2, -2), Point(-2, 2),
 	Point(0, 4), Point(0, -4), Point(4, 0), Point(-4, 0),
-	//Point(2, 4), Point(2, -4), Point(4, 2), Point(-4, 2), Point(-2, 4), Point(-2, -4), Point(4, -2), Point(-4, -2)
 };
 std::vector<Point> Generate::_SHAPEDIRECTIONS = { };
 
@@ -119,6 +118,16 @@ void Generate::setSymmetry(Panel::Symmetry symmetry)
 
 void Generate::write(int id)
 {
+	erase_path();
+
+	_areaTotal++;
+	_genTotal++;
+	if (_handle) {
+		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
+		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
+		SetWindowText(_handle, text.c_str());
+	}
+
 	if (config & Config::ResetColors) _panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
 	_panel->Write(id);
 	_panel = NULL; //This is needed for the generator to read in the next panel
@@ -257,29 +266,11 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 		}
 	}
 
-	for (int y = 0; y < _panel->_height; y++) {
-		for (int x = 0; x < _panel->_width; x++) {
-			if (get(x, y) == PATH) {
-				set(x, y, 0);
-			}
-		}
-	}
-	for (Point p : _starts) {
-		set(p, get(p) | STARTPOINT);
-	}
 	for (Point p : deadEndH) {
 		set(p, Decoration::Gap_Row);
 	}
 	for (Point p : deadEndV) {
 		set(p, Decoration::Gap_Column);
-	}
-
-	_areaTotal++;
-	_genTotal++;
-	if (_handle) {
-		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
-		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
-		SetWindowText(_handle, text.c_str());
 	}
 
 	if (~config & Config::DisableWrite) write(id);
@@ -334,26 +325,6 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 
 	if (!place_all_symbols(symbols))
 		return false;
-
-	for (int y = 0; y < _panel->_height; y++) {
-		for (int x = 0; x < _panel->_width; x++) {
-			if (get(x, y) == PATH) {
-				set(x, y, 0);
-			}
-		}
-	}
-
-	for (Point p : _starts) {
-		set(p, get(p) | STARTPOINT);
-	}
-
-	_areaTotal++;
-	_genTotal++;
-	if (_handle) {
-		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
-		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
-		SetWindowText(_handle, text.c_str());
-	}
 
 	if (~config & Config::DisableWrite) write(id);
 	return true;
@@ -431,6 +402,25 @@ bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 	}
 	if (dotPuzzle)
 		return generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
+
+	bool shapePuzzle = false;
+	int numShapes = 0;
+	for (auto s : symbols) {
+		if (get_symbol_type(s.first) == Decoration::Poly) {
+			shapePuzzle = true;
+			numShapes += s.second;
+		}
+		else if (s.first != Decoration::Start && s.first != Decoration::Exit && s.first != Decoration::Gap) {
+			shapePuzzle = false;
+			break;
+		}
+	}
+	if (shapePuzzle) {
+		if (config & Config::DisableCombineShapes) {
+			return generate_path_regions(numShapes + 1);
+		}
+		return generate_path_length(1);
+	}
 	return generate_path_length(_panel->get_num_grid_points() * 3 / 4);
 }
 
@@ -532,6 +522,17 @@ bool Generate::generate_longest_path()
 		fails = 0;
 	}
 	return _path.size() / 2 + 1 == reqLength;
+}
+
+void Generate::erase_path()
+{
+	for (int y = 0; y < _panel->_height; y++) {
+		for (int x = 0; x < _panel->_width; x++) {
+			if (get(x, y) == PATH) {
+				set(x, y, 0);
+			}
+		}
+	}
 }
 
 std::set<Point> Generate::get_region(Point pos) {
@@ -882,9 +883,10 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative)
 {
 	std::set<Point> open = _openpos;
-	int targetArea = ((config & Config::FullAreaEraser) ? amount * 2 : amount * 3), totalArea = 0;
+	int targetArea = ((config & Config::FullAreaEraser) ? amount * 2 : amount * 7 / 2), totalArea = 0;
 	int colorIndex = rand() % colors.size();
 	int colorIndexN = rand() % (negativeColors.size() + 1);
+	bool shapesCanceled = false, shapesCombined = false;
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
@@ -927,11 +929,13 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		if ((config & Config::FullAreaEraser) && region.size() >= 3) numShapes++;
 		if (numShapes < amount && region.size() >= 5 && (rand() & 1) == 1)
 			numShapes++; //Adds more variation to the shape sizes
+		if ((config & Config::DisableCombineShapes) && numShapes != 1) continue;
 		bool balance = false;
 		if (numShapes > amount) {
-			if (numNegative < 2) continue;
+			if (numNegative < 2 || (config & Config::DisableCancelShapes)) continue;
 			//Make balancing shapes - Positive and negative will be switched so that code can be reused
 			balance = true;
+			shapesCanceled = true;
 			std::set<Point> regionN = _gridpos;
 			numShapes = max(2, rand() % numNegative + 1);			//Actually the negative shapes
 			numShapesN = min(amount, numShapes * 2 / 5 + 1);		//Actually the positive shapes
@@ -958,6 +962,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		else for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
 			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), (balance || (config & Config::FullAreaEraser)) ? rand() % 3 + 1 : 4));
+			shapesCombined = true;
 		}
 		//Take remaining area and try to stick it to existing shapes
 		multibreak:
@@ -983,7 +988,6 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		if (balance) { //Undo swap for balancing shapes
 			std::swap(shapes, shapesN);
 		}
-		numNegative -= static_cast<int>(shapesN.size());
 		numShapes = static_cast<int>(shapes.size());
 		for (Shape& shape : shapesN) {
 			shapes.push_back(shape);
@@ -1007,6 +1011,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			}
 			if (!disconnect) continue;
 		}	
+		numNegative -= static_cast<int>(shapesN.size());
 		for (Shape& shape : shapes) {
 			int symbol = make_shape_symbol(shape, (numRotated-- > 0), (numShapes-- <= 0));
 			if (symbol == 0)
@@ -1035,7 +1040,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			_openpos.erase(pos);
 		}
 	}
-	if (totalArea < targetArea || numNegative > 0)
+	if (totalArea < targetArea || numNegative > 0 || (config & Config::RequireCancelShapes) && !shapesCanceled || (config & Config::RequireCombineShapes) && !shapesCombined)
 		return false;
 	return true;
 }

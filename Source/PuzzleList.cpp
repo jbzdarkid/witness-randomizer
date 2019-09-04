@@ -2,7 +2,7 @@
 
 void PuzzleList::GenerateAllN()
 {
-	generator->setLoadingData(93);
+	generator->setLoadingData(143);
 	GenerateTutorialN();
 	GenerateSymmetryN();
 	GenerateQuarryN();
@@ -244,10 +244,122 @@ void PuzzleList::GenerateBunkerN()
 
 void PuzzleList::GenerateSwampN()
 {
+	generator->setLoadingData(L"Swamp", 50);
 	//First row
-	generator->generate(0x00469, Decoration::Poly, 1, Decoration::Gap, 3);
-
-	//TODO: Turn off bridge panel until both rows solved
+	generator->resetConfig();
+	generator->config |= Generate::Config::DisableCombineShapes;
+	generator->setGridSize(3, 3);
+	generator->pathWidth = 0.7f;
+	generator->generate(0x00469, Decoration::Poly, 1, Decoration::Gap, 5);
+	generator->generate(0x00472, Decoration::Poly, 1, Decoration::Gap, 5);
+	generator->generate(0x00262, Decoration::Poly, 1, Decoration::Gap, 5);
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->generate(0x00474, Decoration::Poly, 2, Decoration::Gap, 8);
+	generator->generate(0x00553, Decoration::Poly, 2, Decoration::Gap, 8);
+	generator->setGridSize(5, 5);
+	generator->pathWidth = 0.6f;
+	generator->generate(0x0056F, Decoration::Poly, 2, Decoration::Gap, 12);
+	//Second Row
+	generator->resetConfig();
+	generator->config |= Generate::Config::RequireCombineShapes;
+	generator->setGridSize(3, 3);
+	generator->pathWidth = 0.7f;
+	generator->generate(0x00390, Decoration::Poly, 2, Decoration::Gap, 3);
+	generator->generate(0x010CA, Decoration::Poly, 2, Decoration::Gap, 3);
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->generate(0x00983, Decoration::Poly, 2, Decoration::Gap, 5);
+	generator->generate(0x00984, Decoration::Poly, 2, Decoration::Gap, 5);
+	generator->generate(0x00986, Decoration::Poly, 2, Decoration::Gap, 5);
+	generator->setGridSize(5, 5);
+	generator->generate(0x00985, Decoration::Poly, 2, Decoration::Gap, 8);
+	generator->generate(0x00987, Decoration::Poly, 2, Decoration::Gap, 8);
+	generator->generate(0x181A9, Decoration::Poly, 3, Decoration::Gap, 8);
+	//Turn off bridge control until all previous puzzles are solved
+	specialCase->deactivateAndTarget(0x00609, 0x181A9);
+	//Red Panels
+	generator->resetConfig();
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->generate(0x00982, Decoration::Poly, 3, Decoration::Gap, 2);
+	generator->generate(0x0097F, Decoration::Poly, 3, Decoration::Gap, 2);
+	generator->setGridSize(5, 5);
+	generator->pathWidth = 0.6f;
+	generator->generate(0x0098F, Decoration::Poly, 4, Decoration::Gap, 2);
+	generator->generate(0x00990, Decoration::Poly, 4, Decoration::Gap, 2);
+	//TODO: Replace these shortcut panels with hand-made alternate solution puzzles
+	generator->generate(0x17C0D, Decoration::Poly, 3);
+	generator->generate(0x17C0E, Decoration::Poly, 3, Decoration::Gap, 6);
+	//Disconnected Shapes
+	generator->setGridSize(3, 3);
+	generator->pathWidth = 0.7f;
+	generator->config |= Generate::Config::DisconnectShapes;
+	generator->generate(0x00999, Decoration::Poly, 2);
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->generate(0x0099D, Decoration::Poly, 3);
+	generator->generate(0x009A0, Decoration::Poly, 3);
+	generator->generate(0x009A1, Decoration::Poly, 3);
+	//Rotating Shapes
+	generator->resetConfig();
+	generator->setGridSize(3, 3);
+	generator->pathWidth = 0.7f;
+	generator->generate(0x00007, Decoration::Poly | Decoration::Can_Rotate, 1, Decoration::Gap, 3);
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->generate(0x00008, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Gap, 6);
+	generator->generate(0x00009, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Gap, 6);
+	generator->generate(0x0000A, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Gap, 6);
+	generator->setGridSize(5, 5);
+	generator->pathWidth = 0.6f;
+	generator->generate(0x0000A, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Gap, 12);
+	//5x5 Rotating Shapes
+	generator->generate(0x003B2, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Gap, 4);
+	generator->generate(0x00A1E, Decoration::Poly | Decoration::Can_Rotate, 4);
+	generator->generate(0x00C2E, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Poly, 2, Decoration::Gap, 3);
+	generator->config |= Generate::Config::DisconnectShapes;
+	generator->generate(0x00E3A, Decoration::Poly | Decoration::Can_Rotate, 4);
+	//Optional Tetris
+	generator->resetConfig();
+	generator->generate(0x009A6, Decoration::Poly, 6);
+	//Negative Shapes 1
+	generator->setGridSize(3, 3);
+	generator->pathWidth = 0.7f;
+	generator->config |= Generate::Config::DisableCancelShapes;
+	generator->generate(0x009AB, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 1);
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->generate(0x009AD, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
+	generator->generate(0x009AE, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
+	generator->generate(0x009AF, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
+	generator->config |= Generate::Config::DisconnectShapes;
+	generator->generate(0x00006, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
+	//Negative Shapes 2
+	generator->resetConfig();
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->config |= Generate::Config::DisableCancelShapes;
+	generator->generate(0x00002, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 2);
+	generator->generate(0x00004, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
+	generator->generate(0x00005, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
+	generator->generate(0x013E6, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
+	generator->generate(0x00596, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 3);
+	//Negative Shapes 3
+	generator->resetConfig();
+	generator->config |= Generate::Config::RequireCancelShapes;
+	generator->setGridSize(3, 3);
+	generator->pathWidth = 0.7f;
+	generator->generate(0x00001, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 2);
+	generator->setGridSize(4, 4);
+	generator->pathWidth = 0.65f;
+	generator->generate(0x014D2, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
+	generator->generate(0x014D4, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 3);
+	generator->generate(0x014D1, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 4);
+	//Exit Shortcut
+	generator->resetConfig();
+	generator->generate(0x17C05, Decoration::Poly | Decoration::Can_Rotate, 2);
+	specialCase->generateAntiPuzzle(0x17C02);
 }
 
 void PuzzleList::GenerateTreehouseN()

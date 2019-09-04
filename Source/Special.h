@@ -1,5 +1,6 @@
 #pragma once
 #include "Generate.h"
+#include "Randomizer.h"
 
 typedef std::pair<int, int> Point;
 typedef std::set<Point> Shape;
@@ -19,6 +20,8 @@ public:
 	}
 	
 	void generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry);
+	void generateAntiPuzzle(int id);
+	void deactivateAndTarget(int targetPuzzle, int targetFrom);
 
 private:
 

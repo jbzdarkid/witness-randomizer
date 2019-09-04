@@ -43,6 +43,7 @@ void Randomizer::GenerateNormal(HWND loadingHandle) {
 	puzzles->setLoadingHandle(loadingHandle);
 	puzzles->GenerateAllN();
 	//puzzles->GenerateQuarryN();
+	//puzzles->GenerateSwampN();
 }
 
 void Randomizer::GenerateHard(HWND loadingHandle) {

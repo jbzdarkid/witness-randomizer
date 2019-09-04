@@ -57,6 +57,11 @@ public:
 		FullAreaEraser = 0x20,
 		DisconnectShapes = 0x40,
 		ResetColors = 0x80,
+		DisableCancelShapes = 0x100,
+		RequireCancelShapes = 0x200,
+		KeepPath = 0x400,
+		DisableCombineShapes = 0x800,
+		RequireCombineShapes = 0x1000,
 	};
 
 private:
@@ -111,6 +116,7 @@ private:
 	bool generate_path_length(int minLength);
 	bool generate_path_regions(int minRegions);
 	bool generate_longest_path();
+	void erase_path();
 	std::set<Point> get_region(Point pos);
 	std::vector<int> get_symbols_in_region(Point pos);
 	std::vector<int> get_symbols_in_region(std::set<Point> region);

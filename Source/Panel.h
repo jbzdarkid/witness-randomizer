@@ -99,8 +99,10 @@ public:
 	Panel();
 	Panel(int id);
 
-	void Read(int id);
-	void Write(int id);
+	void Read();
+	void Read(int id) { this->id = id; Read(); }
+	void Write();
+	void Write(int id) { this->id = id; Write(); }
 
 	void SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color);
 	void SetShape(int x, int y, int shape, bool rotate, bool negative, Decoration::Color color);
@@ -138,11 +140,11 @@ private:
 	// For testing
 	//Panel() = default;
 
-	void ReadAllData(int id);
-	void ReadIntersections(int id);
-	void WriteIntersections(int id);
-	void ReadDecorations(int id);
-	void WriteDecorations(int id);
+	void ReadAllData();
+	void ReadIntersections();
+	void WriteIntersections();
+	void ReadDecorations();
+	void WriteDecorations();
 
 	Point get_sym_point(int x, int y, Symmetry symmetry)
 	{
@@ -254,6 +256,7 @@ private:
 	float minx, miny, maxx, maxy;
 	int _style;
 	bool _resized;
+	int id;
 
 	friend class PanelExtractionTests;
 	friend class Generate;
