@@ -32,18 +32,23 @@ public:
 	void setGridSize(int width, int height);
 	void setSymmetry(Panel::Symmetry symmetry);
 	void write(int id);
-	void resetConfig();
 	void setLoadingHandle(HWND handle) { _handle = handle; }
 	void setLoadingData(int totalPuzzles) { _totalPuzzles = totalPuzzles; _genTotal = 0; }
 	void setLoadingData(std::wstring areaName, int numPuzzles) { _areaName = areaName; _areaPuzzles = numPuzzles; _areaTotal = 0; }
 
 	float pathWidth;
-	int config;
 	Endpoint::Direction pivotDirection;
-	enum Config { FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, FullAreaEraser = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
+	enum Config { None = 0, FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, FullAreaEraser = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
 		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, KeepPath = 0x400, DisableCombineShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
 		AlternateColors = 0x8000, //Black -> Green, White -> Pink, Purple -> White
+		WriteColors = 0x10000,
 	};
+	void setFlag(Config option) { _config |= option; };
+	void setFlagOnce(Config option) { _config |= option; _oneTimeAdd = option; };
+	bool hasFlag(Config option) { return _config & option; };
+	void removeFlag(Config option) { _config &= ~option; };
+	void removeFlagOnce(Config option) { _config &= ~option; _oneTimeRemove = option; };
+	void resetConfig();
 
 private:
 	std::shared_ptr<Panel> _panel;
@@ -55,6 +60,8 @@ private:
 	std::set<Point> _path, _path1, _path2;
 	bool _fullGaps, _bisect;
 	int stoneTypes;
+	int _config;
+	Config _oneTimeAdd, _oneTimeRemove;
 
 	int _parity;
 	HWND _handle;

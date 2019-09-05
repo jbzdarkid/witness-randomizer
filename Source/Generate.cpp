@@ -75,14 +75,14 @@ void Generate::initPanel(std::shared_ptr<Panel> panel) {
 			_panel->SetGridSymbol(e.first, e.second, Decoration::Exit, Decoration::Color::None);
 		}
 	}
-	if (config & Config::TreehouseLayout) {
+	if (hasFlag(Config::TreehouseLayout)) {
 		init_treehouse_layout();
 	}
 	_gridpos.clear();
 	for (int x = 1; x < panel->_width; x += 2) {
 		for (int y = 1; y < panel->_height; y += 2) {
 			_gridpos.insert(Point(x, y));
-			if (config & Config::PreserveStructure || config & Config::FullGaps) { //Have to make sure we are not putting anything next to an open side, it will glitch the region checking
+			if (hasFlag(Config::PreserveStructure) || hasFlag(Config::FullGaps)) { //Have to make sure we are not putting anything next to an open side, it will glitch the region checking
 				for (Point dir : _DIRECTIONS1) {
 					if (get(x + dir.first, y + dir.second) == OPEN) {
 						_gridpos.erase(Point(x, y));
@@ -93,7 +93,7 @@ void Generate::initPanel(std::shared_ptr<Panel> panel) {
 		}
 	}
 	_openpos = _gridpos;
-	_fullGaps = config & Config::FullGaps;
+	_fullGaps = hasFlag(Config::FullGaps);
 	if (_symmetry) _panel->symmetry = _symmetry;
 	if (pathWidth != 1) _panel->pathWidth = pathWidth;
 }
@@ -131,7 +131,7 @@ void Generate::setSymmetry(Panel::Symmetry symmetry)
 void Generate::write(int id)
 {
 	std::vector<std::vector<int>> backupGrid;
-	if (config & Config::DisableReset) backupGrid = _panel->_grid;
+	if (hasFlag(Config::DisableReset)) backupGrid = _panel->_grid;
 
 	erase_path();
 
@@ -143,11 +143,28 @@ void Generate::write(int id)
 		SetWindowText(_handle, text.c_str());
 	}
 
-	if (config & Config::ResetColors) _panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
-	else if (config & Config::AlternateColors) _panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
+	if (hasFlag(Config::ResetColors)) {
+		_panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
+		_panel->_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
+	}
+	else if (hasFlag(Config::AlternateColors)) {
+		_panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
+		_panel->_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
+	}
+	_panel->writeColors = hasFlag(Config::WriteColors);
 	_panel->Write(id);
-	if (config & Config::DisableReset) _panel->_grid = backupGrid;
+	
+	if (hasFlag(Config::DisableReset)) _panel->_grid = backupGrid;
 	else reset();
+
+	if (_oneTimeAdd) {
+		removeFlag(_oneTimeAdd);
+		_oneTimeAdd = Config::None;
+	}
+	if (_oneTimeRemove) {
+		setFlag(_oneTimeRemove);
+		_oneTimeRemove = Config::None;
+	}
 }
 
 void Generate::resetConfig()
@@ -155,10 +172,12 @@ void Generate::resetConfig()
 	setGridSize(0, 0);
 	_symmetry = Panel::Symmetry::None;
 	pathWidth = 1;
-	if (config & Config::DisableReset) {
+	if (hasFlag(Config::DisableReset)) {
 		reset();
 	}
-	config = 0;
+	_config = 0;
+	_oneTimeAdd = Config::None;
+	_oneTimeRemove = Config::None;
 }
 
 //----------------------Private--------------------------
@@ -180,7 +199,7 @@ void Generate::clear()
 {
 	for (int x = 0; x < _panel->_width; x++) {
 		for (int y = 0; y < _panel->_height; y++) {
-			if ((config & Config::PreserveStructure) && (_panel->_grid[x][y] == OPEN || (_panel->_grid[x][y] & 0x60000f) == NO_POINT)) continue;
+			if (hasFlag(Config::PreserveStructure) && (_panel->_grid[x][y] == OPEN || (_panel->_grid[x][y] & 0x60000f) == NO_POINT)) continue;
 			_panel->_grid[x][y] = 0;
 		}
 	}
@@ -341,7 +360,7 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 		set(p, Decoration::Gap_Column);
 	}
 
-	if (~config & Config::DisableWrite) write(id);
+	if (!hasFlag(Config::DisableWrite)) write(id);
 	return true;
 }
 
@@ -394,7 +413,7 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	if (!place_all_symbols(symbols))
 		return false;
 
-	if (~config & Config::DisableWrite) write(id);
+	if (!hasFlag(Config::DisableWrite)) write(id);
 	return true;
 }
 
@@ -426,7 +445,7 @@ bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
 		else if ((s.first & ~0xf) == Decoration::Gap) gaps.push_back(s);
 	}
 
-	_SHAPEDIRECTIONS = (config & Config::DisconnectShapes ? _DISCONNECT : _DIRECTIONS2);
+	_SHAPEDIRECTIONS = (hasFlag(Config::DisconnectShapes) ? _DISCONNECT : _DIRECTIONS2);
 	int numShapes = 0, numRotate = 0, numNegative = 0;
 	std::vector<int> colors, negativeColors;
 	for (std::pair<int, int> s : shapes) {
@@ -457,7 +476,7 @@ bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
 bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 {
 	clear();
-	if (config & Config::TreehouseLayout) {
+	if (hasFlag(Config::TreehouseLayout)) {
 		if (_starts.size() == 2) {
 			set(_panel->_width / 2, 0, PATH);
 			set(_panel->_width / 2, _panel->_height - 1, PATH);
@@ -498,7 +517,7 @@ bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 		}
 	}
 	if (shapePuzzle) {
-		if (config & Config::DisableCombineShapes) {
+		if (hasFlag(Config::DisableCombineShapes)) {
 			return generate_path_regions(numShapes + 1);
 		}
 		return generate_path_length(1);
@@ -657,7 +676,7 @@ bool Generate::place_start(int amount)
 	_panel->_startpoints.clear();
 	while (amount > 0) {
 		Point pos = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
-		if (config & Config::StartEdgeOnly)
+		if (hasFlag(Config::StartEdgeOnly))
 		switch (rand() % 4) {
 		case 0: pos.first = 0; break;
 		case 1: pos.second = 0; break;
@@ -722,10 +741,10 @@ bool Generate::place_exit(int amount)
 
 bool Generate::can_place_gap(Point pos) {
 	if (pos.first == 0 || pos.second == 0) {
-		if (config & Config::FullGaps) return false;
+		if (hasFlag(Config::FullGaps)) return false;
 	}
 	else if (rand() % 2 == 0) return false; //Encourages gaps on outside border
-	if (config & Config::FullGaps) { //Prevent dead ends
+	if (hasFlag(Config::FullGaps)) { //Prevent dead ends
 		std::vector<Point> checkPoints = (pos.first % 2 == 0 ? std::vector<Point>({ Point(pos.first, pos.second - 1), Point(pos.first, pos.second + 1) })
 			: std::vector<Point>({ Point(pos.first - 1, pos.second), Point(pos.first + 1, pos.second) }));
 		for (Point check : checkPoints) {
@@ -982,7 +1001,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative)
 {
 	std::set<Point> open = _openpos;
-	int targetArea = ((config & Config::FullAreaEraser) ? amount * 2 : amount * 7 / 2), totalArea = 0;
+	int targetArea = (hasFlag(Config::FullAreaEraser) ? amount * 2 : amount * 7 / 2), totalArea = 0;
 	int colorIndex = rand() % colors.size();
 	int colorIndexN = rand() % (negativeColors.size() + 1);
 	bool shapesCanceled = false, shapesCombined = false;
@@ -996,7 +1015,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		for (Point p : region) {
 			if (open.erase(p)) open2.insert(p);
 		}
-		if ((config & Config::FullAreaEraser) && region.size() + totalArea == _panel->get_num_grid_blocks()) continue;
+		if (hasFlag(Config::FullAreaEraser) && region.size() + totalArea == _panel->get_num_grid_blocks()) continue;
 		std::vector<Shape> shapes;
 		std::vector<Shape> shapesN;
 		int numShapesN = min(rand() % (numNegative + 1), static_cast<int>(region.size()) / 3);
@@ -1025,13 +1044,13 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		int numShapes = static_cast<int>(region.size() + bufferRegion.size()) / 5 + 1;
 		if (numShapes == 1 && bufferRegion.size() > 0) numShapes++;
-		if ((config & Config::FullAreaEraser) && region.size() >= 3) numShapes++;
+		if (hasFlag(Config::FullAreaEraser) && region.size() >= 3) numShapes++;
 		if (numShapes < amount && region.size() >= 5 && (rand() & 1) == 1)
 			numShapes++; //Adds more variation to the shape sizes
-		if ((config & Config::DisableCombineShapes) && numShapes != 1) continue;
+		if (hasFlag(Config::DisableCombineShapes) && numShapes != 1) continue;
 		bool balance = false;
 		if (numShapes > amount) {
-			if (numNegative < 2 || (config & Config::DisableCancelShapes)) continue;
+			if (numNegative < 2 || hasFlag(Config::DisableCancelShapes)) continue;
 			//Make balancing shapes - Positive and negative will be switched so that code can be reused
 			balance = true;
 			shapesCanceled = true;
@@ -1060,7 +1079,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		else for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
-			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), (balance || (config & Config::FullAreaEraser)) ? rand() % 3 + 1 : 4));
+			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), (balance || hasFlag(Config::FullAreaEraser)) ? rand() % 3 + 1 : 4));
 			shapesCombined = true;
 		}
 		//Take remaining area and try to stick it to existing shapes
@@ -1091,7 +1110,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		for (Shape& shape : shapesN) {
 			shapes.push_back(shape);
 		}
-		if (config & Config::DisconnectShapes) {
+		if (hasFlag(Config::DisconnectShapes)) {
 			//Make sure at least one shape is disconnected
 			bool disconnect = false;
 			for (Shape& shape : shapes) {
@@ -1139,7 +1158,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			_openpos.erase(pos);
 		}
 	}
-	if (totalArea < targetArea || numNegative > 0 || (config & Config::RequireCancelShapes) && !shapesCanceled || (config & Config::RequireCombineShapes) && !shapesCombined)
+	if (totalArea < targetArea || numNegative > 0 || hasFlag(Config::RequireCancelShapes) && !shapesCanceled || hasFlag(Config::RequireCombineShapes) && !shapesCombined)
 		return false;
 	return true;
 }
@@ -1221,7 +1240,7 @@ bool Generate::place_eraser(int color, int toErase)
 		for (Point p : region) {
 			if (open.erase(p)) open2.insert(p);
 		}
-		if (config & Config::MakeStonesUnsolvable) {
+		if (hasFlag(Config::MakeStonesUnsolvable)) {
 			std::set<Point> valid;
 			std::set<Point> check = open2;
 			std::set<Point> test;
@@ -1237,7 +1256,7 @@ bool Generate::place_eraser(int color, int toErase)
 		}
 		
 		if (open2.size() == 0 && !(toErase & Decoration::Dot)) continue;
-		if (config & Config::FullAreaEraser) {
+		if (hasFlag(Config::FullAreaEraser)) {
 			std::vector<int> symbols = get_symbols_in_region(region);
 			if (symbols.size() > 0) continue;
 		}
@@ -1299,7 +1318,7 @@ bool Generate::place_eraser(int color, int toErase)
 		}
 		else if (get_symbol_type(toErase) == Decoration::Poly) {
 			int symbol = 0;
-			if (config & Config::FullAreaEraser) {
+			if (hasFlag(Config::FullAreaEraser)) {
 				while (symbol == 0) {
 					std::set<Point> area = _gridpos;
 					Shape shape = generate_shape(area, pick_random(area), static_cast<int>(region.size()));

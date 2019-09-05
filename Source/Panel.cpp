@@ -12,13 +12,6 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	return -1;
 }
 
-struct Color {
-	float r;
-	float g;
-	float b;
-	float a;
-};
-
 Panel::Panel() {
 	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
 }
@@ -66,8 +59,6 @@ void Panel::Write() {
 	WriteDecorations();
 
 	//_style &= ~NO_BLINK;
-
-	_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
 	_memory->WritePanelData<int>(id, STYLE_FLAGS, { _style });
 	_memory->WritePanelData<int>(id, GRID_SIZE_X, {(_width + 1)/2});
 	_memory->WritePanelData<int>(id, GRID_SIZE_Y, {(_height + 1)/2});
@@ -202,6 +193,9 @@ void Panel::ReadAllData() {
 	std::vector<int> seq = _memory->ReadArray<int>(id, SEQUENCE, seqLen);
 	float power = _memory->ReadPanelData<float>(id, POWER);
 	float openRate = _memory->ReadPanelData<float>(id, OPEN_RATE);
+	int cptr = _memory->ReadPanelData<int>(id, DECORATION_COLORS);
+	std::vector<Color> colors;
+	if (cptr) colors = _memory->ReadArray<Color>(id, DECORATION_COLORS, numDecorations);
 }
 
 void Panel::ReadDecorations() {
@@ -217,11 +211,13 @@ void Panel::ReadDecorations() {
 
 void Panel::WriteDecorations() {
 	std::vector<int> decorations;
+	std::vector<Color> decorationColors;
 	bool any = false;
 	_style &= ~0x2f40; //Remove all element flags
 	for (int y=_height-2; y>0; y-=2) {
 		for (int x=1; x<_width - 1; x+=2) {
 			decorations.push_back(_grid[x][y]);
+			decorationColors.push_back(get_color_rgb(_grid[x][y] & 0xf));
 			if (_grid[x][y])
 				any = true;
 			if ((_grid[x][y] & Decoration::Shape::Stone) == Decoration::Shape::Stone) _style |= HAS_STONES;
@@ -231,17 +227,17 @@ void Panel::WriteDecorations() {
 			if ((_grid[x][y] & Decoration::Shape::Triangle) == Decoration::Shape::Triangle) _style |= HAS_TRIANGLES;
 		}
 	}
-	int ptr = _memory->ReadPanelData<int>(id, DECORATIONS);
 	if (!any) {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { 0 });
 	}
-	else _memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-	if (any || ptr) {
+	else {
+		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
+		if (writeColors) _memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
+	}
+	if (any || _memory->ReadPanelData<int>(id, DECORATIONS)) {
 		_memory->WriteArray<int>(id, DECORATIONS, decorations);
-		std::vector<int> test = _memory->ReadArray<int>(id, DECORATIONS, static_cast<int>(decorations.size()));
 		for (int i = 0; i < decorations.size(); i++) decorations[i] = 0;
 		_memory->WriteArray<int>(id, DECORATION_FLAGS, decorations);
-		std::vector<int> test2 = _memory->ReadArray<int>(id, DECORATION_FLAGS, static_cast<int>(decorations.size()));
 	}
 }
 

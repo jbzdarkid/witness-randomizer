@@ -93,6 +93,13 @@ private:
 	Direction _dir;
 };
 
+struct Color {
+	float r;
+	float g;
+	float b;
+	float a;
+};
+
 class Panel
 {
 public:
@@ -135,6 +142,7 @@ public:
 	Symmetry symmetry;
 
 	float pathWidth;
+	bool writeColors;
 
 private:
 	// For testing
@@ -171,6 +179,21 @@ private:
 	int get_num_grid_points() { return (_width / 2 + 1) * (_height / 2 + 1);  }
 	int get_num_grid_blocks() { return (_width / 2) * (_height / 2);  }
 	int get_parity() { return (get_num_grid_points() + 1) % 2; }
+	Color get_color_rgb(int color) {
+		switch (color) {
+		case Decoration::Color::Black: return { 0, 0, 0, 1 };
+		case Decoration::Color::White: return { 1, 1, 1, 1 };
+		case Decoration::Color::Red: return { 1, 0, 0, 1 };
+		case Decoration::Color::Green: return { 0, 1, 0, 1 };
+		case Decoration::Color::Blue: return { 0, 0, 1, 1 };
+		case Decoration::Color::Cyan: return { 0, 1, 1, 1 };
+		case Decoration::Color::Magenta: return { 1, 0, 1, 1 };
+		case Decoration::Color::Yellow: return { 1, 1, 0, 1 };
+		case Decoration::Color::Orange: return { 1, 0.5, 0, 1 };
+		case Decoration::Color::Purple: return { 0.5, 0, 1, 1 };
+		default: return { 0, 0, 0, 0 };
+		}
+	}
 
 	std::tuple<int, int> loc_to_xy(int location) {
 		int height2 = (_height - 1) / 2;
