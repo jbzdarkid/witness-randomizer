@@ -17,6 +17,8 @@ public:
 		_handle = NULL;
 		_panel = NULL;
 		_parity = -1;
+		srand(static_cast<unsigned int>(time(NULL)));
+		_seed = rand();
 		resetConfig();
 	}
 	void generate(int id, int symbol, int amount);
@@ -59,9 +61,10 @@ private:
 	std::set<Point> _gridpos, _openpos;
 	std::set<Point> _path, _path1, _path2;
 	bool _fullGaps, _bisect;
-	int stoneTypes;
+	int _stoneTypes;
 	int _config;
 	Config _oneTimeAdd, _oneTimeRemove;
+	long _seed;
 
 	int _parity;
 	HWND _handle;

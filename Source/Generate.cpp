@@ -165,6 +165,8 @@ void Generate::write(int id)
 		setFlag(_oneTimeRemove);
 		_oneTimeRemove = Config::None;
 	}
+	srand(_seed);
+	_seed = rand(); //Manually advance seed by 1 each generation to prevent seeds "funneling" from repeated fails
 }
 
 void Generate::resetConfig()
@@ -462,7 +464,7 @@ bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
 		}
 	}
 	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative)) return false;
-	stoneTypes = static_cast<int>(stones.size());
+	_stoneTypes = static_cast<int>(stones.size());
 	_bisect = true;
 	for (std::pair<int, int> s : stones) if (!place_stones(s.first & 0xf, s.second)) return false;
 	for (std::pair<int, int> s : triangles) if (!place_triangles(s.first & 0xf, s.second)) return false;
@@ -907,11 +909,11 @@ bool Generate::place_stones(int color, int amount) {
 			}
 			continue;
 		}
-		if (stoneTypes > 2) {
+		if (_stoneTypes > 2) {
 			open = region;
 		}
 		open.erase(pos);
-		if (stoneTypes == 2) {
+		if (_stoneTypes == 2) {
 			for (Point p : region) {
 				if (open.erase(p)) open2.insert(p);
 			}
@@ -932,7 +934,7 @@ bool Generate::place_stones(int color, int amount) {
 		passCount++;
 	}
 	_bisect = false;
-	stoneTypes--;
+	_stoneTypes--;
 	return true;
 }
 
