@@ -64,48 +64,19 @@ void Generate::initPanel(std::shared_ptr<Panel> panel) {
 		_starts = std::set<Point>(_panel->_startpoints.begin(), _panel->_startpoints.end());
 	else
 		_panel->_startpoints = std::vector<Point>(_starts.begin(), _starts.end());
-	if (_exits.size() == 0)
+	if (_exits.size() == 0) {
 		for (Endpoint e : _panel->_endpoints) {
 			_exits.insert(Point(e.GetX(), e.GetY()));
 		}
-	else
+	}
+	else {
+		_panel->_endpoints.clear();
 		for (Point e : _exits) {
 			_panel->SetGridSymbol(e.first, e.second, Decoration::Exit, Decoration::Color::None);
 		}
+	}
 	if (config & Config::TreehouseLayout) {
-		bool pivot = _exits.size() > 2;
-		_panel->_startpoints.clear();
-		_panel->SetGridSymbol(_panel->_width / 2, _panel->_height - 1, Decoration::Start, Decoration::Color::None);
-		_panel->_endpoints.clear();
-		_panel->SetGridSymbol(_panel->_width / 2, 0, Decoration::Exit, Decoration::Color::None);
-		if (pivot) {
-			_panel->SetGridSymbol(_panel->_width - 1, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
-			_panel->SetGridSymbol(0, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
-		}
-		_starts.clear();
-		_exits.clear();
-		if ((_panel->_width / 2) % 2 == 1) {
-			_starts.insert(Point(_panel->_width / 2 - 1, _panel->_height - 1));
-			_starts.insert(Point(_panel->_width / 2 + 1, _panel->_height - 1));
-			_exits.insert(Point(_panel->_width / 2 - 1, 0));
-			_exits.insert(Point(_panel->_width / 2 + 1, 0));
-		}
-		else {
-			_starts.insert(Point(_panel->_width / 2, _panel->_height - 1));
-			_exits.insert(Point(_panel->_width / 2, 0));
-		}
-		if (pivot) {
-			if ((_panel->_height / 2) % 2 == 1) {
-				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 - 1));
-				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 + 1));
-				_exits.insert(Point(0, _panel->_height / 2 - 1));
-				_exits.insert(Point(0, _panel->_height / 2 + 1));
-			}
-			else {
-				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2));
-				_exits.insert(Point(0, _panel->_height / 2));
-			}
-		}
+		init_treehouse_layout();
 	}
 	_gridpos.clear();
 	for (int x = 1; x < panel->_width; x += 2) {
@@ -159,6 +130,9 @@ void Generate::setSymmetry(Panel::Symmetry symmetry)
 
 void Generate::write(int id)
 {
+	std::vector<std::vector<int>> backupGrid;
+	if (config & Config::DisableReset) backupGrid = _panel->_grid;
+
 	erase_path();
 
 	_areaTotal++;
@@ -170,11 +144,10 @@ void Generate::write(int id)
 	}
 
 	if (config & Config::ResetColors) _panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
+	else if (config & Config::AlternateColors) _panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
 	_panel->Write(id);
-	_panel = NULL; //This is needed for the generator to read in the next panel
-	_starts.clear();
-	_exits.clear();
-	_custom_grid.clear();
+	if (config & Config::DisableReset) _panel->_grid = backupGrid;
+	else reset();
 }
 
 void Generate::resetConfig()
@@ -182,6 +155,9 @@ void Generate::resetConfig()
 	setGridSize(0, 0);
 	_symmetry = Panel::Symmetry::None;
 	pathWidth = 1;
+	if (config & Config::DisableReset) {
+		reset();
+	}
 	config = 0;
 }
 
@@ -210,6 +186,57 @@ void Generate::clear()
 	}
 	_panel->_style &= ~0x2ff8; //Remove all element flags
 	_path.clear(); _path1.clear(); _path2.clear();
+}
+
+void Generate::reset() {
+	_panel = NULL; //This is needed for the generator to read in the next panel
+	_starts.clear();
+	_exits.clear();
+	_custom_grid.clear();
+}
+
+void Generate::init_treehouse_layout()
+{
+	bool pivot = _panel->_endpoints.size() > 2;
+	_panel->_startpoints.clear();
+	_panel->SetGridSymbol(_panel->_width / 2, _panel->_height - 1, Decoration::Start, Decoration::Color::None);
+	_panel->_endpoints.clear();
+	_panel->SetGridSymbol(_panel->_width / 2, 0, Decoration::Exit, Decoration::Color::None);
+	if (pivot) {
+		_panel->SetGridSymbol(_panel->_width - 1, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
+		_panel->SetGridSymbol(0, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
+	}
+	_starts.clear();
+	_exits.clear();
+	if ((_panel->_width / 2) % 2 == 1) {
+		_starts.insert(Point(_panel->_width / 2 - 1, _panel->_height - 1));
+		_starts.insert(Point(_panel->_width / 2 + 1, _panel->_height - 1));
+		_exits.insert(Point(_panel->_width / 2 - 1, 0));
+		_exits.insert(Point(_panel->_width / 2 + 1, 0));
+	}
+	else {
+		_starts.insert(Point(_panel->_width / 2, _panel->_height - 1));
+		_exits.insert(Point(_panel->_width / 2, 0));
+	}
+	if (pivot && pivotDirection != Endpoint::Direction::UP) {
+		_exits.clear();
+		if ((_panel->_height / 2) % 2 == 1) {
+			if (pivotDirection == Endpoint::Direction::RIGHT) {
+				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 - 1));
+				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 + 1));
+			}
+			if (pivotDirection == Endpoint::Direction::LEFT) {
+				_exits.insert(Point(0, _panel->_height / 2 - 1));
+				_exits.insert(Point(0, _panel->_height / 2 + 1));
+			}
+		}
+		else {
+			if (pivotDirection == Endpoint::Direction::RIGHT)
+				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2));
+			if (pivotDirection == Endpoint::Direction::LEFT)
+				_exits.insert(Point(0, _panel->_height / 2));
+		}
+	}
 }
 
 bool Generate::generate_maze(int id, int numStarts, int numExits)
@@ -446,15 +473,17 @@ bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 	}
 	bool dotPuzzle = false;
 	for (auto s : symbols) {
-		if (get_symbol_type(s.first) == Decoration::Stone)
+		if (get_symbol_type(s.first) == Decoration::Stone) {
 			dotPuzzle = true;
-		else if (s.first != Decoration::Start && s.first != Decoration::Exit) {
-			dotPuzzle = false;
 			break;
 		}
+		//else if (s.first != Decoration::Start && s.first != Decoration::Exit && (get_symbol_type(s.first)) != Decoration::Eraser) {
+		//	dotPuzzle = false;
+		//	break;
+		//}
 	}
 	if (dotPuzzle)
-		return generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
+		return generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2);
 
 	bool shapePuzzle = false;
 	int numShapes = 0;
@@ -506,7 +535,8 @@ bool Generate::generate_path_regions(int minRegions)
 	Point exit = pick_random(_exits);
 	set_path(pos);
 	while (pos != exit) {
-		if (fails++ > 20) return false;
+		if (fails++ > 20)
+			return false;
 		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
 		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) == OPEN || get(pos.first + dir.first / 2, pos.second + dir.second / 2) & Decoration::Gap
@@ -691,15 +721,21 @@ bool Generate::place_exit(int amount)
 }
 
 bool Generate::can_place_gap(Point pos) {
-	std::vector<Point> checkPoints = (pos.first % 2 == 0 ? std::vector<Point>({ Point(pos.first, pos.second - 1), Point(pos.first, pos.second + 1) })
-		: std::vector<Point>({ Point(pos.first - 1, pos.second), Point(pos.first + 1, pos.second) }));
-	for (Point check : checkPoints) {
-		int valid = 4;
-		for (Point dir : _DIRECTIONS1) {
-			Point p = check + dir;
-			if (off_edge(p) || get(p) & GAP || get(p) == OPEN) {
-				if (--valid <= 2) {
-					return false;
+	if (pos.first == 0 || pos.second == 0) {
+		if (config & Config::FullGaps) return false;
+	}
+	else if (rand() % 2 == 0) return false; //Encourages gaps on outside border
+	if (config & Config::FullGaps) { //Prevent dead ends
+		std::vector<Point> checkPoints = (pos.first % 2 == 0 ? std::vector<Point>({ Point(pos.first, pos.second - 1), Point(pos.first, pos.second + 1) })
+			: std::vector<Point>({ Point(pos.first - 1, pos.second), Point(pos.first + 1, pos.second) }));
+		for (Point check : checkPoints) {
+			int valid = 4;
+			for (Point dir : _DIRECTIONS1) {
+				Point p = check + dir;
+				if (off_edge(p) || get(p) & GAP || get(p) == OPEN) {
+					if (--valid <= 2) {
+						return false;
+					}
 				}
 			}
 		}
@@ -827,7 +863,7 @@ bool Generate::place_stones(int color, int amount) {
 	int passCount = 0;
 	while (amount > 0) {
 		if (open.size() == 0) {
-			if (open2.size() < amount || stoneTypes == 2 && _bisect && passCount < (_panel->_width / 2 + _panel->_height / 2) / 4)
+			if (open2.size() < amount || _bisect && passCount < (_panel->_width / 2 + _panel->_height / 2) / 4)
 				return false;
 			Point pos = pick_random(open2);
 			set(pos, Decoration::Stone | color);
@@ -846,14 +882,20 @@ bool Generate::place_stones(int color, int amount) {
 				break;
 			}
 		}
-		for (Point p : region) {
-			open.erase(p);
-			if (pass && p != pos) open2.insert(p);
+		if (!pass) {
+			for (Point p : region) {
+				open.erase(p);
+			}
+			continue;
 		}
-		if (!pass) continue;
-		set(pos, Decoration::Stone | color);
-		_openpos.erase(pos);
-		if (stoneTypes > 1)
+		if (stoneTypes > 2) {
+			open = region;
+		}
+		open.erase(pos);
+		if (stoneTypes == 2) {
+			for (Point p : region) {
+				if (open.erase(p)) open2.insert(p);
+			}
 			for (Point p : region) {
 				for (Point dir : _8DIRECTIONS2) {
 					Point pos2 = p + dir;
@@ -864,10 +906,14 @@ bool Generate::place_stones(int color, int amount) {
 					}
 				}
 			}
+		}
+		set(pos, Decoration::Stone | color);
+		_openpos.erase(pos);
 		amount--;
 		passCount++;
 	}
 	_bisect = false;
+	stoneTypes--;
 	return true;
 }
 

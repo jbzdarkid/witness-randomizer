@@ -219,13 +219,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case IDC_TEST:
 				//_panel->Write(panel);
 				srand(static_cast<unsigned int>(time(NULL)));
-				srand(ctr++);
+				//srand(ctr++);
 				//srand(5);
 
 				generator->resetConfig();
-				generator->setGridSize(3, 3);
-				generator->config |= Generate::Config::TreehouseLayout;
-				generator->generate(0x17D72, Decoration::Star | Decoration::Color::Orange, 2, Decoration::Gap, 5);
+
+
 
 				//generator->setGridSize(6, 6);
 				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);

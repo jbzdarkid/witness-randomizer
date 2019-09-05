@@ -45,6 +45,7 @@ void Randomizer::GenerateNormal(HWND loadingHandle) {
 	//puzzles->GenerateSymmetryN();
 	//puzzles->GenerateQuarryN();
 	//puzzles->GenerateSwampN();
+	//puzzles->GenerateTreehouseN();
 }
 
 void Randomizer::GenerateHard(HWND loadingHandle) {
