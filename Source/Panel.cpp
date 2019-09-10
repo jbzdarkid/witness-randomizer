@@ -128,7 +128,6 @@ void Panel::ClearGridSymbol(int x, int y)
 
 void Panel::Resize(int width, int height)
 {
-	if (_width == width && _height == height) return;
 	for (Point &s : _startpoints) {
 		if (s.first == _width - 1) s.first = width - 1;
 		if (s.second == _height - 1) s.second = height - 1;
@@ -156,8 +155,6 @@ void Panel::Resize(int width, int height)
 void Panel::ReadAllData() {
 	Color pathColor = _memory->ReadPanelData<Color>(id, PATH_COLOR);
 	Color rpathColor = _memory->ReadPanelData<Color>(id, REFLECTION_PATH_COLOR);
-	std::vector<byte> pathColorb = _memory->ReadPanelData<byte>(id, PATH_COLOR, 16);
-	std::vector<byte> rpathColorb = _memory->ReadPanelData<byte>(id, REFLECTION_PATH_COLOR, 16);
 	Color successColor = _memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
 	Color strobeColor = _memory->ReadPanelData<Color>(id, STROBE_COLOR_A);
 	Color errorColor = _memory->ReadPanelData<Color>(id, ERROR_COLOR);
@@ -196,6 +193,12 @@ void Panel::ReadAllData() {
 	int cptr = _memory->ReadPanelData<int>(id, DECORATION_COLORS);
 	std::vector<Color> colors;
 	if (cptr) colors = _memory->ReadArray<Color>(id, DECORATION_COLORS, numDecorations);
+	Color outerBackground = _memory->ReadPanelData<Color>(id, OUTER_BACKGROUND);
+	int outerBackgroundMode = _memory->ReadPanelData<int>(id, OUTER_BACKGROUND_MODE);
+	Color bgRegionColor = _memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR);
+	short metadata = _memory->ReadPanelData<short>(id, METADATA);
+	void* specularTexture = _memory->ReadPanelData<void*>(id, SPECULAR_TEXTURE);
+	std::vector<float> data = _memory->ReadPanelData<float>(id, SPECULAR_TEXTURE, 1000);
 }
 
 void Panel::ReadDecorations() {
@@ -374,7 +377,8 @@ void Panel::WriteIntersections() {
 		for (int x = 0; x <_width; x += 2) {
 			intersections.push_back(static_cast<float>(minx + x * unitWidth));
 			intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
-			intersectionFlags.push_back(_grid[x][y] | IntersectionFlags::INTERSECTION);
+			if (_grid[x][y] & IntersectionFlags::NO_POINT) intersectionFlags.push_back(_grid[x][y]);
+			else intersectionFlags.push_back(_grid[x][y] | IntersectionFlags::INTERSECTION);
 			if (_grid[x][y] & DOT) {
 				_style |= HAS_DOTS;
 				if (_grid[x][y] & IntersectionFlags::DOT_IS_BLUE || _grid[x][y] & IntersectionFlags::DOT_IS_ORANGE)

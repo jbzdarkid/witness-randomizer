@@ -5,6 +5,7 @@
 
 typedef std::pair<int, int> Point;
 
+
 class Decoration
 {
 public:
@@ -28,6 +29,7 @@ public:
 		Dot_Row = 0x240020,
 		Dot_Column = 0x440020,
 		Dot_Intersection = 0x600020,
+		Empty = 0xA00,
 	};
 	enum Color {
 		None = 0,
@@ -59,6 +61,9 @@ enum IntersectionFlags {
 	DOT_IS_BLUE = 0x100,
 	DOT_IS_ORANGE = 0x200,
 	DOT_IS_INVISIBLE = 0x1000,
+	DOT_SMALL = 0x2000,
+	DOT_MEDIUM = 0x4000,
+	DOT_LARGE = 0x8000,
 };
 
 class Endpoint {
@@ -98,6 +103,7 @@ struct Color {
 	float g;
 	float b;
 	float a;
+	friend bool operator <(const Color& lhs, const Color& rhs) {return lhs.r * 8 + lhs.g * 4 + lhs.b * 2 + lhs.a > rhs.r * 8 + rhs.g * 4 + rhs.b * 2 + rhs.a;}
 };
 
 class Panel
@@ -129,10 +135,6 @@ public:
 		HAS_ERASERS = 0x1000,
 		HAS_SHAPERS = 0x2000,
 		IS_PIVOTABLE = 0x8000,
-		X200000 = 0x200000, //Town Dot+Shape, Dot+Eraser, Glass Door puzzle have this flag
-		X2000000 = 0x2000000, //UTM Invisible dots
-		x8000000 = 0x8000000, //Bunker elevator
-		x20000000 = 0x20000000, //Jungle vault
 	};
 
 	enum Symmetry { //NOTE - Not all of these are valid symmetries for certain puzzles

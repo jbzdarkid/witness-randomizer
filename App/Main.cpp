@@ -51,9 +51,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText;
 
-//int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
-//int panel = 0x0A3B2; // Tutorial Back Right (2 start points)
-int panel = 0x00020; // Outside Tutorial Stones Tutorial 8
+int panel = 0x0A168; //Panel to edit
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -217,53 +215,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_TEST:
-				//_panel->Write(panel);
+				//_panel->Read(0x33AB2);
+				//_panel->Write(0x33AB2);
 				srand(static_cast<unsigned int>(time(NULL)));
 				//srand(ctr++);
-				//srand(5);
 
 				generator->resetConfig();
+				generator->generate(0x0A0C8, Decoration::Poly | Decoration::Color::Orange, 3, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 2);
 
-				//generator->setGridSize(6, 6);
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 11);
-				//generator->generate(0x00609, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
-				//generator->generate(panel, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
-				//generator->generate(panel, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 6);
-				//generator->generate(panel, Decoration::Star | Decoration::Color::White, 4, Decoration::Star | Decoration::Color::Black, 4);
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
-				//						   Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 3);
-				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8, Decoration::Start, 3, Decoration::Exit, 3 );
-				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Orange, 3);
-				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Green, 3);
-				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1,
-				//	Decoration::Shape::Poly | Decoration::Color::Yellow, 2);
-				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
-				//						   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2);
-				//generator->generate(panel, Decoration::Dot, 10);
-				//generator->generate(panel, Decoration::Dot, 4, Decoration::Dot | Decoration::Blue, 1, Decoration::Dot | Decoration::Yellow, 2,
-				//							Decoration::Eraser | Decoration::Color::White, 1);
-				//generator->generate(panel, Decoration::Dot | Decoration::Blue, 1, Decoration::Dot | Decoration::Yellow, 2,
-				//							Decoration::Star | Decoration::Color::Cyan, 4, Decoration::Star | Decoration::Color::Yellow, 4);
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7,
-				//							Decoration::Dot, 10);
-				//generator->generateMaze(panel);
-
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 6, Decoration::Stone | Decoration::Color::Black, 7,
-				//						   Decoration::Eraser | Decoration::Color::White, 1);
-				//generator->generate(panel, Decoration::Dot, 12, Decoration::Eraser | Decoration::Color::White, 1);
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7,
-				//							Decoration::Dot, 10, Decoration::Eraser | Decoration::Color::White, 1);
-				//generator->generate(panel, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Star | Decoration::Color::Magenta, 6,
-				//							Decoration::Eraser | Decoration::Color::Orange, 1);
-				//generator->generate(panel, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
-				//						   Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 3,
-				//							Decoration::Eraser | Decoration::Color::White, 1 );
-				//generator->generate(panel, Decoration::Triangle | Decoration::Color::Orange, 8, Decoration::Eraser | Decoration::Color::White, 1);
-				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1,
-				//							Decoration::Shape::Poly | Decoration::Color::Yellow, 2, Decoration::Eraser | Decoration::Color::White, 1);
-				//generator->generate(panel, Decoration::Shape::Poly | Decoration::Color::Yellow, 3,
-				//						   Decoration::Shape::Poly | Decoration::Negative | Decoration::Color::Blue, 2,
-				//							Decoration::Eraser | Decoration::Color::White, 1);
 				break;
 
 			case IDC_ROTATED:

@@ -5,6 +5,8 @@
 typedef std::pair<int, int> Point;
 typedef std::set<Point> Shape;
 
+
+
 //Functions to handle special case puzzles
 
 class Special {
@@ -21,6 +23,12 @@ public:
 	
 	void generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry);
 	void generateAntiPuzzle(int id);
+	void generateColorFilterPuzzle(int id, std::vector<std::pair<int, int>> symbols, Color filter);
+	void generateSoundDotPuzzle(int id, std::vector<int> dotSequence);
+	void generateRGBStonePuzzleN(int id);
+	void generateRGBStarPuzzleN(int id);
+	void generateDualEraserPuzzle(int id, std::vector<std::pair<int, int>> symbols);
+
 	void deactivateAndTarget(int targetPuzzle, int targetFrom);
 
 private:

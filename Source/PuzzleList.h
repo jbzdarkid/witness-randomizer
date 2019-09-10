@@ -29,7 +29,7 @@ public:
 	void GenerateTutorialN();
 	void GenerateSymmetryN();
 	void GenerateQuarryN();
-	void GenerateBunkerN();
+	void GenerateBunkerN(); //Can't randomize because panels refuse to render the symbols
 	void GenerateSwampN();
 	void GenerateTreehouseN();
 	void GenerateTownN();

@@ -1,5 +1,6 @@
 #pragma once
 #include "Panel.h"
+#include "Randomizer.h"
 #include <stdlib.h>
 #include <time.h>
 #include <set>
@@ -21,6 +22,7 @@ public:
 		_seed = rand();
 		resetConfig();
 	}
+	void generate(int id) { while (!generate(id, { })); }
 	void generate(int id, int symbol, int amount);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3);
@@ -43,13 +45,13 @@ public:
 	enum Config { None = 0, FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, FullAreaEraser = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
 		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, KeepPath = 0x400, DisableCombineShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
 		AlternateColors = 0x8000, //Black -> Green, White -> Pink, Purple -> White
-		WriteColors = 0x10000,
+		WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, SplitErasers = 0x80000,
 	};
 	void setFlag(Config option) { _config |= option; };
-	void setFlagOnce(Config option) { _config |= option; _oneTimeAdd = option; };
+	void setFlagOnce(Config option) { _config |= option; _oneTimeAdd |= option; };
 	bool hasFlag(Config option) { return _config & option; };
 	void removeFlag(Config option) { _config &= ~option; };
-	void removeFlagOnce(Config option) { _config &= ~option; _oneTimeRemove = option; };
+	void removeFlagOnce(Config option) { _config &= ~option; _oneTimeRemove |= option; };
 	void resetConfig();
 
 private:
@@ -63,8 +65,9 @@ private:
 	bool _fullGaps, _bisect;
 	int _stoneTypes;
 	int _config;
-	Config _oneTimeAdd, _oneTimeRemove;
+	int _oneTimeAdd, _oneTimeRemove;
 	long _seed;
+	std::vector<Point> _splitPoints;
 
 	int _parity;
 	HWND _handle;
@@ -112,7 +115,7 @@ private:
 	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative);
 	bool place_stars(int color, int amount);
 	bool place_triangles(int color, int amount);
-	bool place_eraser(int color, int toErase); //No "amount" variable because multiple erasers do not work consistently in the Witness
+	bool place_erasers(std::vector<int> colors, std::vector<int> eraseSymbols);
 
 	friend class PuzzleList;
 	friend class Special;

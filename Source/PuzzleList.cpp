@@ -239,6 +239,9 @@ void PuzzleList::GenerateQuarryN()
 
 void PuzzleList::GenerateBunkerN()
 {
+	//I would randomize this, if I could get the panels to actually render the symbols.
+	//I suspect that there is a bit mask or something making these panels not rander outside of the grid.
+	//However I don't know where I would find thtese bit masks in memory to be able to change them.
 }
 
 void PuzzleList::GenerateSwampN()
@@ -463,6 +466,52 @@ void PuzzleList::GenerateTreehouseN()
 
 void PuzzleList::GenerateTownN()
 {
+	generator->setLoadingData(L"Town", 20);
+	generator->resetConfig();
+	//Full Dots + Shapes
+	generator->generate(0x2899C, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 1);
+	generator->generate(0x28A33, Decoration::Dot_Intersection, 25, Decoration::Poly, 2);
+	generator->generate(0x28ABF, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 1, Decoration::Poly, 1);
+	generator->generate(0x28AC0, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 2);
+	generator->generate(0x28AC1, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 3);
+	generator->generate(0x28AD9, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Eraser | Decoration::Color::White, 1);
+	//Blue Symmetry
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->generate(0x28AC7, Decoration::Stone | Decoration::Color::Black, 6, Decoration::Stone | Decoration::Color::White, 6);
+	generator->generate(0x28AC8, Decoration::Stone | Decoration::Color::Black, 6, Decoration::Stone | Decoration::Color::White, 6);
+	generator->generate(0x28ACA, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Dot, 3);
+	generator->generate(0x28ACB, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Dot, 3);
+	generator->generate(0x28ACC, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Dot, 3);
+	generator->setSymmetry(Panel::Symmetry::None);
+	//Glass Door
+	generator->generate(0x28998, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Star | Decoration::Color::White, 6);
+	//Church Star Door
+	specialCase->generateColorFilterPuzzle(0x28A0D, { std::make_pair<int,int>(Decoration::Star | 1, 6),
+		std::make_pair<int,int>(Decoration::Star | 2, 6), std::make_pair<int,int>(Decoration::Star | 3, 4) }, { 1, 1, 0, 0 });
+	specialCase->deactivateAndTarget(0x28A69, 0x28A0D);
+	//Soundproof Room
+	generator->setGridSize(3, 3);
+	std::vector<int> allPitches = { DOT_SMALL, DOT_SMALL, DOT_MEDIUM, DOT_MEDIUM, DOT_LARGE, DOT_LARGE };
+	std::vector<int> pitches;
+	for (int i = 0; i < 4; i++) pitches.push_back(pop_random(allPitches));
+	specialCase->generateSoundDotPuzzle(0x034E3, pitches);
+	generator->resetConfig();
+	//3-color Room
+	specialCase->generateRGBStonePuzzleN(0x03C0C);
+	specialCase->generateRGBStarPuzzleN(0x03C08);
+	//Orange Crate
+	generator->generate(0x0A0C8, Decoration::Poly | Decoration::Color::Orange, 3, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 2);
+	//Windmill Puzzles
+	//The Witness has a weird issue with these particular puzzles where the edge at (3, 4) gets bypassed by the region calculator if you don't draw over it.
+	//Because of this, polyominoes can't be used with these puzzles unless Config::PreserveStructure flag is turned off.
+	generator->setFlagOnce(Generate::Config::PreserveStructure);
+	generator->generate(0x17F89, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 7);
+	generator->setFlag(Generate::Config::FixBackground);
+	generator->setFlagOnce(Generate::Config::SplitErasers);
+	generator->generate(0x0A168, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 8, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->setFlagOnce(Generate::Config::WriteColors);
+	generator->generate(0x33AB2, Decoration::Poly | Decoration::Color::Orange, 2, Decoration::Stone | Decoration::Color::White, 4, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Gap, 4);
+	generator->removeFlag(Generate::Config::FixBackground);
 }
 
 void PuzzleList::GenerateVaultsN()
