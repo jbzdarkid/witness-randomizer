@@ -72,7 +72,8 @@ public:
 		LEFT,
 		RIGHT,
 		UP,
-		DOWN
+		DOWN,
+		DIAGONAL
 	};
 
 	Endpoint(int x, int y, Direction dir, int flags) {

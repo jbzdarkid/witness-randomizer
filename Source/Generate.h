@@ -30,7 +30,7 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5);
 	void generateMaze(int id);
 	void generateMaze(int id, int numStarts, int numExits);
-	void initPanel(std::shared_ptr<Panel> panel);
+	void initPanel(int id);
 	void setPath(std::vector<std::vector<int>> path);	
 	void setSymbol(Decoration::Shape symbol, int x, int y);
 	void setGridSize(int width, int height);
@@ -45,7 +45,7 @@ public:
 	enum Config { None = 0, FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, FullAreaEraser = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
 		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, KeepPath = 0x400, DisableCombineShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
 		AlternateColors = 0x8000, //Black -> Green, White -> Pink, Purple -> White
-		WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, SplitErasers = 0x80000,
+		WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, SplitErasers = 0x80000, LongPath = 0x100000,
 	};
 	void setFlag(Config option) { _config |= option; };
 	void setFlagOnce(Config option) { _config |= option; _oneTimeAdd |= option; };

@@ -51,7 +51,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText;
 
-int panel = 0x0A168; //Panel to edit
+int panel = 0x15ADD; //Panel to edit
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -215,13 +215,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_TEST:
-				//_panel->Read(0x33AB2);
-				//_panel->Write(0x33AB2);
 				srand(static_cast<unsigned int>(time(NULL)));
 				//srand(ctr++);
 
 				generator->resetConfig();
-				generator->generate(0x0A0C8, Decoration::Poly | Decoration::Color::Orange, 3, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 2);
+				specialCase->generateJungleVault(0x15ADD);
 
 				break;
 

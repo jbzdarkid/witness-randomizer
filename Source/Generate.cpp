@@ -42,8 +42,10 @@ void Generate::generateMaze(int id, int numStarts, int numExits)
 	while (!generate_maze(id, numStarts, numExits));
 }
 
-void Generate::initPanel(std::shared_ptr<Panel> panel) {
-	_panel = panel;
+void Generate::initPanel(int id) {
+	if (!_panel) {
+		_panel = std::make_shared<Panel>(id);
+	}
 	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
 		_panel->Resize(_width, _height);
 	}
@@ -52,11 +54,11 @@ void Generate::initPanel(std::shared_ptr<Panel> panel) {
 	}
 	if (_custom_grid.size() > 0) {
 		if (_custom_grid.size() < _panel->_width) {
-			_custom_grid.resize(panel->_width, std::vector<int>());
+			_custom_grid.resize(_panel->_width, std::vector<int>());
 		}
 		if (_custom_grid[_custom_grid.size() - 1].size() < _panel->_height) {
 			for (auto& row : _custom_grid) {
-				row.resize(panel->_height, 0);
+				row.resize(_panel->_height, 0);
 			}
 		}
 		_panel->_grid = _custom_grid;
@@ -80,8 +82,8 @@ void Generate::initPanel(std::shared_ptr<Panel> panel) {
 		init_treehouse_layout();
 	}
 	_gridpos.clear();
-	for (int x = 1; x < panel->_width; x += 2) {
-		for (int y = 1; y < panel->_height; y += 2) {
+	for (int x = 1; x < _panel->_width; x += 2) {
+		for (int y = 1; y < _panel->_height; y += 2) {
 			if (!(hasFlag(Config::PreserveStructure) && (get(x, y) & Decoration::Empty) == Decoration::Empty))
 				_gridpos.insert(Point(x, y));
 		}
@@ -195,7 +197,7 @@ void Generate::clear()
 {
 	for (int x = 0; x < _panel->_width; x++) {
 		for (int y = 0; y < _panel->_height; y++) {
-			if (hasFlag(Config::PreserveStructure) && (_panel->_grid[x][y] == OPEN || (_panel->_grid[x][y] & 0xf) == NO_POINT || (_panel->_grid[x][y] & Decoration::Empty) == Decoration::Empty)) continue;
+			if (hasFlag(Config::PreserveStructure) && (_panel->_grid[x][y] == OPEN || (_panel->_grid[x][y] & 0x60000f) == NO_POINT || (_panel->_grid[x][y] & Decoration::Empty) == Decoration::Empty)) continue;
 			_panel->_grid[x][y] = 0;
 		}
 	}
@@ -256,11 +258,7 @@ void Generate::init_treehouse_layout()
 
 bool Generate::generate_maze(int id, int numStarts, int numExits)
 {
-	if (!_panel) {
-		_panel = std::make_shared<Panel>(id);
-	}
-
-	initPanel(_panel);
+	initPanel(id);
 
 	if (numStarts > 0) place_start(numStarts);
 	if (numExits > 0) place_exit(numExits);
@@ -269,7 +267,8 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 		if (_exits.count(p))
 			return false;
 
-	while (!generate_path_length(_panel->_width + _panel->_height));
+	clear();
+	while (!generate_path_length(_panel->_width + _panel->_height)) clear();
 
 	std::set<Point> extraStarts;
 	for (Point pos : _starts) {
@@ -362,11 +361,7 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 
 bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 
-	if (!_panel) {
-		_panel = std::make_shared<Panel>(id);
-	}
-
-	initPanel(_panel);
+	initPanel(id);
 
 	int numStarts = 0, numExits = 0;
 	for (std::pair<int, int> s : symbols) {
@@ -415,11 +410,17 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 		solution.push_back(row);
 	}
 
-	std::set<Point> backupPath;
-	if (hasFlag(Config::BackupPath)) backupPath = _path;
+	std::set<Point> backupPath, backupPath1, backupPath2;
+	if (hasFlag(Config::BackupPath)) {
+		backupPath = _path; backupPath1 = _path1; backupPath2 = _path2;
+	}
+
 	if (!place_all_symbols(symbols))
 		return false;
-	if (hasFlag(Config::BackupPath)) _path = backupPath;
+
+	if (hasFlag(Config::BackupPath)) {
+		_path = backupPath; _path1 = backupPath1; _path2 = backupPath2;
+	}
 
 	if (!hasFlag(Config::DisableWrite)) write(id);
 	return true;
@@ -478,12 +479,18 @@ bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
 	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative)) return false;
 	_stoneTypes = static_cast<int>(stones.size());
 	_bisect = true;
-	for (std::pair<int, int> s : stones) if (!place_stones(s.first & 0xf, s.second)) return false;
-	for (std::pair<int, int> s : triangles) if (!place_triangles(s.first & 0xf, s.second)) return false;
-	for (std::pair<int, int> s : stars) if (!place_stars(s.first & 0xf, s.second)) return false;
-	for (std::pair<int, int> s : erasers) if (!place_erasers(eraserColors, eraseSymbols)) return false;
-	for (std::pair<int, int> s : dots) if (!place_dots(s.second, (s.first & 0xf), s.first == Decoration::Dot_Intersection)) return false;
-	for (std::pair<int, int> s : gaps) if (!place_gaps(s.second)) return false;
+	for (std::pair<int, int> s : stones) if (!place_stones(s.first & 0xf, s.second))
+		return false;
+	for (std::pair<int, int> s : triangles) if (!place_triangles(s.first & 0xf, s.second))
+		return false;
+	for (std::pair<int, int> s : stars) if (!place_stars(s.first & 0xf, s.second))
+		return false;
+	for (std::pair<int, int> s : erasers) if (!place_erasers(eraserColors, eraseSymbols))
+		return false;
+	for (std::pair<int, int> s : dots) if (!place_dots(s.second, (s.first & 0xf), (s.first & ~0xf) == Decoration::Dot_Intersection))
+		return false;
+	for (std::pair<int, int> s : gaps) if (!place_gaps(s.second))
+		return false;
 	return true;
 }
 
@@ -514,6 +521,11 @@ bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 	if (_parity != -1) {
 		return generate_longest_path();
 	}
+
+	if (hasFlag(Config::LongPath)) {
+		return generate_path_length(_panel->get_num_grid_points() * 7 / 8);
+	}
+
 	bool dotPuzzle = false;
 	for (auto s : symbols) {
 		if (get_symbol_type(s.first) == Decoration::Stone) {

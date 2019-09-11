@@ -24,10 +24,11 @@ public:
 	void generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry);
 	void generateAntiPuzzle(int id);
 	void generateColorFilterPuzzle(int id, std::vector<std::pair<int, int>> symbols, Color filter);
-	void generateSoundDotPuzzle(int id, std::vector<int> dotSequence);
+	void generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool writeSequence);
+	void generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence);
 	void generateRGBStonePuzzleN(int id);
 	void generateRGBStarPuzzleN(int id);
-	void generateDualEraserPuzzle(int id, std::vector<std::pair<int, int>> symbols);
+	void generateJungleVault(int id);
 
 	void deactivateAndTarget(int targetPuzzle, int targetFrom);
 
@@ -49,4 +50,18 @@ private:
 	}
 
 	std::shared_ptr<Generate> _generator;
+
+	template <class T> T pop_random(std::vector<T>& vec) {
+		int i = rand() % vec.size();
+		T item = vec[i];
+		vec.erase(vec.begin() + i);
+		return item;
+	}
+	template <class T> T pop_random(std::set<T>& set) {
+		auto it = set.begin();
+		std::advance(it, rand() % set.size());
+		T item = *it;
+		set.erase(item);
+		return item;
+	}
 };

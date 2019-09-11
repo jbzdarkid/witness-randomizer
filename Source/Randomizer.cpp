@@ -41,12 +41,20 @@
 void Randomizer::GenerateNormal(HWND loadingHandle) {
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
 	puzzles->setLoadingHandle(loadingHandle);
-	//puzzles->GenerateAllN();
+	puzzles->GenerateAllN();
 	//puzzles->GenerateSymmetryN();
 	//puzzles->GenerateQuarryN();
 	//puzzles->GenerateSwampN();
 	//puzzles->GenerateTreehouseN();
-	puzzles->GenerateTownN();
+	//puzzles->GenerateTownN();
+	//puzzles->GenerateVaultsN();
+	//puzzles->GenerateTrianglePanelsN();
+	//puzzles->GenerateMountainN();
+	//puzzles->GenerateCavesN();
+	//puzzles->GenerateOrchardN();
+	//puzzles->GenerateDesertN(); //Just scramble the positions for now
+	//puzzles->GenerateKeepN();
+	//puzzles->GenerateJungleN();
 }
 
 void Randomizer::GenerateHard(HWND loadingHandle) {

@@ -126,10 +126,11 @@ void Special::generateColorFilterPuzzle(int id, std::vector<std::pair<int, int>>
 	_generator->write(id);
 }
 
-void Special::generateSoundDotPuzzle(int id, std::vector<int> dotSequence) {
+void Special::generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool writeSequence) {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
 	_generator->setFlagOnce(Generate::Config::BackupPath);
-	_generator->generate(id, Decoration::Dot, static_cast<int>(dotSequence.size()));
+	_generator->setFlagOnce(Generate::Config::LongPath);
+	_generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size()));
 	Point p = *_generator->_starts.begin();
 	std::set<Point> path = _generator->_path;
 	int seqPos = 0;
@@ -147,7 +148,92 @@ void Special::generateSoundDotPuzzle(int id, std::vector<int> dotSequence) {
 			}
 		}
 	}
+	if (writeSequence) {
+		for (int i = 0; i < dotSequence.size(); i++) {
+			if (dotSequence[i] == DOT_SMALL) dotSequence[i] = 1;
+			if (dotSequence[i] == DOT_MEDIUM) dotSequence[i] = 2;
+			if (dotSequence[i] == DOT_LARGE) dotSequence[i] = 3;
+		}
+		_generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN, { dotSequence.size() });
+		_generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE, dotSequence, true);
+	}
 	_generator->write(id);
+}
+
+void Special::generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence)
+{
+	_generator->setFlagOnce(Generate::Config::DisableWrite);
+	_generator->setFlagOnce(Generate::Config::BackupPath);
+	_generator->setFlagOnce(Generate::Config::LongPath);
+	_generator->setSymmetry(Panel::Symmetry::Rotational);
+	_generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size()));
+	std::set<Point> path1 = _generator->_path1, path2 = _generator->_path2;
+	Point p1, p2;
+	std::set<Point> dots1, dots2;
+	for (Point p : _generator->_starts) {
+		if (_generator->_path1.count(p)) p1 = p;
+		if (_generator->_path2.count(p)) p2 = p;
+	}
+	int seqPos = 0;
+	while (!_generator->_exits.count(p1)) {
+		path1.erase(p1);
+		int sym = _generator->get(p1);
+		if (sym & Decoration::Dot) {
+			_generator->set(p1, sym | dotSequence1[seqPos++]);
+			dots1.insert(p1);
+		}
+		for (Point dir : Generate::_DIRECTIONS1) {
+			Point newp = Point(p1.first + dir.first, p1.second + dir.second);
+			if (path1.count(newp)) {
+				p1 = newp;
+				break;
+			}
+		}
+	}
+	seqPos = 0;
+	while (!_generator->_exits.count(p2)) {
+		path2.erase(p2);
+		int sym = _generator->get(p2);
+		if (sym & Decoration::Dot) {
+			_generator->set(p2, sym | dotSequence2[seqPos++]);
+			dots2.insert(p2);
+		}
+		for (Point dir : Generate::_DIRECTIONS1) {
+			Point newp = Point(p2.first + dir.first, p2.second + dir.second);
+			if (path2.count(newp)) {
+				p2 = newp;
+				break;
+			}
+		}
+	}
+	for (int i = static_cast<int>(dotSequence1.size() + dotSequence2.size()); i > numColored; i--) {
+		if (i % 2 == 0) { //Want to evenly distribute colors between blue/orange (approximately)
+			Point p = pop_random(dots1);
+			_generator->set(p, _generator->get(p) & ~DOT_IS_BLUE); //Remove color
+		}
+		else {
+			Point p = pop_random(dots2);
+			_generator->set(p, _generator->get(p) & ~DOT_IS_ORANGE); //Remove color
+		}
+	}
+	if (writeSequence) {
+		for (int i = 0; i < dotSequence1.size(); i++) {
+			if (dotSequence1[i] == DOT_SMALL) dotSequence1[i] = 1;
+			if (dotSequence1[i] == DOT_MEDIUM) dotSequence1[i] = 2;
+			if (dotSequence1[i] == DOT_LARGE) dotSequence1[i] = 3;
+		}
+		_generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN, { dotSequence1.size() });
+		_generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE, dotSequence1, true);
+		for (int i = 0; i < dotSequence2.size(); i++) {
+			if (dotSequence2[i] == DOT_SMALL) dotSequence2[i] = 1;
+			if (dotSequence2[i] == DOT_MEDIUM) dotSequence2[i] = 2;
+			if (dotSequence2[i] == DOT_LARGE) dotSequence2[i] = 3;
+		}
+		_generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN_REFLECTION, { dotSequence2.size() });
+		_generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSequence2, true);
+	}
+	_generator->write(id);
+	_generator->setSymmetry(Panel::Symmetry::None);
 }
 
 void Special::generateRGBStonePuzzleN(int id)
@@ -196,12 +282,29 @@ void Special::generateRGBStarPuzzleN(int id)
 	}
 }
 
-void Special::generateDualEraserPuzzle(int id, std::vector<std::pair<int, int>> symbols)
+void Special::generateJungleVault(int id)
 {
+	//This panel won't render symbols off the grid, so all I can do is move the dots around
 
+	//a: 4 9 16 23, b: 12, c: 1, ab: 3 5 6 10 11 15 17 18 20 21 22, ac: 14, bc: 2 19, all: 7 8 13
+	std::vector<std::vector<int>> sols = {
+		{ 0, 5, 10, 15, 20, 21, 16, 11, 6, 7, 8, 3, 4, 9, 14, 13, 18, 17, 22, 23, 24, 25 },
+		{ 0, 5, 10, 15, 20, 21, 22, 17, 12, 11, 6, 7, 2, 3, 8, 13, 18, 19, 24, 25 },
+		{ 0, 1, 2, 7, 8, 13, 14, 19, 24, 25 } };
+	//std::vector<int> invalidSol = { 0, 5, 10, 15, 16, 11, 12, 13, 8, 3, 4, 9, 14, 19, 18, 23, 24, 25 };
+	std::vector<std::vector<int>> dotPoints1 = { { 4, 9, 16, 23 }, { 2, 19 }, { 2, 19 } };
+	std::vector<std::vector<int>> dotPoints2 = { { 7, 8, 13 }, { 3, 5, 6, 10, 11, 15, 17, 18, 20, 21, 22 }, { 14, 1 } };
+	_generator->initPanel(id);
+	_generator->clear();
+	int sol = rand() % sols.size();
+	auto[x1, y1] = _generator->_panel->loc_to_xy(_generator->pick_random(dotPoints1[sol]));
+	auto[x2, y2] = _generator->_panel->loc_to_xy(_generator->pick_random(dotPoints2[sol]));
+	_generator->set(x1, y1, Decoration::Dot_Intersection);
+	_generator->set(x2, y2, Decoration::Dot_Intersection);
+	_generator->_panel->_memory->WritePanelData<size_t>(id, SEQUENCE_LEN, { sols[sol].size() });
+	_generator->_panel->_memory->WriteArray<int>(id, SEQUENCE, sols[sol], true);
+	_generator->write(id);
 }
-
-
 
 void Special::deactivateAndTarget(int targetPuzzle, int targetFrom)
 {

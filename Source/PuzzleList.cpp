@@ -2,11 +2,11 @@
 
 void PuzzleList::GenerateAllN()
 {
-	generator->setLoadingData(195);
+	generator->setLoadingData(219);
 	GenerateTutorialN();
 	GenerateSymmetryN();
 	GenerateQuarryN();
-	GenerateBunkerN();
+	//GenerateBunkerN(); //Can't randomize because panels refuse to render the symbols
 	GenerateSwampN();
 	GenerateTreehouseN();
 	GenerateTownN();
@@ -55,7 +55,7 @@ void PuzzleList::GenerateTutorialN()
 	generator->generateMaze(0x00295, 1, 1);
 	generator->setGridSize(12, 12);
 	generator->generateMaze(0x002C2);
-	generator->removeFlag(Generate::Config::FullGaps);
+	generator->resetConfig();
 	//2 starts maze
 	generator->generateMaze(0x0A3B2);
 	//2 exits maze
@@ -72,8 +72,8 @@ void PuzzleList::GenerateTutorialN()
 	generator->generate(0x0005F, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
 	generator->generate(0x00060, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
 	generator->generate(0x00061, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
-	generator->removeFlag(Generate::Config::FullGaps);
 	//Stones Tutorial
+	generator->resetConfig();
 	generator->setGridSize(4, 4);
 	generator->generate(0x018AF, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5);
 	generator->generate(0x0001B, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5);
@@ -93,9 +93,11 @@ void PuzzleList::GenerateSymmetryN()
 	generator->resetConfig();
 	generator->setFlag(Generate::Config::StartEdgeOnly);
 	//Vertical Symmetry Mazes
+	generator->setSymmetry(Panel::Symmetry::Vertical);
 	generator->setGridSize(5, 5);
 	generator->generateMaze(0x00086, 0, 1);
 	generator->generateMaze(0x00087, 1, 1);
+	generator->setGridSize(0, 0);
 	generator->removeFlagOnce(Generate::Config::StartEdgeOnly);
 	generator->generateMaze(0x00059, 1, 0);
 	generator->generateMaze(0x00062);
@@ -163,7 +165,7 @@ void PuzzleList::GenerateSymmetryN()
 
 void PuzzleList::GenerateQuarryN()
 {
-	generator->setLoadingData(L"Quarry", 39);
+	generator->setLoadingData(L"Quarry", 38);
 	generator->resetConfig();
 	//Entry Gates
 	generator->setGridSize(5, 5);
@@ -172,6 +174,7 @@ void PuzzleList::GenerateQuarryN()
 	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
 	generator->generate(0x17C09, Decoration::Poly, 2, Decoration::Gap, 5);
 	//Mill Entry Door
+	generator->resetConfig();
 	generator->generate(0x01E5A, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 7);
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
 	generator->generate(0x01E59, Decoration::Dot, 15);
@@ -214,7 +217,6 @@ void PuzzleList::GenerateQuarryN()
 	generator->generate(0x021B3, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x021B4, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x021B0, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::Green, 1);
-	generator->generate(0x021AF, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->setFlagOnce(Generate::Config::FullAreaEraser);
 	generator->generate(0x021AF, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->setFlagOnce(Generate::Config::DisconnectShapes);
@@ -240,8 +242,8 @@ void PuzzleList::GenerateQuarryN()
 void PuzzleList::GenerateBunkerN()
 {
 	//I would randomize this, if I could get the panels to actually render the symbols.
-	//I suspect that there is a bit mask or something making these panels not rander outside of the grid.
-	//However I don't know where I would find thtese bit masks in memory to be able to change them.
+	//Unfortunately, the path is rendered to a 3D model that doesn't have any geometry between the grid lines.
+	//Somehow, I would either have to change the model, or make the path render to the background texture instead.
 }
 
 void PuzzleList::GenerateSwampN()
@@ -262,8 +264,8 @@ void PuzzleList::GenerateSwampN()
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.6f;
 	generator->generate(0x0056F, Decoration::Poly, 2, Decoration::Gap, 12);
-	generator->removeFlag(Generate::Config::DisableCombineShapes);
 	//Second Row
+	generator->resetConfig();
 	generator->setFlag(Generate::Config::RequireCombineShapes);
 	generator->setGridSize(3, 3);
 	generator->pathWidth = 0.7f;
@@ -278,10 +280,10 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x00985, Decoration::Poly, 2, Decoration::Gap, 8);
 	generator->generate(0x00987, Decoration::Poly, 2, Decoration::Gap, 8);
 	generator->generate(0x181A9, Decoration::Poly, 3, Decoration::Gap, 8);
-	generator->removeFlag(Generate::Config::RequireCombineShapes);
 	//Turn off bridge control until all previous puzzles are solved
 	specialCase->deactivateAndTarget(0x00609, 0x181A9);
 	//Red Panels
+	generator->resetConfig();
 	generator->setGridSize(4, 4);
 	generator->pathWidth = 0.65f;
 	generator->generate(0x00982, Decoration::Poly, 3, Decoration::Gap, 2);
@@ -294,6 +296,7 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x17C0D, Decoration::Poly, 3);
 	generator->generate(0x17C0E, Decoration::Poly, 3, Decoration::Gap, 6);
 	//Disconnected Shapes
+	generator->resetConfig();
 	generator->setFlag(Generate::Config::DisconnectShapes);
 	generator->setGridSize(3, 3);
 	generator->pathWidth = 0.7f;
@@ -303,8 +306,8 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x0099D, Decoration::Poly, 3);
 	generator->generate(0x009A0, Decoration::Poly, 3);
 	generator->generate(0x009A1, Decoration::Poly, 3);
-	generator->removeFlag(Generate::Config::DisconnectShapes);
 	//Rotating Shapes
+	generator->resetConfig();
 	generator->setGridSize(3, 3);
 	generator->pathWidth = 0.7f;
 	generator->generate(0x00007, Decoration::Poly | Decoration::Can_Rotate, 1, Decoration::Gap, 3);
@@ -326,6 +329,7 @@ void PuzzleList::GenerateSwampN()
 	generator->resetConfig();
 	generator->generate(0x009A6, Decoration::Poly, 6);
 	//Negative Shapes 1
+	generator->resetConfig();
 	generator->setFlag(Generate::Config::DisableCancelShapes);
 	generator->setGridSize(3, 3);
 	generator->pathWidth = 0.7f;
@@ -343,8 +347,8 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x00005, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
 	generator->generate(0x013E6, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
 	generator->generate(0x00596, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 3);
-	generator->removeFlag(Generate::Config::DisableCancelShapes);
 	//Negative Shapes 3
+	generator->resetConfig();
 	generator->setFlag(Generate::Config::RequireCancelShapes);
 	generator->setGridSize(3, 3);
 	generator->pathWidth = 0.7f;
@@ -354,8 +358,8 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x014D2, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
 	generator->generate(0x014D4, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 3);
 	generator->generate(0x014D1, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 4);
-	generator->removeFlag(Generate::Config::RequireCancelShapes);
 	//Exit Shortcut
+	generator->resetConfig();
 	generator->generate(0x17C05, Decoration::Poly | Decoration::Can_Rotate, 2);
 	specialCase->generateAntiPuzzle(0x17C02);
 }
@@ -490,11 +494,10 @@ void PuzzleList::GenerateTownN()
 		std::make_pair<int,int>(Decoration::Star | 2, 6), std::make_pair<int,int>(Decoration::Star | 3, 4) }, { 1, 1, 0, 0 });
 	specialCase->deactivateAndTarget(0x28A69, 0x28A0D);
 	//Soundproof Room
-	generator->setGridSize(3, 3);
 	std::vector<int> allPitches = { DOT_SMALL, DOT_SMALL, DOT_MEDIUM, DOT_MEDIUM, DOT_LARGE, DOT_LARGE };
 	std::vector<int> pitches;
 	for (int i = 0; i < 4; i++) pitches.push_back(pop_random(allPitches));
-	specialCase->generateSoundDotPuzzle(0x034E3, pitches);
+	specialCase->generateSoundDotPuzzle(0x034E3, pitches, false);
 	generator->resetConfig();
 	//3-color Room
 	specialCase->generateRGBStonePuzzleN(0x03C0C);
@@ -511,11 +514,27 @@ void PuzzleList::GenerateTownN()
 	generator->generate(0x0A168, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 8, Decoration::Eraser | Decoration::Color::White, 2);
 	generator->setFlagOnce(Generate::Config::WriteColors);
 	generator->generate(0x33AB2, Decoration::Poly | Decoration::Color::Orange, 2, Decoration::Stone | Decoration::Color::White, 4, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Gap, 4);
-	generator->removeFlag(Generate::Config::FixBackground);
 }
 
 void PuzzleList::GenerateVaultsN()
 {
+	generator->setLoadingData(L"Vaults", 5);
+	generator->resetConfig();
+	//Tutorial Vault
+	generator->generate(0x033D4, Decoration::Stone | Decoration::Color::White, 10, Decoration::Stone | Decoration::Color::Black, 10, Decoration::Dot, 10, Decoration::Start, 4);
+	//Tetris Vault
+	generator->generate(0x0CC7B, Decoration::Dot_Intersection, 49, Decoration::Poly, 1, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Poly | Decoration::Negative, 3);
+	//Symmetry Vault
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->generate(0x002A6, Decoration::Stone | Decoration::Color::White, 4, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Dot, 2,
+		Decoration::Dot | Decoration::Color::Blue, 2, Decoration::Dot | Decoration::Color::Yellow, 2);
+	generator->resetConfig();
+	//Shipwreck Vault
+	generator->setGridSize(7, 7);
+	specialCase->generateSoundDotReflectionPuzzle(0x00AFB, { DOT_MEDIUM, DOT_LARGE, DOT_MEDIUM, DOT_SMALL }, { DOT_LARGE, DOT_SMALL, DOT_MEDIUM }, 3, false);
+	generator->resetConfig();
+	//Jungle Vault
+	specialCase->generateJungleVault(0x15ADD);
 }
 
 void PuzzleList::GenerateTrianglePanelsN()

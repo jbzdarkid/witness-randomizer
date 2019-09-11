@@ -198,7 +198,11 @@ void Panel::ReadAllData() {
 	Color bgRegionColor = _memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR);
 	short metadata = _memory->ReadPanelData<short>(id, METADATA);
 	void* specularTexture = _memory->ReadPanelData<void*>(id, SPECULAR_TEXTURE);
-	std::vector<float> data = _memory->ReadPanelData<float>(id, SPECULAR_TEXTURE, 1000);
+	//std::vector<float> data = _memory->ReadPanelData<float>(id, SPECULAR_TEXTURE, 1000);
+	int dotSeqLen = _memory->ReadPanelData<int>(id, DOT_SEQUENCE_LEN);
+	std::vector<int> dotSeq = _memory->ReadArray<int>(id, DOT_SEQUENCE, dotSeqLen);
+	int dotSeqLenR = _memory->ReadPanelData<int>(id, DOT_SEQUENCE_LEN_REFLECTION);
+	std::vector<int> dotSeqR = _memory->ReadArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSeqLenR);
 }
 
 void Panel::ReadDecorations() {
@@ -328,7 +332,9 @@ void Panel::ReadIntersections() {
 						dir = Endpoint::Direction::LEFT;
 					}
 					else if (intersections[2 * i] > intersections[2 * location]) {
-						dir = Endpoint::Direction::RIGHT;
+						if (intersections[2 * i + 1] > intersections[2 * location + 1])
+							dir = Endpoint::Direction::DIAGONAL;
+						else dir = Endpoint::Direction::RIGHT;
 					}
 					else if (intersections[2 * i + 1] > intersections[2 * location + 1]) { // y coordinate is 0 (bottom) 1 (top), so this check is reversed.
 						dir = Endpoint::Direction::UP;
@@ -421,6 +427,10 @@ void Panel::WriteIntersections() {
 		}
 		else if (endpoint.GetDir() == Endpoint::Direction::DOWN) {
 			yPos -= 0.05;
+		}
+		else if (endpoint.GetDir() == Endpoint::Direction::DIAGONAL) {
+			xPos += 0.05;
+			yPos += 0.05;
 		}
 		intersections.push_back(static_cast<float>(xPos));
 		intersections.push_back(static_cast<float>(yPos));

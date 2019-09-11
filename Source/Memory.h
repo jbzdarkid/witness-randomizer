@@ -54,6 +54,12 @@ public:
 	}
 
 	template <class T>
+	void WriteArray(int panel, int offset, const std::vector<T>& data, bool force) {
+		if (force) _arraySizes[std::make_pair(panel, offset)] = 0;
+		WriteArray(panel, offset, data);
+	}
+
+	template <class T>
 	std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
 		if (size == 0) return std::vector<T>();
 		return ReadData<T>({ GLOBALS, 0x18, panel * 8, offset }, size);
@@ -117,3 +123,14 @@ private:
 	friend class ChallengeRandomizer;
 	friend class Randomizer;
 };
+
+//I might need this code later
+/*
+if (_force) {
+	DWORD oldProtect = 0;
+	if (!VirtualProtectEx(_handle, ComputeOffset(offsets), sizeof(T) * data.size(), PAGE_READWRITE, &oldProtect)) {
+		ThrowError();
+		return;
+	}
+	_force = false;
+}*/
