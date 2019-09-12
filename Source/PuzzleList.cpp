@@ -546,11 +546,26 @@ void PuzzleList::GenerateVaultsN()
 
 void PuzzleList::GenerateTrianglePanelsN()
 {
-
+	generator->setLoadingData(L"Triangles", 12);
+	generator->resetConfig();
+	generator->setGridSize(4, 4);
+	generator->generate(0x17CFB, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Gap, 8);
+	generator->generate(0x3C12B, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17CE7, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Gap, 8);
+	generator->generate(0x17CF0, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17FA9, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Gap, 8);
+	generator->generate(0x17FA0, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17D27, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Gap, 8);
+	generator->generate(0x17D28, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17D01, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Gap, 8);
+	generator->generate(0x17C71, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17CF7, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Gap, 8);
+	generator->generate(0x17C42, Decoration::Triangle | Decoration::Color::Orange, 6);
 }
 
 void PuzzleList::GenerateMountainN()
 {
+
 }
 
 void PuzzleList::GenerateCavesN()
@@ -559,6 +574,7 @@ void PuzzleList::GenerateCavesN()
 
 void PuzzleList::GenerateOrchardN()
 {
+	specialCase->generateApplePuzzle(0x032FF, true, false);
 }
 
 void PuzzleList::GenerateDesertN()

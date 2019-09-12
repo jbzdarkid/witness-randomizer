@@ -1213,7 +1213,8 @@ bool Generate::place_triangles(int color, int amount)
 		if (_panel->symmetry) {
 			open.erase(get_sym_point(pos));
 		}
-		if (count == 0)
+		if (count == 0) continue;
+		if (count == 2 && rand() % 2 == 0) //Prevent it from placing so many 2's
 			continue;
 		set(pos, Decoration::Triangle | color | (count << 16));
 		_openpos.erase(pos);

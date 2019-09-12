@@ -306,6 +306,51 @@ void Special::generateJungleVault(int id)
 	_generator->write(id);
 }
 
+void Special::generateApplePuzzle(int id, bool changeExit, bool flip)
+{
+	//Is there a way to move the apples? Might be impossible without OpenGL stuff.
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	int numIntersections = panel->_memory->ReadPanelData<int>(id, NUM_DOTS);
+	std::vector<int> intersectionFlags = panel->_memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
+	std::vector<int> sequence = panel->_memory->ReadArray<int>(id, SEQUENCE, 6);
+	int exit = sequence[5];
+	std::vector<int> exits;
+	if (changeExit) {
+		for (int i = 15; i < 31; i++) {
+			if (intersectionFlags[i] == 9) exits.push_back(i);
+		}
+		int newExit = pop_random(exits);
+		intersectionFlags[newExit] = 1;
+		intersectionFlags[exit] = 9; //Gets rid of old exit
+		for (int i = 5; i > 1; i--) {
+			sequence[i] = newExit;
+			newExit = (newExit - 1) / 2;
+		}
+		int numConnections = panel->_memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
+		std::vector<int> connections_a = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
+		std::vector<int> connections_b = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
+		for (int i = 0; i < numConnections; i++) {
+			if (connections_b[i] == exit) {
+				connections_a[i] = sequence[4];
+				connections_b[i] = sequence[5];
+			}
+		}
+		panel->_memory->WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
+		panel->_memory->WriteArray<int>(id, SEQUENCE, sequence, true);
+		panel->_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
+		panel->_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
+		panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+	}
+	if (flip) {
+		std::vector<float> intersections = panel->_memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
+		for (int i = 0; i < intersections.size(); i += 2) {
+			intersections[i] = 1 - intersections[i];
+		}
+		panel->_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
+		panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+	}
+}
+
 void Special::setTarget(int puzzle, int target)
 {
 	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
