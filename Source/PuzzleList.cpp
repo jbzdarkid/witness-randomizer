@@ -219,7 +219,7 @@ void PuzzleList::GenerateQuarryN()
 	generator->generate(0x021B3, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x021B4, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x021B0, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::Green, 1);
-	generator->setFlagOnce(Generate::Config::FullAreaEraser);
+	generator->setFlagOnce(Generate::Config::SmallShapes);
 	generator->generate(0x021AF, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->setFlagOnce(Generate::Config::DisconnectShapes);
 	generator->generate(0x021AE, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
@@ -493,7 +493,8 @@ void PuzzleList::GenerateTownN()
 	generator->generate(0x28ACC, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Dot, 3);
 	generator->setSymmetry(Panel::Symmetry::None);
 	//Glass Door
-	generator->generate(0x28998, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Star | Decoration::Color::White, 6); //TODO: Tweak difficulty, maybe make shapes smaller
+	generator->setFlagOnce(Generate::Config::SmallShapes);
+	generator->generate(0x28998, Decoration::Poly | Decoration::Can_Rotate, 4, Decoration::Star | Decoration::Color::White, 6);
 	//Church Star Door
 	specialCase->generateColorFilterPuzzle(0x28A0D, { std::make_pair<int,int>(Decoration::Star | 1, 6),
 		std::make_pair<int,int>(Decoration::Star | 2, 6), std::make_pair<int,int>(Decoration::Star | 3, 4) }, { 1, 1, 0, 0 });
@@ -545,6 +546,7 @@ void PuzzleList::GenerateVaultsN()
 
 void PuzzleList::GenerateTrianglePanelsN()
 {
+
 }
 
 void PuzzleList::GenerateMountainN()

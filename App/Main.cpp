@@ -219,9 +219,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				srand(ctr++);
 
 				generator->resetConfig();
-				generator->setFlag(Generate::Config::FixBackground);
-				generator->setFlagOnce(Generate::Config::SplitErasers);
-				generator->generate(0x0A168, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 8, Decoration::Eraser | Decoration::Color::White, 2);
+
 
 				break;
 

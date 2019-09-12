@@ -995,7 +995,9 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative)
 {
 	std::set<Point> open = _openpos;
-	int targetArea = (hasFlag(Config::FullAreaEraser) ? amount * 2 : amount * 7 / 2), totalArea = 0;
+	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : 4;
+	int targetArea = amount * shapeSize * 7 / 8;
+	int totalArea = 0;
 	int colorIndex = rand() % colors.size();
 	int colorIndexN = rand() % (negativeColors.size() + 1);
 	bool shapesCanceled = false, shapesCombined = false;
@@ -1009,7 +1011,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		for (Point p : region) {
 			if (open.erase(p)) open2.insert(p);
 		}
-		if (hasFlag(Config::FullAreaEraser) && region.size() + totalArea == _panel->get_num_grid_blocks()) continue;
+		if (region.size() + totalArea == _panel->get_num_grid_blocks()) continue;
 		std::vector<Shape> shapes;
 		std::vector<Shape> shapesN;
 		int numShapesN = min(rand() % (numNegative + 1), static_cast<int>(region.size()) / 3);
@@ -1036,11 +1038,9 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 				}
 			}
 		}
-		int numShapes = static_cast<int>(region.size() + bufferRegion.size()) / 5 + 1;
+		int numShapes = static_cast<int>(region.size() + bufferRegion.size()) / (shapeSize + 1) + 1;
 		if (numShapes == 1 && bufferRegion.size() > 0) numShapes++;
-		if (hasFlag(Config::FullAreaEraser) && region.size() >= 3) numShapes++;
-		if (numShapes < amount && region.size() >= 5 && (rand() & 1) == 1)
-			numShapes++; //Adds more variation to the shape sizes
+		if (numShapes < amount && region.size() > shapeSize && rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
 		if (hasFlag(Config::DisableCombineShapes) && numShapes != 1) continue;
 		bool balance = false;
 		if (numShapes > amount) {
@@ -1073,7 +1073,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		else for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
-			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), (balance || hasFlag(Config::FullAreaEraser)) ? rand() % 3 + 1 : 4));
+			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), balance ? rand() % 3 + 1 : shapeSize));
 			shapesCombined = true;
 		}
 		//Take remaining area and try to stick it to existing shapes
@@ -1081,7 +1081,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		while (region.size() > 0) {
 			pos = pick_random(region);
 			for (Shape& shape : shapes) {
-				if (shape.size() >= 5 || shape.count(pos) > 0) continue;
+				if (shape.size() > shapeSize || shape.count(pos) > 0) continue;
 				for (Point p : shape) {
 					for (Point dir : _DIRECTIONS2) {
 						if (pos + dir == p) {
@@ -1261,10 +1261,6 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		}
 		
 		if (open2.size() == 0 && !(toErase & Decoration::Dot)) continue;
-		if (hasFlag(Config::FullAreaEraser)) {
-			std::vector<int> symbols = get_symbols_in_region(region);
-			if (symbols.size() > 0) continue;
-		}
 		bool canPlace = false;
 		if (get_symbol_type(toErase) == Decoration::Stone) {
 			std::vector<int> symbols = get_symbols_in_region(region);
@@ -1324,17 +1320,9 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		}
 		else if (get_symbol_type(toErase) == Decoration::Poly) {
 			int symbol = 0;
-			if (hasFlag(Config::FullAreaEraser)) {
-				while (symbol == 0) {
-					std::set<Point> area = _gridpos;
-					Shape shape = generate_shape(area, pick_random(area), static_cast<int>(region.size()));
-					symbol = make_shape_symbol(shape, toErase & Decoration::Can_Rotate, toErase & Decoration::Negative);
-					if (symbol == make_shape_symbol(region, toErase & Decoration::Can_Rotate, toErase & Decoration::Negative)) continue;
-				}
-			}
-			else while (symbol == 0) {
+			while (symbol == 0) {
 				std::set<Point> area = _gridpos;
-				Shape shape = generate_shape(area, pick_random(area), rand() % (toErase & Decoration::Negative ? 3 : 5) + 1);
+				Shape shape = generate_shape(area, pick_random(area), rand() % ((toErase & Decoration::Negative) || hasFlag(Config::SmallShapes) ? 3 : 5) + 1);
 				if (shape.size() == region.size()) continue;
 				symbol = make_shape_symbol(shape, toErase & Decoration::Can_Rotate, toErase & Decoration::Negative);
 			}
