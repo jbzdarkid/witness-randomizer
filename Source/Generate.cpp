@@ -2,23 +2,28 @@
 #include "Randomizer.h"
 
 void Generate::generate(int id, int symbol, int amount) {
-	while (!generate(id, { std::make_pair(symbol, amount) }));
+	PuzzleSymbols symbols({ std::make_pair(symbol, amount) });
+	while (!generate(id, symbols));
 }
 
 void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2) {
-	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2) }));
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2) });
+	while (!generate(id, symbols));
 }
 
 void Generate::generate(int id, int symbol1, int amount1,  int symbol2, int amount2, int symbol3, int amount3) {
-	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3) }));
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3) });
+	while (!generate(id, symbols));
 }
 
 void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4) {
-	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4) }));
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4) });
+	while (!generate(id, symbols));
 }
 
 void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5) {
-	while (!generate(id, { std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5) }));
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5) });
+	while (!generate(id, symbols));
 }
 
 Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
@@ -359,26 +364,18 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 	return true;
 }
 
-bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
-
+bool Generate::generate(int id, PuzzleSymbols symbols)
+{
 	initPanel(id);
 
-	int numStarts = 0, numExits = 0;
-	for (std::pair<int, int> s : symbols) {
-		if (s.first == Decoration::Start) numStarts += s.second;
-		if (s.first == Decoration::Exit) numExits += s.second;
-	}
+	if (symbols.getNum(Decoration::Dot) >= _panel->get_num_grid_points() - 2)
+		_parity = (_panel->get_parity() + (
+			!symbols.any(Decoration::Start) ? get_parity(pick_random(_starts)) :
+			!symbols.any(Decoration::Exit) ? get_parity(pick_random(_exits)) : rand() % 2)) % 2;
+	else _parity = -1;
 
-	_parity = -1;
-	for (auto s : symbols) {
-		if ((s.first & Decoration::Dot) && s.second >= _panel->get_num_grid_points() - 2) {
-			_parity = (_panel->get_parity() + (numStarts == 0 ? get_parity(pick_random(_starts))
-				: numExits == 0 ? get_parity(pick_random(_exits)) : rand() % 2)) % 2;
-		}
-	}
-
-	if (numStarts) place_start(numStarts);
-	if (numExits) place_exit(numExits);
+	if (symbols.any(Decoration::Start)) place_start(symbols.getNum(Decoration::Start));
+	if (symbols.any(Decoration::Exit)) place_exit(symbols.getNum(Decoration::Exit));
 
 	for (Point p : _starts)
 		if (_exits.count(p))
@@ -426,44 +423,21 @@ bool Generate::generate(int id, std::vector<std::pair<int, int>> symbols) {
 	return true;
 }
 
-bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
+bool Generate::place_all_symbols(PuzzleSymbols & symbols)
 {
 	std::vector<int> eraseSymbols;
 	std::vector<int> eraserColors;
-	for (std::pair<int, int> s : symbols) {
-		if (get_symbol_type(s.first) == Decoration::Eraser) {
-			for (int i = 0; i < s.second; i++) {
-				int toErase = 0;
-				while (toErase == 0) {
-					int eraseIndex = rand() % symbols.size();
-					auto symbol = symbols[eraseIndex];
-					if (symbol.first != Decoration::Start && symbol.first != Decoration::Exit && !(symbol.first & Decoration::Gap)
-						&& get_symbol_type(symbol.first) != Decoration::Eraser && symbol.second > 0) {
-						toErase = symbol.first;
-						symbols[eraseIndex].second--;
-					}
-				}
-				eraseSymbols.push_back(toErase);
-				eraserColors.push_back(s.first & 0xf);
-			}
+	for (std::pair<int, int> s : symbols[Decoration::Eraser]) {
+		for (int i = 0; i < s.second; i++) {
+			eraserColors.push_back(s.first & 0xf);
+			eraseSymbols.push_back(symbols.popRandomSymbol());
 		}
-	}
-
-	std::vector<std::pair<int, int>> shapes, stones, triangles, stars, erasers, dots, gaps;
-	for (std::pair<int, int> s : symbols) {
-		if (get_symbol_type(s.first) == Decoration::Poly) shapes.push_back(s);
-		else if (get_symbol_type(s.first) == Decoration::Stone) stones.push_back(s);
-		else if (get_symbol_type(s.first) == Decoration::Triangle) triangles.push_back(s);
-		else if (get_symbol_type(s.first) == Decoration::Star) stars.push_back(s);
-		else if (get_symbol_type(s.first) == Decoration::Eraser) erasers.push_back(s);
-		else if (s.first & Decoration::Dot) dots.push_back(s);
-		else if ((s.first & ~0xf) == Decoration::Gap) gaps.push_back(s);
 	}
 
 	_SHAPEDIRECTIONS = (hasFlag(Config::DisconnectShapes) ? _DISCONNECT : _DIRECTIONS2);
 	int numShapes = 0, numRotate = 0, numNegative = 0;
 	std::vector<int> colors, negativeColors;
-	for (std::pair<int, int> s : shapes) {
+	for (std::pair<int, int> s : symbols[Decoration::Poly]) {
 		for (int i = 0; i < s.second; i++) {
 			if (s.first & Decoration::Can_Rotate) numRotate++;
 			if (s.first & Decoration::Negative) {
@@ -477,24 +451,24 @@ bool Generate::place_all_symbols(std::vector<std::pair<int, int>>& symbols)
 		}
 	}
 	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative)) return false;
-	_stoneTypes = static_cast<int>(stones.size());
+	_stoneTypes = static_cast<int>(symbols[Decoration::Stone].size());
 	_bisect = true;
-	for (std::pair<int, int> s : stones) if (!place_stones(s.first & 0xf, s.second))
+	for (std::pair<int, int> s : symbols[Decoration::Stone]) if (!place_stones(s.first & 0xf, s.second))
 		return false;
-	for (std::pair<int, int> s : triangles) if (!place_triangles(s.first & 0xf, s.second))
+	for (std::pair<int, int> s : symbols[Decoration::Triangle]) if (!place_triangles(s.first & 0xf, s.second))
 		return false;
-	for (std::pair<int, int> s : stars) if (!place_stars(s.first & 0xf, s.second))
+	for (std::pair<int, int> s : symbols[Decoration::Star]) if (!place_stars(s.first & 0xf, s.second))
 		return false;
-	for (std::pair<int, int> s : erasers) if (!place_erasers(eraserColors, eraseSymbols))
+	for (std::pair<int, int> s : symbols[Decoration::Eraser]) if (!place_erasers(eraserColors, eraseSymbols))
 		return false;
-	for (std::pair<int, int> s : dots) if (!place_dots(s.second, (s.first & 0xf), (s.first & ~0xf) == Decoration::Dot_Intersection))
+	for (std::pair<int, int> s : symbols[Decoration::Dot]) if (!place_dots(s.second, (s.first & 0xf), (s.first & ~0xf) == Decoration::Dot_Intersection))
 		return false;
-	for (std::pair<int, int> s : gaps) if (!place_gaps(s.second))
+	for (std::pair<int, int> s : symbols[Decoration::Gap]) if (!place_gaps(s.second))
 		return false;
 	return true;
 }
 
-bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
+bool Generate::generate_path(PuzzleSymbols & symbols)
 {
 	clear();
 
@@ -514,7 +488,7 @@ bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 		}
 		if (_exits.size() == 6) { //Pivot panel
 			set(0, _panel->_height / 2, PATH);
-			set(_panel->_width - 1, _panel->_height / 2,  PATH);
+			set(_panel->_width - 1, _panel->_height / 2, PATH);
 		}
 	}
 
@@ -522,41 +496,22 @@ bool Generate::generate_path(std::vector<std::pair<int, int>>& symbols)
 		return generate_longest_path();
 	}
 
-	if (hasFlag(Config::LongPath)) {
+	if (hasFlag(Config::LongPath) || symbols.style == Panel::Style::HAS_DOTS && !hasFlag(Config::PreserveStructure) &&
+		!(_panel->symmetry == Panel::Symmetry::Vertical && (_panel->_width / 2) % 2 == 0 ||
+		  _panel->symmetry == Panel::Symmetry::Horizontal && (_panel->_height / 2) % 2 == 0)) {
 		return generate_path_length(_panel->get_num_grid_points() * 7 / 8);
 	}
 
-	bool dotPuzzle = false;
-	for (auto s : symbols) {
-		if (get_symbol_type(s.first) == Decoration::Stone) {
-			dotPuzzle = true;
-		}
-		else if (s.first != Decoration::Start && s.first != Decoration::Exit && s.first != Decoration::Gap) {
-			dotPuzzle = false;
-			break;
-		}
-	}
-	if (dotPuzzle)
+	if (symbols.style == Panel::Style::HAS_STONES && !hasFlag(Config::SplitErasers))
 		return generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
 
-	bool shapePuzzle = false;
-	int numShapes = 0;
-	for (auto s : symbols) {
-		if (get_symbol_type(s.first) == Decoration::Poly) {
-			shapePuzzle = true;
-			numShapes += s.second;
-		}
-		else if (s.first != Decoration::Start && s.first != Decoration::Exit && s.first != Decoration::Gap) {
-			shapePuzzle = false;
-			break;
-		}
-	}
-	if (shapePuzzle) {
+	if (symbols.style == Panel::Style::HAS_SHAPERS) {
 		if (hasFlag(Config::DisableCombineShapes)) {
-			return generate_path_regions(numShapes + 1);
+			return generate_path_regions(symbols.getNum(Decoration::Poly) + 1);
 		}
 		return generate_path_length(1);
 	}
+
 	return generate_path_length(_panel->get_num_grid_points() * 3 / 4);
 }
 
@@ -757,7 +712,7 @@ bool Generate::place_exit(int amount)
 		if (_starts.count(pos) || _exits.count(pos)) continue;
 		bool adjacent = false;
 		for (Point dir : _8DIRECTIONS2) {
-			if (!off_edge(pos + dir) && get(pos + dir) == Decoration::Start) {
+			if (!off_edge(pos + dir) && get(pos + dir) == Decoration::Exit) {
 				adjacent = true;
 				break;
 			}

@@ -87,15 +87,12 @@ public:
 	void SetX(int x) {_x = x;}
 	int GetY() {return _y;}
 	void SetY(int y) {_y = y;}
-	float GetXD() { return _xd; }
-	float GetYD() { return _yd; }
 	Direction GetDir() {return _dir;}
 	int GetFlags() { return _flags; }
 	void SetDir(Direction dir) {_dir = dir;}
 
 private:
 	int _x, _y, _flags;
-	float _xd, _yd;
 	Direction _dir;
 };
 

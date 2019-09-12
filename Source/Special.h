@@ -30,7 +30,9 @@ public:
 	void generateRGBStarPuzzleN(int id);
 	void generateJungleVault(int id);
 
-	void deactivateAndTarget(int targetPuzzle, int targetFrom);
+	void setTarget(int puzzle, int target);
+	void clearTarget(int puzzle);
+	void setTargetAndDeactivate(int puzzle, int target);
 
 private:
 

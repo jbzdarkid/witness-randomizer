@@ -103,6 +103,7 @@ void PuzzleList::GenerateSymmetryN()
 	generator->generateMaze(0x00062);
 	generator->generateMaze(0x0005C);
 	//Rotational Symmetry Mazes
+	generator->setSymmetry(Panel::Symmetry::Rotational);
 	generator->setGridSize(5, 5);
 	generator->generateMaze(0x0008D, 0, 1);
 	generator->generateMaze(0x00081, 1, 1);
@@ -119,6 +120,7 @@ void PuzzleList::GenerateSymmetryN()
 	generator->setFlagOnce(Generate::Config::FullGaps);
 	generator->generate(0x000B0, Decoration::Dot, 8, Decoration::Gap, 5);
 	//Black Dots
+	generator->setFlag(Generate::Config::StartEdgeOnly);
 	generator->setGridSize(5, 5);
 	generator->setSymmetry(Panel::Symmetry::Horizontal);
 	generator->generate(0x00022, Decoration::Dot, 10, Decoration::Start, 1, Decoration::Exit, 1);
@@ -222,9 +224,10 @@ void PuzzleList::GenerateQuarryN()
 	generator->setFlagOnce(Generate::Config::DisconnectShapes);
 	generator->generate(0x021AE, Decoration::Poly, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	//Eraser + Stars
-	//I need to reset colors to get orange, but I don't reset immediately because it makes the green stars look bad
-	generator->generate(0x021B5, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 4, Decoration::Eraser | Decoration::Color::White, 1, Decoration::Gap, 2);
-	generator->generate(0x021B6, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 4, Decoration::Eraser | Decoration::Color::Black, 1, Decoration::Gap, 2);
+	generator->setFlag(Generate::Config::WriteColors);
+	generator->generate(0x021B5, Decoration::Star | Decoration::Color::Green, 3, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Eraser | Decoration::Color::Magenta, 1, Decoration::Gap, 2);
+	generator->generate(0x021B6, Decoration::Star | Decoration::Color::Green, 3, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Eraser | Decoration::Color::Green, 1, Decoration::Gap, 2);
+	generator->resetConfig();
 	generator->setFlag(Generate::Config::ResetColors);
 	generator->generate(0x021B7, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Eraser | Decoration::Orange, 1);
 	generator->generate(0x021BB, Decoration::Star | Decoration::Color::Magenta, 7, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Eraser | Decoration::Orange, 1);
@@ -232,6 +235,7 @@ void PuzzleList::GenerateQuarryN()
 	generator->generate(0x09DB1, Decoration::Star | Decoration::Color::Orange, 9, Decoration::Eraser | Decoration::Orange, 1);
 	generator->generate(0x3C124, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 5, Decoration::Star | Decoration::Color::White, 4, Decoration::Eraser | Decoration::Magenta, 1);
 	//Eraser + Stars + Shapes
+	generator->setFlagOnce(Generate::Config::FixBackground);
 	generator->generate(0x09DB3, Decoration::Star | Decoration::Color::Magenta, 5, Decoration::Poly | Decoration::Color::Orange, 2, Decoration::Eraser | Decoration::White, 1);
 	generator->generate(0x09DB4, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Poly | Decoration::Color::Orange, 2, Decoration::Eraser | Decoration::White, 1);
 	generator->generate(0x0A3CB, Decoration::Star | Decoration::Color::Magenta, 3, Decoration::Poly | Decoration::Color::Orange, 3, Decoration::Eraser | Decoration::White, 1);
@@ -281,7 +285,7 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x00987, Decoration::Poly, 2, Decoration::Gap, 8);
 	generator->generate(0x181A9, Decoration::Poly, 3, Decoration::Gap, 8);
 	//Turn off bridge control until all previous puzzles are solved
-	specialCase->deactivateAndTarget(0x00609, 0x181A9);
+	specialCase->setTargetAndDeactivate(0x181A9, 0x00609);
 	//Red Panels
 	generator->resetConfig();
 	generator->setGridSize(4, 4);
@@ -324,7 +328,7 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x00A1E, Decoration::Poly | Decoration::Can_Rotate, 4);
 	generator->generate(0x00C2E, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Poly, 2, Decoration::Gap, 3);
 	generator->setFlagOnce(Generate::Config::DisconnectShapes);
-	generator->generate(0x00E3A, Decoration::Poly | Decoration::Can_Rotate, 4);
+	generator->generate(0x00E3A, Decoration::Poly | Decoration::Can_Rotate, 3);
 	//Optional Tetris
 	generator->resetConfig();
 	generator->generate(0x009A6, Decoration::Poly, 6);
@@ -336,17 +340,18 @@ void PuzzleList::GenerateSwampN()
 	generator->generate(0x009AB, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 1);
 	generator->setGridSize(4, 4);
 	generator->pathWidth = 0.65f;
-	generator->generate(0x009AD, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
-	generator->generate(0x009AE, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
-	generator->generate(0x009AF, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
+	generator->generate(0x009AD, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 1);
+	generator->generate(0x009AE, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 1);
+	generator->generate(0x009AF, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 1);
 	generator->setFlagOnce(Generate::Config::DisconnectShapes);
-	generator->generate(0x00006, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
+	generator->generate(0x00006, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 1);
 	//Negative Shapes 2
 	generator->generate(0x00002, Decoration::Poly, 2, Decoration::Poly | Decoration::Negative, 2);
 	generator->generate(0x00004, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
 	generator->generate(0x00005, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
-	generator->generate(0x013E6, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 2);
-	generator->generate(0x00596, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 3);
+	generator->generate(0x013E6, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
+	generator->setFlagOnce(Generate::Config::DisconnectShapes);
+	generator->generate(0x00596, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
 	//Negative Shapes 3
 	generator->resetConfig();
 	generator->setFlag(Generate::Config::RequireCancelShapes);
@@ -488,11 +493,11 @@ void PuzzleList::GenerateTownN()
 	generator->generate(0x28ACC, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Dot, 3);
 	generator->setSymmetry(Panel::Symmetry::None);
 	//Glass Door
-	generator->generate(0x28998, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Star | Decoration::Color::White, 6);
+	generator->generate(0x28998, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Star | Decoration::Color::White, 6); //TODO: Tweak difficulty, maybe make shapes smaller
 	//Church Star Door
 	specialCase->generateColorFilterPuzzle(0x28A0D, { std::make_pair<int,int>(Decoration::Star | 1, 6),
 		std::make_pair<int,int>(Decoration::Star | 2, 6), std::make_pair<int,int>(Decoration::Star | 3, 4) }, { 1, 1, 0, 0 });
-	specialCase->deactivateAndTarget(0x28A69, 0x28A0D);
+	specialCase->setTarget(0x28A0D, 0x03B6F); specialCase->clearTarget(0x28A69); //Set star door to open tower instead of perspective puzzle (to prevent cheesing it)
 	//Soundproof Room
 	std::vector<int> allPitches = { DOT_SMALL, DOT_SMALL, DOT_MEDIUM, DOT_MEDIUM, DOT_LARGE, DOT_LARGE };
 	std::vector<int> pitches;
@@ -523,6 +528,7 @@ void PuzzleList::GenerateVaultsN()
 	//Tutorial Vault
 	generator->generate(0x033D4, Decoration::Stone | Decoration::Color::White, 10, Decoration::Stone | Decoration::Color::Black, 10, Decoration::Dot, 10, Decoration::Start, 4);
 	//Tetris Vault
+	generator->setFlagOnce(Generate::Config::RequireCancelShapes);
 	generator->generate(0x0CC7B, Decoration::Dot_Intersection, 49, Decoration::Poly, 1, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Poly | Decoration::Negative, 3);
 	//Symmetry Vault
 	generator->setSymmetry(Panel::Symmetry::Rotational);

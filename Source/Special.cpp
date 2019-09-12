@@ -240,7 +240,7 @@ void Special::generateRGBStonePuzzleN(int id)
 {
 	while (true) {
 		_generator->setFlagOnce(Generate::Config::DisableWrite);
-		if (!_generator->generate(id, { })) continue;
+		_generator->generate(id);
 		int amount = 16;
 		std::set<Decoration::Color> used;
 		std::vector<Decoration::Color> colors = { Decoration::Black, Decoration::White, Decoration::Red, Decoration::Green, Decoration::Blue, Decoration::Cyan, Decoration::Yellow, Decoration::Magenta };
@@ -262,7 +262,7 @@ void Special::generateRGBStarPuzzleN(int id)
 {
 	while (true) {
 		_generator->setFlagOnce(Generate::Config::DisableWrite);
-		if (!_generator->generate(id, {})) continue;
+		_generator->generate(id);
 		int amount = 16;
 		std::set<Decoration::Color> used;
 		std::set<Decoration::Color> colors = { Decoration::Black, Decoration::White, Decoration::Red, Decoration::Green, Decoration::Blue, Decoration::Cyan, Decoration::Yellow, Decoration::Magenta };
@@ -306,10 +306,21 @@ void Special::generateJungleVault(int id)
 	_generator->write(id);
 }
 
-void Special::deactivateAndTarget(int targetPuzzle, int targetFrom)
+void Special::setTarget(int puzzle, int target)
 {
 	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	panel->_memory->WritePanelData<float>(targetPuzzle, POWER, { 0.0, 0.0 });
-	panel->_memory->WritePanelData<int>(targetFrom, TARGET, { targetPuzzle + 1 });
-	panel->_memory->WritePanelData<float>(0x0061A, OPEN_RATE, { 0.1f });
+	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
+}
+
+void Special::clearTarget(int puzzle)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	panel->_memory->WritePanelData<int>(puzzle, TARGET, { 0 });
+}
+
+void Special::setTargetAndDeactivate(int puzzle, int target)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	panel->_memory->WritePanelData<float>(target, POWER, { 0.0, 0.0 });
+	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
 }

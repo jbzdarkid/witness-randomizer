@@ -203,6 +203,8 @@ void Panel::ReadAllData() {
 	std::vector<int> dotSeq = _memory->ReadArray<int>(id, DOT_SEQUENCE, dotSeqLen);
 	int dotSeqLenR = _memory->ReadPanelData<int>(id, DOT_SEQUENCE_LEN_REFLECTION);
 	std::vector<int> dotSeqR = _memory->ReadArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSeqLenR);
+	void* target = _memory->ReadPanelData<void*>(id, TARGET);
+	void* panelTarget = _memory->ReadPanelData<void*>(id, PANEL_TARGET);
 }
 
 void Panel::ReadDecorations() {
@@ -399,6 +401,19 @@ void Panel::WriteIntersections() {
 			if (x > 0 && _grid[x - 1][y] != OPEN) {
 				connections_a.push_back(xy_to_loc(x - 2, y));
 				connections_b.push_back(xy_to_loc(x, y));
+			}
+		}
+	}
+
+	if (symmetry) {
+		//Rearrange exits to be in symmetric pairs
+		for (int i = 0; i < _endpoints.size(); i += 2) {
+			Point sp = get_sym_point(_endpoints[i].GetX(), _endpoints[i].GetY());
+			for (int j = i + 1; j < _endpoints.size(); j++) {
+				if (_endpoints[j].GetX() == sp.first && _endpoints[j].GetY() == sp.second) {
+					std::swap(_endpoints[i + 1], _endpoints[j]);
+					break;
+				}
 			}
 		}
 	}
