@@ -581,6 +581,9 @@ void PuzzleList::GenerateOrchardN()
 
 void PuzzleList::GenerateKeepN()
 {
+	generator->setLoadingData(L"Keep", 5);
+	generator->resetConfig();
+
 	//TODO: Randomize the last hedge maze?
 
 	//Pressure Plate Puzzles
@@ -591,15 +594,28 @@ void PuzzleList::GenerateKeepN()
 	generator->setSymbol(Decoration::Gap_Row, 3, 0);
 	generator->setSymbol(Decoration::Gap_Row, 3, 2);
 	generator->setSymbol(Decoration::Gap_Row, 5, 6);
-	generator->generate(0x033EA, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->setFlagOnce(Generate::Config::LongPath);
+	generator->generate(0x033EA);
+	std::set<Point> path1 = generator->_path;
+	std::vector<std::vector<Point>> sets = { { {7, 8}, {8, 7} }, { { 6, 5 }, {7, 4} }, { {7, 0}, {7, 2}, {6, 1}, {8, 1}, {5, 2}, {5, 4} },
+		{ {2, 7}, {4, 7}, {3, 8}, {3, 6}, {1, 6}, {1, 4} }, { {0, 1}, {1, 0}, {2, 1}, {1, 2} } };
+	for (std::vector<Point> set : sets) {
+		Point p = pick_random(set);
+		while (!path1.count(p)) p = pick_random(set);
+		generator->set(p, p.first % 2 == 0 ? Decoration::Dot_Column : Decoration::Dot_Row);
+	}
+	generator->write(0x033EA);
 
 	generator->resetConfig();
 	generator->setSymbol(Decoration::Gap_Row, 3, 2);
 	generator->setSymbol(Decoration::Gap_Column, 8, 5);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
-	generator->generate(0x01BE9, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Cyan, 6);
+	generator->generate(0x01BE9, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Cyan, 4,
+		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
 	generator->set(3, 2, 0);
 	generator->set(8, 5, 0);
+	std::set<Point> path2 = generator->_path;
 	generator->write(0x01BE9);
 
 	generator->resetConfig();
@@ -610,18 +626,26 @@ void PuzzleList::GenerateKeepN()
 		{ { 5, 8 },{ 1, 2 },{ 7, 2 },{ 1, 0 } } };
 	generator->hitPoints = validHitPoints[rand() % validHitPoints.size()];
 	generator->setFlagOnce(Generate::Config::DisableCombineShapes);
-	generator->generate(0x01CD3, Decoration::Poly, 2, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x01CD3, Decoration::Poly, 2, Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1,
+		Decoration::Stone | Decoration::Color::Cyan, 1, Decoration::Stone | Decoration::Color::Magenta, 1);
+	std::set<Point> path3 = generator->_path;
+	generator->write(0x01CD3);
 
 	generator->resetConfig();
 	generator->setSymmetry(Panel::Symmetry::Rotational);
-	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
-	generator->generate(0x01D3F, Decoration::Poly | Decoration::Can_Rotate, 3);
+	generator->generate(0x01D3F, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Poly, 1);
 	std::swap(generator->_panel->_endpoints[0], generator->_panel->_endpoints[1]); //Need to have endpoints in right order to associate with pressure plates correctly
+	std::set<Point> path4 = (generator->_path1.count(Point(0, 8)) ? generator->_path2 : generator->_path1);
+	if (generator->_path.count({ 7, 0 })) generator->set(7, 0, Decoration::Dot_Row);
+	else generator->set(8, 1, Decoration::Dot_Column);
 	generator->write(0x01D3F);
-
-	//Laser Panel
-
+	
+	specialCase->generateKeepLaserPuzzle(0x03317, path1, path2, path3, path4,
+		{ { Decoration::Dot, 4 },{ Decoration::Star | Decoration::Color::Magenta, 4 },{ Decoration::Star | Decoration::Color::Cyan, 4 },
+		{ Decoration::Stone | Decoration::Color::Black, 5 },{ Decoration::Stone | Decoration::Color::White, 5 },{ Decoration::Stone | Decoration::Color::Cyan, 1 },
+		{ Decoration::Stone | Decoration::Color::Magenta, 1 },{ Decoration::Poly, 3 },{ Decoration::Poly | Decoration::Can_Rotate, 2 } });
 }
 
 void PuzzleList::GenerateJungleN()

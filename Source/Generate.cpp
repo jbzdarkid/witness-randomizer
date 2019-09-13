@@ -460,7 +460,8 @@ bool Generate::place_all_symbols(PuzzleSymbols & symbols)
 			}
 		}
 	}
-	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative)) return false;
+	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative))
+		return false;
 	_stoneTypes = static_cast<int>(symbols[Decoration::Stone].size());
 	_bisect = true;
 	for (std::pair<int, int> s : symbols[Decoration::Stone]) if (!place_stones(s.first & 0xf, s.second))
@@ -983,6 +984,7 @@ bool Generate::place_stones(int color, int amount) {
 			}
 		}
 		set(pos, Decoration::Stone | color);
+		_openpos.erase(pos);
 		amount--;
 		passCount++;
 	}

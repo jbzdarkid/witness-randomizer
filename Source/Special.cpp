@@ -351,6 +351,44 @@ void Special::generateApplePuzzle(int id, bool changeExit, bool flip)
 	}
 }
 
+void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols)
+{
+	_generator->resetConfig();
+	_generator->setGridSize(10, 11);
+	_generator->_starts = { { 0, 2 },{ 20, 10 },{ 8, 14 },{ 0, 22 },{ 20, 22 } };
+	_generator->_exits = { { 0, 18 },{ 10, 22 },{ 0, 0 },{ 20, 0 },{ 0, 12 } };
+	_generator->initPanel(id);
+	_generator->clear();
+	std::vector<Point> gaps = { { 17, 20 },{ 16, 19 },{ 20, 17 },{ 15, 14 },{ 15, 16 },{ 18, 13 },{ 20, 13 }, //Yellow Puzzle Walls
+	{ 10, 11 },{ 12, 11 },{ 14, 11 },{ 16, 11 },{ 18, 11 },{ 11, 0 },{ 11, 2 },{ 11, 4 },{ 11, 8 },{ 11, 10 },{ 14, 1 },{ 16, 1 },{ 18, 1 },{ 20, 1 }, //Pink Puzzle Walls
+	{ 2, 1 },{ 4, 1 },{ 6, 1 },{ 8, 1 },{ 0, 11 },{ 2, 11 },{ 4, 11 },{ 6, 11 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 9, 12 }, //Green Puzzle Walls
+	{ 0, 13 },{ 2, 13 },{ 4, 13 },{ 6, 13 },{ 9, 14 },{ 9, 16 },{ 9, 20 },{ 9, 22 }, //Blue Puzzle Walls
+	};
+	std::vector<Point> pathPoints = { { 14, 13 },{ 14, 12 },{ 15, 12 },{ 16, 12 },{ 17, 12 },{ 18, 12 },{ 19, 12 },{ 20, 12 },{ 20, 11 },
+	{ 11, 6 },{ 10, 6 },{ 10, 5 },{ 10, 4 },{ 10, 3 },{ 10, 2 },{ 10, 1 },{ 10, 0 },{ 9, 0 },{ 8, 0 },{ 7, 0 },{ 6, 0 },{ 5, 0 },{ 4, 0 },{ 3, 0 },
+	{ 2, 0 },{ 1, 0 },{ 0, 0 },{ 0, 1 },{ 8, 11 },{ 8, 12 },{ 8, 13 } };
+	std::vector<Point> pathPoints2 = { { 9, 18 },{ 10, 18 },{ 10, 19 },{ 10, 20 },{ 10, 21 },{ 10, 22 } }; //For exiting out the right side of the last puzzle
+	for (Point p : path1) _generator->set_path(Point(p.first + 12, p.second + 14));
+	for (Point p : path2) _generator->set_path(Point(p.first + 12, p.second + 2));
+	for (Point p : path3) _generator->set_path(Point(8 - p.first, 8 - p.second + 2));
+	for (Point p : path4) _generator->set_path(Point(p.first, p.second + 14));
+	for (Point p : pathPoints) _generator->set_path(p);
+	if (path4.count(Point({ 8, 4 }))) for (Point p : pathPoints2) _generator->set_path(p);
+	for (Point p : gaps) _generator->set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+
+	Generate::PuzzleSymbols psymbols(symbols);
+
+	while (!_generator->place_all_symbols(psymbols)) {
+		for (int x = 0; x < _generator->_panel->_width; x++)
+			for (int y = 0; y < _generator->_panel->_height; y++)
+				if (_generator->get(x, y) != PATH && (_generator->get(x, y) & 0x1fffff) != Decoration::Gap)
+					_generator->set(x, y, 0);
+		_generator->_openpos = _generator->_gridpos;
+	}
+
+	_generator->write(id);
+}
+
 void Special::setTarget(int puzzle, int target)
 {
 	std::shared_ptr<Panel> panel = std::make_shared<Panel>();

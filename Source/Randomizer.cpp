@@ -42,7 +42,7 @@ void Randomizer::GenerateNormal(HWND loadingHandle) {
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
 	puzzles->setLoadingHandle(loadingHandle);
 	RandomizeDesert();
-	puzzles->GenerateAllN();
+	//puzzles->GenerateAllN();
 	//puzzles->GenerateSymmetryN();
 	//puzzles->GenerateQuarryN();
 	//puzzles->GenerateSwampN();
@@ -54,7 +54,7 @@ void Randomizer::GenerateNormal(HWND loadingHandle) {
 	//puzzles->GenerateCavesN();
 	//puzzles->GenerateOrchardN();
 	//puzzles->GenerateDesertN(); //Just scramble the positions for now
-	//puzzles->GenerateKeepN();
+	puzzles->GenerateKeepN();
 	//puzzles->GenerateJungleN();
 }
 

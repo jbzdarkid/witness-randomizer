@@ -73,6 +73,8 @@ private:
 	std::shared_ptr<Special> specialCase;
 	HWND _handle;
 
+	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
+	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
 	template <class T> T pop_random(std::vector<T>& vec) {
 		int i = rand() % vec.size();
 		T item = vec[i];

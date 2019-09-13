@@ -30,6 +30,7 @@ public:
 	void generateRGBStarPuzzleN(int id);
 	void generateJungleVault(int id);
 	void generateApplePuzzle(int id, bool changeExit, bool flip);
+	void generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols);
 
 	void setTarget(int puzzle, int target);
 	void clearTarget(int puzzle);
