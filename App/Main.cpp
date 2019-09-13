@@ -216,9 +216,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			case IDC_TEST:
 				srand(static_cast<unsigned int>(time(NULL)));
-				//srand(ctr++);
+				srand(ctr++);
 
 				generator->resetConfig();
+				generator->setFlagOnce(Generate::Config::ShortPath);
+				//generator->setFlagOnce(Generate::Config::DisableCombineShapes);
+				generator->generate(0x03317, { { Decoration::Stone | Decoration::Color::Black, 6 },{ Decoration::Stone | Decoration::Color::White, 6 },{ Decoration::Gap, 5 },
+					{ Decoration::Star | Decoration::Color::Magenta, 6 },{ Decoration::Star | Decoration::Color::Cyan, 6 },
+					{ Decoration::Poly, 1 }, { Decoration::Poly | Decoration::Can_Rotate, 2 }
+				});
+
 
 				break;
 

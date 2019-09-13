@@ -26,6 +26,12 @@ void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amoun
 	while (!generate(id, symbols));
 }
 
+void Generate::generate(int id, std::vector<std::pair<int, int>> symbolVec)
+{
+	PuzzleSymbols symbols(symbolVec);
+	while (!generate(id, symbols));
+}
+
 Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
 
 std::vector<Point> Generate::_DIRECTIONS1 = { Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0) };
@@ -200,7 +206,10 @@ void Generate::set_path(Point pos)
 
 void Generate::clear()
 {
-	for (int x = 0; x < _panel->_width; x++) {
+	if (_custom_grid.size() > 0) {
+		_panel->_grid = _custom_grid;
+	}
+	else for (int x = 0; x < _panel->_width; x++) {
 		for (int y = 0; y < _panel->_height; y++) {
 			if (hasFlag(Config::PreserveStructure) && (_panel->_grid[x][y] == OPEN || (_panel->_grid[x][y] & 0x60000f) == NO_POINT || (_panel->_grid[x][y] & Decoration::Empty) == Decoration::Empty)) continue;
 			_panel->_grid[x][y] = 0;
@@ -215,6 +224,7 @@ void Generate::reset() {
 	_starts.clear();
 	_exits.clear();
 	_custom_grid.clear();
+	hitPoints.clear();
 }
 
 void Generate::init_treehouse_layout()
@@ -492,9 +502,16 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 		}
 	}
 
+	if (hitPoints.size() > 0) {
+		return generate_special_path();
+	}
+
 	if (_parity != -1) {
 		return generate_longest_path();
 	}
+
+	if (hasFlag(Config::ShortPath))
+		return generate_path_length(1);
 
 	if (hasFlag(Config::LongPath) || symbols.style == Panel::Style::HAS_DOTS && !hasFlag(Config::PreserveStructure) &&
 		!(_panel->symmetry == Panel::Symmetry::Vertical && (_panel->_width / 2) % 2 == 0 ||
@@ -614,6 +631,47 @@ bool Generate::generate_longest_path()
 		fails = 0;
 	}
 	return _path.size() / 2 + 1 == reqLength;
+}
+
+bool Generate::generate_special_path()
+{
+	Point pos = pick_random(_starts);
+	Point exit = pick_random(_exits);
+	set_path(pos);
+	for (Point p : hitPoints) {
+		set(p, PATH);
+	}
+	int hitIndex = 0;
+	while (pos != exit) {
+		std::vector<Point> validDir;
+		for (Point dir : _DIRECTIONS2) {
+			Point newPos = pos + dir;
+			if (off_edge(newPos)) continue;
+			Point connectPos = Point(pos.first + dir.first / 2, pos.second + dir.second / 2);
+			if (get(connectPos) == PATH && hitIndex < hitPoints.size() && connectPos == hitPoints[hitIndex]) {
+				validDir = { dir };
+				hitIndex++;
+				break;
+			}
+			if (get(newPos) != 0 || get(connectPos) != 0 || newPos == exit && hitIndex != hitPoints.size()) continue;
+			if (_panel->symmetry && newPos == get_sym_point(newPos)) continue;
+			bool fail = false;
+			for (Point dir : _DIRECTIONS1) {
+				if (!off_edge(newPos + dir) && get(newPos + dir) == PATH && newPos + dir != hitPoints[hitIndex]) {
+					fail = true;
+					break;
+				}
+			}
+			if (fail) continue;
+			validDir.push_back(dir);
+		}
+		if (validDir.size() == 0) return false;
+		Point dir = pick_random(validDir);
+		set_path(pos + dir);
+		set_path(pos + Point(dir.first / 2, dir.second / 2));
+		pos = pos + dir;
+	}
+	return hitIndex == hitPoints.size();
 }
 
 void Generate::erase_path()
@@ -899,7 +957,11 @@ bool Generate::place_stones(int color, int amount) {
 			continue;
 		}
 		if (_stoneTypes > 2) {
-			open = region;
+			open.clear();
+			for (Point p : region) {
+				if (_openpos.count(p))
+					open.insert(p);
+			}
 		}
 		open.erase(pos);
 		if (_panel->symmetry) {
@@ -921,7 +983,6 @@ bool Generate::place_stones(int color, int amount) {
 			}
 		}
 		set(pos, Decoration::Stone | color);
-		_openpos.erase(pos);
 		amount--;
 		passCount++;
 	}
@@ -1074,7 +1135,6 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		else for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
 			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), balance ? rand() % 3 + 1 : shapeSize));
-			shapesCombined = true;
 		}
 		//Take remaining area and try to stick it to existing shapes
 		multibreak:
@@ -1122,7 +1182,8 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 				if (disconnect) break;
 			}
 			if (!disconnect) continue;
-		}	
+		}
+		if (numShapes > 1) shapesCombined = true;
 		numNegative -= static_cast<int>(shapesN.size());
 		for (Shape& shape : shapes) {
 			int symbol = make_shape_symbol(shape, (numRotated-- > 0), (numShapes-- <= 0));

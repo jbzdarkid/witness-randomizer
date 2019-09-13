@@ -41,6 +41,7 @@
 void Randomizer::GenerateNormal(HWND loadingHandle) {
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
 	puzzles->setLoadingHandle(loadingHandle);
+	RandomizeDesert();
 	puzzles->GenerateAllN();
 	//puzzles->GenerateSymmetryN();
 	//puzzles->GenerateQuarryN();
@@ -135,7 +136,7 @@ void Randomizer::PreventSnipes()
 	// Distance-gate swamp snipe 1 to prevent RNG swamp snipe
 	_memory->WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, { 15.0 });
 	// Distance-gate shadows laser to prevent sniping through the bars
-	_memory->WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, { 2.5 });
+	//_memory->WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, { 2.5 }); //Removing since this area is not random anymore
 }
 
 // Private methods

@@ -321,5 +321,6 @@ private:
 
 	friend class PanelExtractionTests;
 	friend class Generate;
+	friend class PuzzleList;
 	friend class Special;
 };

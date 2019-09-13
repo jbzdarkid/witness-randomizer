@@ -3,7 +3,7 @@
 void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry)
 {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
-	while (!_generator->generate(id1, symbols));
+	_generator->generate(id1, symbols);
 	std::shared_ptr<Panel> puzzle = _generator->_panel;
 	std::shared_ptr<Panel> flippedPuzzle = std::make_shared<Panel>(id2);
 	for (int x = 0; x < puzzle->_width; x++) {
@@ -70,7 +70,7 @@ void Special::generateAntiPuzzle(int id)
 void Special::generateColorFilterPuzzle(int id, std::vector<std::pair<int, int>> symbols, Color filter)
 {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
-	while (!_generator->generate(id, symbols));
+	_generator->generate(id, symbols);
 	std::vector<Color> availableColors = { {0, 0, 0, 1} };
 	if (filter.r == 1) {
 		for (int i = 0; i < availableColors.size(); i++) {
@@ -369,3 +369,51 @@ void Special::setTargetAndDeactivate(int puzzle, int target)
 	panel->_memory->WritePanelData<float>(target, POWER, { 0.0, 0.0 });
 	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
 }
+
+//Probably won't use
+/*void Special::generateKeepLaserPanel(int id, Generate::PuzzleSymbols corner1, Generate::PuzzleSymbols corner2, Generate::PuzzleSymbols corner3, Generate::PuzzleSymbols corner4)
+{
+	while (true) {
+		_generator->resetConfig();
+		_generator->setSymbol(Decoration::Gap_Column, 8, 3);
+		_generator->setSymbol(Decoration::Gap_Column, 4, 5);
+		_generator->setSymbol(Decoration::Gap_Row, 3, 0);
+		_generator->setSymbol(Decoration::Gap_Row, 3, 2);
+		_generator->setSymbol(Decoration::Gap_Row, 5, 6);
+		_generator->setFlagOnce(Generate::Config::DisableWrite);
+		_generator->generate(id);
+		std::set<Point> set1;
+		for (int x = 9; x < _generator->_panel->_width; x += 2) for (int y = 9; y < _generator->_panel->_height; y += 2)
+			set1.insert(Point(x, y));
+		_generator->_openpos = set1;
+		if (!_generator->place_all_symbols(corner1))
+			continue;
+		std::set<Point> set2;
+		for (int x = 9; x < _generator->_panel->_width; x += 2) for (int y = 7; y > 0; y -= 2)
+			set2.insert(Point(x, y));
+		_generator->_openpos = set2;
+		if (!_generator->place_all_symbols(corner2))
+			continue;
+		std::set<Point> set3;
+		for (int x = 7; x > 0; x -= 2) for (int y = 7; y < 0; y -= 2)
+			set3.insert(Point(x, y));
+		_generator->_openpos = set3;
+		if (!_generator->place_all_symbols(corner3))
+			continue;
+		std::set<Point> set4;
+		for (int x = 7; x > 0; x -= 2) for (int y = 9; y < _generator->_panel->_height; y += 2)
+			set4.insert(Point(x, y));
+		_generator->_openpos = set4;
+		//Be sure not to put shapes down after shapes have already been placed
+		for (Point p : set3) if (_generator->get_symbol_type(_generator->get(p)) == Decoration::Poly) {
+			for (Point p2 : _generator->get_region(p)) set4.erase(p);
+		}
+		if (!_generator->place_all_symbols(corner4))
+			continue;
+		_generator->write(id);
+	}
+}*/
+//specialCase->generateKeepLaserPanel(0x03317, Generate::PuzzleSymbols({ {Decoration::Stone | Decoration::Color::Black, 4}, {Decoration::Stone | Decoration::Color::White, 4} }),
+//	Generate::PuzzleSymbols({ { Decoration::Star | Decoration::Color::Magenta, 6 },{ Decoration::Star | Decoration::Color::Cyan, 6 } }),
+//	Generate::PuzzleSymbols({ { Decoration::Poly, 2 },{ Decoration::Stone | Decoration::Color::Black, 2 }, { Decoration::Stone | Decoration::Color::White, 2 } }),
+//	Generate::PuzzleSymbols({ { Decoration::Poly | Decoration::Can_Rotate, 3 } }));

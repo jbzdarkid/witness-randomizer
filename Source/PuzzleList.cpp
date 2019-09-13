@@ -13,8 +13,9 @@ void PuzzleList::GenerateAllN()
 	GenerateVaultsN();
 	GenerateTrianglePanelsN();
 	GenerateMountainN();
+	GenerateCavesN();
 	GenerateOrchardN();
-	GenerateDesertN();
+	//GenerateDesertN();
 	//GenerateShadowsN(); //Can't randomize
 	GenerateKeepN();
 	//GenerateMonasteryN(); //Can't randomize
@@ -34,8 +35,9 @@ void PuzzleList::GenerateAllH()
 	GenerateVaultsH();
 	GenerateTrianglePanelsH();
 	GenerateMountainH();
+	GenerateCavesH();
 	GenerateOrchardH();
-	GenerateDesertH();
+	//GenerateDesertH(); //Swap positions
 	//GenerateShadowsH(); //Can't randomize
 	GenerateKeepH();
 	//GenerateMonasteryH(); //Can't randomize
@@ -577,12 +579,49 @@ void PuzzleList::GenerateOrchardN()
 	specialCase->generateApplePuzzle(0x032FF, true, false);
 }
 
-void PuzzleList::GenerateDesertN()
-{
-}
-
 void PuzzleList::GenerateKeepN()
 {
+	//TODO: Randomize the last hedge maze?
+
+	//Pressure Plate Puzzles
+
+	generator->resetConfig();
+	generator->setSymbol(Decoration::Gap_Column, 8, 3);
+	generator->setSymbol(Decoration::Gap_Column, 4, 5);
+	generator->setSymbol(Decoration::Gap_Row, 3, 0);
+	generator->setSymbol(Decoration::Gap_Row, 3, 2);
+	generator->setSymbol(Decoration::Gap_Row, 5, 6);
+	generator->generate(0x033EA, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
+
+	generator->resetConfig();
+	generator->setSymbol(Decoration::Gap_Row, 3, 2);
+	generator->setSymbol(Decoration::Gap_Column, 8, 5);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x01BE9, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Cyan, 6);
+	generator->set(3, 2, 0);
+	generator->set(8, 5, 0);
+	generator->write(0x01BE9);
+
+	generator->resetConfig();
+	std::vector<std::vector<Point>> validHitPoints = {
+		{ { 5, 8 },{ 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 8, 7 },{ 7, 2 },{ 6, 7 },{ 5, 8 } },{ { 5, 8 },{ 4, 5 },{ 7, 2 },{ 2, 5 } },
+		{ { 5, 8 },{ 3, 6 },{ 7, 2 },{ 3, 4 } },{ { 5, 8 },{ 1, 6 },{ 7, 2 },{ 1, 4 } },{ { 5, 8 },{ 4, 3 },{ 7, 2 },{ 2, 3 } },
+		{ { 5, 8 },{ 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 5, 8 },{ 1, 4 },{ 7, 2 },{ 1, 2 } },{ { 5, 8 },{ 3, 2 },{ 7, 2 },{ 3, 0 } },
+		{ { 5, 8 },{ 1, 2 },{ 7, 2 },{ 1, 0 } } };
+	generator->hitPoints = validHitPoints[rand() % validHitPoints.size()];
+	generator->setFlagOnce(Generate::Config::DisableCombineShapes);
+	generator->generate(0x01CD3, Decoration::Poly, 2, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
+
+	generator->resetConfig();
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x01D3F, Decoration::Poly | Decoration::Can_Rotate, 3);
+	std::swap(generator->_panel->_endpoints[0], generator->_panel->_endpoints[1]); //Need to have endpoints in right order to associate with pressure plates correctly
+	generator->write(0x01D3F);
+
+	//Laser Panel
+
 }
 
 void PuzzleList::GenerateJungleN()

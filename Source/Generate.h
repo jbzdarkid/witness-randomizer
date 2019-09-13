@@ -28,6 +28,7 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5);
+	void generate(int id, std::vector<std::pair<int, int>> symbolVec);
 	void generateMaze(int id);
 	void generateMaze(int id, int numStarts, int numExits);
 	void initPanel(int id);
@@ -42,7 +43,7 @@ public:
 	enum Config { None = 0, FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, SmallShapes = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
 		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, KeepPath = 0x400, DisableCombineShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
 		AlternateColors = 0x8000, //Black -> Green, White -> Pink, Purple -> White
-		WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, SplitErasers = 0x80000, LongPath = 0x100000,
+		WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, SplitErasers = 0x80000, LongPath = 0x100000, ShortPath = 0x200000
 	};
 	void setFlag(Config option) { _config |= option; };
 	void setFlagOnce(Config option) { _config |= option; _oneTimeAdd |= option; };
@@ -52,26 +53,7 @@ public:
 	void resetConfig();
 	float pathWidth;
 	Endpoint::Direction pivotDirection;
-
-private:
-	std::shared_ptr<Panel> _panel;
-	std::vector<std::vector<int>> _custom_grid;
-	int _width, _height;
-	Panel::Symmetry _symmetry;
-	std::set<Point> _starts, _exits;
-	std::set<Point> _gridpos, _openpos;
-	std::set<Point> _path, _path1, _path2;
-	bool _fullGaps, _bisect;
-	int _stoneTypes;
-	int _config;
-	int _oneTimeAdd, _oneTimeRemove;
-	long _seed;
-	std::vector<Point> _splitPoints;
-
-	int _parity;
-	HWND _handle;
-	int _areaTotal, _genTotal, _areaPuzzles, _totalPuzzles;
-	std::wstring _areaName;
+	std::vector<Point> hitPoints; //The generated path will be forced to hit these points in order
 
 	struct PuzzleSymbols {
 		std::map<int, std::vector<std::pair<int, int>>> symbols;
@@ -112,6 +94,26 @@ private:
 		}
 	};
 
+private:
+	std::shared_ptr<Panel> _panel;
+	std::vector<std::vector<int>> _custom_grid;
+	int _width, _height;
+	Panel::Symmetry _symmetry;
+	std::set<Point> _starts, _exits;
+	std::set<Point> _gridpos, _openpos;
+	std::set<Point> _path, _path1, _path2;
+	bool _fullGaps, _bisect;
+	int _stoneTypes;
+	int _config;
+	int _oneTimeAdd, _oneTimeRemove;
+	long _seed;
+	std::vector<Point> _splitPoints;
+
+	int _parity;
+	HWND _handle;
+	int _areaTotal, _genTotal, _areaPuzzles, _totalPuzzles;
+	std::wstring _areaName;
+
 	int get(Point pos) { return _panel->_grid[pos.first][pos.second]; }
 	void set(Point pos, int val) { _panel->_grid[pos.first][pos.second] = val; }
 	int get(int x, int y) { return _panel->_grid[x][y]; }
@@ -135,6 +137,7 @@ private:
 	bool generate_path_length(int minLength);
 	bool generate_path_regions(int minRegions);
 	bool generate_longest_path();
+	bool generate_special_path();
 	void erase_path();
 	std::set<Point> get_region(Point pos);
 	std::vector<int> get_symbols_in_region(Point pos);
