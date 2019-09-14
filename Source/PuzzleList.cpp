@@ -663,7 +663,7 @@ void PuzzleList::GenerateJungleN()
 
 	specialCase->generateSoundDotPuzzle(0x0026F, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, false);
 	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C3F, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
-	else specialCase->generateSoundDotPuzzle(0x00C3F, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
+	else specialCase->generateSoundDotPuzzle(0x00C3F, { DOT_LARGE, DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
 	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C41, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, true);
 	else specialCase->generateSoundDotPuzzle(0x00C41, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, true);
 	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x014B2, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, true);
