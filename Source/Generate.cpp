@@ -117,8 +117,8 @@ void Generate::setSymbol(Decoration::Shape symbol, int x, int y)
 	}
 
 	if (symbol == Decoration::Start) _starts.insert(Point(x, y));
-	if (symbol == Decoration::Exit) _exits.insert(Point(x, y));
-	else _custom_grid[x][y] = symbol; //Only exits are not set into the grid
+	else if (symbol == Decoration::Exit) _exits.insert(Point(x, y));
+	else _custom_grid[x][y] = symbol; //Starts and exits are not set into the grid
 }
 
 void Generate::setGridSize(int width, int height) {
@@ -852,9 +852,8 @@ bool Generate::can_place_dot(Point pos) {
 	if (rand() % 10 > 0) {
 		for (Point dir : _DIRECTIONS2) {
 			Point p = pos + dir;
-			if (!off_edge(p) && get(p) & DOT) {
-				if (rand() % 4 > 0) //Add some variation
-					return false;
+			if (!off_edge(p) && (get(p) & DOT)) {
+				return false;
 			}
 		}
 	}

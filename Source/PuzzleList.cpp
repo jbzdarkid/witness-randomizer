@@ -2,7 +2,7 @@
 
 void PuzzleList::GenerateAllN()
 {
-	generator->setLoadingData(219);
+	generator->setLoadingData(241);
 	GenerateTutorialN();
 	GenerateSymmetryN();
 	GenerateQuarryN();
@@ -12,15 +12,15 @@ void PuzzleList::GenerateAllN()
 	GenerateTownN();
 	GenerateVaultsN();
 	GenerateTrianglePanelsN();
+	GenerateOrchardN();
+	GenerateKeepN();
+	GenerateJungleN();
 	GenerateMountainN();
 	GenerateCavesN();
-	GenerateOrchardN();
+	SetWindowText(_handle, L"Done!");
 	//GenerateDesertN();
 	//GenerateShadowsN(); //Can't randomize
-	GenerateKeepN();
 	//GenerateMonasteryN(); //Can't randomize
-	GenerateJungleN();
-	SetWindowText(_handle, L"Done!");
 }
 
 void PuzzleList::GenerateAllH()
@@ -34,14 +34,15 @@ void PuzzleList::GenerateAllH()
 	GenerateTownH();
 	GenerateVaultsH();
 	GenerateTrianglePanelsH();
+	GenerateOrchardH();
+	GenerateKeepH();
+	GenerateJungleH();
 	GenerateMountainH();
 	GenerateCavesH();
-	GenerateOrchardH();
-	//GenerateDesertH(); //Swap positions
+	SetWindowText(_handle, L"Done!");
+	//GenerateDesertH();
 	//GenerateShadowsH(); //Can't randomize
-	GenerateKeepH();
 	//GenerateMonasteryH(); //Can't randomize
-	GenerateJungleH();
 }
 
 void PuzzleList::GenerateTutorialN()
@@ -155,10 +156,10 @@ void PuzzleList::GenerateSymmetryN()
 	//Symmetry Island Door 2 not randomized until I can ensure solution passes through center
 	//Dot Reflection Dual Panels (before laser)
 	generator->resetConfig();
-	std::set<Panel::Symmetry> normalSym = { Panel::Symmetry::Horizontal, Panel::Symmetry::Vertical, Panel::Symmetry::Rotational };
+	std::set<Panel::Symmetry> normalSym = { Panel::Symmetry::Horizontal, Panel::Symmetry::Rotational };
 	std::set<Panel::Symmetry> weirdSym = { Panel::Symmetry::RotateLeft, Panel::Symmetry::RotateRight, Panel::Symmetry::FlipXY, Panel::Symmetry::FlipNegXY };
 	specialCase->generateReflectionDotPuzzle(0x00A52, 0x00A61, { std::make_pair<int,int>(Decoration::Dot, 10),
-		std::make_pair<int,int>(Decoration::Exit, 1), std::make_pair<int,int>(Decoration::Gap, 5) }, pop_random(normalSym) );
+		std::make_pair<int,int>(Decoration::Exit, 1), std::make_pair<int,int>(Decoration::Gap, 5) }, Panel::Symmetry::Vertical );
 	generator->setSymbol(Decoration::Start, 0, 8);
 	specialCase->generateReflectionDotPuzzle(0x00A57, 0x00A64, { std::make_pair<int,int>(Decoration::Dot, 12),
 		std::make_pair<int,int>(Decoration::Exit, 1), std::make_pair<int,int>(Decoration::Gap, 1) }, pop_random(normalSym) );
@@ -646,10 +647,27 @@ void PuzzleList::GenerateKeepN()
 		{ { Decoration::Dot, 4 },{ Decoration::Star | Decoration::Color::Magenta, 4 },{ Decoration::Star | Decoration::Color::Cyan, 4 },
 		{ Decoration::Stone | Decoration::Color::Black, 5 },{ Decoration::Stone | Decoration::Color::White, 5 },{ Decoration::Stone | Decoration::Color::Cyan, 1 },
 		{ Decoration::Stone | Decoration::Color::Magenta, 1 },{ Decoration::Poly, 3 },{ Decoration::Poly | Decoration::Can_Rotate, 2 } });
+
+	specialCase->clearTarget(0x0360E); //Must solve pressure plate side
 }
 
 void PuzzleList::GenerateJungleN()
 {
+	//Can't random sound cues just yet. I found the file names in memory, but have yet to figure out where the actual sound files are.
+	//specialCase->testFind({ 'b', 'i', 'r', 'd', '3' }); //0x52a230
+	//specialCase->testFind({ 'b', 'i', 'r', 'd', '4' }); //0x52a2d8
+	//So the only thing that can be randomized currently, are the actual solutions.
+
+	generator->setLoadingData(L"Jungle", 4);
+	generator->resetConfig();
+
+	specialCase->generateSoundDotPuzzle(0x0026F, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, false);
+	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C3F, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
+	else specialCase->generateSoundDotPuzzle(0x00C3F, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
+	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C41, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, true);
+	else specialCase->generateSoundDotPuzzle(0x00C41, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, true);
+	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x014B2, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, true);
+	else specialCase->generateSoundDotPuzzle(0x014B2, { DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL }, true);
 }
 
 void PuzzleList::GenerateTutorialH()

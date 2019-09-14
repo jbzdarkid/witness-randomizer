@@ -122,6 +122,7 @@ private:
 	friend class Temp;
 	friend class ChallengeRandomizer;
 	friend class Randomizer;
+	friend class Special;
 };
 
 //I might need this code later

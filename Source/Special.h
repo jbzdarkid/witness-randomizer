@@ -36,6 +36,31 @@ public:
 	void clearTarget(int puzzle);
 	void setTargetAndDeactivate(int puzzle, int target);
 
+
+	int testFind(std::vector<byte> bytes) {
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+		int index = 0;
+		panel->_memory->AddSigScan(bytes, [&](int i) {
+			index = i;
+		});
+		panel->_memory->ExecuteSigScans();
+		return index;
+	}
+
+	void testSwap(int id1, int id2) {
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+		std::vector<byte> bytes1 = panel->_memory->ReadPanelData<byte>(id1, 0, 0x1000);
+		std::vector<byte> bytes2 = panel->_memory->ReadPanelData<byte>(id2, 0, 0x1000);
+		panel->_memory->WritePanelData<byte>(id1, 0, bytes2);
+		panel->_memory->WritePanelData<byte>(id2, 0, bytes1);
+	}
+
+	template <class T> std::vector<T> testRead(int address, int numItems) {
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+		std::vector<int> offsets = { address };
+		return panel->_memory->ReadData<T>(offsets, numItems);
+	}
+
 private:
 
 	Endpoint::Direction get_sym_dir(Endpoint::Direction direction, Panel::Symmetry symmetry) {

@@ -57,6 +57,7 @@ std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
 std::shared_ptr<Generate> generator = std::make_shared<Generate>();
 std::shared_ptr<Special> specialCase = std::make_shared<Special>(generator);
+std::vector<byte> bytes;
 
 int ctr = 0;
 TCHAR text[30];
@@ -83,144 +84,146 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		switch (LOWORD(wParam)) {
 			// Checkboxes
-			case IDC_TOGGLESPEED:
-				CheckDlgButton(hwnd, IDC_TOGGLESPEED, !IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED));
-				break;
-			case IDC_TOGGLELASERS:
-				CheckDlgButton(hwnd, IDC_TOGGLELASERS, !IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS));
-				break;
-			case IDC_TOGGLESNIPES:
-				CheckDlgButton(hwnd, IDC_TOGGLESNIPES, !IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES));
-				break;
+		case IDC_TOGGLESPEED:
+			CheckDlgButton(hwnd, IDC_TOGGLESPEED, !IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED));
+			break;
+		case IDC_TOGGLELASERS:
+			CheckDlgButton(hwnd, IDC_TOGGLELASERS, !IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS));
+			break;
+		case IDC_TOGGLESNIPES:
+			CheckDlgButton(hwnd, IDC_TOGGLESNIPES, !IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES));
+			break;
 
 			// Randomize button
 
-			case IDC_RANDOMIZE:
-			{
-				std::wstring text;
-				text.reserve(100);
-				GetWindowText(hwndSeed, &text[0], 100);
-				int seed = _wtoi(text.c_str());
+		case IDC_RANDOMIZE:
+		{
+			std::wstring text;
+			text.reserve(100);
+			GetWindowText(hwndSeed, &text[0], 100);
+			int seed = _wtoi(text.c_str());
 
-				// TODO: text needs to be resized!
-				if (seedIsRNG || wcslen(text.c_str()) == 0) {
-					seed = Random::RandInt(0, 100000);
-					seedIsRNG = true;
-				}
-
-				randomizer->ClearOffsets();
-				/* TODO:
-				if (!randomizer->GameIsRunning()) {
-					randomizer->StartGame(); // Try: CreateProcess(L"/path/to/TW.exe", ...);
-				}
-				*/
-				//if (randomizer->GameIsRandomized()) break;
-				//Random::SetSeed(seed);
-				srand(seed);
-
-				// Show seed and force redraw
- 				std::wstring seedString = std::to_wstring(seed);
- 				SetWindowText(hwndRandomize, L"Randomizing...");
- 				SetWindowText(hwndSeed, seedString.c_str());
-				RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
-
-				// Randomize, then apply settings
-				//randomizer->Randomize();
-				randomizer->GenerateNormal(hwndLoadingText);
-				/*
-				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
-				if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
-				if (IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES)) randomizer->PreventSnipes();
-				*/
-
-				randomizer->AdjustSpeed();
-				randomizer->PreventSnipes();
-
-				// Cleanup, and set timer for "randomization done"
-				SetWindowText(hwndRandomize, L"Randomized!");
-				SetTimer(hwnd, IDT_RANDOMIZED, 10000, NULL);
-				break;
+			// TODO: text needs to be resized!
+			if (seedIsRNG || wcslen(text.c_str()) == 0) {
+				seed = Random::RandInt(0, 100000);
+				seedIsRNG = true;
 			}
 
-			case IDT_RANDOMIZED:
-				SetWindowText(hwndRandomize, L"Randomize");
-				randomizer->GameIsRandomized(); // "Check" if the game is randomized to update the last known safe frame.
-				break;
-			
-			case IDC_ADD:
-				memset(&text, 0, sizeof(text));
-				GetWindowText(hwndElem, text, 30);
-				if (wcscmp(text, L"Stone") == 0) symbol = Decoration::Shape::Stone;
-				if (wcscmp(text, L"Star") == 0) symbol = Decoration::Shape::Star;
-				if (wcscmp(text, L"Eraser") == 0) symbol = Decoration::Shape::Eraser;
-				if (wcscmp(text, L"Shape") == 0) symbol = Decoration::Shape::Poly;
-				if (wcscmp(text, L"Triangle 1") == 0) symbol = Decoration::Shape::Triangle1;
-				if (wcscmp(text, L"Triangle 2") == 0) symbol = Decoration::Shape::Triangle2;
-				if (wcscmp(text, L"Triangle 3") == 0) symbol = Decoration::Shape::Triangle3;
-				if (wcscmp(text, L"Dot (Intersection)") == 0) symbol = Decoration::Shape::Dot_Intersection;
-				if (wcscmp(text, L"Dot (Row)") == 0) symbol = Decoration::Shape::Dot_Row;
-				if (wcscmp(text, L"Dot (Column)") == 0) symbol = Decoration::Shape::Dot_Column;
-				if (wcscmp(text, L"Gap (Row)") == 0) symbol = Decoration::Shape::Gap_Row;
-				if (wcscmp(text, L"Gap (Column)") == 0) symbol = Decoration::Shape::Gap_Column;
-				if (wcscmp(text, L"Start") == 0) symbol = Decoration::Shape::Start;
-				if (wcscmp(text, L"Exit") == 0) symbol = Decoration::Shape::Exit;
-				memset(&text, 0, sizeof(text));
-				GetWindowText(hwndColor, text, 30);
-				if (wcscmp(text, L"Black") == 0) color = Decoration::Color::Black;
-				if (wcscmp(text, L"White") == 0) color = Decoration::Color::White;
-				if (wcscmp(text, L"Red") == 0) color = Decoration::Color::Red;
-				if (wcscmp(text, L"Orange") == 0) color = Decoration::Color::Orange;
-				if (wcscmp(text, L"Yellow") == 0) color = Decoration::Color::Yellow;
-				if (wcscmp(text, L"Green") == 0) color = Decoration::Color::Green;
-				if (wcscmp(text, L"Cyan") == 0) color = Decoration::Color::Cyan;
-				if (wcscmp(text, L"Blue") == 0) color = Decoration::Color::Blue;
-				if (wcscmp(text, L"Purple") == 0) color = Decoration::Color::Purple;
-				if (wcscmp(text, L"Magenta") == 0) color = Decoration::Color::Magenta;
-				if (wcscmp(text, L"None") == 0) color = Decoration::Color::None;
-				if (wcscmp(text, L"???") == 0) color = Decoration::Color::X;
-				str.reserve(30);
-				GetWindowText(hwndCol, &str[0], 30);
-				x = _wtoi(str.c_str());
-				GetWindowText(hwndRow, &str[0], 30);
-				y = _wtoi(str.c_str());
-				
-				_panel->Read(panel);
-				if (symbol == Decoration::Shape::Poly) {
-					_panel->SetShape(x, y, currentShape, IsDlgButtonChecked(hwnd, IDC_ROTATED), IsDlgButtonChecked(hwnd, IDC_NEGATIVE), color);
-				}
-				else _panel->SetSymbol(x, y, symbol, color);
-				_panel->Write(panel);
-				break;
+			randomizer->ClearOffsets();
+			/* TODO:
+			if (!randomizer->GameIsRunning()) {
+				randomizer->StartGame(); // Try: CreateProcess(L"/path/to/TW.exe", ...);
+			}
+			*/
+			//if (randomizer->GameIsRandomized()) break;
+			//Random::SetSeed(seed);
+			srand(seed);
 
-			case IDC_REMOVE:
-				GetWindowText(hwndCol, &str[0], 30);
-				x = _wtoi(str.c_str());
-				GetWindowText(hwndRow, &str[0], 30);
-				y = _wtoi(str.c_str());
-				GetWindowText(hwndElem, text, 30);
+			// Show seed and force redraw
+			std::wstring seedString = std::to_wstring(seed);
+			SetWindowText(hwndRandomize, L"Randomizing...");
+			SetWindowText(hwndSeed, seedString.c_str());
+			RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
 
-				_panel->Read(panel);
-				if (wcscmp(text, L"Dot (Intersection)") == 0 ||
-					wcscmp(text, L"Start") == 0 || wcscmp(text, L"Exit") == 0)
-					_panel->ClearGridSymbol(x * 2, y * 2);
-				else if (wcscmp(text, L"Gap (Column)") == 0 ||
-					wcscmp(text, L"Dot (Column)") == 0)
-					_panel->ClearGridSymbol(x * 2, y * 2 + 1);
-				else if (wcscmp(text, L"Gap (Row)") == 0 ||
-					wcscmp(text, L"Dot (Row)") == 0)
-					_panel->ClearGridSymbol(x * 2 + 1, y * 2);
-				else 
-					_panel->ClearSymbol(x, y);
-				_panel->Write(panel);
-				break;
+			// Randomize, then apply settings
+			//randomizer->Randomize();
+			randomizer->GenerateNormal(hwndLoadingText);
+			/*
+			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
+			if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
+			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES)) randomizer->PreventSnipes();
+			*/
 
-			case IDC_TEST:
-				srand(static_cast<unsigned int>(time(NULL)));
-				srand(ctr++);
+			randomizer->AdjustSpeed();
+			randomizer->PreventSnipes();
 
-				generator->resetConfig();
+			// Cleanup, and set timer for "randomization done"
+			SetWindowText(hwndRandomize, L"Randomized!");
+			SetTimer(hwnd, IDT_RANDOMIZED, 10000, NULL);
+			break;
+		}
 
-				break;
+		case IDT_RANDOMIZED:
+			SetWindowText(hwndRandomize, L"Randomize");
+			randomizer->GameIsRandomized(); // "Check" if the game is randomized to update the last known safe frame.
+			break;
+
+		case IDC_ADD:
+			memset(&text, 0, sizeof(text));
+			GetWindowText(hwndElem, text, 30);
+			if (wcscmp(text, L"Stone") == 0) symbol = Decoration::Shape::Stone;
+			if (wcscmp(text, L"Star") == 0) symbol = Decoration::Shape::Star;
+			if (wcscmp(text, L"Eraser") == 0) symbol = Decoration::Shape::Eraser;
+			if (wcscmp(text, L"Shape") == 0) symbol = Decoration::Shape::Poly;
+			if (wcscmp(text, L"Triangle 1") == 0) symbol = Decoration::Shape::Triangle1;
+			if (wcscmp(text, L"Triangle 2") == 0) symbol = Decoration::Shape::Triangle2;
+			if (wcscmp(text, L"Triangle 3") == 0) symbol = Decoration::Shape::Triangle3;
+			if (wcscmp(text, L"Dot (Intersection)") == 0) symbol = Decoration::Shape::Dot_Intersection;
+			if (wcscmp(text, L"Dot (Row)") == 0) symbol = Decoration::Shape::Dot_Row;
+			if (wcscmp(text, L"Dot (Column)") == 0) symbol = Decoration::Shape::Dot_Column;
+			if (wcscmp(text, L"Gap (Row)") == 0) symbol = Decoration::Shape::Gap_Row;
+			if (wcscmp(text, L"Gap (Column)") == 0) symbol = Decoration::Shape::Gap_Column;
+			if (wcscmp(text, L"Start") == 0) symbol = Decoration::Shape::Start;
+			if (wcscmp(text, L"Exit") == 0) symbol = Decoration::Shape::Exit;
+			memset(&text, 0, sizeof(text));
+			GetWindowText(hwndColor, text, 30);
+			if (wcscmp(text, L"Black") == 0) color = Decoration::Color::Black;
+			if (wcscmp(text, L"White") == 0) color = Decoration::Color::White;
+			if (wcscmp(text, L"Red") == 0) color = Decoration::Color::Red;
+			if (wcscmp(text, L"Orange") == 0) color = Decoration::Color::Orange;
+			if (wcscmp(text, L"Yellow") == 0) color = Decoration::Color::Yellow;
+			if (wcscmp(text, L"Green") == 0) color = Decoration::Color::Green;
+			if (wcscmp(text, L"Cyan") == 0) color = Decoration::Color::Cyan;
+			if (wcscmp(text, L"Blue") == 0) color = Decoration::Color::Blue;
+			if (wcscmp(text, L"Purple") == 0) color = Decoration::Color::Purple;
+			if (wcscmp(text, L"Magenta") == 0) color = Decoration::Color::Magenta;
+			if (wcscmp(text, L"None") == 0) color = Decoration::Color::None;
+			if (wcscmp(text, L"???") == 0) color = Decoration::Color::X;
+			str.reserve(30);
+			GetWindowText(hwndCol, &str[0], 30);
+			x = _wtoi(str.c_str());
+			GetWindowText(hwndRow, &str[0], 30);
+			y = _wtoi(str.c_str());
+
+			_panel->Read(panel);
+			if (symbol == Decoration::Shape::Poly) {
+				_panel->SetShape(x, y, currentShape, IsDlgButtonChecked(hwnd, IDC_ROTATED), IsDlgButtonChecked(hwnd, IDC_NEGATIVE), color);
+			}
+			else _panel->SetSymbol(x, y, symbol, color);
+			_panel->Write(panel);
+			break;
+
+		case IDC_REMOVE:
+			GetWindowText(hwndCol, &str[0], 30);
+			x = _wtoi(str.c_str());
+			GetWindowText(hwndRow, &str[0], 30);
+			y = _wtoi(str.c_str());
+			GetWindowText(hwndElem, text, 30);
+
+			_panel->Read(panel);
+			if (wcscmp(text, L"Dot (Intersection)") == 0 ||
+				wcscmp(text, L"Start") == 0 || wcscmp(text, L"Exit") == 0)
+				_panel->ClearGridSymbol(x * 2, y * 2);
+			else if (wcscmp(text, L"Gap (Column)") == 0 ||
+				wcscmp(text, L"Dot (Column)") == 0)
+				_panel->ClearGridSymbol(x * 2, y * 2 + 1);
+			else if (wcscmp(text, L"Gap (Row)") == 0 ||
+				wcscmp(text, L"Dot (Row)") == 0)
+				_panel->ClearGridSymbol(x * 2 + 1, y * 2);
+			else
+				_panel->ClearSymbol(x, y);
+			_panel->Write(panel);
+			break;
+
+		case IDC_TEST:
+			srand(static_cast<unsigned int>(time(NULL)));
+			//srand(ctr++);
+
+			generator->resetConfig();
+
+
+
+			break;
 
 			case IDC_ROTATED:
 				CheckDlgButton(hwnd, IDC_ROTATED, !IsDlgButtonChecked(hwnd, IDC_ROTATED));

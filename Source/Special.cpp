@@ -130,7 +130,14 @@ void Special::generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool 
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
 	_generator->setFlagOnce(Generate::Config::BackupPath);
 	_generator->setFlagOnce(Generate::Config::LongPath);
-	_generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size()));
+	if (id == 0x014B2) { //Have to force there to only be one correct sequence
+		_generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size() - 1));
+		while (_generator->get(6, 0) == Decoration::Dot_Intersection || _generator->get(8, 2) == Decoration::Dot_Intersection)
+			_generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size() - 1));
+		if (_generator->get(7, 0) == PATH) _generator->set(7, 0, Decoration::Dot_Row);
+		else _generator->set(8, 1, Decoration::Dot_Column);
+	}
+	else _generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size()));
 	Point p = *_generator->_starts.begin();
 	std::set<Point> path = _generator->_path;
 	int seqPos = 0;

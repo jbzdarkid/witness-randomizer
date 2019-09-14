@@ -81,7 +81,8 @@ int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t 
 
 int Memory::ExecuteSigScans()
 {
-	for (int i=0; i<0x200000; i+=0x1000) {
+	//for (int i=0; i<0x200000; i+=0x1000) {
+	for (int i = 0; i<0x2000000; i += 0x1000) {
 		std::vector<byte> data = ReadData<byte>({i}, 0x1100);
 		
 		for (auto& [scanBytes, sigScan] : _sigScans) {
