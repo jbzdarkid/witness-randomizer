@@ -1,6 +1,7 @@
 #pragma once
 #include "Generate.h"
 #include "Randomizer.h"
+#include <algorithm>
 
 typedef std::pair<int, int> Point;
 typedef std::set<Point> Shape;
@@ -31,6 +32,7 @@ public:
 	void generateJungleVault(int id);
 	void generateApplePuzzle(int id, bool changeExit, bool flip);
 	void generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols);
+	void generateMountaintop(int id);
 
 	void setTarget(int puzzle, int target);
 	void clearTarget(int puzzle);
@@ -61,6 +63,32 @@ public:
 		return panel->_memory->ReadData<T>(offsets, numItems);
 	}
 
+	void testPanel(int id) {
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>(id);
+		panel->Write();
+	}
+
+	void adjustPanel(int id) {
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>(id);
+		int numDots = panel->_memory->ReadPanelData<int>(id, NUM_DOTS);
+		std::vector<int> flags = panel->_memory->ReadArray<int>(id, DOT_FLAGS, numDots);
+		std::copy(flags.begin() + 41, flags.begin() + 44, flags.begin() + 37);
+		std::fill(flags.begin() + 41, flags.begin() + 44, IntersectionFlags::NO_POINT);
+		std::vector<float> intersections = panel->_memory->ReadArray<float>(id, DOT_POSITIONS, numDots * 2);
+		std::copy(intersections.begin() + 82, intersections.begin() + 89, intersections.begin() + 72);
+		int numConnections = panel->_memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
+		std::vector<int> connections_a = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
+		std::vector<int> connections_b = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
+		for (int i = 0; i < numConnections; i++) {
+			if (connections_a[i] >= 41 && connections_a[i] <= 44) connections_a[i] -= 4;
+			if (connections_b[i] >= 41 && connections_b[i] <= 44) connections_b[i] -= 4;
+		}
+		panel->_memory->WriteArray<int>(id, DOT_FLAGS, flags);
+		panel->_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
+		panel->_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
+		panel->_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
+	}
+
 private:
 
 	Endpoint::Direction get_sym_dir(Endpoint::Direction direction, Panel::Symmetry symmetry) {
@@ -80,6 +108,8 @@ private:
 
 	std::shared_ptr<Generate> _generator;
 
+	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
+	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
 	template <class T> T pop_random(std::vector<T>& vec) {
 		int i = rand() % vec.size();
 		T item = vec[i];

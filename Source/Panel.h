@@ -145,8 +145,6 @@ public:
 	bool writeColors;
 
 private:
-	// For testing
-	//Panel() = default;
 
 	void ReadAllData();
 	void ReadIntersections();
@@ -323,4 +321,5 @@ private:
 	friend class Generate;
 	friend class PuzzleList;
 	friend class Special;
+	friend class MultiGenerate;
 };

@@ -396,6 +396,45 @@ void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Po
 	_generator->write(id);
 }
 
+void Special::generateMountaintop(int id)
+{
+	std::vector<std::shared_ptr<Generate>> gens;
+	for (int i = 0; i < 3; i++) gens.push_back(std::make_shared<Generate>());
+	for (std::shared_ptr<Generate> g : gens) {
+		g->setGridSize(5, 5);
+		g->setSymbol(Decoration::Gap, 5, 0);
+		g->setSymbol(Decoration::Gap, 5, 10);
+		g->setFlag(Generate::Config::PreserveStructure);
+		g->setFlag(Generate::DisableWrite);
+		g->setFlag(Generate::ShortPath);
+	}
+	gens[0]->_starts = { { 2, 0 } }; gens[1]->_starts = { { 2, 10 } }; gens[2]->_starts = { { 10, 4 },{ 10, 6 } };
+	gens[0]->_exits = { { 8, 10 } }; gens[1]->_exits = { { 8, 0 } }; gens[2]->_exits = { { 0, 4 },{ 0, 6 } };
+
+	_generator->generateMulti(id, gens, { { Decoration::Stone | Decoration::Color::Black, 2 },{ Decoration::Stone | Decoration::Color::White, 1, },
+		{ Decoration::Star | Decoration::Color::Black, 1, },{ Decoration::Star | Decoration::Color::White, 2 } });
+
+	std::vector<std::vector<Point>> perspectives = { 
+	{ { 1, 2 },{ 1, 4 },{ 3, 0 },{ 3, 2 },{ 7, 0 },{ 7, 2 },{ 7, 4 },{ 8, 1 },{ 8, 3 },{ 8, 5 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 10, 3 },{ 10, 5 },{ 10, 7 } },
+	{ { 0, 3 },{ 1, 2 },{ 1, 4 },{ 2, 1 },{ 2, 3 },{ 3, 2 },{ 6, 1 },{ 7, 0 },{ 7, 2 },{ 7, 4 },{ 8, 1 },{ 8, 3 },{ 8, 5 },{ 9, 2 },{ 9, 4 },{ 9, 6 } },
+	{ { 0, 3 },{ 0, 5 },{ 1, 4 },{ 2, 1 },{ 3, 2 },{ 5, 2 },{ 6, 1 },{ 6, 3 },{ 7, 0 },{ 7, 2 },{ 7, 4 },{ 8, 3 },{ 8, 5 },{ 9, 4 },{ 9, 6 } },
+	{ { 0, 3 },{ 0, 5 },{ 1, 2 },{ 1, 4 },{ 2, 1 },{ 2, 3 },{ 3, 0 },{ 3, 2 },{ 4, 1 },{ 4, 3 },{ 5, 2 },{ 5, 4 },{ 6, 3 },{ 6, 5 },{ 7, 4 },{ 8, 5 },{ 9, 6 } },
+	{ { 0, 3 },{ 0, 5 },{ 1, 2 },{ 1, 4 },{ 2, 1 },{ 2, 3 },{ 3, 2 },{ 3, 4 },{ 4, 3 },{ 4, 5 },{ 5, 4 },{ 6, 3 },{ 6, 5 },{ 7, 4 },{ 8, 5 },{ 9, 6 } },
+	{ { 0, 3 },{ 0, 5 },{ 0, 7 },{ 1, 6 },{ 1, 8 },{ 2, 3 },{ 2, 5 },{ 2, 7 },{ 3, 6 },{ 3, 8 },{ 4, 5 },{ 4, 7 },{ 5, 6 },{ 6, 5 },{ 6, 7 },{ 7, 4 },{ 7, 6 },{ 8, 7 } },
+	{ { 0, 7 },{ 1, 6 },{ 2, 5 },{ 3, 4 },{ 6, 9 },{ 7, 4 },{ 7, 6 },{ 7, 8 },{ 7, 10 },{ 8, 7 },{ 8, 9 },{ 9, 8 } },
+	{ { 0, 7 },{ 1, 6 },{ 1, 8 },{ 2, 5 },{ 3, 4 },{ 7, 4 },{ 7, 6 },{ 7, 8 },{ 8, 5 },{ 8, 7 },{ 8, 9 },{ 9, 6 },{ 9, 8 },{ 10, 7 } },
+	{ { 0, 7 },{ 1, 6 },{ 1, 8 },{ 2, 5 },{ 2, 7 },{ 2, 9 },{ 3, 4 },{ 3, 6 },{ 3, 8 },{ 3, 10 },{ 7, 4 },{ 7, 6 },{ 8, 5 },{ 8, 7 },{ 9, 6 },{ 9, 8 },{ 10, 7 } },
+	{ { 1, 6 },{ 2, 5 },{ 2, 7 },{ 3, 4 },{ 3, 6 },{ 3, 8 },{ 3, 10 },{ 4, 3 },{ 4, 5 },{ 4, 7 },{ 4, 9 },{ 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 6, 9 },{ 7, 4 },{ 7, 6 },{ 7, 10 },{ 8, 5 },{ 8, 7 },{ 9, 6 },{ 9, 8 },{ 10, 7 } },
+	{ { 2, 5 },{ 4, 3 },{ 4, 5 },{ 6, 3 },{ 6, 5 },{ 7, 4 },{ 8, 3 },{ 8, 5 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 10, 3 },{ 10, 5 },{ 10, 7 } },
+	{ { 1, 4 },{ 2, 3 },{ 2, 5 },{ 3, 4 },{ 4, 3 },{ 5, 0 },{ 5, 2 },{ 6, 1 },{ 6, 3 },{ 7, 0 },{ 7, 2 },{ 7, 4 },{ 8, 1 },{ 8, 3 },{ 8, 5 },{ 9, 4 },{ 9, 6 },{ 10, 3 },{ 10, 5 },{ 10, 7 } },
+	{ { 1, 4 },{ 2, 3 },{ 3, 0 },{ 3, 2 },{ 4, 1 },{ 4, 3 },{ 5, 0 },{ 5, 2 },{ 7, 4 },{ 8, 3 },{ 8, 5 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 10, 3 },{ 10, 5 },{ 10, 7 } }
+	};
+
+	gens[0]->_panel->WriteDecorations();
+	gens[0]->_panel->_memory->WritePanelData<int>(id, STYLE_FLAGS, { gens[0]->_panel->_style });
+	gens[0]->_panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+}
+
 void Special::setTarget(int puzzle, int target)
 {
 	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
@@ -414,51 +453,3 @@ void Special::setTargetAndDeactivate(int puzzle, int target)
 	panel->_memory->WritePanelData<float>(target, POWER, { 0.0, 0.0 });
 	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
 }
-
-//Probably won't use
-/*void Special::generateKeepLaserPanel(int id, Generate::PuzzleSymbols corner1, Generate::PuzzleSymbols corner2, Generate::PuzzleSymbols corner3, Generate::PuzzleSymbols corner4)
-{
-	while (true) {
-		_generator->resetConfig();
-		_generator->setSymbol(Decoration::Gap_Column, 8, 3);
-		_generator->setSymbol(Decoration::Gap_Column, 4, 5);
-		_generator->setSymbol(Decoration::Gap_Row, 3, 0);
-		_generator->setSymbol(Decoration::Gap_Row, 3, 2);
-		_generator->setSymbol(Decoration::Gap_Row, 5, 6);
-		_generator->setFlagOnce(Generate::Config::DisableWrite);
-		_generator->generate(id);
-		std::set<Point> set1;
-		for (int x = 9; x < _generator->_panel->_width; x += 2) for (int y = 9; y < _generator->_panel->_height; y += 2)
-			set1.insert(Point(x, y));
-		_generator->_openpos = set1;
-		if (!_generator->place_all_symbols(corner1))
-			continue;
-		std::set<Point> set2;
-		for (int x = 9; x < _generator->_panel->_width; x += 2) for (int y = 7; y > 0; y -= 2)
-			set2.insert(Point(x, y));
-		_generator->_openpos = set2;
-		if (!_generator->place_all_symbols(corner2))
-			continue;
-		std::set<Point> set3;
-		for (int x = 7; x > 0; x -= 2) for (int y = 7; y < 0; y -= 2)
-			set3.insert(Point(x, y));
-		_generator->_openpos = set3;
-		if (!_generator->place_all_symbols(corner3))
-			continue;
-		std::set<Point> set4;
-		for (int x = 7; x > 0; x -= 2) for (int y = 9; y < _generator->_panel->_height; y += 2)
-			set4.insert(Point(x, y));
-		_generator->_openpos = set4;
-		//Be sure not to put shapes down after shapes have already been placed
-		for (Point p : set3) if (_generator->get_symbol_type(_generator->get(p)) == Decoration::Poly) {
-			for (Point p2 : _generator->get_region(p)) set4.erase(p);
-		}
-		if (!_generator->place_all_symbols(corner4))
-			continue;
-		_generator->write(id);
-	}
-}*/
-//specialCase->generateKeepLaserPanel(0x03317, Generate::PuzzleSymbols({ {Decoration::Stone | Decoration::Color::Black, 4}, {Decoration::Stone | Decoration::Color::White, 4} }),
-//	Generate::PuzzleSymbols({ { Decoration::Star | Decoration::Color::Magenta, 6 },{ Decoration::Star | Decoration::Color::Cyan, 6 } }),
-//	Generate::PuzzleSymbols({ { Decoration::Poly, 2 },{ Decoration::Stone | Decoration::Color::Black, 2 }, { Decoration::Stone | Decoration::Color::White, 2 } }),
-//	Generate::PuzzleSymbols({ { Decoration::Poly | Decoration::Can_Rotate, 3 } }));

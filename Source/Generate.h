@@ -18,7 +18,6 @@ public:
 		_handle = NULL;
 		_panel = NULL;
 		_parity = -1;
-		srand(static_cast<unsigned int>(time(NULL)));
 		_seed = rand();
 		resetConfig();
 	}
@@ -30,6 +29,8 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5);
 	void generate(int id, std::vector<std::pair<int, int>> symbolVec);
+	void generateMulti(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec);
+	void generateMulti(int id, int numSolutions, std::vector<std::pair<int, int>> symbolVec);
 	void generateMaze(int id);
 	void generateMaze(int id, int numStarts, int numExits);
 	void initPanel(int id);
@@ -52,6 +53,7 @@ public:
 	void removeFlag(Config option) { _config &= ~option; };
 	void removeFlagOnce(Config option) { _config &= ~option; _oneTimeRemove |= option; };
 	void resetConfig();
+	void seed(long seed) { srand(seed); _seed = rand(); }
 	float pathWidth;
 	Endpoint::Direction pivotDirection;
 	std::vector<Point> hitPoints; //The generated path will be forced to hit these points in order
@@ -109,6 +111,7 @@ private:
 	int _oneTimeAdd, _oneTimeRemove;
 	long _seed;
 	std::vector<Point> _splitPoints;
+	bool _allowNonMatch; //For multi-generator
 
 	int _parity;
 	HWND _handle;
@@ -149,17 +152,22 @@ private:
 	bool place_gaps(int amount);
 	bool can_place_dot(Point pos);
 	bool place_dots(int amount, int color, bool intersectionOnly);
+	bool can_place_stone(std::set<Point>& region, int color);
 	bool place_stones(int color, int amount);
 	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize);
 	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize) { std::set<Point> buffer; return generate_shape(region, buffer, pos, maxSize); }
 	int make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation);
 	int make_shape_symbol(Shape shape, bool rotated, bool negative) { return make_shape_symbol(shape, rotated, negative, -1); }
 	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative);
+	int count_color(std::set<Point>& region, int color);
 	bool place_stars(int color, int amount);
+	bool has_star(std::set<Point>& region, int color);
 	bool place_triangles(int color, int amount);
+	int count_sides(Point pos);
 	bool place_erasers(std::vector<int> colors, std::vector<int> eraseSymbols);
 
 	friend class PuzzleList;
 	friend class Special;
+	friend class MultiGenerate;
 };
 

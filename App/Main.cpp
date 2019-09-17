@@ -221,7 +221,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			generator->resetConfig();
 
-
+			specialCase->generateMountaintop(0x17C34);
 
 			break;
 

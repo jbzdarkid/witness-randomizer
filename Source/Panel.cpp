@@ -55,6 +55,9 @@ void Panel::Write() {
 		_memory->WriteArray(id, COLORED_REGIONS, newRegions);
 	}
 
+	//std::vector<int> data = _memory->ReadArray<int>(id, DOT_FLAGS, 45);
+	//std::swap(data[41], data[39]);
+	//_memory->WriteArray<int>(id, DOT_FLAGS, data);
 	WriteIntersections();
 	WriteDecorations();
 
@@ -205,6 +208,7 @@ void Panel::ReadAllData() {
 	std::vector<int> dotSeqR = _memory->ReadArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSeqLenR);
 	void* target = _memory->ReadPanelData<void*>(id, TARGET);
 	void* panelTarget = _memory->ReadPanelData<void*>(id, PANEL_TARGET);
+	//std::vector<int> targets = _memory->ReadArray<int>(id, PANEL_TARGET, 6);
 }
 
 void Panel::ReadDecorations() {
@@ -356,6 +360,9 @@ void Panel::ReadIntersections() {
 
 		else {
 			_grid[x][y] = intersectionFlags[i];
+			//if (intersectionFlags[i] & IntersectionFlags::STARTPOINT) { //Glitchy right now
+			//	_startpoints.push_back({ x, y });
+			//}
 		}
 	}	
 }
@@ -417,6 +424,11 @@ void Panel::WriteIntersections() {
 			}
 		}
 	}
+
+	//if (id == 0x17C34) { //To prevent the disappering exits from screwing everything up (It's not working though)
+	//	while (intersectionFlags.size() < 41) intersectionFlags.push_back(NO_POINT);
+	//	while (intersections.size() < 82) intersections.push_back(0);
+	//}
 
 	for (int i = 0; i < _endpoints.size(); i++) {
 		Endpoint endpoint = _endpoints[i];
@@ -494,6 +506,11 @@ void Panel::WriteIntersections() {
 			}
 		}
 	}
+
+	//if (id == 0x17C34) {
+	//	std::vector<float> newPos = { 0.06125f, 0.5f, 0.725f, 0.8897f, 0.725f, 0.1103f };
+	//	std::copy(newPos.begin(), newPos.end(), intersections.end() - 6);
+	//}
 
 	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
 	_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);

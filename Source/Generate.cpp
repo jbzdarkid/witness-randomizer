@@ -1,5 +1,6 @@
 #include "Generate.h"
 #include "Randomizer.h"
+#include "MultiGenerate.h"
 
 void Generate::generate(int id, int symbol, int amount) {
 	PuzzleSymbols symbols({ std::make_pair(symbol, amount) });
@@ -32,7 +33,21 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbolVec)
 	while (!generate(id, symbols));
 }
 
-Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
+void Generate::generateMulti(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec)
+{
+	MultiGenerate gen;
+	gen.generate(id, gens, symbolVec);
+}
+
+void Generate::generateMulti(int id, int numSolutions, std::vector<std::pair<int, int>> symbolVec)
+{
+	MultiGenerate gen;
+	std::vector<std::shared_ptr<Generate>> gens;
+	for (; numSolutions > 0; numSolutions--) gens.push_back(std::make_shared<Generate>());
+	gen.generate(id, gens, symbolVec);
+}
+
+inline Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
 
 std::vector<Point> Generate::_DIRECTIONS1 = { Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0) };
 std::vector<Point> Generate::_8DIRECTIONS1 = { Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0), Point(1, 1), Point(1, -1), Point(-1, -1), Point(-1, 1) };
@@ -71,6 +86,12 @@ void Generate::initPanel(int id) {
 			for (auto& row : _custom_grid) {
 				row.resize(_panel->_height, 0);
 			}
+		}
+		if (hasFlag(Config::PreserveStructure)) {
+			for (int x = 0; x < _panel->_width; x++)
+				for (int y = 0; y < _panel->_height; y++)
+					if (_panel->_grid[x][y] == OPEN || (_panel->_grid[x][y] & 0x60000f) == NO_POINT || (_panel->_grid[x][y] & Decoration::Empty) == Decoration::Empty)
+						_custom_grid[x][y] = _panel->_grid[x][y];
 		}
 		_panel->_grid = _custom_grid;
 	}
@@ -512,7 +533,7 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 	}
 
 	if (hasFlag(Config::ShortPath))
-		return generate_path_length(1);
+		return generate_path_length(_panel->get_num_grid_points() / 2);
 
 	if (hasFlag(Config::LongPath) || symbols.style == Panel::Style::HAS_DOTS && !hasFlag(Config::PreserveStructure) &&
 		!(_panel->symmetry == Panel::Symmetry::Vertical && (_panel->_width / 2) % 2 == 0 ||
@@ -881,8 +902,8 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 	std::set<Point>& open = (color == 0 ? _path : color == IntersectionFlags::DOT_IS_BLUE ? _path1 : _path2);
 	for (Point p : _starts) open.erase(p);
 	for (Point p : _exits) open.erase(p);
-	std::set<Point> intersections;
 	if (intersectionOnly) {
+		std::set<Point> intersections;
 		for (Point p : open) {
 			if (p.first % 2 == 0 && p.second % 2 == 0)
 				intersections.insert(p);
@@ -925,6 +946,15 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 	return true;
 }
 
+bool Generate::can_place_stone(std::set<Point>& region, int color)
+{
+	for (Point p : region) {
+		int sym = get(p);
+		if (get_symbol_type(sym) == Decoration::Stone) return (sym & 0xf) == color;
+	}
+	return true;
+}
+
 bool Generate::place_stones(int color, int amount) {
 	std::set<Point> open = _openpos;
 	std::set<Point> open2;
@@ -942,15 +972,7 @@ bool Generate::place_stones(int color, int amount) {
 		}
 		Point pos = pick_random(open);
 		std::set<Point> region = get_region(pos);
-		std::vector<int> symbols = get_symbols_in_region(region);
-		bool pass = true;
-		for (int s : symbols) {
-			if ((s & Decoration::Stone) && ((s & 0xf) != color)) {
-				pass = false;
-				break;
-			}
-		}
-		if (!pass) {
+		if (!can_place_stone(region, color)) {
 			for (Point p : region) {
 				open.erase(p);
 			}
@@ -1219,6 +1241,17 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 	return true;
 }
 
+int Generate::count_color(std::set<Point>& region, int color)
+{
+	int count = 0;
+	for (Point p : region) {
+		int sym = get(p);
+		if (sym && (sym & 0xf) == color)
+			if (count++ == 2) return count;
+	}
+	return count;
+}
+
 bool Generate::place_stars(int color, int amount)
 {
 	std::set<Point> open = _openpos;
@@ -1227,17 +1260,11 @@ bool Generate::place_stars(int color, int amount)
 			return false;
 		Point pos = pick_random(open);
 		std::set<Point> region = get_region(pos);
-		std::vector<int> symbols = get_symbols_in_region(region);
-		int count = 0;
-		for (int s : symbols) {
-			if ((s & 0xf) == color) {
-				count++;
-			}
-		}
 		std::set<Point> open2;
 		for (Point p : region) {
 			if (open.erase(p)) open2.insert(p);
 		}
+		int count = count_color(region, color);
 		if (count >= 2) continue;
 		if (open2.size() + count < 2) continue;
 		if (count == 0 && amount == 1) continue;
@@ -1257,6 +1284,14 @@ bool Generate::place_stars(int color, int amount)
 	return true;
 }
 
+bool Generate::has_star(std::set<Point>& region, int color)
+{
+	for (Point p : region) {
+		if (get(p) == (Decoration::Star | color)) return true;
+	}
+	return false;
+}
+
 bool Generate::place_triangles(int color, int amount)
 {
 	std::set<Point> open = _openpos;
@@ -1264,13 +1299,7 @@ bool Generate::place_triangles(int color, int amount)
 		if (open.size() == 0)
 			return false;
 		Point pos = pick_random(open);
-		int count = 0;
-		for (Point dir : _DIRECTIONS1) {
-			Point p = pos + dir;
-			if (!off_edge(p) && get(p) == PATH) {
-				count++;
-			}
-		}
+		int count = count_sides(pos);
 		open.erase(pos);
 		if (_panel->symmetry) {
 			open.erase(get_sym_point(pos));
@@ -1283,6 +1312,18 @@ bool Generate::place_triangles(int color, int amount)
 		amount--;
 	}
 	return true;
+}
+
+int Generate::count_sides(Point pos)
+{
+	int count = 0;
+	for (Point dir : _DIRECTIONS1) {
+		Point p = pos + dir;
+		if (!off_edge(p) && get(p) == PATH) {
+			count++;
+		}
+	}
+	return count;
 }
 
 bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymbols)
@@ -1392,13 +1433,7 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 			set(pos, symbol | (toErase & 0xf));
 		}
 		else if (get_symbol_type(toErase) == Decoration::Triangle) {
-			int count = 0;
-			for (Point dir : _DIRECTIONS1) {
-				Point p = pos + dir;
-				if (!off_edge(p) && get(p) == PATH) {
-					count++;
-				}
-			}
+			int count = count_sides(pos);
 			count = (count + (rand() & 1)) % 3 + 1;
 			set(pos, toErase | (count << 16));
 		}

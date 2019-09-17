@@ -162,6 +162,7 @@
     <ClInclude Include="Generate.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="MultiGenerate.h" />
     <ClInclude Include="Panel.h" />
     <ClInclude Include="Panels.h" />
     <ClInclude Include="PuzzleList.h" />
@@ -173,6 +174,7 @@
     <ClCompile Include="ChallengeRandomizer.cpp" />
     <ClCompile Include="Generate.cpp" />
     <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="MultiGenerate.cpp" />
     <ClCompile Include="Panel.cpp" />
     <ClCompile Include="PuzzleList.cpp" />
     <ClCompile Include="Random.cpp" />
