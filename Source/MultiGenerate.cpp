@@ -2,9 +2,6 @@
 
 inline Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
 
-MultiGenerate::MultiGenerate() { }
-MultiGenerate::~MultiGenerate() { }
-
 void MultiGenerate::generate(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec)
 {
 	generators = gens;
@@ -22,6 +19,9 @@ bool MultiGenerate::generate(int id, Generate::PuzzleSymbols symbols)
 				return false;
 		}
 	}
+
+	if (!place_all_symbols(symbols))
+		return false;
 
 	std::vector<std::string> solution1; //For debugging only
 	for (int y = 0; y < generators[0]->_panel->_height; y++) {
@@ -56,9 +56,6 @@ bool MultiGenerate::generate(int id, Generate::PuzzleSymbols symbols)
 		}
 		solution3.push_back(row);
 	}
-
-	if (!place_all_symbols(symbols))
-		return false;
 
 	if (!generators[0]->hasFlag(Generate::Config::DisableWrite)) generators[0]->write(id);
 	return true;
@@ -161,17 +158,22 @@ bool MultiGenerate::place_stones(int color, int amount)
 		if (open.size() < amount)
 			return false;
 		Point pos = pick_random(open);
+		bool valid = true;
 		for (std::shared_ptr<Generate> g : generators) {
 			std::set<Point> region = g->get_region(pos);
-			std::vector<int> syms = g->get_symbols_in_region(region);
 			if (!g->can_place_stone(region, color)) {
+				for (Point p : region) open.erase(p);
+				valid = false;
+			}
+			else if (splitStones) {
 				for (Point p : region) open.erase(p);
 			}
 		}
-		if (!open.erase(pos)) continue;
+		if (!valid) continue;
 		for (std::shared_ptr<Generate> g : generators) {
 			g->set(pos, Decoration::Stone | color);
 			g->_openpos.erase(pos);
+			open.erase(pos);
 		}
 		amount--;
 	}
@@ -187,7 +189,6 @@ bool MultiGenerate::place_stars(int color, int amount)
 		if (open.size() < amount)
 			return false;
 		Point pos = pick_random(open);
-		bool valid = true;
 		std::vector<std::set<Point>> regions;
 		std::vector<std::shared_ptr<Generate>> nonMatch;
 		for (std::shared_ptr<Generate> g : generators) {

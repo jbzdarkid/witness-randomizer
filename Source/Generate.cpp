@@ -36,12 +36,14 @@ void Generate::generate(int id, std::vector<std::pair<int, int>> symbolVec)
 void Generate::generateMulti(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec)
 {
 	MultiGenerate gen;
+	gen.splitStones = hasFlag(Config::SplitStones);
 	gen.generate(id, gens, symbolVec);
 }
 
 void Generate::generateMulti(int id, int numSolutions, std::vector<std::pair<int, int>> symbolVec)
 {
 	MultiGenerate gen;
+	gen.splitStones = hasFlag(Config::SplitStones);
 	std::vector<std::shared_ptr<Generate>> gens;
 	for (; numSolutions > 0; numSolutions--) gens.push_back(std::make_shared<Generate>());
 	gen.generate(id, gens, symbolVec);
@@ -246,6 +248,7 @@ void Generate::reset() {
 	_exits.clear();
 	_custom_grid.clear();
 	hitPoints.clear();
+	_obstructions.clear();
 }
 
 void Generate::init_treehouse_layout()
@@ -522,6 +525,15 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 			set(0, _panel->_height / 2, PATH);
 			set(_panel->_width - 1, _panel->_height / 2, PATH);
 		}
+	}
+
+	if (_obstructions.size() > 0) {
+		std::vector<Point> walls = pick_random(_obstructions);
+		for (Point p : walls) set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+		//bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
+		bool result = (hasFlag(Config::ShortPath) ? generate_path_regions(3) : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
+		for (Point p : walls) set(p, 0);
+		return result;
 	}
 
 	if (hitPoints.size() > 0) {
@@ -1367,26 +1379,10 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		if (open2.size() == 0 && !(toErase & Decoration::Dot)) continue;
 		bool canPlace = false;
 		if (get_symbol_type(toErase) == Decoration::Stone) {
-			std::vector<int> symbols = get_symbols_in_region(region);
-			for (int s : symbols) {
-				if (get_symbol_type(s) == Decoration::Stone) {
-					canPlace = (s & 0xf) != (toErase & 0xf);
-					break;
-				}
-			}
+			canPlace = !can_place_stone(region, (toErase & 0xf));
 		}
 		else if (get_symbol_type(toErase) == Decoration::Star) {
-			std::vector<int> symbols = get_symbols_in_region(region);
-			int count = (color == (toErase & 0xf));
-			for (int s : symbols) {
-				if ((s & 0xf) == (toErase & 0xf)) {
-					if (++count >= 2) {
-						canPlace = true;
-						break;
-					}
-				}
-			}
-			if (count == 0) canPlace = true;
+			canPlace = (count_color(region, (toErase & 0xf)) != 1);
 		}
 		else canPlace = true;
 		if (!canPlace) continue;

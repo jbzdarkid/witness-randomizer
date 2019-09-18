@@ -568,6 +568,10 @@ void PuzzleList::GenerateTrianglePanelsN()
 
 void PuzzleList::GenerateMountainN()
 {
+	std::wstring text = L"Mountaintop (might take a while)";
+	SetWindowText(_handle, text.c_str());
+	specialCase->generateMountaintop(0x17C34); //TODO: Improve the speed on this
+	//generator->setLoadingData(L"Mountain", 0);
 
 }
 

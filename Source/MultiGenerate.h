@@ -5,12 +5,14 @@ class MultiGenerate
 {
 public:
 
-	MultiGenerate();
-	~MultiGenerate();
+	MultiGenerate() { splitStones = false; }
+	~MultiGenerate() { }
 
 	std::vector<std::shared_ptr<Generate>> generators;
 
 	void generate(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec);
+
+	bool splitStones;
 
 private:
 
