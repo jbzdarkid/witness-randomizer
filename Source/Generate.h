@@ -37,6 +37,7 @@ public:
 	void setObstructions(std::vector<Point> walls) { _obstructions = { walls }; }
 	void setObstructions(std::vector<std::vector<Point>> walls) { _obstructions = walls; }
 	void setSymbol(Decoration::Shape symbol, int x, int y);
+	void setVal(int val, int x, int y) { _panel->_grid[x][y] = val; }
 	void setGridSize(int width, int height);
 	void setSymmetry(Panel::Symmetry symmetry);
 	void write(int id);

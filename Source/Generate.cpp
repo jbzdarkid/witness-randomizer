@@ -531,8 +531,9 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 		std::vector<Point> walls = pick_random(_obstructions);
 		for (Point p : walls) set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
 		//bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
-		bool result = (hasFlag(Config::ShortPath) ? generate_path_regions(3) : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
-		for (Point p : walls) set(p, 0);
+		bool result = (hasFlag(Config::ShortPath) ? generate_path_regions(3) :
+			hitPoints.size() > 0 ? generate_special_path() : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
+		for (Point p : walls) if (get(p) & Decoration::Gap) set(p, 0);
 		return result;
 	}
 
@@ -676,6 +677,7 @@ bool Generate::generate_special_path()
 		set(p, PATH);
 	}
 	int hitIndex = 0;
+	int minLength = _panel->get_num_grid_points() * 3 / 4;
 	while (pos != exit) {
 		std::vector<Point> validDir;
 		for (Point dir : _DIRECTIONS2) {
@@ -687,7 +689,7 @@ bool Generate::generate_special_path()
 				hitIndex++;
 				break;
 			}
-			if (get(newPos) != 0 || get(connectPos) != 0 || newPos == exit && hitIndex != hitPoints.size()) continue;
+			if (get(newPos) != 0 || get(connectPos) != 0 || newPos == exit && (hitIndex != hitPoints.size() || _path.size() / 2 + 2 < minLength)) continue;
 			if (_panel->symmetry && newPos == get_sym_point(newPos)) continue;
 			bool fail = false;
 			for (Point dir : _DIRECTIONS1) {
@@ -705,7 +707,7 @@ bool Generate::generate_special_path()
 		set_path(pos + Point(dir.first / 2, dir.second / 2));
 		pos = pos + dir;
 	}
-	return hitIndex == hitPoints.size();
+	return hitIndex == hitPoints.size() && _path.size() >= minLength;
 }
 
 void Generate::erase_path()
@@ -973,7 +975,7 @@ bool Generate::place_stones(int color, int amount) {
 	int passCount = 0;
 	while (amount > 0) {
 		if (open.size() == 0) {
-			if (open2.size() < amount || _bisect && passCount < (_panel->_width / 2 + _panel->_height / 2) / 4)
+			if (open2.size() < amount || _bisect && passCount < (_panel->_width / 2 + _panel->_height / 2 + 2) / 4)
 				return false;
 			Point pos = pick_random(open2);
 			set(pos, Decoration::Stone | color);

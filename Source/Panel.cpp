@@ -443,21 +443,22 @@ void Panel::WriteIntersections() {
 		connections_b.push_back(static_cast<int>(intersectionFlags.size()));  // This endpoint
 		double xPos = minx + endpoint.GetX() * unitWidth;
 		double yPos = miny + (_height - 1 - endpoint.GetY()) * unitHeight;
+		double endDist = (id == 0x09E39 ? 0.08 : 0.05);
 		if (endpoint.GetDir() == Endpoint::Direction::LEFT) {
-			xPos -= 0.05;
+			xPos -= endDist;
 		}
 		else if (endpoint.GetDir() == Endpoint::Direction::RIGHT) {
-			xPos += 0.05;
+			xPos += endDist;
 		}
 		else if (endpoint.GetDir() == Endpoint::Direction::UP) {
-			yPos += 0.05;
+			yPos += endDist;
 		}
 		else if (endpoint.GetDir() == Endpoint::Direction::DOWN) {
-			yPos -= 0.05;
+			yPos -= endDist;
 		}
 		else if (endpoint.GetDir() == Endpoint::Direction::DIAGONAL) {
-			xPos += 0.05;
-			yPos += 0.05;
+			xPos += endDist;
+			yPos += endDist;
 		}
 		intersections.push_back(static_cast<float>(xPos));
 		intersections.push_back(static_cast<float>(yPos));

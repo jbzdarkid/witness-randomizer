@@ -571,7 +571,51 @@ void PuzzleList::GenerateMountainN()
 	std::wstring text = L"Mountaintop (might take a while)";
 	SetWindowText(_handle, text.c_str());
 	specialCase->generateMountaintop(0x17C34); //TODO: Improve the speed on this
-	//generator->setLoadingData(L"Mountain", 0);
+	generator->setLoadingData(L"Mountain", 18);
+	//Purple Bridge
+	generator->resetConfig();
+	generator->setFlagOnce(Generate::Config::PreserveStructure);
+	generator->hitPoints = { { 5, 6 },{ 7, 6 },{ 7, 4 } };
+	generator->setObstructions({ { 4, 1 },{ 6, 1 },{ 8, 1 } });
+	generator->setSymbol(Decoration::Gap_Row, 3, 4);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x09E39, Decoration::Stone | Decoration::Color::Purple, 4, Decoration::Stone | Decoration::Color::White, 4,
+		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Eraser | Decoration::Color::White, 1);
+	generator->setVal(Decoration::Dot_Intersection, 6, 6);
+	generator->write(0x09E39);
+	//Orange Row
+	generator->resetConfig();
+	generator->generate(0x09E73, Decoration::Dot, 4, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
+		Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 2);
+	generator->generate(0x09E75, Decoration::Dot, 4, Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 3,
+		Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 1);
+	generator->generate(0x09E78, Decoration::Poly, 2, Decoration::Dot, 2);
+	generator->generate(0x09E79, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Poly, 1, Decoration::Gap, 3);
+	generator->generate(0x09E6C, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4,
+		Decoration::Star | Decoration::Color::Purple, 4, Decoration::Gap, 2);
+	generator->generate(0x09E6F, Decoration::Poly, 2, Decoration::Star | Decoration::Color::Magenta, 4);
+	generator->generate(0x09E6B, Decoration::Dot, 8, Decoration::Star | Decoration::Color::Magenta, 4);
+	//Green Row
+	generator->generate(0x09E7A, Decoration::Dot, 6, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 3);
+	generator->generate(0x09E71, Decoration::Dot, 6, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 2);
+	generator->generate(0x09E72, Decoration::Dot, 4, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 2, Decoration::Poly, 1);
+	generator->generate(0x09E69, Decoration::Dot, 6, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 3);
+	generator->generate(0x09E7B, Decoration::Dot, 10, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 2);
+	//Purple Panels
+	generator->setFlag(Generate::Config::RequireCombineShapes);
+	generator->generate(0x09EAD, Decoration::Poly, 2, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 3);
+	generator->generate(0x09EAF, Decoration::Poly, 2, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 3);
+	generator->resetConfig();
+	//Blue Row
+	generator->setObstructions({ { 4, 3 },{ 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 6, 9 },{ 7, 10 } });
+	generator->generate(0x33AF5, Decoration::Dot, 3, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5);
+	if (rand() % 2 == 0) generator->setObstructions({ { 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 7, 0 },{ 7, 2 } });
+	else generator->setObstructions({ { 3, 4 },{ 3, 6 },{ 3, 8 },{ 3, 10 },{ 7, 4 },{ 7, 6 },{ 7, 8 },{ 7, 10 },{ 5, 0 },{ 5, 2 },{ 9, 0 },{ 9, 2 } });
+	generator->generate(0x33AF7, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Star | Decoration::Color::Orange, 4);
+	generator->setObstructions({ { 0, 1 },{ 0, 3 },{ 0, 5 },{ 0, 7 },{ 9, 4 },{ 1, 4 },{ 1, 6 },{ 1, 8 },{ 2, 7 },{ 2, 9 },{ 3, 8 },{ 3, 10 },{ 4, 9 },{ 5, 8 },{ 5, 10 },
+		{ 6, 7 },{ 6, 9 },{ 7, 6 },{ 7, 8 },{ 7, 10 },{ 8, 5 },{ 8, 7 },{ 8, 9 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 10, 1 },{ 10, 3 },{ 10, 5 } });
+	generator->generate(0x09F6E, Decoration::Dot, 6);
+
 
 }
 
