@@ -185,6 +185,12 @@ void Generate::write(int id)
 		_panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
 		_panel->_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
 	}
+	if (hasFlag(Config::Write2Color)) {
+		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR_A, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A) });
+		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR_B, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B) });
+		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B) });
+		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A) });
+	}
 	_panel->writeColors = hasFlag(Config::WriteColors);
 	_panel->decorationsOnly = hasFlag(Config::DecorationsOnly);
 	_panel->Write(id);

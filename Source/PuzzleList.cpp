@@ -572,7 +572,7 @@ void PuzzleList::GenerateMountainN()
 	SetWindowText(_handle, text.c_str());
 	specialCase->generateMountaintop(0x17C34); //TODO: Improve the speed on this
 	
-	generator->setLoadingData(L"Mountain", 37);
+	generator->setLoadingData(L"Mountain", 38);
 	//Purple Bridge
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
@@ -631,7 +631,14 @@ void PuzzleList::GenerateMountainN()
 	generator->generate(0x09FD7, { { Decoration::Stone | Decoration::Color::Cyan, 2 },{ Decoration::Stone | Decoration::Color::Magenta, 2 },
 		{ Decoration::Star | Decoration::Color::Cyan, 3 },{ Decoration::Star | Decoration::Color::Magenta, 3 },
 		{ Decoration::Poly | Decoration::Color::Cyan, 1 },{ Decoration::Poly | Decoration::Color::Magenta, 1 } });
-	//Can't randomize the last one - the background messes it up
+	generator->setFlagOnce(Generate::Config::Write2Color);
+	generator->setSymbol(Decoration::Start, 10, 0);
+	generator->setSymbol(Decoration::Start, 0, 10);
+	generator->setSymbol(Decoration::Exit, 0, 0);
+	generator->setSymbol(Decoration::Exit, 10, 10);
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->generate(0x09FD8, Decoration::Dot_Intersection | Decoration::Color::Blue, 4, Decoration::Dot_Intersection | Decoration::Color::Orange, 4);
+	generator->resetConfig();
 
 	specialCase->generateMultiPuzzle({ 0x09FCC, 0x09FCE, 0x09FCF, 0x09FD0, 0x09FD1, 0x09FD2 }, {
 		{ { Decoration::Dot_Intersection, 3 } },
