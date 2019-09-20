@@ -258,7 +258,7 @@ void PuzzleList::GenerateSwampN()
 	generator->setLoadingData(L"Swamp", 50);
 	generator->resetConfig();
 	//First row
-	generator->setFlag(Generate::Config::DisableCombineShapes);
+	generator->setFlag(Generate::Config::SplitShapes);
 	generator->setGridSize(3, 3);
 	generator->pathWidth = 0.7f;
 	generator->generate(0x00469, Decoration::Poly, 1, Decoration::Gap, 5);
@@ -568,10 +568,10 @@ void PuzzleList::GenerateTrianglePanelsN()
 
 void PuzzleList::GenerateMountainN()
 {
-	std::wstring text = L"Mountaintop (might take a while)";
+	std::wstring text = L"Mountain Perspective (might take a while)";
 	SetWindowText(_handle, text.c_str());
 	specialCase->generateMountaintop(0x17C34); //TODO: Improve the speed on this
-	generator->setLoadingData(L"Mountain", 18);
+	generator->setLoadingData(L"Mountain", 32);
 	//Purple Bridge
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
@@ -582,6 +582,7 @@ void PuzzleList::GenerateMountainN()
 	generator->generate(0x09E39, Decoration::Stone | Decoration::Color::Purple, 4, Decoration::Stone | Decoration::Color::White, 4,
 		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Eraser | Decoration::Color::White, 1);
 	generator->setVal(Decoration::Dot_Intersection, 6, 6);
+	//generator->setFlagOnce(Generate::Config::DecorationsOnly);
 	generator->write(0x09E39);
 	//Orange Row
 	generator->resetConfig();
@@ -615,6 +616,30 @@ void PuzzleList::GenerateMountainN()
 	generator->setObstructions({ { 0, 1 },{ 0, 3 },{ 0, 5 },{ 0, 7 },{ 9, 4 },{ 1, 4 },{ 1, 6 },{ 1, 8 },{ 2, 7 },{ 2, 9 },{ 3, 8 },{ 3, 10 },{ 4, 9 },{ 5, 8 },{ 5, 10 },
 		{ 6, 7 },{ 6, 9 },{ 7, 6 },{ 7, 8 },{ 7, 10 },{ 8, 5 },{ 8, 7 },{ 8, 9 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 10, 1 },{ 10, 3 },{ 10, 5 } });
 	generator->generate(0x09F6E, Decoration::Dot, 6);
+
+	//Rainbow Row
+	generator->resetConfig();
+	generator->setFlag(Generate::Config::WriteColors);
+	generator->generate(0x09FD3, Decoration::Stone | Decoration::Color::Magenta, 2, Decoration::Stone | Decoration::Color::Green, 2,
+		Decoration::Star | Decoration::Color::Magenta, 2, Decoration::Star | Decoration::Color::Green, 2);
+	generator->generate(0x09FD4, Decoration::Stone | Decoration::Color::Magenta, 2, Decoration::Stone | Decoration::Color::Green, 2,
+		Decoration::Star | Decoration::Color::Magenta, 2, Decoration::Star | Decoration::Color::Green, 3);
+	generator->generate(0x09FD6, Decoration::Stone | Decoration::Color::Cyan, 3, Decoration::Stone | Decoration::Color::Yellow, 2,
+		Decoration::Star | Decoration::Color::Cyan, 3, Decoration::Star | Decoration::Color::Yellow, 4);
+	generator->generate(0x09FD7, { { Decoration::Stone | Decoration::Color::Cyan, 2 },{ Decoration::Stone | Decoration::Color::Magenta, 2 },
+		{ Decoration::Star | Decoration::Color::Cyan, 3 },{ Decoration::Star | Decoration::Color::Magenta, 3 },
+		{ Decoration::Poly | Decoration::Color::Cyan, 1 },{ Decoration::Poly | Decoration::Color::Magenta, 1 } });
+	//Can't randomize the last one - the background messes it up
+
+	specialCase->generateMultiPuzzle({ 0x09FCC, 0x09FCE, 0x09FCF, 0x09FD0, 0x09FD1, 0x09FD2 }, {
+		{ { Decoration::Dot_Intersection, 3 } },
+		{ { Decoration::Stone | Decoration::Color::Black, 2 },{ Decoration::Stone | Decoration::Color::White, 2 } },
+		{ { Decoration::Star | Decoration::Color::Magenta, 2 },{ Decoration::Star | Decoration::Color::Green, 2 } },
+		{ { Decoration::Poly | Decoration::Can_Rotate, 1 } },
+		{ { Decoration::Stone | Decoration::Color::Cyan, 1 },{ Decoration::Stone | Decoration::Color::Yellow, 1 },{ Decoration::Star | Decoration::Color::Cyan, 1 },{ Decoration::Star | Decoration::Color::Yellow, 1 } },
+		{ { Decoration::Poly, 3 },{ Decoration::Eraser | Decoration::Color::White , 1 } } });
+
+	specialCase->generate2Bridge(0x09E86, 0x09ED8);
 
 
 }
@@ -674,7 +699,7 @@ void PuzzleList::GenerateKeepN()
 		{ { 5, 8 },{ 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 5, 8 },{ 1, 4 },{ 7, 2 },{ 1, 2 } },{ { 5, 8 },{ 3, 2 },{ 7, 2 },{ 3, 0 } },
 		{ { 5, 8 },{ 1, 2 },{ 7, 2 },{ 1, 0 } } };
 	generator->hitPoints = validHitPoints[rand() % validHitPoints.size()];
-	generator->setFlagOnce(Generate::Config::DisableCombineShapes);
+	generator->setFlagOnce(Generate::Config::SplitShapes);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->generate(0x01CD3, Decoration::Poly, 2, Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1,
 		Decoration::Stone | Decoration::Color::Cyan, 1, Decoration::Stone | Decoration::Color::Magenta, 1);
@@ -756,6 +781,18 @@ void PuzzleList::GenerateTrianglePanelsH()
 
 void PuzzleList::GenerateMountainH()
 {
+	/*
+	generator->resetConfig();
+	generator->setFlag(Generate::Config::WriteColors);
+	generator->setGridSize(6, 6);
+	generator->setSymbol(IntersectionFlags::OPEN, 11, 0);
+	generator->setSymbol(IntersectionFlags::OPEN, 12, 1);
+	generator->setSymbol(IntersectionFlags::NO_POINT, 12, 0);
+	generator->setSymbol(Decoration::Empty, 11, 1);
+	generator->setSymbol(Decoration::Exit, 12, 2);
+
+	generator->generate(0x09FD8, Decoration::Stone, 34);
+	*/
 }
 
 void PuzzleList::GenerateCavesH()

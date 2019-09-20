@@ -58,7 +58,7 @@ void Panel::Write() {
 	//std::vector<int> data = _memory->ReadArray<int>(id, DOT_FLAGS, 45);
 	//std::swap(data[41], data[39]);
 	//_memory->WriteArray<int>(id, DOT_FLAGS, data);
-	WriteIntersections();
+	if (!decorationsOnly) WriteIntersections();
 	WriteDecorations();
 
 	//_style &= ~NO_BLINK;
@@ -185,7 +185,6 @@ void Panel::ReadAllData() {
 	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
 	std::vector<float> intersections = _memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
 	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
-	int test = _memory->ReadPanelData<int>(id, DECORATIONS);
 	std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
 	std::vector<int> decorationFlags = _memory->ReadArray<int>(id, DECORATION_FLAGS, numDecorations);
 	float width = _memory->ReadPanelData<float>(id, PATH_WIDTH_SCALE);
@@ -245,7 +244,8 @@ void Panel::WriteDecorations() {
 	}
 	else {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-		if (writeColors) _memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
+		if (writeColors)
+			_memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
 	}
 	if (any || _memory->ReadPanelData<int>(id, DECORATIONS)) {
 		_memory->WriteArray<int>(id, DECORATIONS, decorations);
@@ -379,6 +379,13 @@ void Panel::WriteIntersections() {
 	case Symmetry::Rotational: symmetryData = sym_data_r(); break;
 	}
 
+	/*if (id == 0x09FD8) { //Consider at some point
+		//maxx = 0.825f; minx = 0.025f;
+		//maxy = 0.825f; miny = 0.025f;
+		maxx = 0.975f; minx = 0.025f;
+		maxy = 0.975f; miny = 0.025f;
+		_endpoints[0].SetDir(Endpoint::Direction::UP);
+	}*/
 	unitWidth = (maxx - minx) / (_width - 1);
 	unitHeight = (maxy - miny) / (_height - 1);
 
@@ -430,6 +437,9 @@ void Panel::WriteIntersections() {
 	//	while (intersections.size() < 82) intersections.push_back(0);
 	//}
 
+	//double endDist = (id == 0x09E39 || id == 0x09E86 || id == 0x09ED8 ? 0.08 : 0.05);
+	double endDist = 0.05;
+
 	for (int i = 0; i < _endpoints.size(); i++) {
 		Endpoint endpoint = _endpoints[i];
 		int x = endpoint.GetX(); int y = endpoint.GetY();
@@ -443,7 +453,6 @@ void Panel::WriteIntersections() {
 		connections_b.push_back(static_cast<int>(intersectionFlags.size()));  // This endpoint
 		double xPos = minx + endpoint.GetX() * unitWidth;
 		double yPos = miny + (_height - 1 - endpoint.GetY()) * unitHeight;
-		double endDist = (id == 0x09E39 ? 0.08 : 0.05);
 		if (endpoint.GetDir() == Endpoint::Direction::LEFT) {
 			xPos -= endDist;
 		}

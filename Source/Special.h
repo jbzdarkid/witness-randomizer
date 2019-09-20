@@ -33,6 +33,10 @@ public:
 	void generateApplePuzzle(int id, bool changeExit, bool flip);
 	void generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols);
 	void generateMountaintop(int id);
+	void generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec);
+	bool generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<Generate::PuzzleSymbols> symbols, std::set<Point> path);
+	void generate2Bridge(int id1, int id2);
+	bool generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
 
 	void setTarget(int puzzle, int target);
 	void clearTarget(int puzzle);

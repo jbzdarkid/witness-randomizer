@@ -29,5 +29,6 @@ private:
 	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
 	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
 
+	friend class Special;
 };
 

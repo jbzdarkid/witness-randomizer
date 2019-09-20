@@ -1,4 +1,5 @@
 #include "Special.h"
+#include "MultiGenerate.h"
 
 void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry)
 {
@@ -452,8 +453,8 @@ void Special::generateMountaintop(int id)
 		g->setSymbol(Decoration::Gap, 5, 0);
 		g->setSymbol(Decoration::Gap, 5, 10);
 		g->setFlag(Generate::Config::PreserveStructure);
-		g->setFlag(Generate::DisableWrite);
 		g->setFlag(Generate::ShortPath);
+		g->setFlag(Generate::DecorationsOnly);
 	}
 	gens[0]->_starts = { { 2, 0 } }; gens[1]->_starts = { { 2, 10 } }; gens[2]->_starts = { { 10, 4 },{ 10, 6 } };
 	gens[0]->_exits = { { 8, 10 } }; gens[1]->_exits = { { 8, 0 } }; gens[2]->_exits = { { 0, 4 },{ 0, 6 } };
@@ -462,10 +463,139 @@ void Special::generateMountaintop(int id)
 	_generator->setFlagOnce(Generate::SplitStones);
 	_generator->generateMulti(id, gens, { { Decoration::Stone | Decoration::Color::Black, 2 },{ Decoration::Stone | Decoration::Color::White, 1, },
 		{ Decoration::Star | Decoration::Color::Black, 1, },{ Decoration::Star | Decoration::Color::White, 1 } });
+}
 
-	gens[0]->_panel->WriteDecorations();
-	gens[0]->_panel->_memory->WritePanelData<int>(id, STYLE_FLAGS, { gens[0]->_panel->_style });
-	gens[0]->_panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec) {
+	_generator->setFlagOnce(Generate::Config::DisableWrite);
+	_generator->generate(ids[0]);
+	std::vector<Generate::PuzzleSymbols> symbols;
+	for (auto sym : symbolVec) symbols.push_back(Generate::PuzzleSymbols(sym));
+	std::vector<Generate> gens;
+	for (int i = 0; i < ids.size(); i++) gens.push_back(Generate());
+	for (int i = 0; i < ids.size(); i++) {
+		gens[i].setFlag(Generate::Config::DisableWrite);
+		gens[i].setFlag(Generate::WriteColors);
+		if (symbols[i].getNum(Decoration::Poly) > 1) gens[i].setFlag(Generate::RequireCombineShapes);
+	}
+	while (!generateMultiPuzzle(ids, gens, symbols, _generator->_path)) {
+		_generator->generate(ids[0]);
+	}
+	for (int i = 0; i < ids.size(); i++) gens[i].write(ids[i]);
+}
+
+bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<Generate::PuzzleSymbols> symbols, std::set<Point> path) {
+	for (int i = 0; i < ids.size(); i++) {
+		gens[i]._custom_grid.clear();
+		gens[i].setPath(path);
+		int fails = 0;
+		while (!gens[i].generate(ids[i], symbols[i])) {
+			if (fails++ > 20)
+				return false;
+		}
+	}
+	std::vector<std::string> solution; //For debugging only
+	for (int y = 0; y < 11; y++) {
+		std::string row;
+		for (int x = 0; x < 11; x++) {
+			if (path.count(Point(x, y))) {
+				row += "xx";
+			}
+			else row += "    ";
+		}
+		solution.push_back(row);
+	}
+	return true;
+}
+
+void Special::generate2Bridge(int id1, int id2)
+{
+	_generator->resetConfig();
+	std::vector<std::shared_ptr<Generate>> gens;
+	for (int i = 0; i < 3; i++) gens.push_back(std::make_shared<Generate>());
+	for (std::shared_ptr<Generate> g : gens) {
+		g->setFlag(Generate::Config::DisableWrite);
+		g->setFlag(Generate::Config::DisableReset);
+		g->setFlag(Generate::Config::DecorationsOnly);
+		g->setFlag(Generate::Config::ShortPath);
+		g->setFlag(Generate::Config::WriteColors);
+	}
+	while (!generate2Bridge(id1, id2, gens));
+
+	gens[1]->write(id1);
+	gens[1]->write(id2);
+}
+
+bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens)
+{
+	for (int i = 0; i < gens.size(); i++) {
+		gens[i]->_custom_grid.clear();
+		gens[i]->setPath(std::set<Point>());
+		std::vector<Point> walls = { { 12, 1 },{ 12, 3 },{ 3, 8 },{ 9, 8 } };
+		for (Point p : walls) gens[i]->setSymbol(Decoration::Gap, p.first, p.second);
+		if (i % 2 == 0) {
+			gens[i]->setObstructions({ { 5, 8 },{ 6, 7 },{ 7, 8 } });
+		}
+		else {
+			gens[i]->setObstructions({ { 5, 0 },{ 6, 1 },{ 7, 0 } });
+		}
+	}
+
+	int steps = 2;
+	int type = rand() % 2;
+
+	if (type == 0) {
+		gens[0]->_exits = { { 12, 8 } };
+		gens[1]->_exits = { { 0, 8 } };
+	}
+	if (type == 1) {
+		gens[0]->_exits = { { 0, 8 } };
+		gens[1]->_exits = { { 12, 8 } };
+	}
+
+	Generate::PuzzleSymbols symbols({ {Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1}, {Decoration::Star | Decoration::Color::Yellow, 1} });
+	int fails = 0;
+	while (!gens[0]->generate(id1, symbols)) {
+		if (fails++ > 20)
+			return false;
+	}
+
+	gens[1]->setPath(gens[0]->_path);
+	gens[1]->customPath.clear();
+	gens[1]->_custom_grid = gens[0]->_panel->_grid;
+	symbols = Generate::PuzzleSymbols({ { Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1 },{ Decoration::Star | Decoration::Color::Yellow, 3 } });
+	fails = 0;
+	while (!gens[1]->generate(id2, symbols)) {
+		if (fails++ > 20) {
+			return false;
+		}
+	}
+
+	if (gens[0]->get(11, 1) != 0 || gens[1]->get(11, 1) != 0 || gens[1]->get(11, 3) != 0 || gens[1]->get(11, 3) != 0)
+		return false;
+	
+	//Make sure both shapes weren't blocked off by the same path
+	int shapeCount = 0;
+	for (int x = 1; x < gens[1]->_panel->_width; x += 2) {
+		for (int y = 1; y < gens[1]->_panel->_height; y += 2) {
+			if (gens[1]->get_symbol_type(gens[1]->get(x, y)) == Decoration::Poly && gens[1]->get_region(Point(x, y)).size() == gens[0]->get_region(Point(x, y)).size())
+				if (++shapeCount == 2) return false;
+		}
+	}
+
+	for (int x = 1; x < gens[1]->_panel->_width; x += 2) {
+		for (int y = 1; y < gens[1]->_panel->_height; y += 2) {
+			if (gens[1]->get_symbol_type(gens[1]->get(x, y)) == Decoration::Star) {
+				if ((type == 0 || type == 2) && !gens[1]->get_region(Point(x, y)).count({ 9, 7 }))
+					continue;
+				if (type == 1 && !gens[1]->get_region(Point(x, y)).count({ 3, 7 }))
+					continue;
+				gens[1]->set(x, y, Decoration::Eraser | Decoration::Color::White);
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 void Special::setTarget(int puzzle, int target)

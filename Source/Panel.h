@@ -142,7 +142,7 @@ public:
 	Symmetry symmetry;
 
 	float pathWidth;
-	bool writeColors;
+	bool writeColors, decorationsOnly;
 
 private:
 

@@ -217,9 +217,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case IDC_TEST:
 			srand(static_cast<unsigned int>(time(NULL)));
+			generator->seed(static_cast<unsigned int>(time(NULL)));
 			//srand(ctr++);
 
 			generator->resetConfig();
+			
 
 			break;
 

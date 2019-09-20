@@ -122,7 +122,8 @@ void Generate::initPanel(int id) {
 				_gridpos.insert(Point(x, y));
 		}
 	}
-	_openpos = _gridpos;
+	if (openPos.size() > 0) _openpos = openPos;
+	else _openpos = _gridpos;
 	_fullGaps = hasFlag(Config::FullGaps);
 	if (_symmetry) _panel->symmetry = _symmetry;
 	if (pathWidth != 1) _panel->pathWidth = pathWidth;
@@ -132,9 +133,12 @@ void Generate::setSymbol(Decoration::Shape symbol, int x, int y)
 {
 	if (_custom_grid.size() < x + 1) {
 		_custom_grid.resize(x + 1, std::vector<int>());
-	}
-	if (_custom_grid[x].size() < y + 1) {
 		for (auto& row : _custom_grid) {
+			row.resize(_custom_grid[0].size(), 0);
+		}
+	}
+	for (auto& row : _custom_grid) {
+		if (row.size() < y + 1) {
 			row.resize(y + 1, 0);
 		}
 	}
@@ -182,6 +186,7 @@ void Generate::write(int id)
 		_panel->_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
 	}
 	_panel->writeColors = hasFlag(Config::WriteColors);
+	_panel->decorationsOnly = hasFlag(Config::DecorationsOnly);
 	_panel->Write(id);
 	
 	if (hasFlag(Config::DisableReset)) _panel->_grid = backupGrid;
@@ -249,6 +254,8 @@ void Generate::reset() {
 	_custom_grid.clear();
 	hitPoints.clear();
 	_obstructions.clear();
+	openPos.clear();
+	customPath.clear();
 }
 
 void Generate::init_treehouse_layout()
@@ -424,10 +431,13 @@ bool Generate::generate(int id, PuzzleSymbols symbols)
 		}
 	}
 
-	int fails = 0;
-	while (!generate_path(symbols)) {
-		if (fails++ > 20) return false;
+	if (customPath.size() == 0) {
+		int fails = 0;
+		while (!generate_path(symbols)) {
+			if (fails++ > 20) return false;
+		}
 	}
+	else _path = customPath;
 
 	std::vector<std::string> solution; //For debugging only
 	for (int y = 0; y < _panel->_height; y++) {
@@ -529,9 +539,9 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 
 	if (_obstructions.size() > 0) {
 		std::vector<Point> walls = pick_random(_obstructions);
-		for (Point p : walls) set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+		for (Point p : walls) if (get(p) == 0) set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
 		//bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
-		bool result = (hasFlag(Config::ShortPath) ? generate_path_regions(3) :
+		bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) :
 			hitPoints.size() > 0 ? generate_special_path() : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
 		for (Point p : walls) if (get(p) & Decoration::Gap) set(p, 0);
 		return result;
@@ -546,7 +556,7 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 	}
 
 	if (hasFlag(Config::ShortPath))
-		return generate_path_length(_panel->get_num_grid_points() / 2);
+		return generate_path_length(1);
 
 	if (hasFlag(Config::LongPath) || symbols.style == Panel::Style::HAS_DOTS && !hasFlag(Config::PreserveStructure) &&
 		!(_panel->symmetry == Panel::Symmetry::Vertical && (_panel->_width / 2) % 2 == 0 ||
@@ -555,10 +565,10 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 	}
 
 	if (symbols.style == Panel::Style::HAS_STONES && !hasFlag(Config::SplitErasers))
-		return generate_path_regions((_panel->_width / 2 + _panel->_height / 2) / 2 + 1);
+		return generate_path_regions(min(symbols.getNum(Decoration::Stone), (_panel->_width / 2 + _panel->_height / 2) / 2 + 1));
 
 	if (symbols.style == Panel::Style::HAS_SHAPERS) {
-		if (hasFlag(Config::DisableCombineShapes)) {
+		if (hasFlag(Config::SplitShapes)) {
 			return generate_path_regions(symbols.getNum(Decoration::Poly) + 1);
 		}
 		return generate_path_length(1);
@@ -574,7 +584,8 @@ bool Generate::generate_path_length(int minLength)
 	Point exit = pick_random(_exits);
 	set_path(pos);
 	while (pos != exit) {
-		if (fails++ > 20) return false;
+		if (fails++ > 20)
+			return false;
 		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
 		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0
@@ -601,7 +612,8 @@ bool Generate::generate_path_regions(int minRegions)
 		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
 		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0
-			|| newPos == exit && regions < minRegions) continue;
+			|| newPos == exit && regions < minRegions)
+			continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		set_path(newPos);
 		set_path(pos + Point(dir.first / 2, dir.second / 2));
@@ -973,9 +985,10 @@ bool Generate::place_stones(int color, int amount) {
 	std::set<Point> open = _openpos;
 	std::set<Point> open2;
 	int passCount = 0;
+	int originalAmount = amount;
 	while (amount > 0) {
 		if (open.size() == 0) {
-			if (open2.size() < amount || _bisect && passCount < (_panel->_width / 2 + _panel->_height / 2 + 2) / 4)
+			if (open2.size() < amount || _bisect && passCount < min(originalAmount, (_panel->_width / 2 + _panel->_height / 2 + 2) / 4))
 				return false;
 			Point pos = pick_random(open2);
 			set(pos, Decoration::Stone | color);
@@ -1139,7 +1152,8 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		int numShapes = static_cast<int>(region.size() + bufferRegion.size()) / (shapeSize + 1) + 1;
 		if (numShapes == 1 && bufferRegion.size() > 0) numShapes++;
 		if (numShapes < amount && region.size() > shapeSize && rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
-		if (hasFlag(Config::DisableCombineShapes) && numShapes != 1) continue;
+		if (region.size() <= shapeSize + 1 && rand() % 2 == 1) numShapes = 1;
+		if (hasFlag(Config::SplitShapes) && numShapes != 1) continue;
 		bool balance = false;
 		if (numShapes > amount) {
 			if (numNegative < 2 || hasFlag(Config::DisableCancelShapes)) continue;

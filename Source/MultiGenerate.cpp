@@ -193,6 +193,10 @@ bool MultiGenerate::place_stars(int color, int amount)
 		std::vector<std::shared_ptr<Generate>> nonMatch;
 		for (std::shared_ptr<Generate> g : generators) {
 			std::set<Point> region = g->get_region(pos);
+			if (region.size() == 1) {
+				for (Point p : region) open.erase(p);
+				continue;
+			}
 			int count = g->count_color(region, color);
 			if (count == 0) {
 				if (amount <= halfPoint || amount == halfPoint + 1 && g->_allowNonMatch)
