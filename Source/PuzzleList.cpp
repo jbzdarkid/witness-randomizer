@@ -571,7 +571,8 @@ void PuzzleList::GenerateMountainN()
 	std::wstring text = L"Mountain Perspective (might take a while)";
 	SetWindowText(_handle, text.c_str());
 	specialCase->generateMountaintop(0x17C34); //TODO: Improve the speed on this
-	generator->setLoadingData(L"Mountain", 32);
+	
+	generator->setLoadingData(L"Mountain", 37);
 	//Purple Bridge
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
@@ -582,8 +583,9 @@ void PuzzleList::GenerateMountainN()
 	generator->generate(0x09E39, Decoration::Stone | Decoration::Color::Purple, 4, Decoration::Stone | Decoration::Color::White, 4,
 		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Eraser | Decoration::Color::White, 1);
 	generator->setVal(Decoration::Dot_Intersection, 6, 6);
-	//generator->setFlagOnce(Generate::Config::DecorationsOnly);
+	generator->setFlagOnce(Generate::Config::DecorationsOnly);
 	generator->write(0x09E39);
+	
 	//Orange Row
 	generator->resetConfig();
 	generator->generate(0x09E73, Decoration::Dot, 4, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
@@ -641,7 +643,7 @@ void PuzzleList::GenerateMountainN()
 
 	specialCase->generate2Bridge(0x09E86, 0x09ED8);
 
-
+	specialCase->generateMountainFloor({ 0x09EFF, 0x09F01, 0x09FC1, 0x09F8E }, 0x09FDA);
 }
 
 void PuzzleList::GenerateCavesN()

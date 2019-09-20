@@ -55,10 +55,19 @@ void Panel::Write() {
 		_memory->WriteArray(id, COLORED_REGIONS, newRegions);
 	}
 
-	//std::vector<int> data = _memory->ReadArray<int>(id, DOT_FLAGS, 45);
-	//std::swap(data[41], data[39]);
-	//_memory->WriteArray<int>(id, DOT_FLAGS, data);
 	if (!decorationsOnly) WriteIntersections();
+	else {
+		std::vector<int> iflags = _memory->ReadArray<int>(id, DOT_FLAGS, _memory->ReadPanelData<int>(id, NUM_DOTS));
+		for (int x = 0; x < _width; x += 2) {
+			for (int y = 0; y < _height; y += 2) {
+				if (_grid[x][y] & Decoration::Dot) {
+					iflags[x / 2 + (y / 2) * (_width / 2 + 1)] = _grid[x][y];
+					_style |= Style::HAS_DOTS;
+				}
+			}
+		}
+		_memory->WriteArray<int>(id, DOT_FLAGS, iflags);
+	}
 	WriteDecorations();
 
 	//_style &= ~NO_BLINK;
@@ -437,7 +446,6 @@ void Panel::WriteIntersections() {
 	//	while (intersections.size() < 82) intersections.push_back(0);
 	//}
 
-	//double endDist = (id == 0x09E39 || id == 0x09E86 || id == 0x09ED8 ? 0.08 : 0.05);
 	double endDist = 0.05;
 
 	for (int i = 0; i < _endpoints.size(); i++) {

@@ -1100,6 +1100,11 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 	for (Point p : shape) {
 		symbol |= (1 << ((p.first - xmin) / 2 + (ymax  - p.second) * 2)) << 16;
 	}
+	if (rand() % 4 > 0) {
+		int type = symbol >> 16; //The generator makes the below type of symbol way too often. (2x2 square with another square attached)
+		if (type == 0x0331 || type == 0x0332 || type == 0x0037 || type == 0x0067 || type == 0x0133 || type == 0x0233 || type == 0x0073 || type == 0x0076)
+			return 0;
+	}
 	return symbol;
 }
 
@@ -1438,7 +1443,14 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 			int symbol = 0;
 			while (symbol == 0) {
 				std::set<Point> area = _gridpos;
-				Shape shape = generate_shape(area, pick_random(area), rand() % ((toErase & Decoration::Negative) || hasFlag(Config::SmallShapes) ? 3 : 5) + 1);
+				int shapeSize;
+				if ((toErase & Decoration::Negative) || hasFlag(Config::SmallShapes)) shapeSize = rand() % 3 + 1;
+				else {
+					shapeSize = rand() % 5 + 1;
+					if (shapeSize < 3)
+						shapeSize += rand() % 3;
+				}
+				Shape shape = generate_shape(area, pick_random(area), shapeSize);
 				if (shape.size() == region.size()) continue;
 				symbol = make_shape_symbol(shape, toErase & Decoration::Can_Rotate, toErase & Decoration::Negative);
 			}

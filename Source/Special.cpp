@@ -1,6 +1,8 @@
 #include "Special.h"
 #include "MultiGenerate.h"
 
+inline Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
+
 void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry)
 {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
@@ -509,7 +511,6 @@ bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& g
 
 void Special::generate2Bridge(int id1, int id2)
 {
-	_generator->resetConfig();
 	std::vector<std::shared_ptr<Generate>> gens;
 	for (int i = 0; i < 3; i++) gens.push_back(std::make_shared<Generate>());
 	for (std::shared_ptr<Generate> g : gens) {
@@ -541,16 +542,9 @@ bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Gene
 	}
 
 	int steps = 2;
-	int type = rand() % 2;
 
-	if (type == 0) {
-		gens[0]->_exits = { { 12, 8 } };
-		gens[1]->_exits = { { 0, 8 } };
-	}
-	if (type == 1) {
-		gens[0]->_exits = { { 0, 8 } };
-		gens[1]->_exits = { { 12, 8 } };
-	}
+	gens[0]->_exits = { { 12, 8 } };
+	gens[1]->_exits = { { 0, 0 } };
 
 	Generate::PuzzleSymbols symbols({ {Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1}, {Decoration::Star | Decoration::Color::Yellow, 1} });
 	int fails = 0;
@@ -585,9 +579,7 @@ bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Gene
 	for (int x = 1; x < gens[1]->_panel->_width; x += 2) {
 		for (int y = 1; y < gens[1]->_panel->_height; y += 2) {
 			if (gens[1]->get_symbol_type(gens[1]->get(x, y)) == Decoration::Star) {
-				if ((type == 0 || type == 2) && !gens[1]->get_region(Point(x, y)).count({ 9, 7 }))
-					continue;
-				if (type == 1 && !gens[1]->get_region(Point(x, y)).count({ 3, 7 }))
+				if (!gens[1]->get_region(Point(x, y)).count({ 9, 7 }))
 					continue;
 				gens[1]->set(x, y, Decoration::Eraser | Decoration::Color::White);
 				return true;
@@ -597,6 +589,123 @@ bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Gene
 
 	return false;
 }
+
+bool checkShape(std::set<Point> shape, int direction) {
+	//Make sure it is not off the grid
+	for (Point p : shape) if (p.first < 0 || p.first > 7 || p.second < 0 || p.second > 7)
+		return false;
+	//Make sure it is drawable
+	std::set<Point> points1, points2;
+	if (direction == 0) {
+		points1 = { { 1, 7 },{ 3, 7 },{ 5, 7 },{ 7, 7 },{ 7, 5 },{ 7, 3 },{ 7, 1 } };
+		points2 = { { 1, 7 },{ 1, 5 },{ 1, 3 },{ 1, 1 },{ 3, 1 },{ 5, 1 },{ 7, 1 } };
+	}
+	else {
+		points1 = { { 7, 7 },{ 5, 7 },{ 3, 7 },{ 1, 7 },{ 1, 5 },{ 1, 3 },{ 1, 1 } };
+		points2 = { { 7, 7 },{ 7, 5 },{ 7, 3 },{ 7, 1 },{ 5, 1 },{ 3, 1 },{ 1, 1 } };
+	}
+	int count = 0;
+	bool consecutive = false;
+	for (Point p : points1) {
+		if (shape.count(p)) {
+			if (!consecutive) {
+				count++;
+				consecutive = true;
+			}
+		}
+		else consecutive = false;
+	}
+	if (count == 1)
+		return true;
+	count = 0;
+	consecutive = false;
+	for (Point p : points2) {
+		if (shape.count(p)) {
+			if (!consecutive) {
+				count++;
+				consecutive = true;
+			}
+		}
+		else consecutive = false;
+	}
+	if (count == 1)
+		return true;
+	return false;
+}
+
+void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
+{
+	_generator->resetConfig();
+	std::vector<Point> floorPos = { { 3, 3 },{ 7, 3 },{ 3, 7 },{ 7, 7 } };
+	_generator->openPos = std::set<Point>(floorPos.begin(), floorPos.end());
+	_generator->setFlag(Generate::Config::RequireCombineShapes);
+	_generator->setFlag(Generate::Config::DisableWrite);
+	//Make sure no duplicated symbols
+	std::set<int> sym;
+	do {
+		_generator->generate(idfloor, Decoration::Poly, 4);
+		sym.clear();
+		for (Point p : floorPos) sym.insert(_generator->get(p));
+	} while (sym.size() < 4);
+
+	int rotateIndex = rand() % 4;
+	for (int i = 0; i < 4; i++) {
+		int symbol = _generator->get(floorPos[i]);
+		//Convert to shape
+		Shape shape;
+		for (int j = 0; j < 16; j++) {
+			if (symbol & (1 << (j + 16))) {
+				shape.insert(Point((j % 4) * 2 + 1, 8 - ((j / 4) * 2 + 1)));
+			}
+		}
+		//Translate randomly
+		Shape newShape;
+		do {
+			Point shift = Point((rand() % 4) * 2, -(rand() % 4) * 2);
+			newShape.clear();
+			for (Point p : shape) newShape.insert(p + shift);
+		} while (!checkShape(newShape, i % 2));
+		if (i == rotateIndex) {
+			symbol = _generator->make_shape_symbol(newShape, true, false);
+			if (symbol == 0) {
+				symbol = _generator->get(floorPos[i]);
+				rotateIndex++;
+			}
+		}
+
+		Generate gen;
+		for (Point p : newShape) {
+			for (Point dir : Generate::_DIRECTIONS2) {
+				if (!newShape.count(p + dir)) {
+					gen.setSymbol(PATH, p.first + dir.first / 2, p.second + dir.second / 2);
+				}
+			}
+		}
+		gen.setPath({ {0, 0} }); //Just to stop it from trying to make a path
+		gen.setFlag(Generate::Config::DecorationsOnly);
+		gen.setFlag(Generate::Config::DisableWrite);
+		gen.generate(ids[i], Decoration::Poly | (i == rotateIndex ? Decoration::Can_Rotate : 0), 1, Decoration::Eraser | Decoration::Color::Green, 1);
+		std::set<Point> covered;
+		int decoyShape;
+		for (int x = 1; x <= 7; x += 2)
+			for (int y = 1; y <= 7; y += 2)
+				if (gen.get(x, y) != 0) {
+					covered.insert(Point(x, y));
+					if (gen.get_symbol_type(gen.get(x, y)) == Decoration::Poly) decoyShape = gen.get(x, y);
+				}
+		for (Point p : covered) newShape.erase(p);
+		if (newShape.size() == 0 || decoyShape == symbol) {
+			i--;
+			continue;
+		}
+		Point pos = pick_random(newShape);
+		gen.setVal(symbol, pos.first, pos.second);
+		gen.write(ids[i]);
+	}
+	_generator->reset();
+	_generator->resetConfig();
+}
+
 
 void Special::setTarget(int puzzle, int target)
 {
