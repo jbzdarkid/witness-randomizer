@@ -49,8 +49,6 @@ void Generate::generateMulti(int id, int numSolutions, std::vector<std::pair<int
 	gen.generate(id, gens, symbolVec);
 }
 
-inline Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
-
 std::vector<Point> Generate::_DIRECTIONS1 = { Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0) };
 std::vector<Point> Generate::_8DIRECTIONS1 = { Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0), Point(1, 1), Point(1, -1), Point(-1, -1), Point(-1, 1) };
 std::vector<Point> Generate::_DIRECTIONS2 = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0) };

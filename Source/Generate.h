@@ -6,7 +6,6 @@
 #include <set>
 #include <algorithm>
 
-typedef std::pair<int, int> Point;
 typedef std::set<Point> Shape;
 
 class Generate

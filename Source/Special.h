@@ -3,7 +3,6 @@
 #include "Randomizer.h"
 #include <algorithm>
 
-typedef std::pair<int, int> Point;
 typedef std::set<Point> Shape;
 
 

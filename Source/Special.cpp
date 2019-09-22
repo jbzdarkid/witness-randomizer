@@ -1,8 +1,6 @@
 #include "Special.h"
 #include "MultiGenerate.h"
 
-inline Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
-
 void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry)
 {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);

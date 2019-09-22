@@ -3,8 +3,16 @@
 #include "Memory.h"
 #include <stdint.h>
 
-typedef std::pair<int, int> Point;
-
+struct Point {
+	int first;
+	int second;
+	Point() { first = 0; second = 0; };
+	Point(int x, int y) { first = x; second = y; }
+	Point operator+(const Point& p) { return { first + p.first, second + p.second }; }
+	bool operator==(const Point& p) { return first == p.first && second == p.second; };
+	bool operator!=(const Point& p) { return first != p.first || second != p.second; };
+	friend bool operator<(const Point& p1, const Point& p2) { if (p1.first == p2.first) return p1.second < p2.second; return p1.first < p2.first; };
+};
 
 class Decoration
 {

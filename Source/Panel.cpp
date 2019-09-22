@@ -185,7 +185,7 @@ void Panel::ReadAllData() {
 	int numConnections = _memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
 	int numDots = _memory->ReadPanelData<int>(id, NUM_DOTS);
 	int reflectionData = _memory->ReadPanelData<int>(id, REFLECTION_DATA);
-	if (reflectionData) std::vector<int> datas = _memory->ReadArray<int>(id, REFLECTION_DATA, numDots);
+	std::vector<int> rdata; if (reflectionData) rdata = _memory->ReadArray<int>(id, REFLECTION_DATA, numDots);
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
 	int ptr1 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_A);
 	int ptr2 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_B);
@@ -202,8 +202,7 @@ void Panel::ReadAllData() {
 	float power = _memory->ReadPanelData<float>(id, POWER);
 	float openRate = _memory->ReadPanelData<float>(id, OPEN_RATE);
 	int cptr = _memory->ReadPanelData<int>(id, DECORATION_COLORS);
-	std::vector<Color> colors;
-	if (cptr) colors = _memory->ReadArray<Color>(id, DECORATION_COLORS, numDecorations);
+	std::vector<Color> colors; if (cptr) colors = _memory->ReadArray<Color>(id, DECORATION_COLORS, numDecorations);
 	Color outerBackground = _memory->ReadPanelData<Color>(id, OUTER_BACKGROUND);
 	int outerBackgroundMode = _memory->ReadPanelData<int>(id, OUTER_BACKGROUND_MODE);
 	Color bgRegionColor = _memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR);
