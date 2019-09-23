@@ -48,9 +48,9 @@ public:
 	void setLoadingData(int totalPuzzles) { _totalPuzzles = totalPuzzles; _genTotal = 0; }
 	void setLoadingData(std::wstring areaName, int numPuzzles) { _areaName = areaName; _areaPuzzles = numPuzzles; _areaTotal = 0; }
 	enum Config { None = 0, FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, SmallShapes = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
-		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, KeepPath = 0x400, SplitShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
+		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, DisableDotIntersection = 0x400, SplitShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
 		AlternateColors = 0x8000, WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, SplitErasers = 0x80000, LongPath = 0x100000, ShortPath = 0x200000, SplitStones = 0x400000,
-		DecorationsOnly = 0x800000, Write2Color = 0x1000000,
+		DecorationsOnly = 0x800000, Write2Color = 0x1000000, 
 	};
 	void setFlag(Config option) { _config |= option; };
 	void setFlagOnce(Config option) { _config |= option; _oneTimeAdd |= option; };
@@ -135,11 +135,11 @@ private:
 	Point get_sym_point(Point pos) { return _panel->get_sym_point(pos); }
 	int get_parity(Point pos) { return (pos.first / 2 + pos.second / 2) % 2; }
 	void clear();
-	void reset();
+	void resetVars();
 	void init_treehouse_layout();
 	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
 	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
-	bool on_edge(Point p) { return (p.first == 0 || p.first + 1 == _panel->_width || p.second == 0 || p.second + 1 == _panel->_height); }
+	bool on_edge(Point p) { return (Point::pillarWidth == 0 && (p.first == 0 || p.first + 1 == _panel->_width) || p.second == 0 || p.second + 1 == _panel->_height); }
 	bool off_edge(Point p) { return (p.first < 0 || p.first >= _panel->_width || p.second < 0 || p.second >= _panel->_height); }
 	static std::vector<Point> _DIRECTIONS1, _8DIRECTIONS1, _DIRECTIONS2, _8DIRECTIONS2, _SHAPEDIRECTIONS, _DISCONNECT;
 	bool generate_maze(int id, int numStarts, int numExits);

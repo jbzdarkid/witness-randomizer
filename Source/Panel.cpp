@@ -4,6 +4,8 @@
 #include "Randomizer.h"
 #include <sstream>
 
+int Point::pillarWidth = 0;
+
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	for (size_t i=startIndex ; i<data.size(); i++) {
@@ -23,6 +25,11 @@ Panel::Panel(int id) {
 
 void Panel::Read() {
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X) - 1;
+	if (_memory->ReadPanelData<int>(id, IS_CYLINDER)) {
+		_width++;
+		Point::pillarWidth = _width;
+	}
+	else Point::pillarWidth = 0;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
 	if (_width <= 0 || _height <= 0) {
 		int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
@@ -44,14 +51,16 @@ void Panel::Read() {
 	ReadDecorations();
 	pathWidth = 1;
 	_resized = false;
+	writeColors = false;
+	decorationsOnly = false;
 }
 
 void Panel::Write() {
 
 	if (_resized && _memory->ReadPanelData<int>(id, NUM_COLORED_REGIONS) > 0) {
-		//Make two triangles that cover the whole panel
+		//Make two triangles that cover the whole panel TODO: Get this to work for the pillars too
 		std::vector<int> newRegions = { 0, xy_to_loc(_width - 1, 0), xy_to_loc(0, 0), 0, xy_to_loc(_width - 1, _height - 1), xy_to_loc(_width - 1, 0), 0, 0 };
-		_memory->WritePanelData<int>(id, NUM_COLORED_REGIONS, { 2 });
+		_memory->WritePanelData<int>(id, NUM_COLORED_REGIONS, { static_cast<int>(newRegions.size()) / 4 });
 		_memory->WriteArray(id, COLORED_REGIONS, newRegions);
 	}
 
@@ -216,6 +225,7 @@ void Panel::ReadAllData() {
 	void* target = _memory->ReadPanelData<void*>(id, TARGET);
 	void* panelTarget = _memory->ReadPanelData<void*>(id, PANEL_TARGET);
 	//std::vector<int> targets = _memory->ReadArray<int>(id, PANEL_TARGET, 6);
+	int isPillar = _memory->ReadPanelData<int>(id, IS_CYLINDER);
 }
 
 void Panel::ReadDecorations() {
@@ -235,7 +245,7 @@ void Panel::WriteDecorations() {
 	bool any = false;
 	_style &= ~0x2f40; //Remove all element flags
 	for (int y=_height-2; y>0; y-=2) {
-		for (int x=1; x<_width - 1; x+=2) {
+		for (int x=1; x<_width; x+=2) {
 			decorations.push_back(_grid[x][y]);
 			decorationColors.push_back(get_color_rgb(_grid[x][y] & 0xf));
 			if (_grid[x][y])
@@ -271,6 +281,7 @@ void Panel::ReadIntersections() {
 	if (minx > maxx) std::swap(minx, maxx);
 	if (miny > maxy) std::swap(miny, maxy);
 	unitWidth = (maxx - minx) / (_width - 1);
+	if (Point::pillarWidth) unitWidth = 1.0f / _width;
 	unitHeight = (maxy - miny) / (_height - 1);
 	std::vector<int> intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
 	std::vector<int> symmetryData = _memory->ReadPanelData<int>(id, REFLECTION_DATA) ? 
@@ -381,20 +392,15 @@ void Panel::WriteIntersections() {
 	std::vector<int> connections_a;
 	std::vector<int> connections_b;
 	std::vector<int> symmetryData;
+	/*
 	switch (symmetry) {
 	case Symmetry::Horizontal: symmetryData = sym_data_h(); break;
 	case Symmetry::Vertical: symmetryData = sym_data_v(); break;
 	case Symmetry::Rotational: symmetryData = sym_data_r(); break;
-	}
-
-	/*if (id == 0x09FD8) { //Consider at some point
-		//maxx = 0.825f; minx = 0.025f;
-		//maxy = 0.825f; miny = 0.025f;
-		maxx = 0.975f; minx = 0.025f;
-		maxy = 0.975f; miny = 0.025f;
-		_endpoints[0].SetDir(Endpoint::Direction::UP);
 	}*/
+
 	unitWidth = (maxx - minx) / (_width - 1);
+	if (Point::pillarWidth) unitWidth = 1.0f / _width;
 	unitHeight = (maxy - miny) / (_height - 1);
 
 	for (Point p : _startpoints) {
@@ -424,7 +430,19 @@ void Panel::WriteIntersections() {
 				connections_a.push_back(xy_to_loc(x - 2, y));
 				connections_b.push_back(xy_to_loc(x, y));
 			}
+			if (symmetry) {
+				symmetryData.push_back(xy_to_loc(get_sym_point(x, y).first, get_sym_point(x, y).second));
+			}
 		}
+		if (Point::pillarWidth) {
+			connections_a.push_back(xy_to_loc(_width - 2, y));
+			connections_b.push_back(xy_to_loc(0, y));
+		}
+	}
+
+	std::vector<std::string> out;
+	for (int i = 0; i < connections_a.size(); i++) {
+		out.push_back(std::to_string(connections_a[i]) + " -> " + std::to_string(connections_b[i]));
 	}
 
 	if (symmetry) {
@@ -439,11 +457,6 @@ void Panel::WriteIntersections() {
 			}
 		}
 	}
-
-	//if (id == 0x17C34) { //To prevent the disappering exits from screwing everything up (It's not working though)
-	//	while (intersectionFlags.size() < 41) intersectionFlags.push_back(NO_POINT);
-	//	while (intersections.size() < 82) intersections.push_back(0);
-	//}
 
 	double endDist = 0.05;
 
@@ -479,13 +492,18 @@ void Panel::WriteIntersections() {
 		intersections.push_back(static_cast<float>(xPos));
 		intersections.push_back(static_cast<float>(yPos));
 		intersectionFlags.push_back(endpoint.GetFlags());
-		if (symmetry && i % 2 == 1) {
-			//Link pairs of exits in symmetry data
-			symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 1);
-			symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 2);
+		if (symmetry) {
+			Point sp = get_sym_point(endpoint.GetX(), endpoint.GetY());
+			for (int j = 0; j < _endpoints.size(); j++) {
+				if (_endpoints[j].GetX() == sp.first && _endpoints[j].GetY() == sp.second) {
+					symmetryData.push_back(get_num_grid_points() + j);
+					break;
+				}
+				if (j == _endpoints.size() - 1) symmetryData.push_back(0); //No exit matches up with it symmetrically
+			}
 		}
 	}
-	
+
 	// Dots/Gaps
 	for (int y = _height - 1; y >= 0; y--) {
 		for (int x = 0; x < _width; x++) {
@@ -493,7 +511,8 @@ void Panel::WriteIntersections() {
 			if (_grid[x][y] == 0 || _grid[x][y] == OPEN) continue;
 			if (locate_segment(x, y, connections_a, connections_b) == -1) continue;
 			if (_grid[x][y] & IntersectionFlags::GAP) {
-				break_segment_gap(x, y, connections_a, connections_b, intersections, intersectionFlags);
+				if (!break_segment_gap(x, y, connections_a, connections_b, intersections, intersectionFlags))
+					continue;
 				if (symmetry) {
 					auto[sx, sy] = get_sym_point(x, y);
 					break_segment_gap(sx, sy, connections_a, connections_b, intersections, intersectionFlags);
@@ -513,21 +532,18 @@ void Panel::WriteIntersections() {
 					if (_grid[x][y] & IntersectionFlags::DOT_IS_BLUE || _grid[x][y] & IntersectionFlags::DOT_IS_ORANGE)
 						_style |= IS_2COLOR;
 				}
-				break_segment(x, y, connections_a, connections_b, intersections, intersectionFlags);
+				if (!break_segment(x, y, connections_a, connections_b, intersections, intersectionFlags))
+					continue;
 				if (symmetry) {
 					auto[sx, sy] = get_sym_point(x, y);
-					break_segment(sx, sy, connections_a, connections_b, intersections, intersectionFlags);
+					if (!break_segment(sx, sy, connections_a, connections_b, intersections, intersectionFlags))
+						continue;
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 1);
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 2);
 				}
 			}
 		}
 	}
-
-	//if (id == 0x17C34) {
-	//	std::vector<float> newPos = { 0.06125f, 0.5f, 0.725f, 0.8897f, 0.725f, 0.1103f };
-	//	std::copy(newPos.begin(), newPos.end(), intersections.end() - 6);
-	//}
 
 	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
 	_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);

@@ -7,11 +7,14 @@ struct Point {
 	int first;
 	int second;
 	Point() { first = 0; second = 0; };
-	Point(int x, int y) { first = x; second = y; }
+	Point(int x, int y) { if (pillarWidth) first = (x + pillarWidth) % pillarWidth; else first = x; second = y; }
 	Point operator+(const Point& p) { return { first + p.first, second + p.second }; }
+	Point operator*(int d) { return { first * d, second * d }; }
+	Point operator/(int d) { return { first / d, second / d }; }
 	bool operator==(const Point& p) { return first == p.first && second == p.second; };
 	bool operator!=(const Point& p) { return first != p.first || second != p.second; };
 	friend bool operator<(const Point& p1, const Point& p2) { if (p1.first == p2.first) return p1.second < p2.second; return p1.first < p2.first; };
+	static int pillarWidth;
 };
 
 class Decoration
@@ -145,7 +148,8 @@ public:
 
 	enum Symmetry { //NOTE - Not all of these are valid symmetries for certain puzzles
 		None, Horizontal, Vertical, Rotational,
-		RotateLeft, RotateRight, FlipXY, FlipNegXY, ParallelH, ParallelV, ParallelHFlip, ParallelVFlip
+		RotateLeft, RotateRight, FlipXY, FlipNegXY, ParallelH, ParallelV, ParallelHFlip, ParallelVFlip,
+		PillarParallel, PillarHorizontal, PillarVertical, PillarRotational
 	};
 	Symmetry symmetry;
 
@@ -175,6 +179,10 @@ private:
 		case Symmetry::ParallelV: return Point((x + (_width + 1) / 2) % _width, y);
 		case Symmetry::ParallelHFlip: return Point(_width - 1 - x, (y + (_height + 1) / 2) % _height);
 		case Symmetry::ParallelVFlip: return Point((x + (_width + 1) / 2) % _width, _height - 1 - y);
+		case Symmetry::PillarParallel: return Point(x + _width / 2, y);
+		case Symmetry::PillarHorizontal: return Point(x + _width / 2, _height - 1 - y);
+		case Symmetry::PillarVertical: return Point( _width / 2 - x, y);
+		case Symmetry::PillarRotational: return Point(_width / 2 - x, _height - 1 - y);
 		}
 		return Point(x, y);
 	}
@@ -182,7 +190,7 @@ private:
 	Point get_sym_point(int x, int y) { return get_sym_point(x, y, symmetry); }
 	Point get_sym_point(Point p) { return get_sym_point(p.first, p.second, symmetry); }
 	Point get_sym_point(Point p, Symmetry symmetry) { return get_sym_point(p.first, p.second, symmetry); }
-	int get_num_grid_points() { return (_width / 2 + 1) * (_height / 2 + 1);  }
+	int get_num_grid_points() { return ((_width + 1) / 2) * ((_height + 1) / 2); }
 	int get_num_grid_blocks() { return (_width / 2) * (_height / 2);  }
 	int get_parity() { return (get_num_grid_points() + 1) % 2; }
 	Color get_color_rgb(int color) {
@@ -220,7 +228,7 @@ private:
 
 	std::tuple<int, int> dloc_to_xy(int location) {
 		int height2 = (_height - 3) / 2;
-		int width2 = (_width - 1) / 2;
+		int width2 = _width / 2;
 
 		int x = 2 * (location % width2) + 1;
 		int y = 2 * (height2 - location / width2) + 1;
@@ -229,56 +237,35 @@ private:
 
 	int xy_to_dloc(int x, int y) {
 		int height2 = (_height - 3) / 2;
-		int width2 = (_width - 1) / 2;
+		int width2 = _width / 2;
 
 		int rowsFromBottom = height2 - (y - 1)/2;
 		return rowsFromBottom * width2 + (x - 1)/2;
-	}
-
-	std::vector<int> sym_data_v() {
-		std::vector<int> data;
-		for (int y = 0; y <= _height / 2; y++) {
-			for (int x = _width / 2 ; x >= 0; x--) {
-				data.push_back(y * (_width / 2 + 1) + x);
-			}
-		}
-		return data;
-	}
-
-	std::vector<int> sym_data_h() {
-		std::vector<int> data;
-		for (int y = _height / 2; y >= 0; y--) {
-			for (int x = 0; x <= _width / 2; x++) {
-				data.push_back(y * (_width / 2 + 1) + x);
-			}
-		}
-		return data;
-	}
-
-	std::vector<int> sym_data_r() {
-		std::vector<int> data;
-		for (int i = get_num_grid_points() - 1; i >= 0; i--) {
-			data.push_back(i);
-		}
-		return data;
 	}
 
 	int locate_segment(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b) {
 		for (int i = 0; i < connections_a.size(); i++) {
 			auto[x1, y1] = loc_to_xy(connections_a[i]);
 			auto[x2, y2] = loc_to_xy(connections_b[i]);
-			if ((x1 == x - 1 && x2 == x + 1 && y1 == y && y2 == y) ||
+			if (Point::pillarWidth) {
+				if ((x1 == (x - 1 + Point::pillarWidth) % Point::pillarWidth && x2 == (x + 1) % Point::pillarWidth && y1 == y && y2 == y) ||
+					(y1 == y - 1 && y2 == y + 1 && x1 == x && x2 == x)) {
+					return i;
+				}
+			}
+			else if ((x1 == x - 1 && x2 == x + 1 && y1 == y && y2 == y) ||
 				(y1 == y - 1 && y2 == y + 1 && x1 == x && x2 == x)) {
 				return i;
 			}
+			
 		}
 		return -1;
 	}
 
-	void break_segment(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
+	bool break_segment(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
 		int i = locate_segment(x, y, connections_a, connections_b);
 		if (i == -1) {
-			return;
+			return false;
 		}
 		int other_connection = connections_b[i];
 		connections_b[i] = static_cast<int>(intersectionFlags.size());
@@ -287,12 +274,13 @@ private:
 		intersections.push_back(static_cast<float>(minx + x * unitWidth));
 		intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
 		intersectionFlags.push_back(_grid[x][y]);
+		return true;
 	}
 
-	void break_segment_gap(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
+	bool break_segment_gap(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
 		int i = locate_segment(x, y, connections_a, connections_b);
 		if (i == -1) {
-			return;
+			return false;
 		}
 		int other_connection = connections_b[i];
 		connections_b[i] = static_cast<int>(intersectionFlags.size() + 1);
@@ -311,6 +299,30 @@ private:
 		intersections.push_back(static_cast<float>(miny + (_height - 1 - y + yOffset) * unitHeight));
 		intersectionFlags.push_back(_grid[x][y]);
 		intersectionFlags.push_back(_grid[x][y]);
+		return true;
+	}
+
+	//DON't USE - it doesn't work
+	void break_segment_pillar(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
+		int loc = locate_segment(x, y, connections_a, connections_b);
+		if (loc == -1) {
+			return;
+		}
+		int other_connection = connections_b[loc];
+		for (int i = 0; i < 5; i++) {
+			if (i == 0) connections_b[loc] = static_cast<int>(intersectionFlags.size());
+			else {
+				connections_a.push_back(static_cast<int>(intersectionFlags.size() - 1));
+				connections_b.push_back(static_cast<int>(intersectionFlags.size()));
+			}
+			float xpos = minx + x * unitWidth + i / 36.0f;
+			if (xpos >= 1) xpos -= 1;
+			intersections.push_back(static_cast<float>(xpos));
+			intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
+			intersectionFlags.push_back(0x240000);
+		}
+		connections_a.push_back(static_cast<int>(intersectionFlags.size() - 1));
+		connections_b.push_back(other_connection);
 	}
 
 	std::shared_ptr<Memory> _memory;
@@ -331,3 +343,33 @@ private:
 	friend class Special;
 	friend class MultiGenerate;
 };
+
+//Probably not needed anymore
+
+/*std::vector<int> sym_data_v() {
+std::vector<int> data;
+for (int y = 0; y <= _height / 2; y++) {
+for (int x = _width / 2 ; x >= 0; x--) {
+data.push_back(y * (_width / 2 + 1) + x);
+}
+}
+return data;
+}
+
+std::vector<int> sym_data_h() {
+std::vector<int> data;
+for (int y = _height / 2; y >= 0; y--) {
+for (int x = 0; x <= _width / 2; x++) {
+data.push_back(y * (_width / 2 + 1) + x);
+}
+}
+return data;
+}
+
+std::vector<int> sym_data_r() {
+std::vector<int> data;
+for (int i = get_num_grid_points() - 1; i >= 0; i--) {
+data.push_back(i);
+}
+return data;
+}*/

@@ -73,7 +73,7 @@ void Generate::initPanel(int id) {
 		_panel = std::make_shared<Panel>(id);
 	}
 	if (_width > 0 && _height > 0 && (_width != _panel->_width || _height != _panel->_height)) {
-		_panel->Resize(_width, _height);
+		_panel->Resize(Point::pillarWidth ? _width - 1 : _width, _height);
 	}
 	if (hasFlag(Config::FixBackground)) {
 		_panel->Resize(_panel->_width, _panel->_height); //This will force the panel to have to redraw the background
@@ -194,7 +194,7 @@ void Generate::write(int id)
 	_panel->Write(id);
 	
 	if (hasFlag(Config::DisableReset)) _panel->_grid = backupGrid;
-	else reset();
+	else resetVars();
 
 	if (_oneTimeAdd) {
 		_config &= ~_oneTimeAdd;
@@ -214,7 +214,7 @@ void Generate::resetConfig()
 	_symmetry = Panel::Symmetry::None;
 	pathWidth = 1;
 	if (hasFlag(Config::DisableReset)) {
-		reset();
+		resetVars();
 	}
 	_config = 0;
 	_oneTimeAdd = Config::None;
@@ -251,7 +251,7 @@ void Generate::clear()
 	_path.clear(); _path1.clear(); _path2.clear();
 }
 
-void Generate::reset() {
+void Generate::resetVars() {
 	_panel = NULL; //This is needed for the generator to read in the next panel
 	_starts.clear();
 	_exits.clear();
@@ -369,7 +369,7 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 			Point dir = pick_random(validDir);
 			Point newPos = pos + dir;
 			set_path(newPos);
-			set_path(Point(pos.first + dir.first / 2, pos.second + dir.second / 2));
+			set_path(pos + dir / 2);
 			check.insert(newPos);
 			pos = newPos;
 		}
@@ -592,11 +592,11 @@ bool Generate::generate_path_length(int minLength)
 			return false;
 		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
-		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0
+		if (off_edge(newPos) || get(newPos) != 0 || get(pos + dir / 2) != 0
 			|| newPos == exit && _path.size() / 2 + 2 < minLength) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		set_path(newPos);
-		set_path(pos + Point(dir.first / 2, dir.second / 2));
+		set_path(pos + dir / 2);
 		pos = newPos;
 		fails = 0;
 	}
@@ -615,12 +615,12 @@ bool Generate::generate_path_regions(int minRegions)
 			return false;
 		Point dir = pick_random(_DIRECTIONS2);
 		Point newPos = pos + dir;
-		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0
+		if (off_edge(newPos) || get(newPos) != 0 || get(pos + dir / 2) != 0
 			|| newPos == exit && regions < minRegions)
 			continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		set_path(newPos);
-		set_path(pos + Point(dir.first / 2, dir.second / 2));
+		set_path(pos + dir / 2);
 		if (!on_edge(newPos) && on_edge(pos)) {
 			regions++;
 			if (_panel->symmetry) regions++;
@@ -635,17 +635,31 @@ bool Generate::generate_longest_path()
 {
 	Point pos = pick_random(_starts);
 	Point exit = pick_random(_exits);
-	if (get_parity(pos + exit) != _panel->get_parity()) return false;
+	if (get_parity(pos + exit) != _panel->get_parity())
+		return false;
 	int fails = 0;
 	int reqLength = _panel->get_num_grid_points();
 	bool centerFlag = !on_edge(pos);
 	set_path(pos);
 	while (pos != exit) {
-		if (fails++ > 20) return false;
+		std::vector<std::string> solution; //For debugging only
+		for (int y = 0; y < _panel->_height; y++) {
+			std::string row;
+			for (int x = 0; x < _panel->_width; x++) {
+				if (get(x, y) == PATH) {
+					row += "xx";
+				}
+				else row += "    ";
+			}
+			solution.push_back(row);
+		}
+		if (fails++ > 20)
+			return false;
 		Point dir = pick_random(_DIRECTIONS2);
 		for (Point checkDir : _DIRECTIONS2) {
 			Point check = pos + checkDir;
-			if (off_edge(check) || get(check) != 0) continue;
+			if (off_edge(check) || get(check) != 0)
+				continue;
 			if (check == exit) continue;
 			int open = 0;
 			for (Point checkDir2 : _DIRECTIONS2) {
@@ -659,14 +673,14 @@ bool Generate::generate_longest_path()
 			}
 		}
 		Point newPos = pos + dir;
-		if (off_edge(newPos) || get(newPos) != 0 || get(pos.first + dir.first / 2, pos.second + dir.second / 2) != 0
+		if (off_edge(newPos) || get(newPos) != 0 || get(pos + dir / 2) != 0
 			|| newPos == exit && _path.size() / 2 + 2 < reqLength) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		if (on_edge(newPos) && (off_edge(newPos + dir) || get(newPos + dir) != 0)) {
 			if (centerFlag && off_edge(newPos + dir)) {
 				centerFlag = false;
 			}
-			else {
+			else if (Point::pillarWidth == 0) {
 				int open = 0;
 				for (Point checkDir : _DIRECTIONS2) {
 					if (!off_edge(newPos + checkDir) && get(newPos + checkDir) == 0) {
@@ -677,7 +691,7 @@ bool Generate::generate_longest_path()
 			}
 		}
 		set_path(newPos);
-		set_path(pos + Point(dir.first / 2, dir.second / 2));
+		set_path(pos + dir / 2);
 		pos = newPos;
 		fails = 0;
 	}
@@ -699,7 +713,7 @@ bool Generate::generate_special_path()
 		for (Point dir : _DIRECTIONS2) {
 			Point newPos = pos + dir;
 			if (off_edge(newPos)) continue;
-			Point connectPos = Point(pos.first + dir.first / 2, pos.second + dir.second / 2);
+			Point connectPos = pos + dir / 2;
 			if (get(connectPos) == PATH && hitIndex < hitPoints.size() && connectPos == hitPoints[hitIndex]) {
 				validDir = { dir };
 				hitIndex++;
@@ -720,7 +734,7 @@ bool Generate::generate_special_path()
 		if (validDir.size() == 0) return false;
 		Point dir = pick_random(validDir);
 		set_path(pos + dir);
-		set_path(pos + Point(dir.first / 2, dir.second / 2));
+		set_path(pos + dir / 2);
 		pos = pos + dir;
 	}
 	return hitIndex == hitPoints.size() && _path.size() >= minLength;
@@ -749,7 +763,7 @@ std::set<Point> Generate::get_region(Point pos) {
 			Point p1 = p + dir;
 			if (on_edge(p1)) continue;
 			if (get(p1) == PATH || get(p1) == OPEN) continue;
-			Point p2 = Point(p.first + dir.first * 2, p.second + dir.second * 2);
+			Point p2 = p + dir * 2;
 			if ((get(p2) & Decoration::Empty) == Decoration::Empty) continue;
 			if (region.insert(p2).second) {
 				check.push_back(p2);
@@ -936,6 +950,14 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 		std::set<Point> intersections;
 		for (Point p : open) {
 			if (p.first % 2 == 0 && p.second % 2 == 0)
+				intersections.insert(p);
+		}
+		open = intersections;
+	}
+	if (hasFlag(Config::DisableDotIntersection)) {
+		std::set<Point> intersections;
+		for (Point p : open) {
+			if (p.first % 2 != 0 || p.second % 2 != 0)
 				intersections.insert(p);
 		}
 		open = intersections;

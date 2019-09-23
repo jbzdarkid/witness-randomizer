@@ -51,7 +51,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText;
 
-int panel = 0x15ADD; //Panel to edit
+int panel = 0x0383A; //Panel to edit
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
@@ -221,6 +221,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//generator->seed(0);
 
 			generator->resetConfig();
+			generator->setSymmetry(Panel::Symmetry::PillarParallel);
+			generator->setFlagOnce(Generate::Config::DisableDotIntersection);
+			generator->generate(0x33961, Decoration::Dot, 8 );
+			//generator->generate(0x33961);
 
 			break;
 

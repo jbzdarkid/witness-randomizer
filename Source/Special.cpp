@@ -149,7 +149,7 @@ void Special::generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool 
 			_generator->set(p, sym | dotSequence[seqPos++]);
 		}
 		for (Point dir : Generate::_DIRECTIONS1) {
-			Point newp = Point(p.first + dir.first, p.second + dir.second);
+			Point newp = p + dir;
 			if (path.count(newp)) {
 				p = newp;
 				break;
@@ -191,7 +191,7 @@ void Special::generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSeque
 			dots1.insert(p1);
 		}
 		for (Point dir : Generate::_DIRECTIONS1) {
-			Point newp = Point(p1.first + dir.first, p1.second + dir.second);
+			Point newp = p1 + dir;
 			if (path1.count(newp)) {
 				p1 = newp;
 				break;
@@ -207,7 +207,7 @@ void Special::generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSeque
 			dots2.insert(p2);
 		}
 		for (Point dir : Generate::_DIRECTIONS1) {
-			Point newp = Point(p2.first + dir.first, p2.second + dir.second);
+			Point newp = p2 + dir;
 			if (path2.count(newp)) {
 				p2 = newp;
 				break;
@@ -700,7 +700,7 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 		gen.setVal(symbol, pos.first, pos.second);
 		gen.write(ids[i]);
 	}
-	_generator->reset();
+	_generator->resetVars();
 	_generator->resetConfig();
 }
 

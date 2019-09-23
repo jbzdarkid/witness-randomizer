@@ -572,7 +572,7 @@ void PuzzleList::GenerateMountainN()
 	SetWindowText(_handle, text.c_str());
 	specialCase->generateMountaintop(0x17C34); //TODO: Improve the speed on this
 	
-	generator->setLoadingData(L"Mountain", 38);
+	generator->setLoadingData(L"Mountain", 31);
 	//Purple Bridge
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
@@ -580,8 +580,8 @@ void PuzzleList::GenerateMountainN()
 	generator->setObstructions({ { 4, 1 },{ 6, 1 },{ 8, 1 } });
 	generator->setSymbol(Decoration::Gap_Row, 3, 4);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
-	generator->generate(0x09E39, Decoration::Stone | Decoration::Color::Purple, 4, Decoration::Stone | Decoration::Color::White, 4,
-		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Eraser | Decoration::Color::White, 1);
+	generator->generate(0x09E39, Decoration::Stone | Decoration::Color::Purple, 3, Decoration::Stone | Decoration::Color::White, 3,
+		Decoration::Stone | Decoration::Color::Black, 3, Decoration::Eraser | Decoration::Color::White, 1);
 	generator->setVal(Decoration::Dot_Intersection, 6, 6);
 	generator->setFlagOnce(Generate::Config::DecorationsOnly);
 	generator->write(0x09E39);
@@ -651,6 +651,27 @@ void PuzzleList::GenerateMountainN()
 	specialCase->generate2Bridge(0x09E86, 0x09ED8);
 
 	specialCase->generateMountainFloor({ 0x09EFF, 0x09F01, 0x09FC1, 0x09F8E }, 0x09FDA);
+
+	//Pillar Puzzles
+	generator->setGridSize(6, 3);
+	generator->generate(0x0383D, Decoration::Dot, 15, Decoration::Gap, 6);
+	generator->resetConfig();
+	generator->setFlag(Generate::Config::WriteColors);
+	generator->generate(0x0383A, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 4);
+	generator->generate(0x0383F, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
+	generator->generate(0x09E56, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Dot, 8);
+	generator->removeFlag(Generate::Config::WriteColors);
+	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
+	generator->generate(0x03859, Decoration::Poly, 2);
+	generator->setSymbol(Decoration::Start, 4, 8);
+	generator->generate(0x09E5A, Decoration::Dot_Intersection, 30, Decoration::Gap, 10);
+	generator->setFlagOnce(Generate::Config::WriteColors);
+	generator->setSymmetry(Panel::Symmetry::PillarRotational);
+	generator->generate(0x339BB, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Stone | Decoration::Color::Black, 4,
+		Decoration::Stone | Decoration::Color::White, 4);
+	generator->setSymmetry(Panel::Symmetry::PillarParallel);
+	generator->setFlagOnce(Generate::Config::DisableDotIntersection);
+	generator->generate(0x33961, Decoration::Dot, 8);
 }
 
 void PuzzleList::GenerateCavesN()
