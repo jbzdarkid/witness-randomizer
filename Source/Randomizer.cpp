@@ -50,8 +50,8 @@ void Randomizer::GenerateNormal(HWND loadingHandle) {
 	//puzzles->GenerateTownN();
 	//puzzles->GenerateVaultsN();
 	//puzzles->GenerateTrianglePanelsN();
-	puzzles->GenerateMountainN();
-	//puzzles->GenerateCavesN();
+	//puzzles->GenerateMountainN();
+	puzzles->GenerateCavesN();
 	//puzzles->GenerateOrchardN();
 	//puzzles->GenerateDesertN(); //Just scramble the positions for now
 	//puzzles->GenerateKeepN();

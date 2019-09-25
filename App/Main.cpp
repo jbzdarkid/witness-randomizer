@@ -217,14 +217,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case IDC_TEST:
 			generator->seed(static_cast<unsigned int>(time(NULL)));
-			generator->seed(ctr++);
+			//generator->seed(ctr++);
 			//generator->seed(0);
 
 			generator->resetConfig();
-			generator->setSymmetry(Panel::Symmetry::PillarParallel);
-			generator->setFlagOnce(Generate::Config::DisableDotIntersection);
-			generator->generate(0x33961, Decoration::Dot, 8 );
-			//generator->generate(0x33961);
+			//generator->setFlagOnce(Generate::Config::WriteColors);
+
+
 
 			break;
 

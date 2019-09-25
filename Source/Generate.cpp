@@ -122,6 +122,7 @@ void Generate::initPanel(int id) {
 	}
 	if (openPos.size() > 0) _openpos = openPos;
 	else _openpos = _gridpos;
+	for (Point p : blockPos) _openpos.erase(p);
 	_fullGaps = hasFlag(Config::FullGaps);
 	if (_symmetry) _panel->symmetry = _symmetry;
 	if (pathWidth != 1) _panel->pathWidth = pathWidth;
@@ -259,6 +260,7 @@ void Generate::resetVars() {
 	hitPoints.clear();
 	_obstructions.clear();
 	openPos.clear();
+	blockPos.clear();
 	customPath.clear();
 }
 
@@ -504,7 +506,7 @@ bool Generate::place_all_symbols(PuzzleSymbols & symbols)
 	_bisect = true;
 	for (std::pair<int, int> s : symbols[Decoration::Stone]) if (!place_stones(s.first & 0xf, s.second))
 		return false;
-	for (std::pair<int, int> s : symbols[Decoration::Triangle]) if (!place_triangles(s.first & 0xf, s.second))
+	for (std::pair<int, int> s : symbols[Decoration::Triangle]) if (!place_triangles(s.first & 0xf, s.second, s.first >> 16))
 		return false;
 	for (std::pair<int, int> s : symbols[Decoration::Star]) if (!place_stars(s.first & 0xf, s.second))
 		return false;
@@ -584,8 +586,9 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 bool Generate::generate_path_length(int minLength)
 {
 	int fails = 0;
-	Point pos = pick_random(_starts);
-	Point exit = pick_random(_exits);
+	Point pos = adjust_point(pick_random(_starts));
+	Point exit = adjust_point(pick_random(_exits));
+	if (off_edge(pos) || off_edge(exit)) return false;
 	set_path(pos);
 	while (pos != exit) {
 		if (fails++ > 20)
@@ -607,8 +610,9 @@ bool Generate::generate_path_regions(int minRegions)
 {
 	int fails = 0;
 	int regions = 1;
-	Point pos = pick_random(_starts);
-	Point exit = pick_random(_exits);
+	Point pos = adjust_point(pick_random(_starts));
+	Point exit = adjust_point(pick_random(_exits));
+	if (off_edge(pos) || off_edge(exit)) return false;
 	set_path(pos);
 	while (pos != exit) {
 		if (fails++ > 20)
@@ -633,8 +637,9 @@ bool Generate::generate_path_regions(int minRegions)
 
 bool Generate::generate_longest_path()
 {
-	Point pos = pick_random(_starts);
-	Point exit = pick_random(_exits);
+	Point pos = adjust_point(pick_random(_starts));
+	Point exit = adjust_point(pick_random(_exits));
+	if (off_edge(pos) || off_edge(exit)) return false;
 	if (get_parity(pos + exit) != _panel->get_parity())
 		return false;
 	int fails = 0;
@@ -700,8 +705,9 @@ bool Generate::generate_longest_path()
 
 bool Generate::generate_special_path()
 {
-	Point pos = pick_random(_starts);
-	Point exit = pick_random(_exits);
+	Point pos = adjust_point(pick_random(_starts));
+	Point exit = adjust_point(pick_random(_exits));
+	if (off_edge(pos) || off_edge(exit)) return false;
 	set_path(pos);
 	for (Point p : hitPoints) {
 		set(p, PATH);
@@ -749,6 +755,20 @@ void Generate::erase_path()
 			}
 		}
 	}
+}
+
+Point Generate::adjust_point(Point pos) {
+	if (pos.first % 2 != 0) {
+		if (get(pos) != 0) return { -10, -10 };
+		set_path(pos);
+		return Point(pos.first - 1 + rand() % 2 * 2, pos.second);
+	}
+	if (pos.second % 2 != 0) {
+		if (get(pos) != 0) return { -10, -10 };
+		set_path(pos);
+		return Point(pos.first, pos.second - 1 + rand() % 2 * 2);
+	}
+	return pos;
 }
 
 std::set<Point> Generate::get_region(Point pos) {
@@ -1137,7 +1157,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative)
 {
 	std::set<Point> open = _openpos;
-	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : 4;
+	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : hasFlag(Config::BigShapes) ? 5 : 4;
 	int targetArea = amount * shapeSize * 7 / 8;
 	int totalArea = 0;
 	int colorIndex = rand() % colors.size();
@@ -1200,7 +1220,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			region.clear();
 			bufferRegion.clear();
 			for (int i = 0; i < numShapesN; i++) {
-				Shape shape = generate_shape(regionN, pick_random(regionN), min(5, numShapes * 2 / numShapesN + rand() % 3 - 1));
+				Shape shape = generate_shape(regionN, pick_random(regionN), min(shapeSize + 1, numShapes * 2 / numShapesN + rand() % 3 - 1));
 				shapesN.push_back(shape);
 				for (Point p : shape) {
 					region.insert(p);
@@ -1351,7 +1371,7 @@ bool Generate::has_star(std::set<Point>& region, int color)
 	return false;
 }
 
-bool Generate::place_triangles(int color, int amount)
+bool Generate::place_triangles(int color, int amount, int targetCount)
 {
 	std::set<Point> open = _openpos;
 	while (amount > 0) {
@@ -1363,8 +1383,8 @@ bool Generate::place_triangles(int color, int amount)
 		if (_panel->symmetry) {
 			open.erase(get_sym_point(pos));
 		}
-		if (count == 0) continue;
-		if (count == 2 && rand() % 2 == 0) //Prevent it from placing so many 2's
+		if (count == 0 || targetCount && count != targetCount) continue;
+		if (!targetCount && count == 2 && rand() % 2 == 0) //Prevent it from placing so many 2's
 			continue;
 		set(pos, Decoration::Triangle | color | (count << 16));
 		_openpos.erase(pos);

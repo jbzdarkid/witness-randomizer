@@ -447,7 +447,7 @@ std::vector<int> desertPanels = {
 	0x09F94, // Desert Surface 8
 	0x00422, // Desert Light 1
 	0x006E3, // Desert Light 2
-	0x0A02D, // Desert Light 3
+	//0x0A02D, // Desert Light 3 This one doesn't work in some locations
 	0x00C72, // Desert Pond 1
 	0x0129D, // Desert Pond 2
 	0x008BB, // Desert Pond 3
