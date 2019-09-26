@@ -78,6 +78,9 @@ void Generate::initPanel(int id) {
 	if (hasFlag(Config::FixBackground)) {
 		_panel->Resize(_panel->_width, _panel->_height); //This will force the panel to have to redraw the background
 	}
+	if (hasFlag(Config::TreehouseLayout)) {
+		init_treehouse_layout();
+	}
 	if (_custom_grid.size() > 0) {
 		if (_custom_grid.size() < _panel->_width) {
 			_custom_grid.resize(_panel->_width, std::vector<int>());
@@ -109,9 +112,6 @@ void Generate::initPanel(int id) {
 		for (Point e : _exits) {
 			_panel->SetGridSymbol(e.first, e.second, Decoration::Exit, Decoration::Color::None);
 		}
-	}
-	if (hasFlag(Config::TreehouseLayout)) {
-		init_treehouse_layout();
 	}
 	_gridpos.clear();
 	for (int x = 1; x < _panel->_width; x += 2) {
@@ -267,14 +267,13 @@ void Generate::resetVars() {
 void Generate::init_treehouse_layout()
 {
 	bool pivot = _panel->_endpoints.size() > 2;
-	_panel->_startpoints.clear();
-	_panel->SetGridSymbol(_panel->_width / 2, _panel->_height - 1, Decoration::Start, Decoration::Color::None);
-	_panel->_endpoints.clear();
-	_panel->SetGridSymbol(_panel->_width / 2, 0, Decoration::Exit, Decoration::Color::None);
+	setSymbol(Decoration::Start, _panel->_width / 2, _panel->_height - 1);
+	setSymbol(Decoration::Exit, _panel->_width / 2, 0);
 	if (pivot) {
-		_panel->SetGridSymbol(_panel->_width - 1, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
-		_panel->SetGridSymbol(0, _panel->_height / 2, Decoration::Exit, Decoration::Color::None);
+		setSymbol(Decoration::Exit, _panel->_width - 1, _panel->_height / 2 );
+		setSymbol(Decoration::Exit, 0, _panel->_height / 2);
 	}
+	/*
 	_starts.clear();
 	_exits.clear();
 	if ((_panel->_width / 2) % 2 == 1) {
@@ -305,7 +304,7 @@ void Generate::init_treehouse_layout()
 			if (pivotDirection == Endpoint::Direction::LEFT)
 				_exits.insert(Point(0, _panel->_height / 2));
 		}
-	}
+	}*/
 }
 
 bool Generate::generate_maze(int id, int numStarts, int numExits)
@@ -510,7 +509,7 @@ bool Generate::place_all_symbols(PuzzleSymbols & symbols)
 		return false;
 	for (std::pair<int, int> s : symbols[Decoration::Star]) if (!place_stars(s.first & 0xf, s.second))
 		return false;
-	for (std::pair<int, int> s : symbols[Decoration::Eraser]) if (!place_erasers(eraserColors, eraseSymbols))
+	if (eraserColors.size() > 0 && !place_erasers(eraserColors, eraseSymbols))
 		return false;
 	for (std::pair<int, int> s : symbols[Decoration::Dot]) if (!place_dots(s.second, (s.first & 0xf), (s.first & ~0xf) == Decoration::Dot_Intersection))
 		return false;
@@ -1203,7 +1202,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		int numShapes = static_cast<int>(region.size() + bufferRegion.size()) / (shapeSize + 1) + 1;
 		if (numShapes == 1 && bufferRegion.size() > 0) numShapes++;
 		if (numShapes < amount && region.size() > shapeSize && rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
-		if (region.size() <= shapeSize + 1 && rand() % 2 == 1) numShapes = 1;
+		if (region.size() <= shapeSize + 1 && bufferRegion.size() == 0 && rand() % 2 == 1) numShapes = 1;
 		if (hasFlag(Config::SplitShapes) && numShapes != 1) continue;
 		bool balance = false;
 		if (numShapes > amount) {
@@ -1449,7 +1448,7 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 			canPlace = !can_place_stone(region, (toErase & 0xf));
 		}
 		else if (get_symbol_type(toErase) == Decoration::Star) {
-			canPlace = (count_color(region, (toErase & 0xf)) != 1);
+			canPlace = (count_color(region, (toErase & 0xf)) + (color == (toErase & 0xf) ? 1 : 0) != 1);
 		}
 		else canPlace = true;
 		if (!canPlace) continue;

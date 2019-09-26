@@ -37,6 +37,7 @@ public:
 	void generate2Bridge(int id1, int id2);
 	bool generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
 	void generateMountainFloor(std::vector<int> ids, int idfloor);
+	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now
 
 	void setTarget(int puzzle, int target);
 	void clearTarget(int puzzle);

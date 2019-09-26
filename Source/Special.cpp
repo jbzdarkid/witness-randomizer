@@ -704,6 +704,27 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 	_generator->resetConfig();
 }
 
+void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec) {
+	int width = gridSize.first * 2 + 1, height = gridSize.second * 2 + 1;
+	std::vector<std::shared_ptr<Generate>> gens;
+	for (int i = 0; i < 3; i++) gens.push_back(std::make_shared<Generate>());
+	for (std::shared_ptr<Generate> gen : gens) {
+		gen->seed(rand());
+		gen->setSymbol(Decoration::Start, width / 2, height - 1);
+		gen->setGridSize(gridSize.first, gridSize.second);
+		gen->setFlag(Generate::Config::DisableWrite);
+	}
+	gens[0]->setSymbol(Decoration::Exit, 0, height / 2);
+	gens[1]->setSymbol(Decoration::Exit, width - 1, height / 2);
+	gens[2]->setSymbol(Decoration::Exit, width / 2, 0);
+	_generator->generateMulti(id, gens, symbolVec);
+	gens[0]->_panel->_endpoints.clear();
+	gens[0]->_panel->SetGridSymbol(0, height / 2, Decoration::Exit, Decoration::Color::None);
+	gens[0]->_panel->SetGridSymbol(width - 1, height / 2, Decoration::Exit, Decoration::Color::None);
+	gens[0]->_panel->SetGridSymbol(width / 2, 0, Decoration::Exit, Decoration::Color::None);
+	gens[0]->write(id);
+}
+
 
 void Special::setTarget(int puzzle, int target)
 {
