@@ -5,11 +5,11 @@ inline Point operator+(const Point& l, const Point& r) { return { l.first + r.fi
 void MultiGenerate::generate(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec)
 {
 	generators = gens;
-	Generate::PuzzleSymbols symbols(symbolVec);
+	PuzzleSymbols symbols(symbolVec);
 	while (!generate(id, symbols));
 }
 
-bool MultiGenerate::generate(int id, Generate::PuzzleSymbols symbols)
+bool MultiGenerate::generate(int id, PuzzleSymbols symbols)
 {
 	for (std::shared_ptr<Generate> g : generators) {
 		g->initPanel(id);
@@ -61,7 +61,7 @@ bool MultiGenerate::generate(int id, Generate::PuzzleSymbols symbols)
 	return true;
 }
 
-bool MultiGenerate::place_all_symbols(Generate::PuzzleSymbols symbols)
+bool MultiGenerate::place_all_symbols(PuzzleSymbols symbols)
 {
 	for (std::pair<int, int> s : symbols[Decoration::Stone]) if (!place_stones(s.first & 0xf, s.second))
 		return false;

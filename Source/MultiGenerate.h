@@ -16,8 +16,8 @@ public:
 
 private:
 
-	bool generate(int id, Generate::PuzzleSymbols symbols);
-	bool place_all_symbols(Generate::PuzzleSymbols symbols);
+	bool generate(int id, PuzzleSymbols symbols);
+	bool place_all_symbols(PuzzleSymbols symbols);
 	bool can_place_gap(Point pos);
 	bool place_gaps(int amount);
 	bool place_dots(int amount, bool intersectionOnly);

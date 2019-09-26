@@ -33,11 +33,12 @@ public:
 	void generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols);
 	void generateMountaintop(int id);
 	void generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec);
-	bool generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<Generate::PuzzleSymbols> symbols, std::set<Point> path);
+	bool generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<PuzzleSymbols> symbols, std::set<Point> path);
 	void generate2Bridge(int id1, int id2);
 	bool generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
 	void generateMountainFloor(std::vector<int> ids, int idfloor);
 	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now
+	void generateDotEscape(int id, int width, int height, int numStarts, int numExits);
 
 	void setTarget(int puzzle, int target);
 	void clearTarget(int puzzle);

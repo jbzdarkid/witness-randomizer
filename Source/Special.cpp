@@ -384,7 +384,7 @@ void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Po
 	if (path4.count(Point({ 8, 4 }))) for (Point p : pathPoints2) _generator->set_path(p);
 	for (Point p : gaps) _generator->set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
 
-	Generate::PuzzleSymbols psymbols(symbols);
+	PuzzleSymbols psymbols(symbols);
 
 	while (!_generator->place_all_symbols(psymbols)) {
 		for (int x = 0; x < _generator->_panel->_width; x++)
@@ -468,8 +468,8 @@ void Special::generateMountaintop(int id)
 void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec) {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
 	_generator->generate(ids[0]);
-	std::vector<Generate::PuzzleSymbols> symbols;
-	for (auto sym : symbolVec) symbols.push_back(Generate::PuzzleSymbols(sym));
+	std::vector<PuzzleSymbols> symbols;
+	for (auto sym : symbolVec) symbols.push_back(PuzzleSymbols(sym));
 	std::vector<Generate> gens;
 	for (int i = 0; i < ids.size(); i++) gens.push_back(Generate());
 	for (int i = 0; i < ids.size(); i++) {
@@ -483,7 +483,7 @@ void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<
 	for (int i = 0; i < ids.size(); i++) gens[i].write(ids[i]);
 }
 
-bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<Generate::PuzzleSymbols> symbols, std::set<Point> path) {
+bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<PuzzleSymbols> symbols, std::set<Point> path) {
 	for (int i = 0; i < ids.size(); i++) {
 		gens[i]._custom_grid.clear();
 		gens[i].setPath(path);
@@ -544,7 +544,7 @@ bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Gene
 	gens[0]->_exits = { { 12, 8 } };
 	gens[1]->_exits = { { 0, 0 } };
 
-	Generate::PuzzleSymbols symbols({ {Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1}, {Decoration::Star | Decoration::Color::Yellow, 1} });
+	PuzzleSymbols symbols({ {Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1}, {Decoration::Star | Decoration::Color::Yellow, 1} });
 	int fails = 0;
 	while (!gens[0]->generate(id1, symbols)) {
 		if (fails++ > 20)
@@ -554,7 +554,7 @@ bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Gene
 	gens[1]->setPath(gens[0]->_path);
 	gens[1]->customPath.clear();
 	gens[1]->_custom_grid = gens[0]->_panel->_grid;
-	symbols = Generate::PuzzleSymbols({ { Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1 },{ Decoration::Star | Decoration::Color::Yellow, 3 } });
+	symbols = PuzzleSymbols({ { Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 1 },{ Decoration::Star | Decoration::Color::Yellow, 3 } });
 	fails = 0;
 	while (!gens[1]->generate(id2, symbols)) {
 		if (fails++ > 20) {
@@ -723,6 +723,14 @@ void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<i
 	gens[0]->_panel->SetGridSymbol(width - 1, height / 2, Decoration::Exit, Decoration::Color::None);
 	gens[0]->_panel->SetGridSymbol(width / 2, 0, Decoration::Exit, Decoration::Color::None);
 	gens[0]->write(id);
+}
+
+void Special::generateDotEscape(int id, int width, int height, int numStarts, int numExits) {
+	_generator->setFlagOnce(Generate::Config::DisableWrite);
+	_generator->setGridSize(width, height);
+	_generator->generateMaze(id);
+	Point pos = pick_random(_generator->_starts);
+
 }
 
 
