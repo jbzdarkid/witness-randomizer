@@ -902,43 +902,46 @@ void PuzzleList::GenerateTutorialH()
 	//TODO: Display a message on this panel								0x00064, // Tutorial Straight
 	//TODO: Display a message on this panel								0x00182, // Tutorial Bend
 	//Mazes
-	generator->setFlag(Generate::Config::FullGaps);
-	generator->setGridSize(6, 6);
-	generator->generateMaze(0x00293);
-	generator->setGridSize(9, 9);
-	generator->generateMaze(0x00295, 1, 1);
-	generator->setGridSize(12, 12);
-	generator->generateMaze(0x002C2);
-	generator->resetConfig();
+	specialCase->generateDotEscape(0x00293, 6, 6, true);
+	specialCase->generateDotEscape(0x00295, 9, 9, 1, 1, true);
+	specialCase->generateDotEscape(0x002C2, 12, 12, true);
+	specialCase->generateDotEscape(0x0A3B2, 6, 6, false);
 	//2 starts maze
-	generator->generateMaze(0x0A3B2);
+	specialCase->generateDotEscape(0x0A3B2, 6, 6, false);
 	//2 exits maze
-	generator->generateMaze(0x0A3B5);
+	specialCase->generateDotEscape(0x0A3B5, 6, 6, false);
+	specialCase->modifyGate(0x03629);
 	//Secret back area
-	generator->generate(0x0A171, Decoration::Dot_Intersection, 25, Decoration::Gap, 4);
-	generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
+	generator->generate(0x0A171, Decoration::Dot_Intersection, 25, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Color::Yellow | Decoration::Can_Rotate, 2);
 	//Dots Tutorial
 	generator->setFlag(Generate::Config::FullGaps);
-	generator->setGridSize(3, 3);
-	generator->generate(0x0005D, Decoration::Start, 1, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
-	generator->generate(0x0005E, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 7, Decoration::Gap, 4);
 	generator->setGridSize(4, 4);
-	generator->generate(0x0005F, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
-	generator->generate(0x00060, Decoration::Start, 2, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
-	generator->generate(0x00061, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
+	generator->generate(0x0005D, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
+	generator->setGridSize(5, 5);
+	generator->generate(0x0005E, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 15, Decoration::Gap, 12);
+	generator->setGridSize(4, 4);
+	generator->generate(0x0005F, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 25);
+	generator->setGridSize(5, 5);
+	generator->generate(0x00060, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 36);
+	generator->generate(0x00061, Decoration::Start, 6, Decoration::Exit, 1, Decoration::Dot_Intersection, 36);
 	//Stones Tutorial
 	generator->resetConfig();
-	generator->setGridSize(4, 4);
-	generator->generate(0x018AF, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5);
-	generator->generate(0x0001B, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5);
-	generator->generate(0x012C9, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Start, 3);
+	generator->setFlag(Generate::Config::WriteDotColor);
 	generator->setGridSize(5, 5);
-	generator->generate(0x0001C, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 11, Decoration::Stone | Decoration::Color::White, 8);
-	generator->generate(0x0001D, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 11, Decoration::Stone | Decoration::Color::White, 8);
-	generator->generate(0x0001E, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 11, Decoration::Stone | Decoration::Color::White, 8, Decoration::Start, 3);
-	generator->generate(0x0001F, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 10);
-	generator->generate(0x00020, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 10);
-	generator->generate(0x00021, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 10, Decoration::Start, 3);
+	generator->generate(0x018AF, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 11, Decoration::Stone | Decoration::Color::White, 8, Decoration::Start, 3);
+	generator->generate(0x0001B, Decoration::Exit, 1, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 10, Decoration::Start, 3);
+	generator->setGridSize(4, 4);
+	generator->generate(0x012C9, Decoration::Exit, 1, Decoration::Dot, 6, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 3, Decoration::Start, 1);
+	generator->generate(0x0001C, Decoration::Exit, 1, Decoration::Dot, 6, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 3, Decoration::Start, 3);
+	generator->setGridSize(5, 5);
+	generator->generate(0x0001D, Decoration::Exit, 1, Decoration::Dot, 10, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Start, 3);
+	generator->generate(0x0001E, Decoration::Exit, 1, Decoration::Dot, 10, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Start, 3);
+	generator->setGridSize(4, 4);
+	generator->generate(0x0001F, Decoration::Exit, 1, Decoration::Dot_Intersection, 25, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 3, Decoration::Start, 1);
+	generator->setGridSize(5, 5);
+	generator->generate(0x00020, Decoration::Exit, 1, Decoration::Dot_Intersection, 36, Decoration::Stone | Decoration::Color::Black, 6, Decoration::Stone | Decoration::Color::White, 4, Decoration::Start, 1);
+	generator->generate(0x00021, Decoration::Exit, 1, Decoration::Dot_Intersection, 36, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Start, 1);
 }
 
 void PuzzleList::GenerateSymmetryH()

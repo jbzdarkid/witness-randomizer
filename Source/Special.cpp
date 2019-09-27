@@ -725,14 +725,112 @@ void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<i
 	gens[0]->write(id);
 }
 
-void Special::generateDotEscape(int id, int width, int height, int numStarts, int numExits) {
+//TODO: Improve this algorithm
+void Special::generateDotEscape(int id, int width, int height, int numStarts, int numExits, bool fullGaps) {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
 	_generator->setGridSize(width, height);
-	_generator->generateMaze(id);
-	Point pos = pick_random(_generator->_starts);
-
+	if (fullGaps) _generator->setFlagOnce(Generate::Config::FullGaps);
+	if (id == 0x0A3B5) _generator->_exits = { {12, 0 } };
+	_generator->generateMaze(id, numStarts, numExits);
+	int fails = 0;
+	int dotsPlaced = 0;
+	while (dotsPlaced < _generator->_path.size() / 15) {
+		Point pos = pick_random(_generator->_path);
+		if (pos.first % 2 != 0 || pos.second % 2 != 0 || _generator->get(pos) != PATH) continue;
+		bool fail = false;
+		for (Point dir : Generate::_8DIRECTIONS2) {
+			if (!_generator->off_edge(pos + dir) && _generator->get(pos + dir) == Decoration::Dot_Intersection) {
+				fail = true;
+				break;
+			}
+		}
+		if (fail && rand() % 20 > 0) continue;
+		int count = 0;
+		for (Point dir : Generate::_DIRECTIONS1) {
+			if (!_generator->off_edge(pos + dir) && _generator->get(pos + dir) == PATH) {
+				count++;
+			}
+		}
+		if (count < 3 && rand() % 10 > 0)
+			continue;
+		_generator->set(pos, Decoration::Dot_Intersection);
+		dotsPlaced++;
+	}
+	for (int i = 0; i < (width * height) / 5; i++) {
+		Point random = Point(rand() % _generator->_panel->_width, rand() % _generator->_panel->_height);
+		if (random.first % 2 == random.second % 2 || _generator->get(random) == PATH) {
+			i--;
+			continue;
+		}
+		bool fail = true;
+		int count = 0;
+		for (Point dir : Generate::_8DIRECTIONS1) {
+			if (dir.first == 0 || dir.second == 0) continue;
+			if (_generator->off_edge(random + dir) || _generator->get(random + dir) != PATH) {
+				count++;
+			}
+		}
+		if (count < 2)
+			continue;
+		_generator->set(random, 0);
+		if (random.first % 2 == 0) {
+			if (_generator->get(random + Point(0, -1)) != Decoration::Dot_Intersection) _generator->set(random + Point(0, -1), IntersectionFlags::INTERSECTION);
+			if (_generator->get(random + Point(0, 1)) != Decoration::Dot_Intersection) _generator->set(random + Point(0, 1), IntersectionFlags::INTERSECTION);
+		}
+		if (random.second % 2 == 0) {
+			if (_generator->get(random + Point(-1, 0)) != Decoration::Dot_Intersection) _generator->set(random + Point(-1, 0), IntersectionFlags::INTERSECTION);
+			if (_generator->get(random + Point(1, 0)) != Decoration::Dot_Intersection) _generator->set(random + Point(1, 0), IntersectionFlags::INTERSECTION);
+		}
+	}
+	_generator->_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.2f, 0.2f, 0.2f, 1 } });
+	if (id == 0x0A3B5) {
+		_generator->_panel->SetGridSymbol(12, 12, Decoration::Exit, Decoration::Color::None);
+	}
+	_generator->write(id);
 }
 
+void Special::modifyGate(int id)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	int numIntersections = panel->_memory->ReadPanelData<int>(id, NUM_DOTS);
+	std::vector<float> intersections = panel->_memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
+	std::vector<int> intersectionFlags = panel->_memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
+	if (intersectionFlags[24] == 0) return;
+	int numConnections = panel->_memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
+	std::vector<int> connections_a = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
+	std::vector<int> connections_b = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
+	intersectionFlags[8] |= Decoration::Start;
+	intersectionFlags[16] |= Decoration::Start;
+	intersectionFlags[24] = 0;
+	intersectionFlags.push_back(0x400001);
+	intersections.push_back(0.5f);
+	intersections.push_back(1 - intersections[51]);
+	connections_a.push_back(24);
+	connections_b.push_back(numIntersections);
+	std::vector<int> symData;
+	for (int i = 0; i < numIntersections + 1; i++) {
+		bool pushed = false;
+		for (int j = 0; j < numIntersections + 1; j++) {
+			if (std::round(intersections[i * 2] * 30) == std::round(30 - intersections[j * 2] * 30) &&
+				std::round(intersections[i * 2 + 1] * 30) == std::round(30 - intersections[j * 2 + 1] * 30)) {
+				symData.push_back(j);
+				pushed = true;
+				break;
+			}
+		}
+		if (!pushed) symData.push_back(0);
+	}
+	panel->_memory->WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
+	panel->_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
+	panel->_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
+	panel->_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
+	panel->_memory->WritePanelData<int>(id, NUM_DOTS, { numIntersections + 1 });
+	panel->_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { numConnections + 1 });
+	panel->_memory->WriteArray<int>(id, REFLECTION_DATA, symData);
+	Color successColor = panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
+	panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_B, { successColor });
+	panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+}
 
 void Special::setTarget(int puzzle, int target)
 {
