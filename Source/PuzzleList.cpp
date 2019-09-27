@@ -901,25 +901,40 @@ void PuzzleList::GenerateTutorialH()
 	generator->resetConfig();
 	//TODO: Display a message on this panel								0x00064, // Tutorial Straight
 	//TODO: Display a message on this panel								0x00182, // Tutorial Bend
+	generator->setFlag(Generate::Config::WriteDotColor);
+	generator->setFlag(Generate::Config::LongestPath);
 	//Mazes
-	specialCase->generateDotEscape(0x00293, 6, 6, true);
-	specialCase->generateDotEscape(0x00295, 9, 9, 1, 1, true);
-	specialCase->generateDotEscape(0x002C2, 12, 12, true);
-	specialCase->generateDotEscape(0x0A3B2, 6, 6, false);
+	generator->setFlag(Generate::Config::FullGaps);
+	generator->setGridSize(4, 4);
+	generator->generate(0x00293, Decoration::Dot_Intersection, 8, Decoration::Gap, 8);
+	generator->setGridSize(6, 6);
+	generator->generate(0x00295, Decoration::Dot_Intersection, 12, Decoration::Gap, 18);
+	generator->setGridSize(8, 8);
+	generator->generate(0x002C2, Decoration::Dot_Intersection, 21, Decoration::Gap, 32);
+	generator->removeFlag(Generate::Config::FullGaps);
 	//2 starts maze
-	specialCase->generateDotEscape(0x0A3B2, 6, 6, false);
+	generator->removeFlagOnce(Generate::Config::LongestPath);
+	generator->setGridSize(6, 6);
+	generator->generate(0x0A3B2, Decoration::Dot_Intersection, 12, Decoration::Gap, 18);
 	//2 exits maze
-	specialCase->generateDotEscape(0x0A3B5, 6, 6, false);
+	generator->setFlag(Generate::Config::WriteDotColor);
+	generator->setFlag(Generate::Config::LongestPath);
+	generator->setGridSize(5, 5);
+	generator->setSymbol(Decoration::Start, 0, 0);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x0A3B5, Decoration::Dot_Intersection, 36, Decoration::Gap, 12);
+	generator->set(9, 0, 0); generator->set(10, 1, 0); generator->set(9, 10, 0); generator->set(10, 9, 0);
+	generator->write(0x0A3B5);
+	generator->resetConfig();
 	specialCase->modifyGate(0x03629);
 	//Secret back area
 	generator->generate(0x0A171, Decoration::Dot_Intersection, 25, Decoration::Triangle | Decoration::Color::Orange, 6);
 	generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Color::Yellow | Decoration::Can_Rotate, 2);
 	//Dots Tutorial
-	generator->setFlag(Generate::Config::FullGaps);
 	generator->setGridSize(4, 4);
-	generator->generate(0x0005D, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 10, Decoration::Gap, 8);
+	generator->generate(0x0005D, Decoration::Start, 1, Decoration::Exit, 1, Decoration::Dot_Intersection, 25, Decoration::Gap, 4);
 	generator->setGridSize(5, 5);
-	generator->generate(0x0005E, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 15, Decoration::Gap, 12);
+	generator->generate(0x0005E, Decoration::Start, 1, Decoration::Exit, 1, Decoration::Dot_Intersection, 36, Decoration::Gap, 8);
 	generator->setGridSize(4, 4);
 	generator->generate(0x0005F, Decoration::Start, 3, Decoration::Exit, 1, Decoration::Dot_Intersection, 25);
 	generator->setGridSize(5, 5);

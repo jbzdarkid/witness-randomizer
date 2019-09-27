@@ -725,12 +725,79 @@ void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<i
 	gens[0]->write(id);
 }
 
+void Special::modifyGate(int id)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	int numIntersections = panel->_memory->ReadPanelData<int>(id, NUM_DOTS);
+	std::vector<float> intersections = panel->_memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
+	std::vector<int> intersectionFlags = panel->_memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
+	if (intersectionFlags[24] == 0) return;
+	int numConnections = panel->_memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
+	std::vector<int> connections_a = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
+	std::vector<int> connections_b = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
+	int style = panel->_memory->ReadPanelData<int>(id, STYLE_FLAGS);
+	intersectionFlags[6] |= Decoration::Start;
+	intersectionFlags[18] |= Decoration::Start;
+	intersectionFlags[11] = Decoration::Dot_Intersection;
+	intersectionFlags[24] = 0;
+	intersectionFlags.push_back(0x400001);
+	intersections.push_back(0.5f);
+	intersections.push_back(1 - intersections[51]);
+	connections_a.push_back(24);
+	connections_b.push_back(numIntersections);
+	std::vector<int> symData;
+	for (int i = 0; i < numIntersections + 1; i++) {
+		bool pushed = false;
+		for (int j = 0; j < numIntersections + 1; j++) {
+			if (std::round(intersections[i * 2] * 30) == std::round(30 - intersections[j * 2] * 30) &&
+				std::round(intersections[i * 2 + 1] * 30) == std::round(30 - intersections[j * 2 + 1] * 30)) {
+				symData.push_back(j);
+				pushed = true;
+				break;
+			}
+		}
+		if (!pushed) symData.push_back(0);
+	}
+	panel->_memory->WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
+	panel->_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
+	panel->_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
+	panel->_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
+	panel->_memory->WritePanelData<int>(id, NUM_DOTS, { numIntersections + 1 });
+	panel->_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { numConnections + 1 });
+	panel->_memory->WriteArray<int>(id, REFLECTION_DATA, symData);
+	Color successColor = panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
+	panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_B, { successColor });
+	panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.1f, 0.1f, 0.1f, 1 } });
+	panel->_memory->WritePanelData<int>(id, STYLE_FLAGS, { style | Panel::Style::HAS_DOTS });
+	panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+}
+
+void Special::setTarget(int puzzle, int target)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
+}
+
+void Special::clearTarget(int puzzle)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	panel->_memory->WritePanelData<int>(puzzle, TARGET, { 0 });
+}
+
+void Special::setTargetAndDeactivate(int puzzle, int target)
+{
+	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+	panel->_memory->WritePanelData<float>(target, POWER, { 0.0, 0.0 });
+	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
+}
+
+/* Not planning on using at the moment
 //TODO: Improve this algorithm
 void Special::generateDotEscape(int id, int width, int height, int numStarts, int numExits, bool fullGaps) {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
 	_generator->setGridSize(width, height);
 	if (fullGaps) _generator->setFlagOnce(Generate::Config::FullGaps);
-	if (id == 0x0A3B5) _generator->_exits = { {12, 0 } };
+	if (id == 0x0A3B5) _generator->_exits = { { 12, 0 } };
 	_generator->generateMaze(id, numStarts, numExits);
 	int fails = 0;
 	int dotsPlaced = 0;
@@ -787,66 +854,4 @@ void Special::generateDotEscape(int id, int width, int height, int numStarts, in
 		_generator->_panel->SetGridSymbol(12, 12, Decoration::Exit, Decoration::Color::None);
 	}
 	_generator->write(id);
-}
-
-void Special::modifyGate(int id)
-{
-	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	int numIntersections = panel->_memory->ReadPanelData<int>(id, NUM_DOTS);
-	std::vector<float> intersections = panel->_memory->ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
-	std::vector<int> intersectionFlags = panel->_memory->ReadArray<int>(id, DOT_FLAGS, numIntersections);
-	if (intersectionFlags[24] == 0) return;
-	int numConnections = panel->_memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
-	std::vector<int> connections_a = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
-	std::vector<int> connections_b = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
-	intersectionFlags[8] |= Decoration::Start;
-	intersectionFlags[16] |= Decoration::Start;
-	intersectionFlags[24] = 0;
-	intersectionFlags.push_back(0x400001);
-	intersections.push_back(0.5f);
-	intersections.push_back(1 - intersections[51]);
-	connections_a.push_back(24);
-	connections_b.push_back(numIntersections);
-	std::vector<int> symData;
-	for (int i = 0; i < numIntersections + 1; i++) {
-		bool pushed = false;
-		for (int j = 0; j < numIntersections + 1; j++) {
-			if (std::round(intersections[i * 2] * 30) == std::round(30 - intersections[j * 2] * 30) &&
-				std::round(intersections[i * 2 + 1] * 30) == std::round(30 - intersections[j * 2 + 1] * 30)) {
-				symData.push_back(j);
-				pushed = true;
-				break;
-			}
-		}
-		if (!pushed) symData.push_back(0);
-	}
-	panel->_memory->WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
-	panel->_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
-	panel->_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
-	panel->_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
-	panel->_memory->WritePanelData<int>(id, NUM_DOTS, { numIntersections + 1 });
-	panel->_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { numConnections + 1 });
-	panel->_memory->WriteArray<int>(id, REFLECTION_DATA, symData);
-	Color successColor = panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
-	panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_B, { successColor });
-	panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
-}
-
-void Special::setTarget(int puzzle, int target)
-{
-	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
-}
-
-void Special::clearTarget(int puzzle)
-{
-	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	panel->_memory->WritePanelData<int>(puzzle, TARGET, { 0 });
-}
-
-void Special::setTargetAndDeactivate(int puzzle, int target)
-{
-	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	panel->_memory->WritePanelData<float>(target, POWER, { 0.0, 0.0 });
-	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
-}
+}*/

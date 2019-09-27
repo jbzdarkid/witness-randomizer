@@ -127,7 +127,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// Randomize, then apply settings
 			//randomizer->Randomize();
-			randomizer->GenerateNormal(hwndLoadingText);
+			//randomizer->GenerateNormal(hwndLoadingText);
+			randomizer->GenerateHard(hwndLoadingText);
 			/*
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();

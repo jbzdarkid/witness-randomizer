@@ -191,7 +191,7 @@ void Generate::write(int id)
 		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A) });
 	}
 	if (hasFlag(Config::WriteDotColor)) {
-		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.05f, 0.05f, 0.05f, 1 } });
+		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.1f, 0.1f, 0.1f, 1 } });
 	}
 	_panel->writeColors = hasFlag(Config::WriteColors);
 	_panel->decorationsOnly = hasFlag(Config::DecorationsOnly);
@@ -561,7 +561,7 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 		return generate_special_path();
 	}
 
-	if (_parity != -1) {
+	if (_parity != -1 || hasFlag(Generate::LongestPath)) {
 		return generate_longest_path();
 	}
 

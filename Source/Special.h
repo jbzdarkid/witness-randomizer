@@ -38,8 +38,6 @@ public:
 	bool generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
 	void generateMountainFloor(std::vector<int> ids, int idfloor);
 	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now
-	void generateDotEscape(int id, int width, int height, bool fullGaps) { generateDotEscape(id, width, height, 0, 0, fullGaps); }
-	void generateDotEscape(int id, int width, int height, int numStarts, int numExits, bool fullGaps);
 	void modifyGate(int id);
 
 	void setTarget(int puzzle, int target);
@@ -134,3 +132,7 @@ panel->_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
 panel->_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
 panel->_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
 }*/
+
+//Not planning on using
+//void generateDotEscape(int id, int width, int height, bool fullGaps) { generateDotEscape(id, width, height, 0, 0, fullGaps); }
+//void generateDotEscape(int id, int width, int height, int numStarts, int numExits, bool fullGaps);
