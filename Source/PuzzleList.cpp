@@ -154,19 +154,18 @@ void PuzzleList::GenerateSymmetryN()
 	generator->setSymbol(Decoration::Start, 0, 6); generator->setSymbol(Decoration::Start, 12, 6);
 	generator->generate(0x00071, Decoration::Dot | Decoration::Color::Blue, 2, Decoration::Dot | Decoration::Color::Yellow, 3, Decoration::Start, 1, Decoration::Exit, 1);
 	generator->generate(0x00076, Decoration::Dot | Decoration::Color::Yellow, 5, Decoration::Start, 1, Decoration::Exit, 1);
-	//Symmetry Island Door 2 not randomized until I can ensure solution passes through center
 	//Dot Reflection Dual Panels (before laser)
 	generator->resetConfig();
 	std::set<Panel::Symmetry> normalSym = { Panel::Symmetry::Horizontal, Panel::Symmetry::Rotational };
 	std::set<Panel::Symmetry> weirdSym = { Panel::Symmetry::RotateLeft, Panel::Symmetry::RotateRight, Panel::Symmetry::FlipXY, Panel::Symmetry::FlipNegXY };
-	specialCase->generateReflectionDotPuzzle(0x00A52, 0x00A61, { std::make_pair<int,int>(Decoration::Dot, 10),
-		std::make_pair<int,int>(Decoration::Exit, 1), std::make_pair<int,int>(Decoration::Gap, 5) }, Panel::Symmetry::Vertical );
+	specialCase->generateReflectionDotPuzzle(generator, 0x00A52, 0x00A61, { {Decoration::Dot, 10 },
+		{Decoration::Exit, 1}, { Decoration::Gap, 5 } }, Panel::Symmetry::Vertical, false);
 	generator->setSymbol(Decoration::Start, 0, 8);
-	specialCase->generateReflectionDotPuzzle(0x00A57, 0x00A64, { std::make_pair<int,int>(Decoration::Dot, 12),
-		std::make_pair<int,int>(Decoration::Exit, 1), std::make_pair<int,int>(Decoration::Gap, 1) }, pop_random(normalSym) );
+	specialCase->generateReflectionDotPuzzle(generator, 0x00A57, 0x00A64, { { Decoration::Dot, 12},
+		{ Decoration::Exit, 1}, {Decoration::Gap, 1} }, pop_random(normalSym), false);
 	generator->setSymbol(Decoration::Start, 0, 8); generator->setSymbol(Decoration::Start, 8, 8); generator->setSymbol(Decoration::Start, 8, 0); generator->setSymbol(Decoration::Start, 0, 0);
 	generator->setSymbol(Decoration::Exit, 8, 2);
-	specialCase->generateReflectionDotPuzzle(0x00A5B, 0x00A68, { std::make_pair<int,int>(Decoration::Dot, 12) }, pop_random(weirdSym) );
+	specialCase->generateReflectionDotPuzzle(generator, 0x00A5B, 0x00A68, { { Decoration::Dot, 12} }, pop_random(weirdSym), false);
 }
 
 void PuzzleList::GenerateQuarryN()
@@ -910,15 +909,15 @@ void PuzzleList::GenerateTutorialH()
 	generator->setGridSize(6, 6);
 	generator->generate(0x00295, Decoration::Dot_Intersection, 12, Decoration::Gap, 18);
 	generator->setGridSize(8, 8);
-	generator->generate(0x002C2, Decoration::Dot_Intersection, 21, Decoration::Gap, 32);
+	generator->generate(0x002C2, Decoration::Dot_Intersection, 21, Decoration::Gap, 32, Decoration::Start, 3);
 	generator->removeFlag(Generate::Config::FullGaps);
 	//2 starts maze
-	generator->removeFlagOnce(Generate::Config::LongestPath);
-	generator->setGridSize(6, 6);
-	generator->generate(0x0A3B2, Decoration::Dot_Intersection, 12, Decoration::Gap, 18);
+	generator->setGridSize(5, 5);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x0A3B2, Decoration::Dot_Intersection, 36, Decoration::Gap, 12);
+	generator->set(0, 9, 0); generator->set(1, 10, 0); generator->set(9, 10, 0); generator->set(10, 9, 0);
+	generator->write(0x0A3B2);
 	//2 exits maze
-	generator->setFlag(Generate::Config::WriteDotColor);
-	generator->setFlag(Generate::Config::LongestPath);
 	generator->setGridSize(5, 5);
 	generator->setSymbol(Decoration::Start, 0, 0);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
@@ -926,6 +925,7 @@ void PuzzleList::GenerateTutorialH()
 	generator->set(9, 0, 0); generator->set(10, 1, 0); generator->set(9, 10, 0); generator->set(10, 9, 0);
 	generator->write(0x0A3B5);
 	generator->resetConfig();
+	//Exit Gate
 	specialCase->modifyGate(0x03629);
 	//Secret back area
 	generator->generate(0x0A171, Decoration::Dot_Intersection, 25, Decoration::Triangle | Decoration::Color::Orange, 6);
@@ -961,6 +961,130 @@ void PuzzleList::GenerateTutorialH()
 
 void PuzzleList::GenerateSymmetryH()
 {
+	generator->setLoadingData(L"Symmetry", 34);
+	generator->resetConfig();
+	generator->setFlag(Generate::Config::StartEdgeOnly);
+	//Symmetry Mazes
+	generator->setFlag(Generate::Config::WriteDotColor2);
+	generator->setSymmetry(Panel::Symmetry::Vertical);
+	generator->setGridSize(7, 7);
+	generator->pathWidth = 0.8f;
+	generator->generate(0x00086, Decoration::Gap, 12, Decoration::Dot_Intersection, 8, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->removeFlagOnce(Generate::Config::StartEdgeOnly);
+	generator->generate(0x00087, Decoration::Gap, 12, Decoration::Dot_Intersection, 8, Decoration::Start, 3, Decoration::Exit, 1);
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->generate(0x00059, Decoration::Gap, 12, Decoration::Dot_Intersection, 10, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->removeFlagOnce(Generate::Config::StartEdgeOnly);
+	generator->generate(0x00062, Decoration::Gap, 12, Decoration::Dot_Intersection, 10, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setGridSize(11, 8);
+	generator->pathWidth = 1;
+	generator->setSymbol(Decoration::Start, 0, 8);
+	generator->setSymbol(Decoration::Start, 22, 8);
+	generator->setSymbol(Decoration::Exit, 0, 6);
+	generator->setSymbol(Decoration::Exit, 22, 10);
+	generator->setObstructions({ { 0, 15 },{ 1, 16 },{ 11, 16 },{ 12, 15 },{ 13, 16 } });
+	generator->hitPoints = { { 22, 7 },{ 22, 5 },{ 22, 3 },{ 22, 1 },{ 21, 0 },{ 10, 1 } };
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x0005C, Decoration::Gap, 30, Decoration::Dot_Intersection, 1);
+	generator->set(12, 16, Decoration::Dot_Intersection);
+	generator->set(0, 16, Decoration::Dot_Intersection);
+	generator->write(0x0005C);
+	//Decoy Exits
+	generator->setGridSize(7, 7);
+	generator->pathWidth = 0.8f;
+	generator->setFlag(Generate::Config::DisableWrite);
+	generator->generateMaze(0x0008D, 0, 1);
+	specialCase->addDecoyExits(generator, 4);
+	generator->write(0x0008D);
+	generator->generateMaze(0x00081, 2, 1);
+	specialCase->addDecoyExits(generator, 12);
+	generator->write(0x00081);
+	generator->generateMaze(0x00083, 4, 0);
+	specialCase->addDecoyExits(generator, 12);
+	generator->write(0x00083);
+	generator->removeFlag(Generate::Config::DisableWrite);
+	//Weird Symmetry
+	generator->setSymmetry(Panel::Symmetry::ParallelV);
+	generator->generate(0x00084, Decoration::Gap, 12, Decoration::Dot_Intersection, 10, Decoration::Start, 2, Decoration::Exit, 1);
+	generator->setSymmetry(Panel::Symmetry::ParallelHFlip);
+	generator->generate(0x00082, Decoration::Gap, 12, Decoration::Dot_Intersection, 10, Decoration::Start, 2, Decoration::Exit, 1);
+	generator->setSymmetry(Panel::Symmetry::FlipNegXY);
+	generator->generate(0x0343A, Decoration::Gap, 10, Decoration::Dot_Intersection, 8, Decoration::Start, 2, Decoration::Exit, 1);
+	generator->resetConfig();
+	//Symmetry Island Door
+	generator->setGridSize(4, 4);
+	generator->generate(0x000B0, Decoration::Triangle | Decoration::Color::Cyan, 8);
+	//Triangle Symmetry
+	generator->setFlag(Generate::Config::StartEdgeOnly);
+	generator->setGridSize(6, 6);
+	generator->setSymmetry(Panel::Symmetry::Horizontal);
+	generator->generate(0x00022, Decoration::Triangle | Decoration::Color::Cyan, 12, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->generate(0x00023, Decoration::Triangle | Decoration::Color::Cyan, 12, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setGridSize(7, 7);
+	generator->pathWidth = 0.7f;
+	generator->setSymmetry(Panel::Symmetry::ParallelH);
+	generator->generate(0x00024, Decoration::Triangle | Decoration::Color::Cyan, 12, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setSymmetry(Panel::Symmetry::ParallelVFlip);
+	generator->generate(0x00025, Decoration::Triangle | Decoration::Color::Cyan, 12, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setSymmetry(Panel::Symmetry::RotateLeft);
+	generator->setSymbol(Decoration::Start, 4, 4); generator->setSymbol(Decoration::Start, 10, 4); generator->setSymbol(Decoration::Start, 4, 10); generator->setSymbol(Decoration::Start, 10, 10);
+	generator->setSymbol(Decoration::Exit, 4, 0); generator->setSymbol(Decoration::Exit, 14, 4); generator->setSymbol(Decoration::Exit, 0, 10); generator->setSymbol(Decoration::Exit, 10, 14);
+	generator->generate(0x00026, Decoration::Triangle4 | Decoration::Color::Cyan, 1, Decoration::Triangle | Decoration::Color::Cyan, 4);
+	//2-color Mechanics
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->setFlag(Generate::Config::WriteInvisible);
+	generator->generate(0x0007C, Decoration::Dot | Decoration::Color::Blue, 4, Decoration::Dot | Decoration::Color::Yellow, 4, Decoration::Dot, 7, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->generate(0x0007E, Decoration::Stone | Decoration::Color::Cyan, 7, Decoration::Stone | Decoration::Color::Yellow, 5, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->generate(0x00075, Decoration::Star | Decoration::Color::Cyan, 6, Decoration::Star | Decoration::Color::Yellow, 8, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setGridSize(5, 5);
+	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
+	generator->generate(0x00073, Decoration::Poly | Decoration::Color::Yellow, 3, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setGridSize(7, 7);
+	generator->generate(0x00077, Decoration::Triangle | Decoration::Color::Cyan, 5, Decoration::Triangle | Decoration::Color::Yellow, 5, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->setSymmetry(Panel::Symmetry::FlipXY);
+	generator->generate(0x00079, Decoration::Dot | Decoration::Color::Blue, 1, Decoration::Dot | Decoration::Color::Yellow, 1, Decoration::Dot, 10,
+		Decoration::Eraser | Decoration::Color::White, 1, Decoration::Start, 1, Decoration::Exit, 1);
+	//Secret Symmetry
+	generator->setFlag(Generate::Config::DisableDotIntersection);
+	std::vector<int> ids = { 0x00065, 0x0006D, 0x00072, 0x0006F, 0x00070, 0x00071 };
+	std::vector<Panel::Symmetry> sym1 = { Panel::Symmetry::Vertical, Panel::Symmetry::Horizontal, Panel::Symmetry::Rotational, Panel::Symmetry::ParallelH, Panel::Symmetry::ParallelV };
+	std::vector<Panel::Symmetry> sym2 = { Panel::Symmetry::ParallelHFlip, Panel::Symmetry::ParallelVFlip, rand() % 2 == 0 ? Panel::Symmetry::ParallelV : Panel::Symmetry::ParallelH };
+	Panel::Symmetry lastChoice = Panel::Symmetry::None;
+	for (int i = 0; i < ids.size(); i++) {
+		Panel::Symmetry choice = (i < 3 ? pick_random(sym1) : pick_random(sym2));
+		if (choice == lastChoice) { i--; continue; }
+		lastChoice = choice;
+		specialCase->initSSGrid(generator);
+		generator->setSymmetry(choice);
+		generator->generate(ids[i], Decoration::Dot | Decoration::Color::Cyan, 2, Decoration::Dot | Decoration::Color::Yellow, 2,
+			Decoration::Triangle | Decoration::Color::Cyan, 2, Decoration::Triangle | Decoration::Color::Yellow, 3);
+	}
+	specialCase->initSSGrid(generator);
+	generator->setSymmetry(Panel::Symmetry::None);
+	generator->generate(0x00076, Decoration::Triangle | Decoration::Color::Cyan, 5, Decoration::Triangle | Decoration::Color::Yellow, 5);
+	//Symmetry Island Door 2
+	specialCase->generateSymmetryGate(0x1C349);
+	//Dot Reflection Dual Panels (before laser)
+	generator->resetConfig();
+	generator->setFlag(Generate::Config::WriteDotColor2);
+	std::set<Panel::Symmetry> normalSym = { Panel::Symmetry::Vertical, Panel::Symmetry::Rotational };
+	std::set<Panel::Symmetry> weirdSym = { Panel::Symmetry::RotateLeft, Panel::Symmetry::RotateRight, Panel::Symmetry::FlipXY, Panel::Symmetry::FlipNegXY };
+	generator->setSymbol(Decoration::Start, 0, 8);
+	generator->setSymbol(Decoration::Exit, 8, 0);
+	specialCase->generateReflectionDotPuzzle(generator, 0x00A52, 0x00A61, { { Decoration::Dot, 15 } }, pop_random(normalSym), true);
+	generator->setSymbol(Decoration::Start, 0, 8);
+	generator->setSymbol(Decoration::Exit, 8, 0);
+	specialCase->generateReflectionDotPuzzle(generator, 0x00A57, 0x00A64, { { Decoration::Dot, 15 } }, pop_random(weirdSym), true);
+	if (!weirdSym.count(Panel::Symmetry::RotateLeft)) weirdSym.erase(Panel::Symmetry::RotateRight);
+	else if (!weirdSym.count(Panel::Symmetry::RotateRight)) weirdSym.erase(Panel::Symmetry::RotateLeft);
+	else if (!weirdSym.count(Panel::Symmetry::FlipXY)) weirdSym.erase(Panel::Symmetry::FlipNegXY);
+	else if (!weirdSym.count(Panel::Symmetry::FlipNegXY)) weirdSym.erase(Panel::Symmetry::FlipXY);
+	generator->setSymbol(Decoration::Start, 0, 8); generator->setSymbol(Decoration::Start, 8, 8);
+	generator->setSymbol(Decoration::Start, 8, 0); generator->setSymbol(Decoration::Start, 0, 0);
+	generator->setSymbol(Decoration::Exit, 0, 4); generator->setSymbol(Decoration::Exit, 8, 4);
+	generator->setFlag(Generate::Config::DisableDotIntersection);
+	specialCase->generateReflectionDotPuzzle(generator, 0x00A5B, 0x00A68, { { Decoration::Dot, 15 } }, pick_random(weirdSym), true);
 }
 
 void PuzzleList::GenerateQuarryH()
@@ -985,6 +1109,16 @@ void PuzzleList::GenerateTownH()
 
 void PuzzleList::GenerateVaultsH()
 {
+	generator->setLoadingData(L"Vaults", 5);
+	generator->resetConfig();
+	//Tutorial Vault
+	generator->setGridSize(8, 8);
+	generator->setSymbol(Decoration::Exit, 0, 0);
+	generator->setSymbol(Decoration::Exit, 16, 0);
+	generator->setSymbol(Decoration::Exit, 0, 16);
+	generator->setSymbol(Decoration::Exit, 16, 16);
+	generator->generate(0x033D4, Decoration::Stone | Decoration::Color::White, 10, Decoration::Stone | Decoration::Color::Black, 10, Decoration::Dot_Intersection, 81, Decoration::Start, 8);
+
 }
 
 void PuzzleList::GenerateTrianglePanelsH()
@@ -993,18 +1127,7 @@ void PuzzleList::GenerateTrianglePanelsH()
 
 void PuzzleList::GenerateMountainH()
 {
-	/*
-	generator->resetConfig();
-	generator->setFlag(Generate::Config::WriteColors);
-	generator->setGridSize(6, 6);
-	generator->setSymbol(IntersectionFlags::OPEN, 11, 0);
-	generator->setSymbol(IntersectionFlags::OPEN, 12, 1);
-	generator->setSymbol(IntersectionFlags::NO_POINT, 12, 0);
-	generator->setSymbol(Decoration::Empty, 11, 1);
-	generator->setSymbol(Decoration::Exit, 12, 2);
-
-	generator->generate(0x09FD8, Decoration::Stone, 34);
-	*/
+	
 }
 
 void PuzzleList::GenerateCavesH()
@@ -1026,3 +1149,16 @@ void PuzzleList::GenerateKeepH()
 void PuzzleList::GenerateJungleH()
 {
 }
+
+/*
+generator->resetConfig();
+generator->setFlag(Generate::Config::WriteColors);
+generator->setGridSize(6, 6);
+generator->setSymbol(IntersectionFlags::OPEN, 11, 0);
+generator->setSymbol(IntersectionFlags::OPEN, 12, 1);
+generator->setSymbol(IntersectionFlags::NO_POINT, 12, 0);
+generator->setSymbol(Decoration::Empty, 11, 1);
+generator->setSymbol(Decoration::Exit, 12, 2);
+
+generator->generate(0x09FD8, Decoration::Stone, 34);
+*/

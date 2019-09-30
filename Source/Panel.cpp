@@ -97,7 +97,7 @@ void Panel::SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color 
 		else if (color == Decoration::Color::Orange || color == Decoration::Color::Yellow)
 			color = static_cast<Decoration::Color>(IntersectionFlags::DOT_IS_ORANGE);
 		else color = Decoration::Color::None;
-		if (symmetry != Symmetry::None) {
+		if (symmetry) {
 			Point sp = get_sym_point(gridx, gridy);
 			SetGridSymbol(sp.first, sp.second, static_cast<Decoration::Shape>(symbol & ~Decoration::Dot), Decoration::Color::None);
 		}
@@ -135,6 +135,14 @@ void Panel::SetGridSymbol(int x, int y, Decoration::Shape symbol, Decoration::Co
 		else if (y == _height - 1) dir = Endpoint::Direction::DOWN;
 		else if (x == 0) dir = Endpoint::Direction::LEFT;
 		else dir = Endpoint::Direction::RIGHT;
+		if (id == 0x033D4 || id == 0x0A3B5) {
+			if (x == 0) dir = Endpoint::Direction::LEFT;
+			else dir = Endpoint::Direction::RIGHT;
+		}
+		if (symmetry == Symmetry::ParallelH || symmetry == Symmetry::ParallelHFlip) {
+			if (x == 0) dir = Endpoint::Direction::LEFT;
+			if (x == _width - 1) dir = Endpoint::Direction::RIGHT;
+		}
 		_endpoints.push_back(Endpoint(x, y, dir, IntersectionFlags::ENDPOINT | 
 			(dir == Endpoint::Direction::UP || dir == Endpoint::Direction::DOWN ?
 				IntersectionFlags::COLUMN : IntersectionFlags::ROW)));
@@ -392,12 +400,6 @@ void Panel::WriteIntersections() {
 	std::vector<int> connections_a;
 	std::vector<int> connections_b;
 	std::vector<int> symmetryData;
-	/*
-	switch (symmetry) {
-	case Symmetry::Horizontal: symmetryData = sym_data_h(); break;
-	case Symmetry::Vertical: symmetryData = sym_data_v(); break;
-	case Symmetry::Rotational: symmetryData = sym_data_r(); break;
-	}*/
 
 	unitWidth = (maxx - minx) / (_width - 1);
 	if (Point::pillarWidth) unitWidth = 1.0f / _width;
@@ -520,7 +522,8 @@ void Panel::WriteIntersections() {
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 2);
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 3);
 					symmetryData.push_back(static_cast<int>(intersectionFlags.size()) - 4);
-					if (x % 2 == 0 && get_sym_point(0, 0).second == 0 || y % 2 == 0 && get_sym_point(0, 0).first == 0) {
+					if (x % 2 == 0 && get_sym_dir(Endpoint::Direction::UP, symmetry) == Endpoint::Direction::UP ||
+						y % 2 == 0 && get_sym_dir(Endpoint::Direction::LEFT, symmetry) == Endpoint::Direction::LEFT || symmetry == Symmetry::FlipXY) {
 						std::swap(symmetryData[symmetryData.size() - 1], symmetryData[symmetryData.size() - 2]);
 						std::swap(symmetryData[symmetryData.size() - 3], symmetryData[symmetryData.size() - 4]);
 					}
@@ -551,7 +554,11 @@ void Panel::WriteIntersections() {
 	_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connections_a.size()) });
 	_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
 	_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
-	if (symmetryData.size() > 0) {
+	if (id == 0x00076 && symmetry == Symmetry::None) {
+		_style &= ~Style::SYMMETRICAL;
+		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 });
+	}
+	else if (symmetryData.size() > 0) {
 		_style |= Style::SYMMETRICAL;
 		_memory->WriteArray<int>(id, REFLECTION_DATA, symmetryData);
 	}

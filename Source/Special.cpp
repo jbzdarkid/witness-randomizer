@@ -1,18 +1,20 @@
 #include "Special.h"
 #include "MultiGenerate.h"
 
-void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry)
+void Special::generateReflectionDotPuzzle(std::shared_ptr<Generate> generator, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split)
 {
-	_generator->setFlagOnce(Generate::Config::DisableWrite);
-	_generator->generate(id1, symbols);
-	std::shared_ptr<Panel> puzzle = _generator->_panel;
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(id1, symbols);
+	std::shared_ptr<Panel> puzzle = generator->_panel;
 	std::shared_ptr<Panel> flippedPuzzle = std::make_shared<Panel>(id2);
+	std::vector<Point> dots;
 	for (int x = 0; x < puzzle->_width; x++) {
 		for (int y = 0; y < puzzle->_height; y++) {
 			Point sp = puzzle->get_sym_point(x, y, symmetry);
 			if (puzzle->_grid[x][y] & Decoration::Dot) {
 				int symbol = (sp.first & 1) == 1 ? Decoration::Dot_Row : (sp.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
 				flippedPuzzle->_grid[sp.first][sp.second] = symbol | IntersectionFlags::DOT_IS_INVISIBLE;
+				dots.push_back({ x, y });
 			}
 			else if (puzzle->_grid[x][y] & Decoration::Gap) {
 				int symbol = (sp.first & 1) == 1 ? Decoration::Gap_Row : Decoration::Gap_Column;
@@ -21,6 +23,22 @@ void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pai
 			else flippedPuzzle->_grid[sp.first][sp.second] = puzzle->_grid[x][y];
 		}
 	}
+	if (split) {
+		int size = static_cast<int>(dots.size());
+		while (dots.size() > size / 2 + rand() % 2) {
+			Point dot = pop_random(dots);
+			Point sp = puzzle->get_sym_point(dot.first, dot.second, symmetry);
+			puzzle->_grid[dot.first][dot.second] |= IntersectionFlags::DOT_IS_INVISIBLE;
+			flippedPuzzle->_grid[sp.first][sp.second] &= ~IntersectionFlags::DOT_IS_INVISIBLE;
+		}
+		if (rand() % 2) {
+			Point dot = pop_random(dots);
+			Point sp = puzzle->get_sym_point(dot.first, dot.second, symmetry);
+			flippedPuzzle->_grid[sp.first][sp.second] &= ~IntersectionFlags::DOT_IS_INVISIBLE;
+		}
+		Color color = flippedPuzzle->_memory->ReadPanelData<Color>(id2, SUCCESS_COLOR_A);
+		flippedPuzzle->_memory->WritePanelData<Color>(id2, PATTERN_POINT_COLOR, { color });
+	}
 	flippedPuzzle->_startpoints.clear();
 	for (Point p : puzzle->_startpoints) {
 		flippedPuzzle->_startpoints.push_back(puzzle->get_sym_point(p, symmetry));
@@ -28,10 +46,16 @@ void Special::generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pai
 	flippedPuzzle->_endpoints.clear();
 	for (Endpoint p : puzzle->_endpoints) {
 		Point sp = puzzle->get_sym_point(p.GetX(), p.GetY(), symmetry);
-		flippedPuzzle->_endpoints.push_back(Endpoint(sp.first, sp.second, get_sym_dir(p.GetDir(), symmetry),
+		flippedPuzzle->_endpoints.push_back(Endpoint(sp.first, sp.second, generator->_panel->get_sym_dir(p.GetDir(), symmetry),
 			IntersectionFlags::ENDPOINT | (p.GetDir() == Endpoint::Direction::UP || p.GetDir() == Endpoint::Direction::DOWN ? IntersectionFlags::COLUMN : IntersectionFlags::ROW)));
 	}
-	_generator->write(id1);
+	if (id1 == 0x00A5B && split) {
+		if (checkDotSolvability(puzzle, flippedPuzzle, symmetry)) {
+			generateReflectionDotPuzzle(generator, id1, id2, symbols, symmetry, split);
+			return;
+		}
+	}
+	generator->write(id1);
 	flippedPuzzle->Write(id2);
 }
 
@@ -770,6 +794,135 @@ void Special::modifyGate(int id)
 	panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.1f, 0.1f, 0.1f, 1 } });
 	panel->_memory->WritePanelData<int>(id, STYLE_FLAGS, { style | Panel::Style::HAS_DOTS });
 	panel->_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+}
+
+void Special::addDecoyExits(std::shared_ptr<Generate> gen, int amount) {
+	while (amount > 0) {
+		Point pos;
+		switch (rand() % 4) {
+		case 0: pos = Point(0, rand() % gen->_height); break;
+		case 1: pos = Point(gen->_width - 1, rand() % gen->_height); break;
+		case 2: pos = Point(rand() % gen->_width, 0); break;
+		case 3: pos = Point(rand() % gen->_width, gen->_height - 1); break;
+		}
+		if (pos.first % 2) pos.first--;
+		if (pos.second % 2) pos.second--;
+		if (gen->_exits.count(pos) || gen->_exits.count(gen->get_sym_point(pos)))
+			continue;
+		gen->_panel->SetGridSymbol(pos.first, pos.second, Decoration::Exit, Decoration::Color::None);
+		gen->_exits.insert(pos);
+		amount--;
+	}
+}
+
+void Special::initSSGrid(std::shared_ptr<Generate> gen) {
+	gen->setSymbol(Decoration::Start, 0, 0);  gen->setSymbol(Decoration::Start, 6, 0), gen->setSymbol(Decoration::Start, 8, 0), gen->setSymbol(Decoration::Start, 14, 0);
+	gen->setSymbol(Decoration::Start, 0, 6);  gen->setSymbol(Decoration::Start, 6, 6), gen->setSymbol(Decoration::Start, 8, 6), gen->setSymbol(Decoration::Start, 14, 6);
+	gen->setSymbol(Decoration::Start, 0, 8);  gen->setSymbol(Decoration::Start, 6, 8), gen->setSymbol(Decoration::Start, 8, 8), gen->setSymbol(Decoration::Start, 14, 8);
+	gen->setSymbol(Decoration::Start, 0, 14);  gen->setSymbol(Decoration::Start, 6, 14), gen->setSymbol(Decoration::Start, 8, 14), gen->setSymbol(Decoration::Start, 14, 14);
+	gen->setSymbol(Decoration::Exit, 2, 0);  gen->setSymbol(Decoration::Exit, 4, 0), gen->setSymbol(Decoration::Exit, 10, 0), gen->setSymbol(Decoration::Exit, 12, 0);
+	gen->setSymbol(Decoration::Exit, 2, 14);  gen->setSymbol(Decoration::Exit, 4, 14), gen->setSymbol(Decoration::Exit, 10, 14), gen->setSymbol(Decoration::Exit, 12, 14);
+	gen->setSymbol(Decoration::Exit, 0, 2);  gen->setSymbol(Decoration::Exit, 0, 4), gen->setSymbol(Decoration::Exit, 0, 10), gen->setSymbol(Decoration::Exit, 0, 12);
+	gen->setSymbol(Decoration::Exit, 14, 2);  gen->setSymbol(Decoration::Exit, 14, 4), gen->setSymbol(Decoration::Exit, 14, 10), gen->setSymbol(Decoration::Exit, 14, 12);
+}
+
+void Special::generateSymmetryGate(int id) //TODO: Figure out why this one won't work until you click on it... 
+{
+	_generator->resetConfig();
+	_generator->setFlag(Generate::Config::DisableWrite);
+	_generator->setFlag(Generate::Config::WriteInvisible);
+	_generator->setSymmetry(Panel::Symmetry::RotateRight);
+	_generator->setSymbol(Decoration::Start, 0, 0);
+	_generator->setSymbol(Decoration::Start, 0, 8);
+	_generator->setSymbol(Decoration::Start, 8, 0);
+	_generator->setSymbol(Decoration::Start, 8, 8);
+	_generator->setSymbol(Decoration::Exit, 4, 0);
+	_generator->setSymbol(Decoration::Exit, 4, 8);
+	_generator->setSymbol(Decoration::Exit, 0, 4);
+	_generator->setSymbol(Decoration::Exit, 8, 4);
+	_generator->generate(id, Decoration::Triangle | Decoration::Color::Yellow, 4);
+	std::vector<Point> breakPos = { {0, 3}, {2, 3}, {4, 3}, {6, 3}, {8, 3}, {0, 5}, {2, 5}, {4, 5}, {6, 5}, {8, 5} };
+	for (Point p : breakPos) _generator->set(p, IntersectionFlags::COLUMN | 0x40000);
+	breakPos = { { 3, 0 },{ 3, 2 },{ 3, 4 },{ 3, 6 },{ 3, 8 },{ 5, 0 },{ 5, 2 },{ 5, 4 },{ 5, 6 },{ 5, 8 } };
+	for (Point p : breakPos) _generator->set(p, IntersectionFlags::ROW | 0x40000);
+	//Expand the grid a little to prevent the collision detection from glitching out
+	_generator->_panel->minx = 0.08f;
+	_generator->_panel->maxx = 0.92f;
+	_generator->_panel->miny = 0.08f;
+	_generator->_panel->maxy = 0.92f;
+	_generator->write(id);
+	int numIntersections = ReadPanelData<int>(id, NUM_DOTS);
+	std::vector<float> intersections = ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
+	std::vector<int> symData;
+	for (int i = 0; i < numIntersections; i++) {
+		bool pushed = false;
+		for (int j = 0; j < numIntersections; j++) {
+			int precision = 30;
+			if (std::round(intersections[i * 2] * precision) == std::round(precision - intersections[j * 2 + 1] * precision) &&
+				std::round(intersections[i * 2 + 1] * precision) == std::round(intersections[j * 2] * precision)) {
+				symData.push_back(j);
+				pushed = true;
+				break;
+			}
+		}
+		if (!pushed)
+			symData.push_back(0);
+	}
+	WriteArray<int>(id, REFLECTION_DATA, symData);
+}
+
+bool Special::checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr<Panel> panel2, Panel::Symmetry correctSym) {
+	std::vector<Panel::Symmetry> sym = { Panel::Symmetry::FlipXY, Panel::Symmetry::FlipNegXY, Panel::Symmetry::RotateLeft, Panel::Symmetry::RotateRight };
+	for (Panel::Symmetry s : sym) {
+		if (s == correctSym) continue;
+		bool found = false;
+		//Check for three dots at a point
+		for (int x = 0; x < panel1->_width; x += 2) {
+			for (int y = 0; y < panel1->_height; y += 2) {
+				int count = 0;
+				for (Point dir : Generate::_DIRECTIONS1) {
+					Point p = { x + dir.first, y + dir.second };
+					Point sp = panel1->get_sym_point(p, s);
+					if (p.first < 0 || p.second < 0 || p.first >= panel1->_width || p.second >= panel1->_height) continue;
+					if (((panel1->_grid[p.first][p.second] & Decoration::Dot) && !(panel1->_grid[p.first][p.second] & IntersectionFlags::DOT_IS_INVISIBLE)) ||
+						((panel2->_grid[sp.first][sp.second] & Decoration::Dot) && !(panel2->_grid[sp.first][sp.second] & IntersectionFlags::DOT_IS_INVISIBLE))) {
+						if (++count == 3) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if (found) break;
+			}
+			if (found) break;
+		}
+		//Check for four dots in a circle
+		for (int x = 1; x < panel1->_width; x += 2) {
+			for (int y = 1; y < panel1->_height; y += 2) {
+				int count = 0;
+				for (Point dir : Generate::_DIRECTIONS1) {
+					Point p = { x + dir.first, y + dir.second };
+					Point sp = panel1->get_sym_point(p, s);
+					if (((panel1->_grid[p.first][p.second] & Decoration::Dot) && !(panel1->_grid[p.first][p.second] & IntersectionFlags::DOT_IS_INVISIBLE)) ||
+						((panel2->_grid[sp.first][sp.second] & Decoration::Dot) && !(panel2->_grid[sp.first][sp.second] & IntersectionFlags::DOT_IS_INVISIBLE))) {
+						if (++count == 4) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if (found) break;
+			}
+			if (found) break;
+		}
+		if (!found) return true;
+	}
+	return false;
+}
+
+
+void Special::test() {
+
 }
 
 void Special::setTarget(int puzzle, int target)

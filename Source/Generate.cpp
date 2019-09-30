@@ -27,6 +27,12 @@ void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amoun
 	while (!generate(id, symbols));
 }
 
+void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6) {
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5), std::make_pair(symbol6, amount6) });
+	while (!generate(id, symbols));
+}
+
+
 void Generate::generate(int id, std::vector<std::pair<int, int>> symbolVec)
 {
 	PuzzleSymbols symbols(symbolVec);
@@ -124,7 +130,7 @@ void Generate::initPanel(int id) {
 	else _openpos = _gridpos;
 	for (Point p : blockPos) _openpos.erase(p);
 	_fullGaps = hasFlag(Config::FullGaps);
-	if (_symmetry) _panel->symmetry = _symmetry;
+	if (_symmetry || id == 0x00076) _panel->symmetry = _symmetry;
 	if (pathWidth != 1) _panel->pathWidth = pathWidth;
 }
 
@@ -159,6 +165,16 @@ void Generate::setGridSize(int width, int height) {
 void Generate::setSymmetry(Panel::Symmetry symmetry)
 {
 	_symmetry = symmetry;
+	if (_symmetry == Panel::Symmetry::ParallelV || _symmetry == Panel::Symmetry::ParallelVFlip) {
+		std::vector<Point> points;
+		for (int y = 0; y < _height; y += 2) points.push_back(Point(_width / 2, y));
+		setObstructions(points);
+	}
+	if (_symmetry == Panel::Symmetry::ParallelH || _symmetry == Panel::Symmetry::ParallelHFlip) {
+		std::vector<Point> points;
+		for (int x = 0; x < _width; x += 2) points.push_back(Point(x, _height / 2));
+		setObstructions(points);
+	}
 }
 
 void Generate::write(int id)
@@ -190,9 +206,16 @@ void Generate::write(int id)
 		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B) });
 		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A) });
 	}
-	if (hasFlag(Config::WriteDotColor)) {
-		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.1f, 0.1f, 0.1f, 1 } });
+	if (hasFlag(Config::WriteInvisible)) {
+		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { _panel->_memory->ReadPanelData<Color>(0x00076, REFLECTION_PATH_COLOR) });
 	}
+	if (hasFlag(Config::WriteDotColor))
+		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.1f, 0.1f, 0.1f, 1 } });
+	if (hasFlag(Config::WriteDotColor2)) {
+		Color color = _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
+		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { color });
+	}
+
 	_panel->writeColors = hasFlag(Config::WriteColors);
 	_panel->decorationsOnly = hasFlag(Config::DecorationsOnly);
 	_panel->Write(id);
@@ -276,38 +299,6 @@ void Generate::init_treehouse_layout()
 		setSymbol(Decoration::Exit, _panel->_width - 1, _panel->_height / 2 );
 		setSymbol(Decoration::Exit, 0, _panel->_height / 2);
 	}
-	/*
-	_starts.clear();
-	_exits.clear();
-	if ((_panel->_width / 2) % 2 == 1) {
-		_starts.insert(Point(_panel->_width / 2 - 1, _panel->_height - 1));
-		_starts.insert(Point(_panel->_width / 2 + 1, _panel->_height - 1));
-		_exits.insert(Point(_panel->_width / 2 - 1, 0));
-		_exits.insert(Point(_panel->_width / 2 + 1, 0));
-	}
-	else {
-		_starts.insert(Point(_panel->_width / 2, _panel->_height - 1));
-		_exits.insert(Point(_panel->_width / 2, 0));
-	}
-	if (pivot && pivotDirection != Endpoint::Direction::UP) {
-		_exits.clear();
-		if ((_panel->_height / 2) % 2 == 1) {
-			if (pivotDirection == Endpoint::Direction::RIGHT) {
-				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 - 1));
-				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2 + 1));
-			}
-			if (pivotDirection == Endpoint::Direction::LEFT) {
-				_exits.insert(Point(0, _panel->_height / 2 - 1));
-				_exits.insert(Point(0, _panel->_height / 2 + 1));
-			}
-		}
-		else {
-			if (pivotDirection == Endpoint::Direction::RIGHT)
-				_exits.insert(Point(_panel->_width - 1, _panel->_height / 2));
-			if (pivotDirection == Endpoint::Direction::LEFT)
-				_exits.insert(Point(0, _panel->_height / 2));
-		}
-	}*/
 }
 
 bool Generate::generate_maze(int id, int numStarts, int numExits)
@@ -317,12 +308,25 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 	if (numStarts > 0) place_start(numStarts);
 	if (numExits > 0) place_exit(numExits);
 
-	for (Point p : _starts)
-		if (_exits.count(p))
-			return false;
+	if (id == 0x00083 && _width == 15 && _height == 15) {
+		clear();
+		_panel->_endpoints.clear();
+		_exits.clear();
+		Point start = pick_random(_starts);
+		_panel->SetGridSymbol(start.first, start.second, Decoration::Exit, Decoration::Color::None);
+		Point sp = get_sym_point(start);
+		_panel->SetGridSymbol(sp.first, sp.second, Decoration::Exit, Decoration::Color::None);
+		set_path(start); set_path(sp);
+	}
+	else {
+		for (Point p : _starts)
+			if (_exits.count(p))
+				return false;
 
-	clear();
-	while (!generate_path_length(_panel->_width + _panel->_height)) clear();
+		clear();
+		while (!generate_path_length(_panel->_width + _panel->_height)) clear();
+	}
+	
 	std::set<Point> path = _path; //Backup
 
 	std::set<Point> extraStarts;
@@ -568,9 +572,13 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 	if (hasFlag(Config::ShortPath))
 		return generate_path_length(1);
 
+	if (_panel->symmetry == Panel::Symmetry::FlipXY || _panel->symmetry == Panel::Symmetry::FlipNegXY) {
+		return generate_path_length(_panel->get_num_grid_points() * 3 / 4 - _panel->_width / 2);
+	}
+
 	if (hasFlag(Config::LongPath) || symbols.style == Panel::Style::HAS_DOTS && !hasFlag(Config::PreserveStructure) &&
 		!(_panel->symmetry == Panel::Symmetry::Vertical && (_panel->_width / 2) % 2 == 0 ||
-		  _panel->symmetry == Panel::Symmetry::Horizontal && (_panel->_height / 2) % 2 == 0)) {
+			_panel->symmetry == Panel::Symmetry::Horizontal && (_panel->_height / 2) % 2 == 0)) {
 		return generate_path_length(_panel->get_num_grid_points() * 7 / 8);
 	}
 
@@ -711,7 +719,8 @@ bool Generate::generate_special_path()
 {
 	Point pos = adjust_point(pick_random(_starts));
 	Point exit = adjust_point(pick_random(_exits));
-	if (off_edge(pos) || off_edge(exit)) return false;
+	if (off_edge(pos) || off_edge(exit))
+		return false;
 	set_path(pos);
 	for (Point p : hitPoints) {
 		set(p, PATH);
@@ -741,7 +750,8 @@ bool Generate::generate_special_path()
 			if (fail) continue;
 			validDir.push_back(dir);
 		}
-		if (validDir.size() == 0) return false;
+		if (validDir.size() == 0)
+			return false;
 		Point dir = pick_random(validDir);
 		set_path(pos + dir);
 		set_path(pos + dir / 2);
@@ -772,6 +782,7 @@ Point Generate::adjust_point(Point pos) {
 		set_path(pos);
 		return Point(pos.first, pos.second - 1 + rand() % 2 * 2);
 	}
+	if (_panel->symmetry && _exits.count(pos) && !_exits.count(get_sym_point(pos))) return { -10, -10 };
 	return pos;
 }
 
@@ -824,6 +835,7 @@ bool Generate::place_start(int amount)
 		}
 		if (_parity != -1 && get_parity(pos) != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
+		if (pos == get_sym_point(pos)) continue;
 		bool adjacent = false;
 		for (Point dir : _8DIRECTIONS2) {
 			if (!off_edge(pos + dir) && get(pos + dir) == Decoration::Start) {
@@ -858,6 +870,8 @@ bool Generate::place_exit(int amount)
 		}
 		if (_parity != -1 && (get_parity(pos) + _panel->get_parity()) % 2 != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
+		if (pos == get_sym_point(pos)) continue;
+		if (_panel->symmetry && get_sym_point(pos).first != 0 && get_sym_point(pos).second != 0) continue;
 		bool adjacent = false;
 		for (Point dir : _8DIRECTIONS2) {
 			if (!off_edge(pos + dir) && get(pos + dir) == Decoration::Exit) {
@@ -882,6 +896,11 @@ bool Generate::can_place_gap(Point pos) {
 	if (pos.first == 0 || pos.second == 0) {
 		if (hasFlag(Config::FullGaps)) return false;
 	}
+	if (_panel->symmetry && (get_sym_point(pos) == pos) || (get(get_sym_point(pos)) & Decoration::Gap)) return false;
+	if ((_panel->symmetry == Panel::Symmetry::ParallelH || _panel->symmetry == Panel::Symmetry::ParallelHFlip) && pos.second == _panel->_height / 2) return false;
+	if ((_panel->symmetry == Panel::Symmetry::ParallelV || _panel->symmetry == Panel::Symmetry::ParallelVFlip) && pos.first == _panel->_width / 2) return false;
+	if (_panel->symmetry == Panel::Symmetry::FlipNegXY && (pos.first + pos.second == _width - 1 || pos.first + pos.second == _width + 1)) return false;
+	if (_panel->symmetry == Panel::Symmetry::FlipXY && (pos.first - pos.second == 1 || pos.first - pos.second == -1)) return false;
 	else if (rand() % 2 == 0) return false; //Encourages gaps on outside border
 	if (hasFlag(Config::FullGaps)) { //Prevent dead ends
 		std::vector<Point> checkPoints = (pos.first % 2 == 0 ? std::vector<Point>({ Point(pos.first, pos.second - 1), Point(pos.first, pos.second + 1) })
@@ -927,6 +946,7 @@ bool Generate::place_gaps(int amount) {
 bool Generate::can_place_dot(Point pos) {
 	if (get(pos) & DOT)
 		return false;
+	if (hasFlag(Config::DisableDotIntersection)) return true;
 	for (Point dir : _8DIRECTIONS1) {
 		Point p = pos + dir;
 		if (!off_edge(p) && get(p) & DOT) {

@@ -31,6 +31,7 @@ public:
 		Triangle1 = 0x10600,
 		Triangle2 = 0x20600,
 		Triangle3 = 0x30600,
+		Triangle4 = 0x40600,
 		Can_Rotate = 0x1000,
 		Negative = 0x2000,
 		Gap = 0x100000,
@@ -175,10 +176,10 @@ private:
 		case Symmetry::RotateRight: return Point(_height - 1 - y, x);
 		case Symmetry::FlipXY: return Point(y, x);
 		case Symmetry::FlipNegXY: return Point(_height - 1 - y, _width - 1 - x);
-		case Symmetry::ParallelH: return Point(x, (y + (_height + 1) / 2) % _height);
-		case Symmetry::ParallelV: return Point((x + (_width + 1) / 2) % _width, y);
-		case Symmetry::ParallelHFlip: return Point(_width - 1 - x, (y + (_height + 1) / 2) % _height);
-		case Symmetry::ParallelVFlip: return Point((x + (_width + 1) / 2) % _width, _height - 1 - y);
+		case Symmetry::ParallelH: return Point(x, y == _height / 2 ? _height / 2 : (y + (_height + 1) / 2) % (_height + 1));
+		case Symmetry::ParallelV: return Point(x == _width / 2 ? _width / 2 : (x + (_width + 1) / 2) % (_width + 1), y);
+		case Symmetry::ParallelHFlip: return Point(_width - 1 - x, y == _height / 2 ? _height / 2 : (y + (_height + 1) / 2) % (_height + 1));
+		case Symmetry::ParallelVFlip: return Point(x == _width / 2 ? _width / 2 : (x + (_width + 1) / 2) % (_width + 1), _height - 1 - y);
 		case Symmetry::PillarParallel: return Point(x + _width / 2, y);
 		case Symmetry::PillarHorizontal: return Point(x + _width / 2, _height - 1 - y);
 		case Symmetry::PillarVertical: return Point( _width / 2 - x, y);
@@ -190,6 +191,24 @@ private:
 	Point get_sym_point(int x, int y) { return get_sym_point(x, y, symmetry); }
 	Point get_sym_point(Point p) { return get_sym_point(p.first, p.second, symmetry); }
 	Point get_sym_point(Point p, Symmetry symmetry) { return get_sym_point(p.first, p.second, symmetry); }
+	Endpoint::Direction get_sym_dir(Endpoint::Direction direction, Symmetry symmetry) {
+		std::vector<Endpoint::Direction> mapping;
+		switch (symmetry) {
+		case Symmetry::Horizontal: mapping = { Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT, Endpoint::Direction::DOWN, Endpoint::Direction::UP }; break;
+		case Symmetry::Vertical: mapping = { Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT, Endpoint::Direction::UP, Endpoint::Direction::DOWN }; break;
+		case Symmetry::Rotational: mapping = { Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT, Endpoint::Direction::DOWN, Endpoint::Direction::UP }; break;
+		case Symmetry::RotateLeft: mapping = { Endpoint::Direction::DOWN, Endpoint::Direction::UP, Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT }; break;
+		case Symmetry::RotateRight: mapping = { Endpoint::Direction::UP, Endpoint::Direction::DOWN, Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT }; break;
+		case Symmetry::FlipXY: mapping = { Endpoint::Direction::UP, Endpoint::Direction::DOWN, Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT }; break;
+		case Symmetry::FlipNegXY: mapping = { Endpoint::Direction::DOWN, Endpoint::Direction::UP, Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT }; break;
+		case Symmetry::ParallelH: mapping = { Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT, Endpoint::Direction::UP, Endpoint::Direction::DOWN }; break;
+		case Symmetry::ParallelV: mapping = { Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT, Endpoint::Direction::UP, Endpoint::Direction::DOWN }; break;
+		case Symmetry::ParallelHFlip: mapping = { Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT, Endpoint::Direction::UP, Endpoint::Direction::DOWN }; break;
+		case Symmetry::ParallelVFlip: mapping = { Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT, Endpoint::Direction::DOWN, Endpoint::Direction::UP }; break;
+		default: mapping = { Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT, Endpoint::Direction::UP, Endpoint::Direction::DOWN }; break;
+		}
+		return mapping[direction];
+	}
 	int get_num_grid_points() { return ((_width + 1) / 2) * ((_height + 1) / 2); }
 	int get_num_grid_blocks() { return (_width / 2) * (_height / 2);  }
 	int get_parity() { return (get_num_grid_points() + 1) % 2; }

@@ -21,7 +21,7 @@ public:
 		_generator = generator;
 	}
 	
-	void generateReflectionDotPuzzle(int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry);
+	void generateReflectionDotPuzzle(std::shared_ptr<Generate> generator, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split);
 	void generateAntiPuzzle(int id);
 	void generateColorFilterPuzzle(int id, std::vector<std::pair<int, int>> symbols, Color filter);
 	void generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool writeSequence);
@@ -39,11 +39,33 @@ public:
 	void generateMountainFloor(std::vector<int> ids, int idfloor);
 	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now
 	void modifyGate(int id);
+	void addDecoyExits(std::shared_ptr<Generate> gen, int amount);
+	void initSSGrid(std::shared_ptr<Generate> gen);
+	void generateSymmetryGate(int id);
+	bool checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr<Panel> panel2, Panel::Symmetry correctSym);
 
+	void test();
 	void setTarget(int puzzle, int target);
 	void clearTarget(int puzzle);
 	void setTargetAndDeactivate(int puzzle, int target);
-
+	template <class T> std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
+		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->ReadPanelData<T>(panel, offset, size);
+	}
+	template <class T> T ReadPanelData(int panel, int offset) {
+		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->ReadPanelData<T>(panel, offset);
+	}
+	template <class T> std::vector<T> ReadArray(int panel, int offset, int size) {
+		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->ReadArray<T>(panel, offset, size);
+	}
+	template <class T> void WritePanelData(int panel, int offset, const std::vector<T>& data) {
+		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WritePanelData<T>(panel, offset, data);
+	}
+	template <class T> void WriteArray(int panel, int offset, const std::vector<T>& data) {
+		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WriteArray<T>(panel, offset, data, false);
+	}
+	template <class T> void WriteArray(int panel, int offset, const std::vector<T>& data, bool force) {
+		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WriteArray<T>(panel, offset, data, force);
+	}
 
 	int testFind(std::vector<byte> bytes) {
 		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
@@ -75,21 +97,6 @@ public:
 	}
 
 private:
-
-	Endpoint::Direction get_sym_dir(Endpoint::Direction direction, Panel::Symmetry symmetry) {
-		std::vector<Endpoint::Direction> mapping;
-		switch (symmetry) {
-		case Panel::Symmetry::Horizontal: mapping = { Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT, Endpoint::Direction::DOWN, Endpoint::Direction::UP }; break;
-		case Panel::Symmetry::Vertical: mapping = { Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT, Endpoint::Direction::UP, Endpoint::Direction::DOWN }; break;
-		case Panel::Symmetry::Rotational: mapping = { Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT, Endpoint::Direction::DOWN, Endpoint::Direction::UP }; break;
-		case Panel::Symmetry::RotateLeft: mapping = { Endpoint::Direction::DOWN, Endpoint::Direction::UP, Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT }; break;
-		case Panel::Symmetry::RotateRight: mapping = { Endpoint::Direction::UP, Endpoint::Direction::DOWN, Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT }; break;
-		case Panel::Symmetry::FlipXY: mapping = { Endpoint::Direction::UP, Endpoint::Direction::DOWN, Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT }; break;
-		case Panel::Symmetry::FlipNegXY: mapping = { Endpoint::Direction::DOWN, Endpoint::Direction::UP, Endpoint::Direction::RIGHT, Endpoint::Direction::LEFT }; break;
-		default: mapping = { Endpoint::Direction::LEFT, Endpoint::Direction::RIGHT, Endpoint::Direction::UP, Endpoint::Direction::DOWN }; break;
-		}
-		return mapping[direction];
-	}
 
 	std::shared_ptr<Generate> _generator;
 
