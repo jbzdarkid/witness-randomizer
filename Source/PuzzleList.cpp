@@ -230,11 +230,12 @@ void PuzzleList::GenerateQuarryN()
 	generator->setFlag(Generate::Config::WriteColors);
 	generator->generate(0x021B5, Decoration::Star | Decoration::Color::Green, 3, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Eraser | Decoration::Color::Magenta, 1, Decoration::Gap, 2);
 	generator->generate(0x021B6, Decoration::Star | Decoration::Color::Green, 3, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Eraser | Decoration::Color::Green, 1, Decoration::Gap, 2);
-	generator->generate(0x021B7, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Eraser | Decoration::Orange, 1);
+	generator->generate(0x021B7, Decoration::Star | Decoration::Color::Green, 6, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Eraser | Decoration::Orange, 1);
 	generator->generate(0x021BB, Decoration::Star | Decoration::Color::Magenta, 7, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Eraser | Decoration::Orange, 1);
-	generator->generate(0x09DB5, { { Decoration::Star | Decoration::Color::Green, 1 },{ Decoration::Star | Decoration::Color::Magenta, 1 },{ Decoration::Star | Decoration::Color::Orange, 1 },
-		{ Decoration::Eraser | Decoration::Color::Green, 1 },{ Decoration::Eraser | Decoration::Color::Magenta, 1 },{ Decoration::Eraser | Decoration::Color::Orange, 1 },
-		{ Decoration::Star | Decoration::Color::White, 2 } });
+	generator->generate(0x09DB5, { { Decoration::Star | Decoration::Color::Green, 1 },{ Decoration::Eraser | Decoration::Color::Green, 1 },
+		{ Decoration::Star | Decoration::Color::Magenta, 1 },{ Decoration::Eraser | Decoration::Color::Magenta, 1 },
+		{ Decoration::Star | Decoration::Color::Orange, 1 },{ Decoration::Eraser | Decoration::Color::Orange, 1 },
+		{ Decoration::Eraser | Decoration::Color::White, 1 },{ Decoration::Star | Decoration::Color::White, 1 } });
 	generator->generate(0x09DB1, Decoration::Star | Decoration::Color::Orange, 9, Decoration::Eraser | Decoration::Orange, 1);
 	generator->generate(0x3C124, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 5, Decoration::Star | Decoration::Color::Green, 4, Decoration::Eraser | Decoration::Magenta, 1);
 	generator->resetConfig();
@@ -530,7 +531,6 @@ void PuzzleList::GenerateTownN()
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
 	generator->generate(0x17F89, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Gap, 7);
 	generator->setFlag(Generate::Config::FixBackground);
-	generator->setFlagOnce(Generate::Config::SplitErasers);
 	generator->generate(0x0A168, Decoration::Stone | Decoration::Color::White, 8, Decoration::Stone | Decoration::Color::Black, 8, Decoration::Eraser | Decoration::Color::White, 2);
 	generator->setFlagOnce(Generate::Config::WriteColors);
 	generator->generate(0x33AB2, Decoration::Poly | Decoration::Color::Orange, 2, Decoration::Stone | Decoration::Color::White, 4, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Gap, 4);
@@ -1089,6 +1089,144 @@ void PuzzleList::GenerateSymmetryH()
 
 void PuzzleList::GenerateQuarryH()
 {
+	generator->setLoadingData(L"Quarry", 40);
+	generator->resetConfig();
+	//Entry Gates
+	generator->setGridSize(5, 5);
+	generator->generate(0x09E57, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 3,
+		Decoration::Triangle | Decoration::Color::Orange, 8);
+	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
+	generator->generate(0x17C09, Decoration::Poly, 3, Decoration::Triangle | Decoration::Color::Orange, 4);
+	//Mill Entry Door
+	generator->resetConfig();
+	generator->generate(0x01E5A, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
+		Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::Orange, 4);
+	generator->setFlagOnce(Generate::Config::PreserveStructure);
+	generator->generate(0x01E59, Decoration::Triangle | Decoration::Color::Black, 7);
+	//Triangles
+	generator->pathWidth = 0.8f;
+	generator->setGridSize(3, 3);
+	generator->generate(0x00E0C, Decoration::Triangle, 4, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->generate(0x01489, Decoration::Triangle, 8, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->setGridSize(4, 3);
+	generator->generate(0x0148A, Decoration::Triangle, 8, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->generate(0x014D9, Decoration::Triangle, 8, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->setGridSize(4, 4);
+	generator->generate(0x014E7, Decoration::Triangle, 12, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->generate(0x014E8, Decoration::Triangle, 15, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->pathWidth = 1;
+	//Stones + Stars
+	generator->setGridSize(3, 3);
+	generator->generate(0x00557, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 2,
+		Decoration::Star | Decoration::Color::White, 2, Decoration::Star | Decoration::Color::Black, 2, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->generate(0x005F1, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 1,
+		Decoration::Star | Decoration::Color::White, 2, Decoration::Star | Decoration::Color::Black, 3, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->setGridSize(4, 4);
+	generator->generate(0x00620, Decoration::Stone | Decoration::Color::White, 6, Decoration::Stone | Decoration::Color::Black, 5,
+		Decoration::Star | Decoration::Color::White, 2, Decoration::Star | Decoration::Color::Black, 2, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->generate(0x009F5, Decoration::Stone | Decoration::Color::White, 5, Decoration::Stone | Decoration::Color::Black, 4,
+		Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 3, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->generate(0x0146C, Decoration::Stone | Decoration::Color::White, 4, Decoration::Stone | Decoration::Color::Black, 4,
+		Decoration::Star | Decoration::Color::White, 4, Decoration::Star | Decoration::Color::Black, 3, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->setGridSize(3, 3);
+	generator->generate(0x3C12D, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 1, Decoration::Star | Decoration::Color::White, 1,
+		Decoration::Star | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::Red, 1, Decoration::Star | Decoration::Color::Red, 2, Decoration::Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->setGridSize(4, 4);
+	generator->generate(0x03686, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::Red, 2,
+		Decoration::Star | Decoration::Color::White, 4, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::Red, 2, Decoration::Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->generate(0x014E9, Decoration::Stone | Decoration::Color::White, 1, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::Red, 2,
+		Decoration::Star | Decoration::Color::White, 4, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::Red, 3, Decoration::Decoration::Eraser | Decoration::Color::Green, 1);
+	//Stones + Stars + Triangles
+	generator->setSymbol(Decoration::Start, 0, 8);
+	generator->generate(0x0367C, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 1, Decoration::Star | Decoration::Color::White, 1, Decoration::Star | Decoration::Color::Black, 2,
+		Decoration::Triangle | Decoration::Color::White, 3, Decoration::Triangle | Decoration::Color::Black, 3, Decoration::Eraser | Decoration::Color::Green, 1);
+	//Optional Puzzle
+	generator->resetConfig();
+	generator->setFlagOnce(Generate::Config::FalseParity);
+	generator->setGridSize(8, 8);
+	generator->setSymbol(Decoration::Exit, 0, 0);
+	generator->setSymbol(Decoration::Exit, 16, 0);
+	generator->setSymbol(Decoration::Exit, 0, 16);
+	generator->setSymbol(Decoration::Exit, 16, 16);
+	generator->generate(0x3C125, Decoration::Stone | Decoration::Color::White, 10, Decoration::Stone | Decoration::Color::Black, 10, Decoration::Dot_Intersection, 81,
+		Decoration::Start, 7, Decoration::Eraser | Decoration::Color::Purple, 1);
+	//Boathouse Ramp Activation
+	generator->resetConfig();
+	generator->generate(0x034D4, Decoration::Star | Decoration::White, 3, Decoration::Star | Decoration::Black, 8,
+		Decoration::Star | Decoration::Magenta, 6, Decoration::Eraser | Decoration::Color::White, 1);
+	generator->setFlagOnce(Generate::Config::DisconnectShapes);
+	generator->generate(0x021D5, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::White, 1);
+	//Eraser + Shapes
+	generator->generate(0x021B3, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1, Decoration::Eraser | Decoration::Color::Green, 1);
+	specialCase->WritePanelData<int>(0x021B4, POWER_OFF_ON_FAIL, { 0 });
+	generator->generate(0x021B4, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1, Decoration::Eraser | Decoration::Color::Green, 1);
+	specialCase->WritePanelData<int>(0x021B0, POWER_OFF_ON_FAIL, { 0 });
+	generator->generate(0x021B0, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 2, Decoration::Eraser | Decoration::Color::Green, 1);
+	specialCase->WritePanelData<int>(0x021AF, POWER_OFF_ON_FAIL, { 0 });
+	generator->setGridSize(4, 4);
+	generator->generate(0x021AF, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 3, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->setFlagOnce(Generate::Config::DisconnectShapes);
+	specialCase->WritePanelData<int>(0x021AE, POWER_OFF_ON_FAIL, { 0 });
+	generator->generate(0x021AE, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->resetConfig();
+	//Eraser + Stars
+	generator->setFlag(Generate::Config::WriteColors);
+	generator->initPanel(0x021B5);
+	generator->clear();
+	generator->set(1, 1, Decoration::Eraser | Decoration::Color::Green);
+	generator->set(3, 5, Decoration::Eraser | Decoration::Color::Magenta);
+	generator->set(3, 1, Decoration::Star | Decoration::Color::Green);
+	generator->set(5, 5, Decoration::Star | Decoration::Color::Green);
+	generator->setFlagOnce(Generate::Config::DecorationsOnly);
+	generator->write(0x021B5);
+	generator->initPanel(0x021B6);
+	generator->clear();
+	generator->set(3, 1, Decoration::Eraser | Decoration::Color::Magenta);
+	generator->set(1, 3, Decoration::Star | Decoration::Color::Magenta);
+	generator->set(3, 3, Decoration::Star | Decoration::Color::Magenta);
+	generator->set(5, 3, Decoration::Star | Decoration::Color::Magenta);
+	generator->set(3, 5, Decoration::Eraser | Decoration::Color::Magenta);
+	generator->setFlagOnce(Generate::Config::DecorationsOnly);
+	generator->write(0x021B6);
+	generator->generate(0x021B7, Decoration::Star | Decoration::Color::Green, 7, Decoration::Star | Decoration::Color::Orange, 5,
+		Decoration::Eraser | Decoration::Green, 1, Decoration::Eraser | Decoration::Orange, 1);
+	generator->setGridSize(5, 5);
+	generator->generate(0x021BB, Decoration::Star | Decoration::Color::Magenta, 8, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Green, 4,
+		Decoration::Eraser | Decoration::Magenta, 1, Decoration::Eraser | Decoration::Orange, 1);
+	generator->setGridSize(4, 4);
+	generator->setFlagOnce(Generate::Config::CombineErasers);
+	generator->generate(0x09DB5, { { Decoration::Star | Decoration::Color::Green, 1 },{ Decoration::Stone | Decoration::Color::Green, 1 },
+		{ Decoration::Star | Decoration::Color::Magenta, 1 },{ Decoration::Stone | Decoration::Color::Magenta, 1 },
+		{ Decoration::Star | Decoration::Color::Orange, 1 },{ Decoration::Stone | Decoration::Color::Orange, 1 },
+		{ Decoration::Eraser | Decoration::Color::Orange, 2 },{ Decoration::Eraser | Decoration::Color::Magenta, 1 } });
+	//Multi-eraser + Shapes
+	generator->removeFlag(Generate::Config::WriteColors);
+	generator->setFlag(Generate::Config::ResetColors);
+	generator->generate(0x09DB1, Decoration::Poly, 5, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->setFlagOnce(Generate::Config::DisconnectShapes);
+	generator->generate(0x3C124, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->setSymbol(Decoration::Start, 0, 8);
+	generator->generate(0x09DB3, Decoration::Poly | Decoration::Color::Orange, 4, Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 1, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->generate(0x09DB4, Decoration::Poly | Decoration::Color::Orange, 4, Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 3, Decoration::Eraser | Decoration::Color::White, 2);
+	//All together
+	generator->setGridSize(0, 0);
+	generator->generate(0x0A3CB, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Poly | Decoration::Color::Orange, 4,
+		Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 2, Decoration::Eraser | Decoration::White, 2);
+	generator->generate(0x0A3CC, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Poly | Decoration::Color::Orange, 4,
+		Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 2, Decoration::Eraser | Decoration::White, 2);
+	generator->generate(0x0A3D0, Decoration::Star | Decoration::Color::Magenta, 3, Decoration::Star | Decoration::Color::Orange, 3, Decoration::Poly | Decoration::Color::Orange, 4,
+		Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 2, Decoration::Eraser | Decoration::White, 2);
+	//Laser Puzzle
+	generator->resetConfig();
+	generator->setFlagOnce(Generate::Config::DecorationsOnly);
+	generator->initPanel(0x03612);
+	generator->clear();
+	generator->set(1, 5, Decoration::Eraser | Decoration::Color::White);
+	generator->set(5, 5, Decoration::Eraser | Decoration::Color::Green);
+	generator->set(1, 3, Decoration::Eraser | Decoration::Color::White);
+	generator->set(3, 1, Decoration::Triangle | 0x10000 | Decoration::Color::White);
+	generator->set(5, 3, Decoration::Star | Decoration::Color::Green);
+	generator->write(0x03612);
 }
 
 void PuzzleList::GenerateBunkerH()
@@ -1118,7 +1256,11 @@ void PuzzleList::GenerateVaultsH()
 	generator->setSymbol(Decoration::Exit, 0, 16);
 	generator->setSymbol(Decoration::Exit, 16, 16);
 	generator->generate(0x033D4, Decoration::Stone | Decoration::Color::White, 10, Decoration::Stone | Decoration::Color::Black, 10, Decoration::Dot_Intersection, 81, Decoration::Start, 8);
-
+	//Tetris Vault
+	generator->resetConfig();
+	generator->generate(0x0CC7B, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Color::Orange, 1, Decoration::Poly | Decoration::Negative | Decoration::Color::Blue, 2,
+		Decoration::Poly | Decoration::Color::Blue, 1, Decoration::Poly | Decoration::Negative | Decoration::Color::Orange, 1,
+		Decoration::Star | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Blue, 3, Decoration::Eraser | Decoration::Color::White, 1);
 }
 
 void PuzzleList::GenerateTrianglePanelsH()

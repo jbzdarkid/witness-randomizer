@@ -85,7 +85,8 @@ public:
 		RIGHT,
 		UP,
 		DOWN,
-		DIAGONAL
+		DIAGONAL,
+		DIAGONAL_DOWN,
 	};
 
 	Endpoint(int x, int y, Direction dir, int flags) {

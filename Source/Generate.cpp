@@ -32,6 +32,15 @@ void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amoun
 	while (!generate(id, symbols));
 }
 
+void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7) {
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5), std::make_pair(symbol6, amount6), std::make_pair(symbol7, amount7) });
+	while (!generate(id, symbols));
+}
+
+void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7, int symbol8, int amount8) {
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5), std::make_pair(symbol6, amount6), std::make_pair(symbol7, amount7), std::make_pair(symbol8, amount8) });
+	while (!generate(id, symbols));
+}
 
 void Generate::generate(int id, std::vector<std::pair<int, int>> symbolVec)
 {
@@ -129,6 +138,7 @@ void Generate::initPanel(int id) {
 	if (openPos.size() > 0) _openpos = openPos;
 	else _openpos = _gridpos;
 	for (Point p : blockPos) _openpos.erase(p);
+	for (Point p : _splitPoints) _openpos.erase(p);
 	_fullGaps = hasFlag(Config::FullGaps);
 	if (_symmetry || id == 0x00076) _panel->symmetry = _symmetry;
 	if (pathWidth != 1) _panel->pathWidth = pathWidth;
@@ -423,6 +433,13 @@ bool Generate::generate(int id, PuzzleSymbols symbols)
 {
 	initPanel(id);
 
+	if (symbols.getNum(Decoration::Eraser) > 1 && !hasFlag(Config::CombineErasers) && id != 0x09DB5) {
+		setSymbol(Decoration::Gap_Row, 1, 0);
+		setSymbol(Decoration::Gap_Row, _panel->_width - 2, _panel->_height - 1);
+		_splitPoints = { Point(1, 1), Point(_panel->_width - 2, _panel->_height - 2) };
+		initPanel(id);
+	}
+
 	if (symbols.getNum(Decoration::Dot) >= _panel->get_num_grid_points() - 2)
 		_parity = (_panel->get_parity() + (
 			!symbols.any(Decoration::Start) ? get_parity(pick_random(_starts)) :
@@ -435,15 +452,6 @@ bool Generate::generate(int id, PuzzleSymbols symbols)
 	for (Point p : _starts)
 		if (_exits.count(p))
 			return false;
-
-	if (hasFlag(Config::SplitErasers)) {
-		if ((_panel->_width / 2) % 2 == 0) {
-			_splitPoints = { Point(1, _panel->_height / 2), Point(_panel->_width - 2, _panel->_height / 2) };
-		}
-		else {
-			_splitPoints = { Point(_panel->_width / 2, 1), Point(_panel->_width / 2, _panel->_height - 2) };
-		}
-	}
 
 	if (customPath.size() == 0) {
 		int fails = 0;
@@ -488,9 +496,10 @@ bool Generate::place_all_symbols(PuzzleSymbols & symbols)
 	for (std::pair<int, int> s : symbols[Decoration::Eraser]) {
 		for (int i = 0; i < s.second; i++) {
 			eraserColors.push_back(s.first & 0xf);
-			eraseSymbols.push_back(symbols.popRandomSymbol());
+			if (!hasFlag(Config::CombineErasers)) eraseSymbols.push_back(hasFlag(Config::FalseParity) ? Decoration::Dot_Intersection : symbols.popRandomSymbol());
 		}
 	}
+	if (hasFlag(Config::CombineErasers)) eraseSymbols.push_back(hasFlag(Config::FalseParity) ? Decoration::Dot_Intersection : symbols.popRandomSymbol());
 
 	_SHAPEDIRECTIONS = (hasFlag(Config::DisconnectShapes) ? _DISCONNECT : _DIRECTIONS2);
 	int numShapes = 0, numRotate = 0, numNegative = 0;
@@ -531,15 +540,6 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 {
 	clear();
 
-	if (hasFlag(Config::SplitErasers)) {
-		if ((_panel->_width / 2) % 2 == 0) {
-			set(0, _panel->_height / 2, Decoration::Gap_Column); set(_panel->_width - 1, _panel->_height / 2, Decoration::Gap_Column);
-		}
-		else {
-			set(_panel->_width / 2, 0, Decoration::Gap_Row); set(_panel->_width / 2, _panel->_height - 1, Decoration::Gap_Row);
-		}
-	}
-
 	if (hasFlag(Config::TreehouseLayout)) {
 		if (_starts.size() == 2) {
 			set(_panel->_width / 2, 0, PATH);
@@ -554,7 +554,6 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 	if (_obstructions.size() > 0) {
 		std::vector<Point> walls = pick_random(_obstructions);
 		for (Point p : walls) if (get(p) == 0) set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
-		//bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
 		bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) :
 			hitPoints.size() > 0 ? generate_special_path() : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
 		for (Point p : walls) if (get(p) & Decoration::Gap) set(p, 0);
@@ -582,7 +581,7 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 		return generate_path_length(_panel->get_num_grid_points() * 7 / 8);
 	}
 
-	if (symbols.style == Panel::Style::HAS_STONES && !hasFlag(Config::SplitErasers))
+	if (symbols.style == Panel::Style::HAS_STONES && _splitPoints.size() == 0)
 		return generate_path_regions(min(symbols.getNum(Decoration::Stone), (_panel->_width / 2 + _panel->_height / 2) / 2 + 1));
 
 	if (symbols.style == Panel::Style::HAS_SHAPERS) {
@@ -600,7 +599,8 @@ bool Generate::generate_path_length(int minLength)
 	int fails = 0;
 	Point pos = adjust_point(pick_random(_starts));
 	Point exit = adjust_point(pick_random(_exits));
-	if (off_edge(pos) || off_edge(exit)) return false;
+	if (off_edge(pos) || off_edge(exit))
+		return false;
 	set_path(pos);
 	while (pos != exit) {
 		if (fails++ > 20)
@@ -652,7 +652,17 @@ bool Generate::generate_longest_path()
 	Point pos = adjust_point(pick_random(_starts));
 	Point exit = adjust_point(pick_random(_exits));
 	if (off_edge(pos) || off_edge(exit)) return false;
-	if (get_parity(pos + exit) != _panel->get_parity())
+	Point block(-10, -10);
+	if (hasFlag(Config::FalseParity)) {
+		if (get_parity(pos + exit) == _panel->get_parity())
+			return false;
+		block = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
+		while (pos == block || exit == block) {
+			block = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
+		}
+		set_path(block);
+	}
+	else if (get_parity(pos + exit) != _panel->get_parity())
 		return false;
 	int fails = 0;
 	int reqLength = _panel->get_num_grid_points();
@@ -693,11 +703,11 @@ bool Generate::generate_longest_path()
 		if (off_edge(newPos) || get(newPos) != 0 || get(pos + dir / 2) != 0
 			|| newPos == exit && _path.size() / 2 + 2 < reqLength) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
-		if (on_edge(newPos) && (off_edge(newPos + dir) || get(newPos + dir) != 0)) {
+		if (on_edge(newPos) && Point::pillarWidth == 0 && newPos + dir != block && (off_edge(newPos + dir) || get(newPos + dir) != 0)) {
 			if (centerFlag && off_edge(newPos + dir)) {
 				centerFlag = false;
 			}
-			else if (Point::pillarWidth == 0) {
+			else {
 				int open = 0;
 				for (Point checkDir : _DIRECTIONS2) {
 					if (!off_edge(newPos + checkDir) && get(newPos + checkDir) == 0) {
@@ -712,6 +722,8 @@ bool Generate::generate_longest_path()
 		pos = newPos;
 		fails = 0;
 	}
+	if (!off_edge(block))
+		set(block, 0);
 	return _path.size() / 2 + 1 == reqLength;
 }
 
@@ -835,7 +847,7 @@ bool Generate::place_start(int amount)
 		}
 		if (_parity != -1 && get_parity(pos) != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
-		if (pos == get_sym_point(pos)) continue;
+		if (_panel->symmetry && pos == get_sym_point(pos)) continue;
 		bool adjacent = false;
 		for (Point dir : _8DIRECTIONS2) {
 			if (!off_edge(pos + dir) && get(pos + dir) == Decoration::Start) {
@@ -870,7 +882,7 @@ bool Generate::place_exit(int amount)
 		}
 		if (_parity != -1 && (get_parity(pos) + _panel->get_parity()) % 2 != (amount == 1 ? _parity : !_parity)) continue;
 		if (_starts.count(pos) || _exits.count(pos)) continue;
-		if (pos == get_sym_point(pos)) continue;
+		if (_panel->symmetry && pos == get_sym_point(pos)) continue;
 		if (_panel->symmetry && get_sym_point(pos).first != 0 && get_sym_point(pos).second != 0) continue;
 		bool adjacent = false;
 		for (Point dir : _8DIRECTIONS2) {
@@ -975,6 +987,7 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 			for (int y = 0; y < _panel->_height; y += 2) {
 				if (_starts.size() == 1 && _starts.count(Point(x, y))) continue;
 				if (_exits.size() == 1 && _exits.count(Point(x, y))) continue;
+				if (get(x, y) == 0) continue;
 				set(x, y, Decoration::Dot_Intersection);
 			}
 		}
@@ -1234,7 +1247,6 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			if (numNegative < 2 || hasFlag(Config::DisableCancelShapes)) continue;
 			//Make balancing shapes - Positive and negative will be switched so that code can be reused
 			balance = true;
-			shapesCanceled = true;
 			std::set<Point> regionN = _gridpos;
 			numShapes = max(2, rand() % numNegative + 1);			//Actually the negative shapes
 			numShapesN = min(amount, numShapes * 2 / 5 + 1);		//Actually the positive shapes
@@ -1250,9 +1262,11 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 					region.insert(p);
 				}
 			}
+			shapesCanceled = true;
 			//Let the rest of the algorithm create the cancelling shapes
 		}
-		
+		if (!balance && numShapesN && (numShapesN + numShapes >= 5 || numShapesN > 1 && numRotated > 0))
+			continue; //Trying to prevent the game's shape calculator from lagging too much
 		if (open2.size() < numShapes + numShapesN) continue;
 		if (numShapes == 1) {
 			shapes.push_back(region);
@@ -1433,24 +1447,26 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 {
 	std::set<Point> open = _openpos;
 	int amount = static_cast<int>(colors.size());
-	int pointNum = amount;
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;
-		int toErase = eraseSymbols[amount - 1];
+		int toErase = hasFlag(Config::CombineErasers) ? eraseSymbols[0] : eraseSymbols[amount - 1];
 		int color = colors[amount - 1];
 		Point pos = pick_random(open);
-		if (hasFlag(Config::SplitErasers)) {
-			if (pointNum < amount)
-				return false;
-			pos = _splitPoints[pointNum - 1];
-			pointNum--;
-		}
-		open.erase(pos);
 		std::set<Point> region = get_region(pos);
 		std::set<Point> open2;
 		for (Point p : region) {
 			if (open.erase(p)) open2.insert(p);
+		}
+		if (_splitPoints.size() > 0) {
+			bool found = false;
+			for (Point p : _splitPoints) {
+				if (region.count(p)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) continue;
 		}
 		if (hasFlag(Config::MakeStonesUnsolvable)) {
 			std::set<Point> valid;
@@ -1467,7 +1483,7 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 			open2 = valid;
 		}
 		
-		if (open2.size() == 0 && !(toErase & Decoration::Dot)) continue;
+		if ((open2.size() == 0 || _splitPoints.size() == 0 && open2.size() == 1 || hasFlag(Generate::CombineErasers) && open2.size() < colors.size() + 1) && !(toErase & Decoration::Dot)) continue;
 		bool canPlace = false;
 		if (get_symbol_type(toErase) == Decoration::Stone) {
 			canPlace = !can_place_stone(region, (toErase & 0xf));
@@ -1477,13 +1493,7 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		}
 		else canPlace = true;
 		if (!canPlace) continue;
-		set(pos, Decoration::Eraser | color);
-		_openpos.erase(pos);
-		amount--;
-		if (!(toErase & Decoration::Dot)) {
-			pos = pick_random(open2);
-			_openpos.erase(pos);
-		}
+
 		if (get_symbol_type(toErase) == Decoration::Stone || get_symbol_type(toErase) == Decoration::Star) {
 			set(pos, toErase);
 		}
@@ -1492,14 +1502,14 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 			for (Point p : region) {
 				for (Point dir : _8DIRECTIONS1) {
 					if (toErase == Decoration::Dot_Intersection && (dir.first == 0 || dir.second == 0)) continue;
-					Point p2 = pos + dir;
-					if (get(p2) == 0 && can_place_dot(p2)) {
+					Point p2 = p + dir;
+					if (get(p2) == 0 && (hasFlag(Config::FalseParity) || can_place_dot(p2))) {
 						openEdge.insert(p2);
 					}
 				}
 			}
 			if (openEdge.size() == 0)
-				return false;
+				continue;
 			pos = pick_random(openEdge);
 			toErase &= ~IntersectionFlags::INTERSECTION;
 			if ((toErase & 0xf) == Decoration::Color::Blue || (toErase & 0xf) == Decoration::Color::Cyan) toErase |= IntersectionFlags::DOT_IS_BLUE;
@@ -1528,8 +1538,31 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		}
 		else if (get_symbol_type(toErase) == Decoration::Triangle) {
 			int count = count_sides(pos);
-			count = (count + (rand() & 1)) % 3 + 1;
+			if (count == 0) count = rand() % 3 + 1;
+			else count = (count + (rand() & 1)) % 3 + 1;
 			set(pos, toErase | (count << 16));
+		}
+
+		if (!(toErase & Decoration::Dot)) {
+			_openpos.erase(pos);
+			open2.erase(pos);
+		}
+		
+		if (hasFlag(Config::CombineErasers)) {
+			while (amount > 0) {
+				pos = pick_random(open2);
+				set(pos, Decoration::Eraser | colors[amount - 1]);
+				_openpos.erase(pos);
+				open2.erase(pos);
+				amount--;
+			}
+		}
+		else {
+			if (_splitPoints.size() == 0) pos = pick_random(open2);
+			else for (Point p : _splitPoints) if (region.count(p)) { pos = p; break; }
+			set(pos, Decoration::Eraser | color);
+			_openpos.erase(pos);
+			amount--;
 		}
 	}
 	return true;

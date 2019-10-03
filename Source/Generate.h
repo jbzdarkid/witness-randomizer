@@ -24,8 +24,9 @@ public:
 	enum Config {
 		None = 0, FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, SmallShapes = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
 		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, BigShapes = 0x400, SplitShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
-		AlternateColors = 0x8000, WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, SplitErasers = 0x80000, LongPath = 0x100000, ShortPath = 0x200000, SplitStones = 0x400000,
+		AlternateColors = 0x8000, WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, CombineErasers = 0x80000, LongPath = 0x100000, ShortPath = 0x200000, SplitStones = 0x400000,
 		DecorationsOnly = 0x800000, Write2Color = 0x1000000, DisableDotIntersection = 0x2000000, WriteDotColor = 0x4000000, WriteDotColor2 = 0x8000000, LongestPath = 0x10000000, WriteInvisible = 0x20000000,
+		FalseParity = 0x40000000
 	};
 
 	void generate(int id) { PuzzleSymbols symbols({ }); while (!generate(id, symbols)); }
@@ -35,6 +36,8 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6);
+	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7);
+	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7, int symbol8, int amount8);
 	void generate(int id, std::vector<std::pair<int, int>> symbolVec);
 	void generateMulti(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec);
 	void generateMulti(int id, int numSolutions, std::vector<std::pair<int, int>> symbolVec);
@@ -85,6 +88,8 @@ private:
 	void init_treehouse_layout();
 	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
 	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
+	template <class T> T pop_random(std::vector<T>& vec) { int i = rand() % vec.size(); T item = vec[i]; vec.erase(vec.begin() + i); return item; }
+	template <class T> T pop_random(std::set<T>& set) { T item = pick_random(set); set.erase(item); return item; }
 	bool on_edge(Point p) { return (Point::pillarWidth == 0 && (p.first == 0 || p.first + 1 == _panel->_width) || p.second == 0 || p.second + 1 == _panel->_height); }
 	bool off_edge(Point p) { return (p.first < 0 || p.first >= _panel->_width || p.second < 0 || p.second >= _panel->_height); }
 	static std::vector<Point> _DIRECTIONS1, _8DIRECTIONS1, _DIRECTIONS2, _8DIRECTIONS2, _SHAPEDIRECTIONS, _DISCONNECT;

@@ -367,6 +367,8 @@ void Panel::ReadIntersections() {
 					else if (intersections[2 * i] > intersections[2 * location]) {
 						if (intersections[2 * i + 1] > intersections[2 * location + 1])
 							dir = Endpoint::Direction::DIAGONAL;
+						else if (intersections[2 * i + 1] < intersections[2 * location + 1])
+							dir = Endpoint::Direction::DIAGONAL_DOWN;
 						else dir = Endpoint::Direction::RIGHT;
 					}
 					else if (intersections[2 * i + 1] > intersections[2 * location + 1]) { // y coordinate is 0 (bottom) 1 (top), so this check is reversed.
@@ -490,6 +492,10 @@ void Panel::WriteIntersections() {
 		else if (endpoint.GetDir() == Endpoint::Direction::DIAGONAL) {
 			xPos += endDist;
 			yPos += endDist;
+		}
+		else if (endpoint.GetDir() == Endpoint::Direction::DIAGONAL_DOWN) {
+			xPos += endDist;
+			yPos -= endDist;
 		}
 		intersections.push_back(static_cast<float>(xPos));
 		intersections.push_back(static_cast<float>(yPos));
