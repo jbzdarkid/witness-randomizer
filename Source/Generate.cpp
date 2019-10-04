@@ -1265,7 +1265,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			shapesCanceled = true;
 			//Let the rest of the algorithm create the cancelling shapes
 		}
-		if (!balance && numShapesN && (numShapesN + numShapes >= 5 || numShapesN > 1 && numRotated > 0))
+		if (!balance && numShapesN && (numShapesN + numShapes >= 7 || numShapesN > 1 && numRotated > 0))
 			continue; //Trying to prevent the game's shape calculator from lagging too much
 		if (open2.size() < numShapes + numShapesN) continue;
 		if (numShapes == 1) {
