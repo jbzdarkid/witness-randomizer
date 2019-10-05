@@ -1288,18 +1288,14 @@ void PuzzleList::GenerateSwampH()
 	generator->pathWidth = 0.65f;
 	generator->setSymbol(Decoration::Start, 4, 4);
 	generator->generate(0x00982, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Gap, 4);
+	generator->setSymbol(Decoration::Start, 4, 4);
+	generator->generate(0x0097F, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Gap, 4);
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.6f;
-	generator->setSymbol(Decoration::Start, 4, 6);
-	generator->generate(0x0097F, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Gap, 4);
 	generator->setSymbol(Decoration::Start, 4, 6);
 	generator->generate(0x0098F, Decoration::Poly | Decoration::Can_Rotate, 4, Decoration::Gap, 4);
-	generator->setGridSize(6, 6);
-	generator->pathWidth = 0.55f;
-	generator->setSymbol(Decoration::Start, 6, 6);
-	generator->generate(0x00990, Decoration::Poly | Decoration::Can_Rotate, 5, Decoration::Gap, 4);
-	generator->setGridSize(5, 5);
-	generator->pathWidth = 0.6f;
+	generator->setSymbol(Decoration::Start, 4, 6);
+	generator->generate(0x00990, Decoration::Poly | Decoration::Can_Rotate, 4, Decoration::Gap, 4);
 	generator->setFlagOnce(Generate::Config::DisableReset);
 	generator->setFlagOnce(Generate::Config::LongPath);
 	generator->setSymbol(Decoration::Start, 4, 6);
@@ -1330,18 +1326,16 @@ void PuzzleList::GenerateSwampH()
 	generator->setGridSize(4, 4);
 	generator->pathWidth = 0.65f;
 	generator->generate(0x00007, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 2);
+	generator->generate(0x00008, Decoration::Dot_Intersection, 36, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Start, 1);
+	generator->generate(0x00009, Decoration::Dot_Intersection, 36, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Start, 1);
+	generator->generate(0x0000A, Decoration::Dot_Intersection, 36, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Start, 1);
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.6f;
-	generator->generate(0x00008, Decoration::Dot_Intersection, 36, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Start, 1);
-	generator->generate(0x00009, Decoration::Dot_Intersection, 36, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Start, 1);
-	generator->generate(0x0000A, Decoration::Dot_Intersection, 36, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Start, 1);
-	generator->setGridSize(6, 6);
-	generator->pathWidth = 0.55f;
-	generator->generate(0x003B2, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 2);
-	generator->generate(0x00A1E, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 3);
-	generator->generate(0x00C2E, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 3);
+	generator->generate(0x003B2, Decoration::Dot_Intersection, 49, Decoration::Poly, 3, Decoration::Start, 1);
+	generator->generate(0x00A1E, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Start, 1);
+	generator->generate(0x00C2E, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 1, Decoration::Poly, 3, Decoration::Start, 1);
 	generator->setFlagOnce(Generate::Config::DisconnectShapes);
-	generator->generate(0x00E3A, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 3);
+	generator->generate(0x00E3A, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Start, 1);
 	//Optional Tetris (no longer optional)
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::WriteDotColor);
@@ -1374,12 +1368,12 @@ void PuzzleList::GenerateSwampH()
 		Decoration::Triangle | Decoration::Color::Orange, 3, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
 	//Negative Shapes 3
 	generator->setFlag(Generate::Config::WriteDotColor);
-	generator->setGridSize(6, 6);
+	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.6f;
-	generator->generate(0x00001, Decoration::Dot_Intersection, 49, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1);
-	generator->generate(0x014D2, Decoration::Dot_Intersection, 49, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 1);
-	generator->generate(0x014D4, Decoration::Dot_Intersection, 49, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 2);
-	generator->generate(0x014D1, Decoration::Dot_Intersection, 49, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 3);
+	generator->generate(0x00001, Decoration::Dot_Intersection, 49, Decoration::Poly, 3, Decoration::Poly | Decoration::Negative, 1, Decoration::Start, 1);
+	generator->generate(0x014D2, Decoration::Dot_Intersection, 49, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 1, Decoration::Start, 1);
+	generator->generate(0x014D4, Decoration::Dot_Intersection, 49, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 2, Decoration::Start, 1);
+	generator->generate(0x014D1, Decoration::Dot_Intersection, 49, Decoration::Poly, 4, Decoration::Poly | Decoration::Negative, 3, Decoration::Start, 1);
 	//Modify Swamp Island
 	generator->resetConfig();
 	generator->initPanel(0x17C0A);
@@ -1401,6 +1395,7 @@ void PuzzleList::GenerateSwampH()
 
 void PuzzleList::GenerateTreehouseH()
 {
+	//TODO: Possibly mess with Orange Bridge 1 to make it not go out as far
 	generator->setLoadingData(L"Treehouse", 56); //TODO: Fix the loading handles for specialCase puzzles so that the count is right.
 	generator->resetConfig();
 	generator->setFlag(Generate::Config::ResetColors);
