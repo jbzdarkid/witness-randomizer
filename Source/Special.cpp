@@ -747,6 +747,8 @@ void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<i
 	gens[0]->_panel->SetGridSymbol(width - 1, height / 2, Decoration::Exit, Decoration::Color::None);
 	gens[0]->_panel->SetGridSymbol(width / 2, 0, Decoration::Exit, Decoration::Color::None);
 	gens[0]->write(id);
+	int style = ReadPanelData<int>(id, STYLE_FLAGS);
+	WritePanelData<int>(id, STYLE_FLAGS, { style | Panel::Style::IS_PIVOTABLE });
 }
 
 void Special::modifyGate(int id)

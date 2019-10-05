@@ -540,17 +540,6 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 {
 	clear();
 
-	if (hasFlag(Config::TreehouseLayout)) {
-		if (_starts.size() == 2) {
-			set(_panel->_width / 2, 0, PATH);
-			set(_panel->_width / 2, _panel->_height - 1, PATH);
-		}
-		if (_exits.size() == 6) { //Pivot panel
-			set(0, _panel->_height / 2, PATH);
-			set(_panel->_width - 1, _panel->_height / 2, PATH);
-		}
-	}
-
 	if (_obstructions.size() > 0) {
 		std::vector<Point> walls = pick_random(_obstructions);
 		for (Point p : walls) if (get(p) == 0) set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
@@ -786,12 +775,12 @@ void Generate::erase_path()
 Point Generate::adjust_point(Point pos) {
 	if (pos.first % 2 != 0) {
 		if (get(pos) != 0) return { -10, -10 };
-		set_path(pos);
+		//set_path(pos);
 		return Point(pos.first - 1 + rand() % 2 * 2, pos.second);
 	}
 	if (pos.second % 2 != 0) {
 		if (get(pos) != 0) return { -10, -10 };
-		set_path(pos);
+		//set_path(pos);
 		return Point(pos.first, pos.second - 1 + rand() % 2 * 2);
 	}
 	if (_panel->symmetry && _exits.count(pos) && !_exits.count(get_sym_point(pos))) return { -10, -10 };
@@ -1422,6 +1411,16 @@ bool Generate::place_triangles(int color, int amount, int targetCount)
 			open.erase(get_sym_point(pos));
 		}
 		if (count == 0 || targetCount && count != targetCount) continue;
+		if (hasFlag(Config::TreehouseLayout)) {
+			bool found = false;
+			for (Point dir : _DIRECTIONS1) {
+				if (_starts.count(pos + dir) || _exits.count(pos + dir)) {
+					found = true;
+					break;
+				}
+			}
+			if (found) continue;
+		}
 		if (!targetCount && count == 2 && rand() % 2 == 0) //Prevent it from placing so many 2's
 			continue;
 		set(pos, Decoration::Triangle | color | (count << 16));

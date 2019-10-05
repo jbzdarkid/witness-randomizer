@@ -79,8 +79,8 @@ public:
 
 	void testSwap(int id1, int id2) {
 		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-		std::vector<byte> bytes1 = panel->_memory->ReadPanelData<byte>(id1, 0, 0x1000);
-		std::vector<byte> bytes2 = panel->_memory->ReadPanelData<byte>(id2, 0, 0x1000);
+		std::vector<byte> bytes1 = panel->_memory->ReadPanelData<byte>(id1, 0, 0x600);
+		std::vector<byte> bytes2 = panel->_memory->ReadPanelData<byte>(id2, 0, 0x600);
 		panel->_memory->WritePanelData<byte>(id1, 0, bytes2);
 		panel->_memory->WritePanelData<byte>(id2, 0, bytes1);
 	}
