@@ -204,8 +204,6 @@ void Panel::ReadAllData() {
 	int reflectionData = _memory->ReadPanelData<int>(id, REFLECTION_DATA);
 	std::vector<int> rdata; if (reflectionData) rdata = _memory->ReadArray<int>(id, REFLECTION_DATA, numDots);
 	int style = _memory->ReadPanelData<int>(id, STYLE_FLAGS);
-	int ptr1 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_A);
-	int ptr2 = _memory->ReadPanelData<int>(id, DOT_CONNECTION_B);
 	std::vector<int> connections_a = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
 	std::vector<int> connections_b = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
 	int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
@@ -224,7 +222,7 @@ void Panel::ReadAllData() {
 	int outerBackgroundMode = _memory->ReadPanelData<int>(id, OUTER_BACKGROUND_MODE);
 	Color bgRegionColor = _memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR);
 	short metadata = _memory->ReadPanelData<short>(id, METADATA);
-	void* specularTexture = _memory->ReadPanelData<void*>(id, SPECULAR_TEXTURE);
+	//void* specularTexture = _memory->ReadPanelData<void*>(id, SPECULAR_TEXTURE);
 	//std::vector<float> data = _memory->ReadPanelData<float>(id, SPECULAR_TEXTURE, 1000);
 	int dotSeqLen = _memory->ReadPanelData<int>(id, DOT_SEQUENCE_LEN);
 	std::vector<int> dotSeq = _memory->ReadArray<int>(id, DOT_SEQUENCE, dotSeqLen);
@@ -232,8 +230,10 @@ void Panel::ReadAllData() {
 	std::vector<int> dotSeqR = _memory->ReadArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSeqLenR);
 	void* target = _memory->ReadPanelData<void*>(id, TARGET);
 	void* panelTarget = _memory->ReadPanelData<void*>(id, PANEL_TARGET);
+	Color cableTarget = _memory->ReadPanelData<Color>(id, CABLE_TARGET_2);
 	//std::vector<int> targets = _memory->ReadArray<int>(id, PANEL_TARGET, 6);
 	int isPillar = _memory->ReadPanelData<int>(id, IS_CYLINDER);
+	void* traced = _memory->ReadPanelData<void*>(id, TRACED_EDGES);
 }
 
 void Panel::ReadDecorations() {

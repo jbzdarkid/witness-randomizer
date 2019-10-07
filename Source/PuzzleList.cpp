@@ -511,7 +511,7 @@ void PuzzleList::GenerateTownN()
 	generator->setFlagOnce(Generate::Config::SmallShapes);
 	generator->generate(0x28998, Decoration::Poly | Decoration::Can_Rotate, 4, Decoration::Star | Decoration::Color::White, 6);
 	//Church Star Door
-	specialCase->generateColorFilterPuzzle(0x28A0D, { std::make_pair<int,int>(Decoration::Star | 1, 6),
+	specialCase->generateColorFilterPuzzle(0x28A0D, { 4, 4 }, { std::make_pair<int, int>(Decoration::Star | 1, 6),
 		std::make_pair<int,int>(Decoration::Star | 2, 6), std::make_pair<int,int>(Decoration::Star | 3, 4) }, { 1, 1, 0, 0 });
 	specialCase->setTarget(0x28A0D, 0x03B6F); specialCase->clearTarget(0x28A69); //Set star door to open tower instead of perspective puzzle (to prevent cheesing it)
 	//Soundproof Room
@@ -1574,6 +1574,81 @@ void PuzzleList::GenerateTreehouseH()
 
 void PuzzleList::GenerateTownH()
 {
+	generator->setLoadingData(L"Town", 21);
+	generator->resetConfig();
+	//Full Dots + Triangles
+	generator->setGridSize(5, 5);
+	generator->pathWidth = 0.9f;
+	generator->generate(0x2899C, Decoration::Dot_Intersection, 36, Decoration::Triangle1 | Decoration::Color::Orange, 4, Decoration::Start, 1);
+	generator->generate(0x28A33, Decoration::Dot_Intersection, 36, Decoration::Triangle3 | Decoration::Color::Orange, 6, Decoration::Start, 1);
+	generator->generate(0x28ABF, Decoration::Dot_Intersection, 36, Decoration::Triangle2 | Decoration::Color::Orange, 18, Decoration::Start, 1);
+	generator->generate(0x28AC0, Decoration::Dot_Intersection, 36, Decoration::Triangle | Decoration::Color::Orange, 6, Decoration::Start, 1);
+	generator->generate(0x28AC1, Decoration::Dot_Intersection, 36, Decoration::Triangle | Decoration::Color::Orange, 7, Decoration::Start, 1);
+	generator->setSymbol(Decoration::Start, 0, 10);
+	generator->setFlagOnce(Generate::FalseParity);
+	generator->generate(0x28AD9, Decoration::Dot_Intersection, 36, Decoration::Triangle | Decoration::Color::Orange, 7, Decoration::Eraser | Decoration::Color::White, 1);
+	//Blue Symmetry
+	generator->setFlag(Generate::Config::RequireCombineShapes);
+	generator->setGridSize(7, 7);
+	generator->pathWidth = 0.75f;
+	generator->setSymmetry(Panel::Symmetry::Vertical);
+	generator->setSymbol(Decoration::Start, 0, 14); generator->setSymbol(Decoration::Start, 14, 14);
+	generator->setSymbol(Decoration::Exit, 0, 0); generator->setSymbol(Decoration::Exit, 14, 0);
+	generator->generate(0x28AC7, Decoration::Poly | Decoration::Color::Orange, 5);
+	generator->setSymmetry(Panel::Symmetry::ParallelV);
+	generator->setSymbol(Decoration::Start, 0, 14); generator->setSymbol(Decoration::Start, 8, 14);
+	generator->setSymbol(Decoration::Exit, 6, 0); generator->setSymbol(Decoration::Exit, 14, 0);
+	generator->generate(0x28AC8, Decoration::Poly | Decoration::Color::Orange, 5);
+	generator->setSymmetry(Panel::Symmetry::ParallelHFlip);
+	generator->setSymbol(Decoration::Start, 0, 14); generator->setSymbol(Decoration::Start, 14, 6);
+	generator->setSymbol(Decoration::Exit, 0, 0); generator->setSymbol(Decoration::Exit, 14, 8);
+	generator->generate(0x28ACA, Decoration::Poly | Decoration::Color::Orange, 5);
+	generator->setSymmetry(Panel::Symmetry::ParallelVFlip);
+	generator->setSymbol(Decoration::Start, 0, 14); generator->setSymbol(Decoration::Start, 8, 0);
+	generator->setSymbol(Decoration::Exit, 6, 0); generator->setSymbol(Decoration::Exit, 14, 14);
+	generator->generate(0x28ACB, Decoration::Poly | Decoration::Color::Orange, 5);
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->generate(0x28ACC, Decoration::Dot_Intersection, 64, Decoration::Poly | Decoration::Color::Orange, 5);
+	generator->resetConfig();
+	//Glass Door
+	generator->setFlagOnce(Generate::Config::SmallShapes);
+	generator->generate(0x28998, Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Black, 3, Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::White, 2,
+		Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 3, Decoration::Triangle | Decoration::Color::Black, 2, Decoration::Triangle | Decoration::Color::White, 2);
+	//Church Star Door
+	specialCase->generateColorFilterPuzzle(0x28A0D, { 5, 5 }, { std::make_pair<int, int>(Decoration::Star | 1, 6), std::make_pair<int, int>(Decoration::Star | 2, 6),
+		std::make_pair<int,int>(Decoration::Star | 3, 6), std::make_pair<int,int>(Decoration::Star | 4, 6) }, { 1, 1, 0, 0 });
+	//Mess with targets
+	specialCase->setTargetAndDeactivate(0x28A0D, 0x28998); specialCase->clearTarget(0x28A69);
+	specialCase->setTargetAndDeactivate(0x03C0C, 0x03C08); specialCase->setTarget(0x03C08, 0x03B6F);
+	//Soundproof Room
+	std::vector<int> allPitches = { DOT_SMALL, DOT_SMALL, DOT_MEDIUM, DOT_MEDIUM, DOT_LARGE, DOT_LARGE };
+	std::vector<int> pitches;
+	for (int i = 0; i < 4; i++) pitches.push_back(pop_random(allPitches));
+	specialCase->generateSoundDotPuzzle(0x034E3, pitches, false);
+	//specialCase->generateSoundDotPuzzle(0x034E3, 0x034E4, pitches, true); //TODO: Still trying to make this work.
+	generator->resetConfig();
+	//3-color Room
+	//Modify switch to remove green
+	generator->initPanel(0x334D8);
+	generator->set(7, 5, Decoration::Triangle3 | Decoration::Color::Orange);
+	generator->setFlagOnce(Generate::Config::DecorationsOnly);
+	generator->write(0x334D8);
+	specialCase->generateRGBStonePuzzleH(0x03C0C);
+	specialCase->generateRGBDotPuzzleH(0x03C08);
+	//Orange Crate
+	generator->setGridSize(5, 5);
+	generator->generate(0x0A0C8, Decoration::Poly | Decoration::Color::Orange | Decoration::Can_Rotate, 5, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 3,
+		Decoration::Triangle | Decoration::Color::Orange, 3);
+	//Windmill Puzzles
+	generator->resetConfig();
+	generator->setFlagOnce(Generate::Config::PreserveStructure);
+	generator->generate(0x17F89, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 2, Decoration::Triangle | Decoration::Color::Orange, 5,
+		Decoration::Eraser | Decoration::Color::White, 1);
+	generator->setFlag(Generate::Config::FixBackground);
+	generator->generate(0x0A168, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3,
+		Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Black, 4, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->setFlagOnce(Generate::Config::WriteColors);
+	generator->generate(0x33AB2, Decoration::Poly | Decoration::Color::Yellow, 3, Decoration::Triangle | Decoration::Color::Orange, 5, Decoration::Eraser | Decoration::Color::White, 1);
 }
 
 void PuzzleList::GenerateVaultsH()
@@ -1587,11 +1662,13 @@ void PuzzleList::GenerateVaultsH()
 	generator->setSymbol(Decoration::Exit, 0, 16);
 	generator->setSymbol(Decoration::Exit, 16, 16);
 	generator->generate(0x033D4, Decoration::Stone | Decoration::Color::White, 10, Decoration::Stone | Decoration::Color::Black, 10, Decoration::Dot_Intersection, 81, Decoration::Start, 8);
-	//Tetris Vault
+	//Symbols Vault
 	generator->resetConfig();
-	generator->generate(0x0CC7B, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Color::Orange, 1, Decoration::Poly | Decoration::Negative | Decoration::Color::Blue, 2,
-		Decoration::Poly | Decoration::Color::Blue, 1, Decoration::Poly | Decoration::Negative | Decoration::Color::Orange, 1,
-		Decoration::Star | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Blue, 3, Decoration::Eraser | Decoration::Color::White, 1);
+	generator->generate(0x0CC7B, { { Decoration::Dot_Intersection, 49 },{ Decoration::Poly | Decoration::Color::Orange, 1 },{ Decoration::Poly | Decoration::Color::Blue, 1 },
+		{ Decoration::Poly | Decoration::Negative | Decoration::Color::Blue, 2 },{ Decoration::Poly | Decoration::Negative | Decoration::Color::Orange, 1 },
+		{ Decoration::Star | Decoration::Color::Orange, 4 },{ Decoration::Star | Decoration::Color::Blue, 3 },
+		{ Decoration::Triangle | Decoration::Color::Orange, 2 },{ Decoration::Triangle | Decoration::Color::Blue, 1 },
+		{ Decoration::Stone | Decoration::Color::Orange, 1 },{ Decoration::Stone | Decoration::Color::Blue, 2 }, { Decoration::Eraser | Decoration::Color::White, 1 } });
 }
 
 void PuzzleList::GenerateTrianglePanelsH()

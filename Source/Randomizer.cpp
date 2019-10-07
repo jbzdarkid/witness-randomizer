@@ -67,9 +67,9 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 	//puzzles->GenerateTutorialH();
 	//puzzles->GenerateSymmetryH();
 	//puzzles->GenerateQuarryH();
-	puzzles->GenerateSwampH();
+	//puzzles->GenerateSwampH();
 	//puzzles->GenerateTreehouseH();
-	//puzzles->GenerateTownH();
+	puzzles->GenerateTownH();
 	//puzzles->GenerateVaultsH();
 	//puzzles->GenerateTrianglePanelsH();
 	//puzzles->GenerateMountainH();

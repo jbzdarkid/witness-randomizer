@@ -23,11 +23,14 @@ public:
 	
 	void generateReflectionDotPuzzle(std::shared_ptr<Generate> generator, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split);
 	void generateAntiPuzzle(int id);
-	void generateColorFilterPuzzle(int id, std::vector<std::pair<int, int>> symbols, Color filter);
+	void generateColorFilterPuzzle(int id, Point size, std::vector<std::pair<int, int>> symbols, Color filter);
 	void generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool writeSequence);
+	void generateSoundDotPuzzle(int id1, int id2, std::vector<int> dotSequence, bool writeSequence);
 	void generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence);
 	void generateRGBStonePuzzleN(int id);
 	void generateRGBStarPuzzleN(int id);
+	void generateRGBStonePuzzleH(int id);
+	void generateRGBDotPuzzleH(int id);
 	void generateJungleVault(int id);
 	void generateApplePuzzle(int id, bool changeExit, bool flip);
 	void generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols);
@@ -116,30 +119,3 @@ private:
 		return item;
 	}
 };
-
-//Not working right
-/*
-void adjustPanel(int id) {
-std::shared_ptr<Panel> panel = std::make_shared<Panel>(id);
-int numDots = panel->_memory->ReadPanelData<int>(id, NUM_DOTS);
-std::vector<int> flags = panel->_memory->ReadArray<int>(id, DOT_FLAGS, numDots);
-std::copy(flags.begin() + 41, flags.begin() + 44, flags.begin() + 37);
-std::fill(flags.begin() + 41, flags.begin() + 44, IntersectionFlags::NO_POINT);
-std::vector<float> intersections = panel->_memory->ReadArray<float>(id, DOT_POSITIONS, numDots * 2);
-std::copy(intersections.begin() + 82, intersections.begin() + 89, intersections.begin() + 72);
-int numConnections = panel->_memory->ReadPanelData<int>(id, NUM_CONNECTIONS);
-std::vector<int> connections_a = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
-std::vector<int> connections_b = panel->_memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
-for (int i = 0; i < numConnections; i++) {
-if (connections_a[i] >= 41 && connections_a[i] <= 44) connections_a[i] -= 4;
-if (connections_b[i] >= 41 && connections_b[i] <= 44) connections_b[i] -= 4;
-}
-panel->_memory->WriteArray<int>(id, DOT_FLAGS, flags);
-panel->_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
-panel->_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
-panel->_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
-}*/
-
-//Not planning on using
-//void generateDotEscape(int id, int width, int height, bool fullGaps) { generateDotEscape(id, width, height, 0, 0, fullGaps); }
-//void generateDotEscape(int id, int width, int height, int numStarts, int numExits, bool fullGaps);

@@ -657,7 +657,7 @@ bool Generate::generate_longest_path()
 	int reqLength = _panel->get_num_grid_points();
 	bool centerFlag = !on_edge(pos);
 	set_path(pos);
-	while (pos != exit) {
+	while (pos != exit && !(_panel->symmetry && get_sym_point(pos) == exit)) {
 		std::vector<std::string> solution; //For debugging only
 		for (int y = 0; y < _panel->_height; y++) {
 			std::string row;
@@ -690,7 +690,8 @@ bool Generate::generate_longest_path()
 		}
 		Point newPos = pos + dir;
 		if (off_edge(newPos) || get(newPos) != 0 || get(pos + dir / 2) != 0
-			|| newPos == exit && _path.size() / 2 + 2 < reqLength) continue;
+			|| newPos == exit && _path.size() / 2 + 3 < reqLength ||
+			_panel->symmetry && get_sym_point(newPos) == exit && _path.size() / 2 + 3 < reqLength) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
 		if (on_edge(newPos) && Point::pillarWidth == 0 && newPos + dir != block && (off_edge(newPos + dir) || get(newPos + dir) != 0)) {
 			if (centerFlag && off_edge(newPos + dir)) {
@@ -1231,6 +1232,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		if (numShapes < amount && region.size() > shapeSize && rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
 		if (region.size() <= shapeSize + 1 && bufferRegion.size() == 0 && rand() % 2 == 1) numShapes = 1;
 		if (hasFlag(Config::SplitShapes) && numShapes != 1) continue;
+		if (hasFlag(Config::RequireCombineShapes) && numShapes == 1) continue;
 		bool balance = false;
 		if (numShapes > amount) {
 			if (numNegative < 2 || hasFlag(Config::DisableCancelShapes)) continue;
@@ -1566,33 +1568,3 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 	}
 	return true;
 }
-
-
-
-
-//Isn't actually making it any faster for some reason, so I'm not using it
-/*std::vector<Point> Generate::get_valid_edge_dir(Point lastPoint, Point exit)
-{
-	std::vector<Point> validDir;
-	for (Point dir : _DIRECTIONS2) {
-		Point pos = lastPoint + dir;
-		if (!on_edge(pos)) continue;
-		Point checkDir = dir;
-		while (get(pos) != PATH) {
-			Point newPos = pos + checkDir;
-			if (newPos == exit) {
-				validDir.push_back(dir);
-				break;
-			}
-			if (off_edge(newPos)) {
-				if (newPos.first == 0) checkDir = Point(2, 0); //Right
-				if (newPos.second == 0) checkDir = Point(0, 2); //Up
-				if (newPos.first == _panel->_width - 1) checkDir = Point(-2, 0); //Left
-				if (newPos.second == _panel->_height - 1) checkDir = Point(0, -2); //Down
-				newPos = pos + checkDir;
-			}
-			pos = newPos;
-		}
-	}
-	return validDir;
-}*/

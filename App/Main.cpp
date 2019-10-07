@@ -220,7 +220,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			generator->seed(static_cast<unsigned int>(time(NULL)));
 			//generator->seed(ctr++);
 			//generator->seed(0);
-			generator->resetConfig();
 
 			break;
 
