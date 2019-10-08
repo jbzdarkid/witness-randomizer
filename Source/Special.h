@@ -24,9 +24,9 @@ public:
 	void generateReflectionDotPuzzle(std::shared_ptr<Generate> generator, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split);
 	void generateAntiPuzzle(int id);
 	void generateColorFilterPuzzle(int id, Point size, std::vector<std::pair<int, int>> symbols, Color filter);
-	void generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool writeSequence);
+	void generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSequence, bool writeSequence);
 	void generateSoundDotPuzzle(int id1, int id2, std::vector<int> dotSequence, bool writeSequence);
-	void generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence);
+	void generateSoundDotReflectionPuzzle(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence);
 	void generateRGBStonePuzzleN(int id);
 	void generateRGBStarPuzzleN(int id);
 	void generateRGBStonePuzzleH(int id);

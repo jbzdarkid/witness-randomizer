@@ -69,7 +69,7 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 	//puzzles->GenerateQuarryH();
 	//puzzles->GenerateSwampH();
 	//puzzles->GenerateTreehouseH();
-	puzzles->GenerateTownH();
+	//puzzles->GenerateTownH();
 	//puzzles->GenerateVaultsH();
 	//puzzles->GenerateTrianglePanelsH();
 	//puzzles->GenerateMountainH();
@@ -77,7 +77,7 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 	//puzzles->GenerateOrchardH();
 	//puzzles->GenerateDesertH(); //Just scramble the positions for now
 	//puzzles->GenerateKeepH();
-	//puzzles->GenerateJungleH();
+	puzzles->GenerateJungleH();
 }
 
 template <class T>

@@ -155,17 +155,17 @@ void Special::generateColorFilterPuzzle(int id, Point size, std::vector<std::pai
 
 void Special::generateSoundDotPuzzle(int id1, int id2, std::vector<int> dotSequence, bool writeSequence) {
 	_generator->setFlag(Generate::Config::DisableReset);
-	_generator->setGridSize(5, 5);
-	generateSoundDotPuzzle(id1, dotSequence, writeSequence);
+	generateSoundDotPuzzle(id1, { 5, 5 }, dotSequence, writeSequence);
 	_generator->write(id2);
 	WritePanelData<Color>(id2, PATTERN_POINT_COLOR, { ReadPanelData<Color>(id2, SUCCESS_COLOR_A) });
 	_generator->resetConfig();
 }
 
-void Special::generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool writeSequence) {
+void Special::generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSequence, bool writeSequence) {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
 	_generator->setFlagOnce(Generate::Config::BackupPath);
 	_generator->setFlagOnce(Generate::Config::LongPath);
+	_generator->setGridSize(size.first, size.second);
 	if (id == 0x014B2) { //Have to force there to only be one correct sequence
 		_generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size() - 1));
 		while (_generator->get(6, 0) == Decoration::Dot_Intersection || _generator->get(8, 2) == Decoration::Dot_Intersection)
@@ -203,13 +203,25 @@ void Special::generateSoundDotPuzzle(int id, std::vector<int> dotSequence, bool 
 	_generator->write(id);
 }
 
-void Special::generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence)
+void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence)
 {
 	_generator->setFlagOnce(Generate::Config::DisableWrite);
 	_generator->setFlagOnce(Generate::Config::BackupPath);
 	_generator->setFlagOnce(Generate::Config::LongPath);
 	_generator->setSymmetry(Panel::Symmetry::Rotational);
-	_generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size()));
+	_generator->setGridSize(size.first, size.second);
+	if (id != 0x00AFB) {
+		WritePanelData<Color>(id, SUCCESS_COLOR_B, { ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
+		_generator->setSymbol(Decoration::Start, 0, _generator->_height - 1); _generator->setSymbol(Decoration::Start, _generator->_width - 1, 0);
+		_generator->setSymbol(Decoration::Exit, 0, 0); _generator->setSymbol(Decoration::Exit, _generator->_width - 1, _generator->_height - 1);
+	}
+	if (id == 0x00C3F || id == 0x00C41) {
+		_generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
+	}
+	else if (id == 0x014B2) {
+		_generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size() - 1), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
+	}
+	else _generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size()));
 	std::set<Point> path1 = _generator->_path1, path2 = _generator->_path2;
 	Point p1, p2;
 	std::set<Point> dots1, dots2;
@@ -233,13 +245,22 @@ void Special::generateSoundDotReflectionPuzzle(int id, std::vector<int> dotSeque
 			}
 		}
 	}
+	if (id == 0x014B2) {
+		_generator->set(p1, dotSequence1[seqPos] | Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_BLUE);
+		numColored++;
+	}
 	seqPos = 0;
+	if (id == 0x00C3F || id == 0x00C41 || id == 0x014B2) {
+		_generator->set(p2, Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_ORANGE);
+		_generator->setFlagOnce(Generate::Config::Write2Color);
+		numColored++;
+	}
 	while (!_generator->_exits.count(p2)) {
 		path2.erase(p2);
 		int sym = _generator->get(p2);
 		if (sym & Decoration::Dot) {
 			_generator->set(p2, sym | dotSequence2[seqPos++]);
-			dots2.insert(p2);
+			if (!_generator->_starts.count(p2)) dots2.insert(p2);
 		}
 		for (Point dir : Generate::_DIRECTIONS1) {
 			Point newp = p2 + dir;

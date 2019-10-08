@@ -322,29 +322,6 @@ private:
 		return true;
 	}
 
-	//DON't USE - it doesn't work
-	void break_segment_pillar(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b, std::vector<float>& intersections, std::vector<int>& intersectionFlags) {
-		int loc = locate_segment(x, y, connections_a, connections_b);
-		if (loc == -1) {
-			return;
-		}
-		int other_connection = connections_b[loc];
-		for (int i = 0; i < 5; i++) {
-			if (i == 0) connections_b[loc] = static_cast<int>(intersectionFlags.size());
-			else {
-				connections_a.push_back(static_cast<int>(intersectionFlags.size() - 1));
-				connections_b.push_back(static_cast<int>(intersectionFlags.size()));
-			}
-			float xpos = minx + x * unitWidth + i / 36.0f;
-			if (xpos >= 1) xpos -= 1;
-			intersections.push_back(static_cast<float>(xpos));
-			intersections.push_back(static_cast<float>(miny + (_height - 1 - y) * unitHeight));
-			intersectionFlags.push_back(0x240000);
-		}
-		connections_a.push_back(static_cast<int>(intersectionFlags.size() - 1));
-		connections_b.push_back(other_connection);
-	}
-
 	std::shared_ptr<Memory> _memory;
 
 	int _width, _height;
@@ -363,33 +340,3 @@ private:
 	friend class Special;
 	friend class MultiGenerate;
 };
-
-//Probably not needed anymore
-
-/*std::vector<int> sym_data_v() {
-std::vector<int> data;
-for (int y = 0; y <= _height / 2; y++) {
-for (int x = _width / 2 ; x >= 0; x--) {
-data.push_back(y * (_width / 2 + 1) + x);
-}
-}
-return data;
-}
-
-std::vector<int> sym_data_h() {
-std::vector<int> data;
-for (int y = _height / 2; y >= 0; y--) {
-for (int x = 0; x <= _width / 2; x++) {
-data.push_back(y * (_width / 2 + 1) + x);
-}
-}
-return data;
-}
-
-std::vector<int> sym_data_r() {
-std::vector<int> data;
-for (int i = get_num_grid_points() - 1; i >= 0; i--) {
-data.push_back(i);
-}
-return data;
-}*/

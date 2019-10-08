@@ -518,7 +518,7 @@ void PuzzleList::GenerateTownN()
 	std::vector<int> allPitches = { DOT_SMALL, DOT_SMALL, DOT_MEDIUM, DOT_MEDIUM, DOT_LARGE, DOT_LARGE };
 	std::vector<int> pitches;
 	for (int i = 0; i < 4; i++) pitches.push_back(pop_random(allPitches));
-	specialCase->generateSoundDotPuzzle(0x034E3, pitches, false);
+	specialCase->generateSoundDotPuzzle(0x034E3, { 4, 4 }, pitches, false);
 	generator->resetConfig();
 	//3-color Room
 	specialCase->generateRGBStonePuzzleN(0x03C0C);
@@ -551,8 +551,7 @@ void PuzzleList::GenerateVaultsN()
 		Decoration::Dot | Decoration::Color::Blue, 2, Decoration::Dot | Decoration::Color::Yellow, 2);
 	generator->resetConfig();
 	//Shipwreck Vault
-	generator->setGridSize(7, 7);
-	specialCase->generateSoundDotReflectionPuzzle(0x00AFB, { DOT_MEDIUM, DOT_LARGE, DOT_MEDIUM, DOT_SMALL }, { DOT_LARGE, DOT_SMALL, DOT_MEDIUM }, 3, false);
+	specialCase->generateSoundDotReflectionPuzzle(0x00AFB, { 7, 7 }, { DOT_MEDIUM, DOT_LARGE, DOT_MEDIUM, DOT_SMALL }, { DOT_LARGE, DOT_SMALL, DOT_MEDIUM }, 3, false);
 	generator->resetConfig();
 	//Jungle Vault
 	specialCase->generateJungleVault(0x15ADD);
@@ -883,13 +882,13 @@ void PuzzleList::GenerateJungleN()
 	generator->setLoadingData(L"Jungle", 4);
 	generator->resetConfig();
 
-	specialCase->generateSoundDotPuzzle(0x0026F, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, false);
-	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C3F, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
-	else specialCase->generateSoundDotPuzzle(0x00C3F, { DOT_LARGE, DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
-	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C41, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, true);
-	else specialCase->generateSoundDotPuzzle(0x00C41, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, true);
-	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x014B2, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, true);
-	else specialCase->generateSoundDotPuzzle(0x014B2, { DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL }, true);
+	specialCase->generateSoundDotPuzzle(0x0026F, { 4, 4 }, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, false);
+	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C3F, { 4, 4 }, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
+	else specialCase->generateSoundDotPuzzle(0x00C3F, { 4, 4 }, { DOT_LARGE, DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
+	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C41, { 4, 4 }, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, true);
+	else specialCase->generateSoundDotPuzzle(0x00C41, { 4, 4 }, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, true);
+	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x014B2, { 4, 4 }, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, true);
+	else specialCase->generateSoundDotPuzzle(0x014B2, { 4, 4 }, { DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL }, true);
 }
 
 //--------------------------HARD MODE-----------------------------
@@ -1624,7 +1623,7 @@ void PuzzleList::GenerateTownH()
 	std::vector<int> allPitches = { DOT_SMALL, DOT_SMALL, DOT_MEDIUM, DOT_MEDIUM, DOT_LARGE, DOT_LARGE };
 	std::vector<int> pitches;
 	for (int i = 0; i < 4; i++) pitches.push_back(pop_random(allPitches));
-	specialCase->generateSoundDotPuzzle(0x034E3, pitches, false);
+	specialCase->generateSoundDotPuzzle(0x034E3, { 4, 4 }, pitches, false);
 	//specialCase->generateSoundDotPuzzle(0x034E3, 0x034E4, pitches, true); //TODO: Still trying to make this work.
 	generator->resetConfig();
 	//3-color Room
@@ -1669,6 +1668,9 @@ void PuzzleList::GenerateVaultsH()
 		{ Decoration::Star | Decoration::Color::Orange, 4 },{ Decoration::Star | Decoration::Color::Blue, 3 },
 		{ Decoration::Triangle | Decoration::Color::Orange, 2 },{ Decoration::Triangle | Decoration::Color::Blue, 1 },
 		{ Decoration::Stone | Decoration::Color::Orange, 1 },{ Decoration::Stone | Decoration::Color::Blue, 2 }, { Decoration::Eraser | Decoration::Color::White, 1 } });
+
+	//Jungle Vault
+	specialCase->generateJungleVault(0x15ADD);
 }
 
 void PuzzleList::GenerateTrianglePanelsH()
@@ -1698,6 +1700,28 @@ void PuzzleList::GenerateKeepH()
 
 void PuzzleList::GenerateJungleH()
 {
+	generator->setLoadingData(L"Jungle", 6);
+	generator->resetConfig();
+	specialCase->generateSoundDotPuzzle(0x0026D, { 3, 3 }, { DOT_SMALL, DOT_LARGE }, false);
+	specialCase->generateSoundDotReflectionPuzzle(0x0026E, { 5, 5 }, { DOT_SMALL, DOT_LARGE }, { DOT_SMALL, DOT_LARGE }, 0, true);
+	specialCase->generateSoundDotReflectionPuzzle(0x0026F, { 7, 7 }, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE },
+		{ DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, 0, true);
+	specialCase->generateSoundDotReflectionPuzzle(0x00C3F, { 7, 7 }, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE },
+		{ DOT_LARGE, DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, 0, true);
+	if (rand() % 2) specialCase->generateSoundDotReflectionPuzzle(0x00C41, { 7, 7 }, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE },
+		{ DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, 0, true);
+	else specialCase->generateSoundDotReflectionPuzzle(0x00C41, { 7, 7 }, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE },
+		{ DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, 0, true);
+	switch (rand() % 4) {
+	case 0: specialCase->generateSoundDotReflectionPuzzle(0x014B2, { 7, 7 }, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM },
+		{ DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, 0, true); break;
+	case 1: specialCase->generateSoundDotReflectionPuzzle(0x014B2, { 7, 7 }, { DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL },
+		{ DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL }, 0, true); break;
+	case 2: specialCase->generateSoundDotReflectionPuzzle(0x014B2, { 7, 7 }, { DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL },
+		{ DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, 0, true); break;
+	case 3: specialCase->generateSoundDotReflectionPuzzle(0x014B2, { 7, 7 }, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM },
+		{ DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL }, 0, true); break;
+	}
 }
 
 /*
