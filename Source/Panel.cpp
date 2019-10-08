@@ -560,7 +560,7 @@ void Panel::WriteIntersections() {
 	_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connections_a.size()) });
 	_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
 	_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
-	if (id == 0x00076 && symmetry == Symmetry::None) {
+	if (id == 0x00076 && symmetry == Symmetry::None || id == 0x01D3F && symmetry == Symmetry::None) {
 		_style &= ~Style::SYMMETRICAL;
 		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 });
 	}

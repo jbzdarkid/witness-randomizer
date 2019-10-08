@@ -140,7 +140,7 @@ void Generate::initPanel(int id) {
 	for (Point p : blockPos) _openpos.erase(p);
 	for (Point p : _splitPoints) _openpos.erase(p);
 	_fullGaps = hasFlag(Config::FullGaps);
-	if (_symmetry || id == 0x00076) _panel->symmetry = _symmetry;
+	if (_symmetry || id == 0x00076 || id == 0x01D3F) _panel->symmetry = _symmetry;
 	if (pathWidth != 1) _panel->pathWidth = pathWidth;
 }
 

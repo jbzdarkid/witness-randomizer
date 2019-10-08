@@ -806,11 +806,6 @@ void PuzzleList::GenerateKeepN()
 	generator->setLoadingData(L"Keep", 5);
 	generator->resetConfig();
 
-	//TODO: Randomize the last hedge maze?
-
-	//Pressure Plate Puzzles
-
-	generator->resetConfig();
 	generator->setSymbol(Decoration::Gap_Column, 8, 3);
 	generator->setSymbol(Decoration::Gap_Column, 4, 5);
 	generator->setSymbol(Decoration::Gap_Row, 3, 0);
@@ -858,7 +853,9 @@ void PuzzleList::GenerateKeepN()
 	generator->setSymmetry(Panel::Symmetry::Rotational);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->generate(0x01D3F, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Poly, 1);
-	std::swap(generator->_panel->_endpoints[0], generator->_panel->_endpoints[1]); //Need to have endpoints in right order to associate with pressure plates correctly
+	if (generator->_panel->_endpoints[0].GetX() == 0) {
+		std::swap(generator->_panel->_endpoints[0], generator->_panel->_endpoints[1]); //Need to have endpoints in right order to associate with pressure plates correctly
+	}
 	std::set<Point> path4 = (generator->_path1.count(Point(0, 8)) ? generator->_path2 : generator->_path1);
 	if (generator->_path.count({ 7, 0 })) generator->set(7, 0, Decoration::Dot_Row);
 	else generator->set(8, 1, Decoration::Dot_Column);
@@ -1696,6 +1693,68 @@ void PuzzleList::GenerateDesertH()
 
 void PuzzleList::GenerateKeepH()
 {
+	generator->setLoadingData(L"Keep", 5);
+	generator->resetConfig();
+
+	generator->setObstructions({ { 8, 3 },{ 4, 5 },{ 3, 0 },{ 3, 2 },{ 5, 6 } });
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x033EA, Decoration::Triangle | Decoration::Color::Yellow, 5, Decoration::Star | Decoration::Color::Yellow, 3, Decoration::Stone | Decoration::Color::Yellow, 2);
+	std::set<Point> path1 = generator->_path;
+	generator->write(0x033EA);
+
+	generator->resetConfig();
+	generator->setObstructions({ { 8, 5 },{ 6, 5 },{ 1, 8 },{ 1, 6 },{ 1, 4 },{ 2, 3 },{ 4, 3 },{ 6, 3 } });
+	generator->hitPoints = { { 3, 2 },{ 1, 0 } };
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x01BE9, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
+		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
+		Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::White, 1);
+	std::set<Point> path2 = generator->_path;
+	generator->write(0x01BE9);
+
+	generator->resetConfig();
+	std::vector<std::vector<Point>> validHitPoints = {
+		{ { 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 4, 5 },{ 7, 2 },{ 2, 5 } },{ { 4, 3 },{ 7, 2 },{ 2, 3 } },
+	{ { 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 1, 4 },{ 7, 2 },{ 1, 2 } },{ { 3, 2 },{ 7, 2 },{ 3, 0 } },{ { 1, 2 },{ 7, 2 },{ 1, 0 } } };
+	generator->hitPoints = validHitPoints[rand() % validHitPoints.size()];
+	generator->setObstructions({ { 5, 8 } });
+	generator->setFlagOnce(Generate::Config::SplitShapes);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(0x01CD3, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 2,
+		Decoration::Triangle | Decoration::Color::Yellow, 5, Decoration::Poly | Decoration::Can_Rotate, 2
+	);
+	std::set<Point> path3 = generator->_path;
+	generator->write(0x01CD3);
+
+	generator->resetConfig();
+	generator->setSymmetry(Panel::Symmetry::None);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->setObstructions({ { 0, 7 },{ 2, 7 },{ 4, 7 },{ 6, 7 },{ 8, 7 },{ 8, 5 },{ 7, 6 } });
+	generator->setSymbol(Decoration::Start, 8, 0);
+	generator->setSymbol(Decoration::Exit, 8, 4);
+	generator->setFlagOnce(Generate::Config::ShortPath);
+	generator->generate(0x01D3F, Decoration::Poly | Decoration::Color::Yellow, 3, Decoration::Poly | Decoration::Negative | Decoration::Color::Blue, 3,
+		Decoration::Star | Decoration::Color::Yellow, 1, Decoration::Star | Decoration::Color::Blue, 2,
+		Decoration::Triangle | Decoration::Color::Yellow, 2, Decoration::Triangle | Decoration::Color::Blue, 2
+	);
+	generator->_panel->_startpoints.push_back({ 0, 8 });
+	generator->_panel->_endpoints.push_back(Endpoint(0, 4, Endpoint::Direction::LEFT, Decoration::Exit));
+	if (generator->_panel->_endpoints[0].GetX() == 0) {
+		std::swap(generator->_panel->_endpoints[0], generator->_panel->_endpoints[1]); //Need to have endpoints in right order to associate with pressure plates correctly
+	}
+	std::set<Point> path4 = generator->_path;
+	generator->write(0x01D3F);
+
+	specialCase->generateKeepLaserPuzzle(0x03317, path1, path2, path3, path4,
+		{ { Decoration::Triangle | Decoration::Color::Yellow, 10 },{ Decoration::Star | Decoration::Color::Yellow, 4 },{ Decoration::Stone | Decoration::Color::Yellow, 2 },
+		{ Decoration::Star | Decoration::Color::Black, 3 },{ Decoration::Star | Decoration::Color::White, 3 },
+		{ Decoration::Stone | Decoration::Color::Black, 5 },{ Decoration::Stone | Decoration::Color::White, 4 },
+		{ Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Black, 1 },{ Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::White, 1 },
+		{ Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Yellow, 2 },{ Decoration::Poly | Decoration::Color::Yellow, 3 },{ Decoration::Poly | Decoration::Color::Blue, 3 },
+		{ Decoration::Star | Decoration::Color::Blue, 2 },{ Decoration::Triangle | Decoration::Color::Yellow, 2 },{ Decoration::Triangle | Decoration::Color::Blue, 2 } });
+
+	specialCase->clearTarget(0x0360E); //Must solve pressure plate side
+	//TODO: Add watchdog to keep the other panel powered off until all 4 puzzles are solved
 }
 
 void PuzzleList::GenerateJungleH()

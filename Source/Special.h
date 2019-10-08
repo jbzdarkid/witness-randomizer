@@ -18,10 +18,10 @@ public:
 	};
 
 	Special(std::shared_ptr<Generate> generator) {
-		_generator = generator;
+		this->generator = generator;
 	}
 	
-	void generateReflectionDotPuzzle(std::shared_ptr<Generate> generator, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split);
+	void generateReflectionDotPuzzle(std::shared_ptr<Generate> gen, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split);
 	void generateAntiPuzzle(int id);
 	void generateColorFilterPuzzle(int id, Point size, std::vector<std::pair<int, int>> symbols, Color filter);
 	void generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSequence, bool writeSequence);
@@ -101,7 +101,7 @@ public:
 
 private:
 
-	std::shared_ptr<Generate> _generator;
+	std::shared_ptr<Generate> generator;
 
 	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
 	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }

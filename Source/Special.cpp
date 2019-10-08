@@ -1,11 +1,11 @@
 #include "Special.h"
 #include "MultiGenerate.h"
 
-void Special::generateReflectionDotPuzzle(std::shared_ptr<Generate> generator, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split)
+void Special::generateReflectionDotPuzzle(std::shared_ptr<Generate> gen, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split)
 {
-	generator->setFlagOnce(Generate::Config::DisableWrite);
-	generator->generate(id1, symbols);
-	std::shared_ptr<Panel> puzzle = generator->_panel;
+	gen->setFlagOnce(Generate::Config::DisableWrite);
+	gen->generate(id1, symbols);
+	std::shared_ptr<Panel> puzzle = gen->_panel;
 	std::shared_ptr<Panel> flippedPuzzle = std::make_shared<Panel>(id2);
 	std::vector<Point> dots;
 	for (int x = 0; x < puzzle->_width; x++) {
@@ -46,57 +46,57 @@ void Special::generateReflectionDotPuzzle(std::shared_ptr<Generate> generator, i
 	flippedPuzzle->_endpoints.clear();
 	for (Endpoint p : puzzle->_endpoints) {
 		Point sp = puzzle->get_sym_point(p.GetX(), p.GetY(), symmetry);
-		flippedPuzzle->_endpoints.push_back(Endpoint(sp.first, sp.second, generator->_panel->get_sym_dir(p.GetDir(), symmetry),
+		flippedPuzzle->_endpoints.push_back(Endpoint(sp.first, sp.second, gen->_panel->get_sym_dir(p.GetDir(), symmetry),
 			IntersectionFlags::ENDPOINT | (p.GetDir() == Endpoint::Direction::UP || p.GetDir() == Endpoint::Direction::DOWN ? IntersectionFlags::COLUMN : IntersectionFlags::ROW)));
 	}
 	if (id1 == 0x00A5B && split) {
 		if (checkDotSolvability(puzzle, flippedPuzzle, symmetry)) {
-			generateReflectionDotPuzzle(generator, id1, id2, symbols, symmetry, split);
+			generateReflectionDotPuzzle(gen, id1, id2, symbols, symmetry, split);
 			return;
 		}
 	}
-	generator->write(id1);
+	gen->write(id1);
 	flippedPuzzle->Write(id2);
 }
 
 void Special::generateAntiPuzzle(int id)
 {
 	while (true) {
-		_generator->setFlagOnce(Generate::Config::DisableWrite);
-		_generator->generate(id, Decoration::Poly | Decoration::Can_Rotate, 2);
-		std::set<Point> open = _generator->_gridpos;
+		generator->setFlagOnce(Generate::Config::DisableWrite);
+		generator->generate(id, Decoration::Poly | Decoration::Can_Rotate, 2);
+		std::set<Point> open = generator->_gridpos;
 		std::vector<int> symbols;
-		for (int x = 1; x < _generator->_panel->_width; x += 2) {
-			for (int y = 1; y < _generator->_panel->_height; y += 2) {
-				if (_generator->get_symbol_type(_generator->get(x, y)) == Decoration::Poly) {
-					symbols.push_back(_generator->get(x, y));
-					_generator->set(x, y, 0);
-					for (Point p : _generator->get_region(Point(x, y))) {
+		for (int x = 1; x < generator->_panel->_width; x += 2) {
+			for (int y = 1; y < generator->_panel->_height; y += 2) {
+				if (generator->get_symbol_type(generator->get(x, y)) == Decoration::Poly) {
+					symbols.push_back(generator->get(x, y));
+					generator->set(x, y, 0);
+					for (Point p : generator->get_region(Point(x, y))) {
 						open.erase(p);
 					}
 				}
 			}
 		}
 		if (open.size() == 0) continue;
-		std::set<Point> region = _generator->get_region(*open.begin());
+		std::set<Point> region = generator->get_region(*open.begin());
 		if (region.size() != open.size() || open.size() < symbols.size() + 1) continue;
 		for (int s : symbols) {
-			Point p = _generator->pick_random(open);
-			_generator->set(p, s | Decoration::Negative);
+			Point p = generator->pick_random(open);
+			generator->set(p, s | Decoration::Negative);
 			open.erase(p);
 		}
-		_generator->set(_generator->pick_random(open), Decoration::Poly | 0xffff0000); //Full block
-		_generator->write(id);
-		_generator->resetConfig();
+		generator->set(generator->pick_random(open), Decoration::Poly | 0xffff0000); //Full block
+		generator->write(id);
+		generator->resetConfig();
 		return;
 	}
 }
 
 void Special::generateColorFilterPuzzle(int id, Point size, std::vector<std::pair<int, int>> symbols, Color filter)
 {
-	_generator->setFlagOnce(Generate::Config::DisableWrite);
-	_generator->setGridSize(size.first, size.second);
-	_generator->generate(id, symbols);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->setGridSize(size.first, size.second);
+	generator->generate(id, symbols);
 	std::vector<Color> availableColors = { {0, 0, 0, 1} };
 	if (filter.r == 1) {
 		for (int i = 0; i < availableColors.size(); i++) {
@@ -120,10 +120,10 @@ void Special::generateColorFilterPuzzle(int id, Point size, std::vector<std::pai
 		std::swap(availableColors[i], availableColors[rand() % availableColors.size()]);
 	}
 	std::vector<Color> symbolColors;
-	for (int y = _generator->_panel->_height - 2; y>0; y -= 2) {
-		for (int x = 1; x < _generator->_panel->_width - 1; x += 2) {
-			if (_generator->get(x, y) == 0) symbolColors.push_back({ 0, 0, 0, 0 });
-			else symbolColors.push_back(availableColors[(_generator->get(x, y) & 0xf) - 1]);
+	for (int y = generator->_panel->_height - 2; y>0; y -= 2) {
+		for (int x = 1; x < generator->_panel->_width - 1; x += 2) {
+			if (generator->get(x, y) == 0) symbolColors.push_back({ 0, 0, 0, 0 });
+			else symbolColors.push_back(availableColors[(generator->get(x, y) & 0xf) - 1]);
 		}
 	}
 	bool pass = false;
@@ -148,40 +148,40 @@ void Special::generateColorFilterPuzzle(int id, Point size, std::vector<std::pai
 		}
 	}
 	
-	_generator->_panel->_memory->WriteArray<Color>(id, DECORATION_COLORS, symbolColors);
-	_generator->write(id);
-	_generator->resetConfig();
+	generator->_panel->_memory->WriteArray<Color>(id, DECORATION_COLORS, symbolColors);
+	generator->write(id);
+	generator->resetConfig();
 }
 
 void Special::generateSoundDotPuzzle(int id1, int id2, std::vector<int> dotSequence, bool writeSequence) {
-	_generator->setFlag(Generate::Config::DisableReset);
+	generator->setFlag(Generate::Config::DisableReset);
 	generateSoundDotPuzzle(id1, { 5, 5 }, dotSequence, writeSequence);
-	_generator->write(id2);
+	generator->write(id2);
 	WritePanelData<Color>(id2, PATTERN_POINT_COLOR, { ReadPanelData<Color>(id2, SUCCESS_COLOR_A) });
-	_generator->resetConfig();
+	generator->resetConfig();
 }
 
 void Special::generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSequence, bool writeSequence) {
-	_generator->setFlagOnce(Generate::Config::DisableWrite);
-	_generator->setFlagOnce(Generate::Config::BackupPath);
-	_generator->setFlagOnce(Generate::Config::LongPath);
-	_generator->setGridSize(size.first, size.second);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->setFlagOnce(Generate::Config::BackupPath);
+	generator->setFlagOnce(Generate::Config::LongPath);
+	generator->setGridSize(size.first, size.second);
 	if (id == 0x014B2) { //Have to force there to only be one correct sequence
-		_generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size() - 1));
-		while (_generator->get(6, 0) == Decoration::Dot_Intersection || _generator->get(8, 2) == Decoration::Dot_Intersection)
-			_generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size() - 1));
-		if (_generator->get(7, 0) == PATH) _generator->set(7, 0, Decoration::Dot_Row);
-		else _generator->set(8, 1, Decoration::Dot_Column);
+		generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size() - 1));
+		while (generator->get(6, 0) == Decoration::Dot_Intersection || generator->get(8, 2) == Decoration::Dot_Intersection)
+			generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size() - 1));
+		if (generator->get(7, 0) == PATH) generator->set(7, 0, Decoration::Dot_Row);
+		else generator->set(8, 1, Decoration::Dot_Column);
 	}
-	else _generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size()));
-	Point p = *_generator->_starts.begin();
-	std::set<Point> path = _generator->_path;
+	else generator->generate(id, Decoration::Dot_Intersection, static_cast<int>(dotSequence.size()));
+	Point p = *generator->_starts.begin();
+	std::set<Point> path = generator->_path;
 	int seqPos = 0;
-	while (!_generator->_exits.count(p)) {
+	while (!generator->_exits.count(p)) {
 		path.erase(p);
-		int sym = _generator->get(p);
+		int sym = generator->get(p);
 		if (sym & Decoration::Dot) {
-			_generator->set(p, sym | dotSequence[seqPos++]);
+			generator->set(p, sym | dotSequence[seqPos++]);
 		}
 		for (Point dir : Generate::_DIRECTIONS1) {
 			Point newp = p + dir;
@@ -197,44 +197,44 @@ void Special::generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSeq
 			if (dotSequence[i] == DOT_MEDIUM) dotSequence[i] = 2;
 			if (dotSequence[i] == DOT_LARGE) dotSequence[i] = 3;
 		}
-		_generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN, { dotSequence.size() });
-		_generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE, dotSequence, true);
+		generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN, { dotSequence.size() });
+		generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE, dotSequence, true);
 	}
-	_generator->write(id);
+	generator->write(id);
 }
 
 void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence)
 {
-	_generator->setFlagOnce(Generate::Config::DisableWrite);
-	_generator->setFlagOnce(Generate::Config::BackupPath);
-	_generator->setFlagOnce(Generate::Config::LongPath);
-	_generator->setSymmetry(Panel::Symmetry::Rotational);
-	_generator->setGridSize(size.first, size.second);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->setFlagOnce(Generate::Config::BackupPath);
+	generator->setFlagOnce(Generate::Config::LongPath);
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->setGridSize(size.first, size.second);
 	if (id != 0x00AFB) {
 		WritePanelData<Color>(id, SUCCESS_COLOR_B, { ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
-		_generator->setSymbol(Decoration::Start, 0, _generator->_height - 1); _generator->setSymbol(Decoration::Start, _generator->_width - 1, 0);
-		_generator->setSymbol(Decoration::Exit, 0, 0); _generator->setSymbol(Decoration::Exit, _generator->_width - 1, _generator->_height - 1);
+		generator->setSymbol(Decoration::Start, 0, generator->_height - 1); generator->setSymbol(Decoration::Start, generator->_width - 1, 0);
+		generator->setSymbol(Decoration::Exit, 0, 0); generator->setSymbol(Decoration::Exit, generator->_width - 1, generator->_height - 1);
 	}
 	if (id == 0x00C3F || id == 0x00C41) {
-		_generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
+		generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
 	}
 	else if (id == 0x014B2) {
-		_generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size() - 1), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
+		generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size() - 1), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
 	}
-	else _generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size()));
-	std::set<Point> path1 = _generator->_path1, path2 = _generator->_path2;
+	else generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size()));
+	std::set<Point> path1 = generator->_path1, path2 = generator->_path2;
 	Point p1, p2;
 	std::set<Point> dots1, dots2;
-	for (Point p : _generator->_starts) {
-		if (_generator->_path1.count(p)) p1 = p;
-		if (_generator->_path2.count(p)) p2 = p;
+	for (Point p : generator->_starts) {
+		if (generator->_path1.count(p)) p1 = p;
+		if (generator->_path2.count(p)) p2 = p;
 	}
 	int seqPos = 0;
-	while (!_generator->_exits.count(p1)) {
+	while (!generator->_exits.count(p1)) {
 		path1.erase(p1);
-		int sym = _generator->get(p1);
+		int sym = generator->get(p1);
 		if (sym & Decoration::Dot) {
-			_generator->set(p1, sym | dotSequence1[seqPos++]);
+			generator->set(p1, sym | dotSequence1[seqPos++]);
 			dots1.insert(p1);
 		}
 		for (Point dir : Generate::_DIRECTIONS1) {
@@ -246,21 +246,21 @@ void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<i
 		}
 	}
 	if (id == 0x014B2) {
-		_generator->set(p1, dotSequence1[seqPos] | Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_BLUE);
+		generator->set(p1, dotSequence1[seqPos] | Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_BLUE);
 		numColored++;
 	}
 	seqPos = 0;
 	if (id == 0x00C3F || id == 0x00C41 || id == 0x014B2) {
-		_generator->set(p2, Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_ORANGE);
-		_generator->setFlagOnce(Generate::Config::Write2Color);
+		generator->set(p2, Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_ORANGE);
+		generator->setFlagOnce(Generate::Config::Write2Color);
 		numColored++;
 	}
-	while (!_generator->_exits.count(p2)) {
+	while (!generator->_exits.count(p2)) {
 		path2.erase(p2);
-		int sym = _generator->get(p2);
+		int sym = generator->get(p2);
 		if (sym & Decoration::Dot) {
-			_generator->set(p2, sym | dotSequence2[seqPos++]);
-			if (!_generator->_starts.count(p2)) dots2.insert(p2);
+			generator->set(p2, sym | dotSequence2[seqPos++]);
+			if (!generator->_starts.count(p2)) dots2.insert(p2);
 		}
 		for (Point dir : Generate::_DIRECTIONS1) {
 			Point newp = p2 + dir;
@@ -273,11 +273,11 @@ void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<i
 	for (int i = static_cast<int>(dotSequence1.size() + dotSequence2.size()); i > numColored; i--) {
 		if (i % 2 == 0) { //Want to evenly distribute colors between blue/orange (approximately)
 			Point p = pop_random(dots1);
-			_generator->set(p, _generator->get(p) & ~DOT_IS_BLUE); //Remove color
+			generator->set(p, generator->get(p) & ~DOT_IS_BLUE); //Remove color
 		}
 		else {
 			Point p = pop_random(dots2);
-			_generator->set(p, _generator->get(p) & ~DOT_IS_ORANGE); //Remove color
+			generator->set(p, generator->get(p) & ~DOT_IS_ORANGE); //Remove color
 		}
 	}
 	if (writeSequence) {
@@ -286,38 +286,38 @@ void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<i
 			if (dotSequence1[i] == DOT_MEDIUM) dotSequence1[i] = 2;
 			if (dotSequence1[i] == DOT_LARGE) dotSequence1[i] = 3;
 		}
-		_generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN, { dotSequence1.size() });
-		_generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE, dotSequence1, true);
+		generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN, { dotSequence1.size() });
+		generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE, dotSequence1, true);
 		for (int i = 0; i < dotSequence2.size(); i++) {
 			if (dotSequence2[i] == DOT_SMALL) dotSequence2[i] = 1;
 			if (dotSequence2[i] == DOT_MEDIUM) dotSequence2[i] = 2;
 			if (dotSequence2[i] == DOT_LARGE) dotSequence2[i] = 3;
 		}
-		_generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN_REFLECTION, { dotSequence2.size() });
-		_generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSequence2, true);
+		generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN_REFLECTION, { dotSequence2.size() });
+		generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSequence2, true);
 	}
-	_generator->write(id);
-	_generator->setSymmetry(Panel::Symmetry::None);
+	generator->write(id);
+	generator->setSymmetry(Panel::Symmetry::None);
 }
 
 void Special::generateRGBStonePuzzleN(int id)
 {
 	while (true) {
-		_generator->setFlagOnce(Generate::Config::DisableWrite);
-		_generator->generate(id);
+		generator->setFlagOnce(Generate::Config::DisableWrite);
+		generator->generate(id);
 		int amount = 16;
 		std::set<Decoration::Color> used;
 		std::vector<Decoration::Color> colors = { Decoration::Black, Decoration::White, Decoration::Red, Decoration::Green, Decoration::Blue, Decoration::Cyan, Decoration::Yellow, Decoration::Magenta };
 		while (amount > 0) {
-			Decoration::Color c = _generator->pick_random(colors);
-			if (_generator->place_stones(c, 1)) {
+			Decoration::Color c = generator->pick_random(colors);
+			if (generator->place_stones(c, 1)) {
 				amount--;
 				used.insert(c);
 			}
 		}
 		if (used.size() < 5) continue;
-		_generator->setFlagOnce(Generate::Config::WriteColors);
-		_generator->write(id);
+		generator->setFlagOnce(Generate::Config::WriteColors);
+		generator->write(id);
 		return;
 	}
 }
@@ -325,14 +325,14 @@ void Special::generateRGBStonePuzzleN(int id)
 void Special::generateRGBStarPuzzleN(int id)
 {
 	while (true) {
-		_generator->setFlagOnce(Generate::Config::DisableWrite);
-		_generator->generate(id);
+		generator->setFlagOnce(Generate::Config::DisableWrite);
+		generator->generate(id);
 		int amount = 16;
 		std::set<Decoration::Color> used;
 		std::set<Decoration::Color> colors = { Decoration::Black, Decoration::White, Decoration::Red, Decoration::Green, Decoration::Blue, Decoration::Cyan, Decoration::Yellow, Decoration::Magenta };
 		while (amount > 0) {
-			Decoration::Color c = _generator->pick_random(colors);
-			if (_generator->place_stars(c, 2)) {
+			Decoration::Color c = generator->pick_random(colors);
+			if (generator->place_stars(c, 2)) {
 				amount -= 2;
 				used.insert(c);
 				if (used.size() == 4) colors = used;
@@ -340,46 +340,46 @@ void Special::generateRGBStarPuzzleN(int id)
 		}
 		if (used.size() < 4)
 			continue;
-		_generator->setFlagOnce(Generate::Config::WriteColors);
-		_generator->write(id);
+		generator->setFlagOnce(Generate::Config::WriteColors);
+		generator->write(id);
 		return;
 	}
 }
 
 void Special::generateRGBStonePuzzleH(int id) {
 	while (true) {
-		_generator->setFlagOnce(Generate::Config::DisableWrite);
-		_generator->generate(id);
+		generator->setFlagOnce(Generate::Config::DisableWrite);
+		generator->generate(id);
 		int amount = 16;
 		std::set<Decoration::Color> used;
 		std::vector<Decoration::Color> colors = { Decoration::Black, Decoration::Red, Decoration::Green, Decoration::Blue, Decoration::Magenta, Decoration::Yellow };
 		while (amount > 0) {
-			Decoration::Color c = _generator->pick_random(colors);
-			if (_generator->place_stones(c, 1)) {
+			Decoration::Color c = generator->pick_random(colors);
+			if (generator->place_stones(c, 1)) {
 				amount--;
 				used.insert(c);
 			}
 		}
 		if (used.size() < 5) continue;
-		if (!_generator->place_erasers({ Decoration::Color::White }, { Decoration::Stone | pick_random(colors) })) {
+		if (!generator->place_erasers({ Decoration::Color::White }, { Decoration::Stone | pick_random(colors) })) {
 			continue;
 		}
 		Point eraserPos;
-		for (int x = 1; x < _generator->_panel->_width; x += 2) {
-			for (int y = 1; y < _generator->_panel->_height; y += 2) {
-				if (_generator->get_symbol_type(_generator->get(x, y)) == Decoration::Eraser) {
+		for (int x = 1; x < generator->_panel->_width; x += 2) {
+			for (int y = 1; y < generator->_panel->_height; y += 2) {
+				if (generator->get_symbol_type(generator->get(x, y)) == Decoration::Eraser) {
 					eraserPos = { x, y };
 					break;
 				}
 			}
 		}
 		int count = 0;
-		for (Point dir : _generator->_DIRECTIONS2) {
-			if (!_generator->off_edge(eraserPos + dir) && _generator->get(eraserPos + dir) == 0) count++;
+		for (Point dir : generator->_DIRECTIONS2) {
+			if (!generator->off_edge(eraserPos + dir) && generator->get(eraserPos + dir) == 0) count++;
 		}
 		if (count < 2) continue;
-		_generator->setFlagOnce(Generate::Config::WriteColors);
-		_generator->write(id);
+		generator->setFlagOnce(Generate::Config::WriteColors);
+		generator->write(id);
 		return;
 	}
 }
@@ -390,13 +390,13 @@ void Special::generateRGBDotPuzzleH(int id) {
 	WritePanelData<Color>(id, PATTERN_POINT_COLOR_B, { { 1, 1, 0, 1 } });
 	WritePanelData<Color>(id, ACTIVE_COLOR, { { 0, 1, 1, 1 } });
 	WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { { 1, 1, 0, 1 } });
-	_generator->setGridSize(7, 7);
-	_generator->setSymmetry(Panel::Symmetry::Rotational);
-	_generator->setSymbol(Decoration::Exit, 0, 14); _generator->setSymbol(Decoration::Exit, 14, 0);
-	_generator->setSymbol(Decoration::Exit, 0, 0); _generator->setSymbol(Decoration::Exit, 14, 14);
-	_generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Cyan, 2, Decoration::Dot_Intersection | Decoration::Color::Yellow, 4, Decoration::Dot_Intersection, 6,
+	generator->setGridSize(7, 7);
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->setSymbol(Decoration::Exit, 0, 14); generator->setSymbol(Decoration::Exit, 14, 0);
+	generator->setSymbol(Decoration::Exit, 0, 0); generator->setSymbol(Decoration::Exit, 14, 14);
+	generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Cyan, 2, Decoration::Dot_Intersection | Decoration::Color::Yellow, 4, Decoration::Dot_Intersection, 6,
 		Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Start, 4);
-	_generator->resetConfig();
+	generator->resetConfig();
 }
 
 void Special::generateJungleVault(int id)
@@ -411,16 +411,16 @@ void Special::generateJungleVault(int id)
 	//std::vector<int> invalidSol = { 0, 5, 10, 15, 16, 11, 12, 13, 8, 3, 4, 9, 14, 19, 18, 23, 24, 25 };
 	std::vector<std::vector<int>> dotPoints1 = { { 4, 9, 16, 23 }, { 2, 19 }, { 2, 19 } };
 	std::vector<std::vector<int>> dotPoints2 = { { 7, 8, 13 }, { 3, 5, 6, 10, 11, 15, 17, 18, 20, 21, 22 }, { 14, 1 } };
-	_generator->initPanel(id);
-	_generator->clear();
+	generator->initPanel(id);
+	generator->clear();
 	int sol = rand() % sols.size();
-	auto[x1, y1] = _generator->_panel->loc_to_xy(_generator->pick_random(dotPoints1[sol]));
-	auto[x2, y2] = _generator->_panel->loc_to_xy(_generator->pick_random(dotPoints2[sol]));
-	_generator->set(x1, y1, Decoration::Dot_Intersection);
-	_generator->set(x2, y2, Decoration::Dot_Intersection);
-	_generator->_panel->_memory->WritePanelData<size_t>(id, SEQUENCE_LEN, { sols[sol].size() });
-	_generator->_panel->_memory->WriteArray<int>(id, SEQUENCE, sols[sol], true);
-	_generator->write(id);
+	auto[x1, y1] = generator->_panel->loc_to_xy(generator->pick_random(dotPoints1[sol]));
+	auto[x2, y2] = generator->_panel->loc_to_xy(generator->pick_random(dotPoints2[sol]));
+	generator->set(x1, y1, Decoration::Dot_Intersection);
+	generator->set(x2, y2, Decoration::Dot_Intersection);
+	generator->_panel->_memory->WritePanelData<size_t>(id, SEQUENCE_LEN, { sols[sol].size() });
+	generator->_panel->_memory->WriteArray<int>(id, SEQUENCE, sols[sol], true);
+	generator->write(id);
 }
 
 void Special::generateApplePuzzle(int id, bool changeExit, bool flip)
@@ -470,12 +470,15 @@ void Special::generateApplePuzzle(int id, bool changeExit, bool flip)
 
 void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols)
 {
-	_generator->resetConfig();
-	_generator->setGridSize(10, 11);
-	_generator->_starts = { { 0, 2 },{ 20, 10 },{ 8, 14 },{ 0, 22 },{ 20, 22 } };
-	_generator->_exits = { { 0, 18 },{ 10, 22 },{ 0, 0 },{ 20, 0 },{ 0, 12 } };
-	_generator->initPanel(id);
-	_generator->clear();
+	PuzzleSymbols psymbols(symbols);
+	generator->resetConfig();
+	generator->pathWidth = 0.4f;
+	generator->setGridSize(10, 11);
+	generator->_starts = { { 0, 2 },{ 20, 10 },{ 8, 14 },{ 0, 22 },{ 20, 22 } };
+	generator->_exits = { { 0, 18 },{ 10, 22 },{ 0, 0 },{ 20, 0 },{ 0, 12 } };
+	if (psymbols.getNum(Decoration::Triangle) > 0) generator->_exits.insert({ 0, 22 });
+	generator->initPanel(id);
+	generator->clear();
 	std::vector<Point> gaps = { { 17, 20 },{ 16, 19 },{ 20, 17 },{ 15, 14 },{ 15, 16 },{ 18, 13 },{ 20, 13 }, //Yellow Puzzle Walls
 	{ 10, 11 },{ 12, 11 },{ 14, 11 },{ 16, 11 },{ 18, 11 },{ 11, 0 },{ 11, 2 },{ 11, 4 },{ 11, 8 },{ 11, 10 },{ 14, 1 },{ 16, 1 },{ 18, 1 },{ 20, 1 }, //Pink Puzzle Walls
 	{ 2, 1 },{ 4, 1 },{ 6, 1 },{ 8, 1 },{ 0, 11 },{ 2, 11 },{ 4, 11 },{ 6, 11 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 9, 12 }, //Green Puzzle Walls
@@ -485,25 +488,42 @@ void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Po
 	{ 11, 6 },{ 10, 6 },{ 10, 5 },{ 10, 4 },{ 10, 3 },{ 10, 2 },{ 10, 1 },{ 10, 0 },{ 9, 0 },{ 8, 0 },{ 7, 0 },{ 6, 0 },{ 5, 0 },{ 4, 0 },{ 3, 0 },
 	{ 2, 0 },{ 1, 0 },{ 0, 0 },{ 0, 1 },{ 8, 11 },{ 8, 12 },{ 8, 13 } };
 	std::vector<Point> pathPoints2 = { { 9, 18 },{ 10, 18 },{ 10, 19 },{ 10, 20 },{ 10, 21 },{ 10, 22 } }; //For exiting out the right side of the last puzzle
-	for (Point p : path1) _generator->set_path(Point(p.first + 12, p.second + 14));
-	for (Point p : path2) _generator->set_path(Point(p.first + 12, p.second + 2));
-	for (Point p : path3) _generator->set_path(Point(8 - p.first, 8 - p.second + 2));
-	for (Point p : path4) _generator->set_path(Point(p.first, p.second + 14));
-	for (Point p : pathPoints) _generator->set_path(p);
-	if (path4.count(Point({ 8, 4 }))) for (Point p : pathPoints2) _generator->set_path(p);
-	for (Point p : gaps) _generator->set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
-
-	PuzzleSymbols psymbols(symbols);
-
-	while (!_generator->place_all_symbols(psymbols)) {
-		for (int x = 0; x < _generator->_panel->_width; x++)
-			for (int y = 0; y < _generator->_panel->_height; y++)
-				if (_generator->get(x, y) != PATH && (_generator->get(x, y) & 0x1fffff) != Decoration::Gap)
-					_generator->set(x, y, 0);
-		_generator->_openpos = _generator->_gridpos;
+	std::vector<Point> pathPoints3 = { { 8, 14 },{ 7, 14 },{ 6, 14 },{ 5, 14 },{ 4, 14 },{ 3, 14 },{ 2, 14 },{ 1, 14 },{ 0, 14 },{ 0, 15 },{ 0, 16 },{ 0, 17 } }; //For hard mode
+	for (Point p : pathPoints) generator->set_path(p);
+	for (Point p : gaps) generator->set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
+	for (Point p : path1) generator->set_path(Point(p.first + 12, p.second + 14));
+	for (Point p : path2) generator->set_path(Point(p.first + 12, p.second + 2));
+	for (Point p : path3) generator->set_path(Point(8 - p.first, 8 - p.second + 2));
+	if (psymbols.getNum(Decoration::Triangle) == 0) { //Normal mode
+		for (Point p : path4) generator->set_path(Point(p.first, p.second + 14));
+		if (path4.count(Point({ 8, 4 }))) for (Point p : pathPoints2) generator->set_path(p);
+	}
+	else { //Hard mode
+		for (Point p : path4) generator->set_path(Point(8 - p.first, 8 - p.second + 14));
+		for (Point p : pathPoints3) generator->set_path(p);
 	}
 
-	_generator->write(id);
+	std::vector<std::string> solution; //For debugging only
+	for (int y = 0; y < generator-> _panel->_height; y++) {
+		std::string row;
+		for (int x = 0; x < generator->_panel->_width; x++) {
+			if (generator->get(x, y) == PATH) {
+				row += "xx";
+			}
+			else row += "    ";
+		}
+		solution.push_back(row);
+	}
+
+	while (!generator->place_all_symbols(psymbols)) {
+		for (int x = 0; x < generator->_panel->_width; x++)
+			for (int y = 0; y < generator->_panel->_height; y++)
+				if (generator->get(x, y) != PATH && (generator->get(x, y) & 0x1fffff) != Decoration::Gap)
+					generator->set(x, y, 0);
+		generator->_openpos = generator->_gridpos;
+	}
+	
+	generator->write(id);
 }
 
 void Special::generateMountaintop(int id)
@@ -544,14 +564,14 @@ void Special::generateMountaintop(int id)
 	gens[0]->_exits = { { 8, 10 } }; gens[1]->_exits = { { 8, 0 } }; gens[2]->_exits = { { 0, 4 },{ 0, 6 } };
 	gens[0]->setObstructions(perspectiveU); gens[1]->setObstructions(perspectiveL); gens[2]->setObstructions(perspectiveC);
 
-	_generator->setFlagOnce(Generate::SplitStones);
-	_generator->generateMulti(id, gens, { { Decoration::Stone | Decoration::Color::Black, 2 },{ Decoration::Stone | Decoration::Color::White, 1, },
+	generator->setFlagOnce(Generate::SplitStones);
+	generator->generateMulti(id, gens, { { Decoration::Stone | Decoration::Color::Black, 2 },{ Decoration::Stone | Decoration::Color::White, 1, },
 		{ Decoration::Star | Decoration::Color::Black, 1, },{ Decoration::Star | Decoration::Color::White, 1 } });
 }
 
 void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec) {
-	_generator->setFlagOnce(Generate::Config::DisableWrite);
-	_generator->generate(ids[0]);
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->generate(ids[0]);
 	std::vector<PuzzleSymbols> symbols;
 	for (auto sym : symbolVec) symbols.push_back(PuzzleSymbols(sym));
 	std::vector<Generate> gens;
@@ -561,8 +581,8 @@ void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<
 		gens[i].setFlag(Generate::WriteColors);
 		if (symbols[i].getNum(Decoration::Poly) > 1) gens[i].setFlag(Generate::RequireCombineShapes);
 	}
-	while (!generateMultiPuzzle(ids, gens, symbols, _generator->_path)) {
-		_generator->generate(ids[0]);
+	while (!generateMultiPuzzle(ids, gens, symbols, generator->_path)) {
+		generator->generate(ids[0]);
 	}
 	for (int i = 0; i < ids.size(); i++) gens[i].write(ids[i]);
 }
@@ -717,21 +737,21 @@ bool checkShape(std::set<Point> shape, int direction) {
 
 void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 {
-	_generator->resetConfig();
+	generator->resetConfig();
 	std::vector<Point> floorPos = { { 3, 3 },{ 7, 3 },{ 3, 7 },{ 7, 7 } };
-	_generator->openPos = std::set<Point>(floorPos.begin(), floorPos.end());
-	_generator->setFlag(Generate::Config::DisableWrite);
+	generator->openPos = std::set<Point>(floorPos.begin(), floorPos.end());
+	generator->setFlag(Generate::Config::DisableWrite);
 	//Make sure no duplicated symbols
 	std::set<int> sym;
 	do {
-		_generator->generate(idfloor, Decoration::Poly, 4);
+		generator->generate(idfloor, Decoration::Poly, 4);
 		sym.clear();
-		for (Point p : floorPos) sym.insert(_generator->get(p));
+		for (Point p : floorPos) sym.insert(generator->get(p));
 	} while (sym.size() < 4);
 
 	int rotateIndex = rand() % 4;
 	for (int i = 0; i < 4; i++) {
-		int symbol = _generator->get(floorPos[i]);
+		int symbol = generator->get(floorPos[i]);
 		//Convert to shape
 		Shape shape;
 		for (int j = 0; j < 16; j++) {
@@ -747,9 +767,9 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 			for (Point p : shape) newShape.insert(p + shift);
 		} while (!checkShape(newShape, i % 2));
 		if (i == rotateIndex) {
-			symbol = _generator->make_shape_symbol(newShape, true, false);
+			symbol = generator->make_shape_symbol(newShape, true, false);
 			if (symbol == 0) {
-				symbol = _generator->get(floorPos[i]);
+				symbol = generator->get(floorPos[i]);
 				rotateIndex++;
 			}
 		}
@@ -783,8 +803,8 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 		gen.setVal(symbol, pos.first, pos.second);
 		gen.write(ids[i]);
 	}
-	_generator->resetVars();
-	_generator->resetConfig();
+	generator->resetVars();
+	generator->resetConfig();
 }
 
 void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec) {
@@ -800,7 +820,7 @@ void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<i
 	gens[0]->setSymbol(Decoration::Exit, 0, height / 2);
 	gens[1]->setSymbol(Decoration::Exit, width - 1, height / 2);
 	gens[2]->setSymbol(Decoration::Exit, width / 2, 0);
-	_generator->generateMulti(id, gens, symbolVec);
+	generator->generateMulti(id, gens, symbolVec);
 	gens[0]->_panel->_endpoints.clear();
 	gens[0]->_panel->SetGridSymbol(0, height / 2, Decoration::Exit, Decoration::Color::None);
 	gens[0]->_panel->SetGridSymbol(width - 1, height / 2, Decoration::Exit, Decoration::Color::None);
@@ -889,29 +909,29 @@ void Special::initSSGrid(std::shared_ptr<Generate> gen) {
 
 void Special::generateSymmetryGate(int id) //TODO: Figure out why this one won't work until you click on it... 
 {
-	_generator->resetConfig();
-	_generator->setFlag(Generate::Config::DisableWrite);
-	_generator->setFlag(Generate::Config::WriteInvisible);
-	_generator->setSymmetry(Panel::Symmetry::RotateRight);
-	_generator->setSymbol(Decoration::Start, 0, 0);
-	_generator->setSymbol(Decoration::Start, 0, 8);
-	_generator->setSymbol(Decoration::Start, 8, 0);
-	_generator->setSymbol(Decoration::Start, 8, 8);
-	_generator->setSymbol(Decoration::Exit, 4, 0);
-	_generator->setSymbol(Decoration::Exit, 4, 8);
-	_generator->setSymbol(Decoration::Exit, 0, 4);
-	_generator->setSymbol(Decoration::Exit, 8, 4);
-	_generator->generate(id, Decoration::Triangle | Decoration::Color::Yellow, 4);
+	generator->resetConfig();
+	generator->setFlag(Generate::Config::DisableWrite);
+	generator->setFlag(Generate::Config::WriteInvisible);
+	generator->setSymmetry(Panel::Symmetry::RotateRight);
+	generator->setSymbol(Decoration::Start, 0, 0);
+	generator->setSymbol(Decoration::Start, 0, 8);
+	generator->setSymbol(Decoration::Start, 8, 0);
+	generator->setSymbol(Decoration::Start, 8, 8);
+	generator->setSymbol(Decoration::Exit, 4, 0);
+	generator->setSymbol(Decoration::Exit, 4, 8);
+	generator->setSymbol(Decoration::Exit, 0, 4);
+	generator->setSymbol(Decoration::Exit, 8, 4);
+	generator->generate(id, Decoration::Triangle | Decoration::Color::Yellow, 4);
 	std::vector<Point> breakPos = { {0, 3}, {2, 3}, {4, 3}, {6, 3}, {8, 3}, {0, 5}, {2, 5}, {4, 5}, {6, 5}, {8, 5} };
-	for (Point p : breakPos) _generator->set(p, IntersectionFlags::COLUMN | 0x40000);
+	for (Point p : breakPos) generator->set(p, IntersectionFlags::COLUMN | 0x40000);
 	breakPos = { { 3, 0 },{ 3, 2 },{ 3, 4 },{ 3, 6 },{ 3, 8 },{ 5, 0 },{ 5, 2 },{ 5, 4 },{ 5, 6 },{ 5, 8 } };
-	for (Point p : breakPos) _generator->set(p, IntersectionFlags::ROW | 0x40000);
+	for (Point p : breakPos) generator->set(p, IntersectionFlags::ROW | 0x40000);
 	//Expand the grid a little to prevent the collision detection from glitching out
-	_generator->_panel->minx = 0.08f;
-	_generator->_panel->maxx = 0.92f;
-	_generator->_panel->miny = 0.08f;
-	_generator->_panel->maxy = 0.92f;
-	_generator->write(id);
+	generator->_panel->minx = 0.08f;
+	generator->_panel->maxx = 0.92f;
+	generator->_panel->miny = 0.08f;
+	generator->_panel->maxy = 0.92f;
+	generator->write(id);
 	int numIntersections = ReadPanelData<int>(id, NUM_DOTS);
 	std::vector<float> intersections = ReadArray<float>(id, DOT_POSITIONS, numIntersections * 2);
 	std::vector<int> symData;
