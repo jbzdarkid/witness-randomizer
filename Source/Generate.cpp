@@ -449,10 +449,6 @@ bool Generate::generate(int id, PuzzleSymbols symbols)
 	if (symbols.any(Decoration::Start)) place_start(symbols.getNum(Decoration::Start));
 	if (symbols.any(Decoration::Exit)) place_exit(symbols.getNum(Decoration::Exit));
 
-	for (Point p : _starts)
-		if (_exits.count(p))
-			return false;
-
 	if (customPath.size() == 0) {
 		int fails = 0;
 		while (!generate_path(symbols)) {
@@ -473,17 +469,8 @@ bool Generate::generate(int id, PuzzleSymbols symbols)
 		solution.push_back(row);
 	}
 
-	std::set<Point> backupPath, backupPath1, backupPath2;
-	if (hasFlag(Config::BackupPath)) {
-		backupPath = _path; backupPath1 = _path1; backupPath2 = _path2;
-	}
-
 	if (!place_all_symbols(symbols))
 		return false;
-
-	if (hasFlag(Config::BackupPath)) {
-		_path = backupPath; _path1 = backupPath1; _path2 = backupPath2;
-	}
 
 	if (!hasFlag(Config::DisableWrite)) write(id);
 	return true;
@@ -948,6 +935,17 @@ bool Generate::place_gaps(int amount) {
 bool Generate::can_place_dot(Point pos) {
 	if (get(pos) & DOT)
 		return false;
+	if (_panel->symmetry) {
+		Panel::Symmetry backupSym = _panel->symmetry;
+		_panel->symmetry = Panel::Symmetry::None; //To prevent endless recursion
+		if (!can_place_dot(get_sym_point(pos))) {
+			_panel->symmetry = backupSym;
+			return false;
+		}
+		_panel->symmetry = backupSym;
+	}
+	if (_panel->symmetry == Panel::Symmetry::RotateLeft && _path1.count(pos) && _path2.count(pos))
+		return false;
 	if (hasFlag(Config::DisableDotIntersection)) return true;
 	for (Point dir : _8DIRECTIONS1) {
 		Point p = pos + dir;
@@ -990,7 +988,7 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 		color = IntersectionFlags::DOT_IS_ORANGE;
 	else color = 0;
 
-	std::set<Point>& open = (color == 0 ? _path : color == IntersectionFlags::DOT_IS_BLUE ? _path1 : _path2);
+	std::set<Point> open = (color == 0 ? _path : color == IntersectionFlags::DOT_IS_BLUE ? _path1 : _path2);
 	for (Point p : _starts) open.erase(p);
 	for (Point p : _exits) open.erase(p);
 	if (intersectionOnly) {
@@ -1014,33 +1012,23 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 		if (open.size() == 0)
 			return false;
 		Point pos = pick_random(open);
-		if (_panel->symmetry && !_path.count(pos)) {
-			open.erase(pos);
-			continue;
-		}
 		open.erase(pos);
 		if (!can_place_dot(pos)) continue;
 		int symbol = (pos.first & 1) == 1 ? Decoration::Dot_Row : (pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
 		set(pos, symbol | color);
 		for (Point dir : _DIRECTIONS1) {
 			open.erase(pos + dir);
-			_path.erase(pos + dir);
 		}
 		if (_panel->symmetry) {
 			Point sp = get_sym_point(pos);
 			symbol = (sp.first & 1) == 1 ? Decoration::Dot_Row : (sp.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
-			set(sp, symbol & ~Decoration::Dot);
+			if (symbol != Decoration::Dot_Intersection) set(sp, symbol & ~Decoration::Dot);
 			open.erase(sp);
-			_path.erase(sp);
 			for (Point dir : _DIRECTIONS1) {
-				if (color == IntersectionFlags::DOT_IS_BLUE) _path2.erase(sp + dir);
-				else _path1.erase(sp + dir);
 				open.erase(sp + dir);
-				_path.erase(sp + dir);
 			}
 		}
 		amount--;
-		_path.erase(pos);
 	}
 	return true;
 }

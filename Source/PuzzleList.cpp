@@ -1665,13 +1665,15 @@ void PuzzleList::GenerateVaultsH()
 		{ Decoration::Star | Decoration::Color::Orange, 4 },{ Decoration::Star | Decoration::Color::Blue, 3 },
 		{ Decoration::Triangle | Decoration::Color::Orange, 2 },{ Decoration::Triangle | Decoration::Color::Blue, 1 },
 		{ Decoration::Stone | Decoration::Color::Orange, 1 },{ Decoration::Stone | Decoration::Color::Blue, 2 }, { Decoration::Eraser | Decoration::Color::White, 1 } });
-
+	//Shipwreck Vault
+	specialCase->generateSoundDotReflectionPuzzle(0x00AFB, { 6, 6 }, { DOT_MEDIUM, DOT_LARGE, DOT_MEDIUM, DOT_SMALL }, { DOT_MEDIUM, DOT_LARGE, DOT_MEDIUM, DOT_SMALL }, 2, true);
 	//Jungle Vault
 	specialCase->generateJungleVault(0x15ADD);
 }
 
 void PuzzleList::GenerateTrianglePanelsH()
 {
+
 }
 
 void PuzzleList::GenerateMountainH()
@@ -1685,6 +1687,11 @@ void PuzzleList::GenerateCavesH()
 
 void PuzzleList::GenerateOrchardH()
 {
+	specialCase->generateApplePuzzle(0x00143, false, rand() % 2);
+	specialCase->generateApplePuzzle(0x0003B, false, rand() % 2);
+	specialCase->generateApplePuzzle(0x00055, false, rand() % 2);
+	specialCase->generateApplePuzzle(0x032F7, false, rand() % 2);
+	specialCase->generateApplePuzzle(0x032FF, true, true);
 }
 
 void PuzzleList::GenerateDesertH()

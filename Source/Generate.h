@@ -24,9 +24,8 @@ public:
 	enum Config {
 		None = 0, FullGaps = 0x1, StartEdgeOnly = 0x2, DisableWrite = 0x4, PreserveStructure = 0x8, MakeStonesUnsolvable = 0x10, SmallShapes = 0x20, DisconnectShapes = 0x40, ResetColors = 0x80,
 		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, BigShapes = 0x400, SplitShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
-		AlternateColors = 0x8000, WriteColors = 0x10000, BackupPath = 0x20000, FixBackground = 0x40000, CombineErasers = 0x80000, LongPath = 0x100000, ShortPath = 0x200000, SplitStones = 0x400000,
-		DecorationsOnly = 0x800000, Write2Color = 0x1000000, DisableDotIntersection = 0x2000000, WriteDotColor = 0x4000000, WriteDotColor2 = 0x8000000, LongestPath = 0x10000000, WriteInvisible = 0x20000000,
-		FalseParity = 0x40000000
+		AlternateColors = 0x8000, WriteColors = 0x10000, Write2Color = 0x20000, FixBackground = 0x40000, CombineErasers = 0x80000, LongPath = 0x100000, ShortPath = 0x200000, SplitStones = 0x400000,
+		DecorationsOnly = 0x800000, FalseParity = 0x1000000, DisableDotIntersection = 0x2000000, WriteDotColor = 0x4000000, WriteDotColor2 = 0x8000000, LongestPath = 0x10000000, WriteInvisible = 0x20000000,
 	};
 
 	void generate(int id) { PuzzleSymbols symbols({ }); while (!generate(id, symbols)); }

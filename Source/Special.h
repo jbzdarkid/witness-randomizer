@@ -27,6 +27,7 @@ public:
 	void generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSequence, bool writeSequence);
 	void generateSoundDotPuzzle(int id1, int id2, std::vector<int> dotSequence, bool writeSequence);
 	void generateSoundDotReflectionPuzzle(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence);
+	bool generateSoundDotReflectionSpecial(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored);
 	void generateRGBStonePuzzleN(int id);
 	void generateRGBStarPuzzleN(int id);
 	void generateRGBStonePuzzleH(int id);

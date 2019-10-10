@@ -162,8 +162,8 @@ void Special::generateSoundDotPuzzle(int id1, int id2, std::vector<int> dotSeque
 }
 
 void Special::generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSequence, bool writeSequence) {
+	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::DisableWrite);
-	generator->setFlagOnce(Generate::Config::BackupPath);
 	generator->setFlagOnce(Generate::Config::LongPath);
 	generator->setGridSize(size.first, size.second);
 	if (id == 0x014B2) { //Have to force there to only be one correct sequence
@@ -205,8 +205,8 @@ void Special::generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSeq
 
 void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence)
 {
+	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::DisableWrite);
-	generator->setFlagOnce(Generate::Config::BackupPath);
 	generator->setFlagOnce(Generate::Config::LongPath);
 	generator->setSymmetry(Panel::Symmetry::Rotational);
 	generator->setGridSize(size.first, size.second);
@@ -220,6 +220,10 @@ void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<i
 	}
 	else if (id == 0x014B2) {
 		generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size() - 1), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
+	}
+	else if (id == 0x00AFB && writeSequence) {
+		while (!generateSoundDotReflectionSpecial(id, size, dotSequence1, dotSequence2, numColored));
+		return;
 	}
 	else generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size()), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size()));
 	std::set<Point> path1 = generator->_path1, path2 = generator->_path2;
@@ -298,6 +302,105 @@ void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<i
 	}
 	generator->write(id);
 	generator->setSymmetry(Panel::Symmetry::None);
+}
+
+bool Special::generateSoundDotReflectionSpecial(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored) {
+	generator->resetConfig();
+	generator->resetVars();
+	generator->setFlagOnce(Generate::Config::DisableWrite);
+	generator->setFlagOnce(Generate::Config::LongPath);
+	generator->setSymmetry(Panel::Symmetry::RotateLeft);
+	generator->setGridSize(size.first, size.second);
+	std::vector<Point> starts = { { 0, 0 },{ generator->_width - 1, 0 },{ 0, generator->_height - 1 },{ generator->_width - 1, generator->_height - 1 } };
+	Point start = pick_random<Point>(starts);
+	generator->setSymbol(Decoration::Start, start.first, start.second);
+	generator->setSymbol(Decoration::Exit, 6, 0); generator->setSymbol(Decoration::Exit, generator->_width - 1, 6);
+	generator->setSymbol(Decoration::Exit, 0, generator->_height - 7); generator->setSymbol(Decoration::Exit, generator->_width - 7, generator->_height - 1);
+	generator->generate(id, Decoration::Dot_Intersection | Decoration::Color::Blue, static_cast<int>(dotSequence1.size() - 1), Decoration::Dot_Intersection | Decoration::Color::Yellow, static_cast<int>(dotSequence2.size() - 1));
+	std::set<Point> path1 = generator->_path1, path2 = generator->_path2;
+	std::set<Point> intersect;
+	for (Point p : path1) {
+		if (p.first % 2 != 0 || p.second % 2 != 0)
+			continue;
+		if (path2.count(p)) {
+			if (generator->get(p) & Decoration::Dot)
+				return false;
+			intersect.insert(p);
+		}
+	}
+	Point pshared = pick_random(intersect);
+	generator->set(pshared, Decoration::Dot_Intersection);
+	Point p1 = start, p2 = generator->get_sym_point(start);
+	std::set<Point> dots1, dots2;
+
+	int seqPos = 0;
+	while (seqPos < dotSequence1.size()) {
+		path1.erase(p1);
+		int sym = generator->get(p1);
+		if (sym & Decoration::Dot) {
+			generator->set(p1, sym | dotSequence1[seqPos++]);
+			dots1.insert(p1);
+		}
+		for (Point dir : Generate::_DIRECTIONS1) {
+			Point newp = p1 + dir;
+			if (path1.count(newp)) {
+				p1 = newp;
+				break;
+			}
+		}
+	}
+	seqPos = 0;
+	while (seqPos < dotSequence2.size()) {
+		path2.erase(p2);
+		int sym = generator->get(p2);
+		if (sym & Decoration::Dot) {
+			if ((sym & 0xf000) && ((sym & 0xf000) == IntersectionFlags::DOT_MEDIUM))
+				return false;
+			if ((sym & 0xf000) && (sym & 0xf000) != dotSequence2[seqPos])
+				return false;
+			generator->set(p2, sym | dotSequence2[seqPos++]);
+			if (!generator->_starts.count(p2)) dots2.insert(p2);
+		}
+		for (Point dir : Generate::_DIRECTIONS1) {
+			Point newp = p2 + dir;
+			if (path2.count(newp)) {
+				p2 = newp;
+				break;
+			}
+		}
+	}
+
+	dots1.erase(pshared);
+	dots2.erase(pshared);
+	generator->set(pshared, generator->get(pshared) & (~DOT_IS_BLUE | DOT_IS_ORANGE));
+	for (int i = static_cast<int>(dotSequence1.size() + dotSequence2.size()) - 2; i > numColored; i--) {
+		if (i % 2 == 0) { //Want to evenly distribute colors between blue/orange (approximately)
+			Point p = pop_random(dots1);
+			generator->set(p, generator->get(p) & ~DOT_IS_BLUE); //Remove color
+		}
+		else {
+			Point p = pop_random(dots2);
+			generator->set(p, generator->get(p) & ~DOT_IS_ORANGE); //Remove color
+		}
+	}
+	for (int i = 0; i < dotSequence1.size(); i++) {
+		if (dotSequence1[i] == DOT_SMALL) dotSequence1[i] = 1;
+		if (dotSequence1[i] == DOT_MEDIUM) dotSequence1[i] = 2;
+		if (dotSequence1[i] == DOT_LARGE) dotSequence1[i] = 3;
+	}
+	generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN, { dotSequence1.size() });
+	generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE, dotSequence1, true);
+	for (int i = 0; i < dotSequence2.size(); i++) {
+		if (dotSequence2[i] == DOT_SMALL) dotSequence2[i] = 1;
+		if (dotSequence2[i] == DOT_MEDIUM) dotSequence2[i] = 2;
+		if (dotSequence2[i] == DOT_LARGE) dotSequence2[i] = 3;
+	}
+	generator->_panel->_memory->WritePanelData<size_t>(id, DOT_SEQUENCE_LEN_REFLECTION, { dotSequence2.size() });
+	generator->_panel->_memory->WriteArray<int>(id, DOT_SEQUENCE_REFLECTION, dotSequence2, true);
+	generator->_panel->_startpoints = { { 0, 0}, { generator->_width - 1, 0 }, { 0, generator->_height - 1 }, { generator->_width - 1, generator->_height - 1 } };
+	generator->write(id);
+	generator->setSymmetry(Panel::Symmetry::None);
+	return true;
 }
 
 void Special::generateRGBStonePuzzleN(int id)
