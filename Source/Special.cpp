@@ -1104,26 +1104,21 @@ bool Special::checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr
 	return false;
 }
 
+void Special::createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps)
+{
+	generator->initPanel(id);
+	generator->clear();
+	generator->set(x, y, Decoration::Arrow | (ticks << 12) | (dir << 16));
+	for (Point p : gaps) {
+		generator->set(p, p.first % 2 ? Decoration::Gap_Row : Decoration::Gap_Column);
+	}
+	generator->setFlagOnce(Generate::Config::ArrowRecolor);
+	generator->write(id);
+	(new ArrowWatchdog(id))->start();
+}
+
 
 void Special::test() {
 	
 }
 
-void Special::setTarget(int puzzle, int target)
-{
-	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
-}
-
-void Special::clearTarget(int puzzle)
-{
-	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	panel->_memory->WritePanelData<int>(puzzle, TARGET, { 0 });
-}
-
-void Special::setTargetAndDeactivate(int puzzle, int target)
-{
-	std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-	panel->_memory->WritePanelData<float>(target, POWER, { 0.0, 0.0 });
-	panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
-}

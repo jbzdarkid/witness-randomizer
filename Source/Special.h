@@ -1,6 +1,7 @@
 #pragma once
 #include "Generate.h"
 #include "Randomizer.h"
+#include "Watchdog.h"
 #include <algorithm>
 
 typedef std::set<Point> Shape;
@@ -47,11 +48,28 @@ public:
 	void initSSGrid(std::shared_ptr<Generate> gen);
 	void generateSymmetryGate(int id);
 	bool checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr<Panel> panel2, Panel::Symmetry correctSym);
+	void createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps);
 
 	void test();
-	void setTarget(int puzzle, int target);
-	void clearTarget(int puzzle);
-	void setTargetAndDeactivate(int puzzle, int target);
+
+	void setTarget(int puzzle, int target)
+	{
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+		panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
+	}
+
+	void clearTarget(int puzzle)
+	{
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+		panel->_memory->WritePanelData<int>(puzzle, TARGET, { 0 });
+	}
+
+	void setTargetAndDeactivate(int puzzle, int target)
+	{
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+		panel->_memory->WritePanelData<float>(target, POWER, { 0.0, 0.0 });
+		panel->_memory->WritePanelData<int>(puzzle, TARGET, { target + 1 });
+	}
 	template <class T> std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->ReadPanelData<T>(panel, offset, size);
 	}
@@ -85,8 +103,10 @@ public:
 		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
 		std::vector<byte> bytes1 = panel->_memory->ReadPanelData<byte>(id1, 0, 0x600);
 		std::vector<byte> bytes2 = panel->_memory->ReadPanelData<byte>(id2, 0, 0x600);
-		panel->_memory->WritePanelData<byte>(id1, 0, bytes2);
-		panel->_memory->WritePanelData<byte>(id2, 0, bytes1);
+		panel->_memory->WritePanelData<byte>(id1, TRACED_EDGES, bytes2);
+		panel->_memory->WritePanelData<byte>(id2, TRACED_EDGES, bytes1);
+		panel->_memory->WritePanelData<int>(id1, NEEDS_REDRAW, { 1 });
+		panel->_memory->WritePanelData<int>(id2, NEEDS_REDRAW, { 1 });
 	}
 
 	template <class T> std::vector<T> testRead(int address, int numItems) {

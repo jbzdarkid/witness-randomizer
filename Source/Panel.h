@@ -32,6 +32,10 @@ public:
 		Triangle2 = 0x20600,
 		Triangle3 = 0x30600,
 		Triangle4 = 0x40600,
+		Arrow =		0x700,
+		Arrow1 = 0x1700,
+		Arrow2 = 0x2700,
+		Arrow3 = 0x3700,
 		Can_Rotate = 0x1000,
 		Negative = 0x2000,
 		Gap = 0x100000,
@@ -115,6 +119,12 @@ struct Color {
 	float b;
 	float a;
 	friend bool operator <(const Color& lhs, const Color& rhs) {return lhs.r * 8 + lhs.g * 4 + lhs.b * 2 + lhs.a > rhs.r * 8 + rhs.g * 4 + rhs.b * 2 + rhs.a;}
+};
+
+struct SolutionPoint {
+	int pointA, pointB, pointC, pointD;
+	float f1x, f1y, f2x, f2y, f3x, f3y, f4x, f4y;
+	int endnum;
 };
 
 class Panel
@@ -322,6 +332,54 @@ private:
 		return true;
 	}
 
+	void render_arrow(int x, int y, int ticks, int dir, std::vector<float>& intersections, std::vector<int>& intersectionFlags, std::vector<int>& polygons) {
+		std::vector<float> positions = { 0.1f, 0.45f, 0.1f, 0.55f, 0.85f, 0.45f, 0.85f, 0.55f,
+			0.9f, 0.5f, 0.75f, 0.5f, 0.45f, 0.2f, 0.6f, 0.2f, 0.45f, 0.8f, 0.6f, 0.8f,
+			0.7f, 0.5f, 0.55f, 0.5f, 0.25f, 0.2f, 0.4f, 0.2f, 0.25f, 0.8f, 0.4f, 0.8f,
+			0.5f, 0.5f, 0.35f, 0.5f, 0.05f, 0.2f, 0.2f, 0.2f, 0.05f, 0.8f, 0.2f, 0.8f, };
+		std::vector<int> polys = { 0, 1, 2, 0, 1, 2, 3, 0,
+			4, 5, 7, 0, 5, 6, 7, 0, 4, 5, 9, 0, 5, 8, 9, 0,
+			10, 11, 13, 0, 11, 12, 13, 0, 10, 11, 15, 0, 11, 14, 15, 0,
+			16, 17, 19, 0, 17, 18, 19, 0, 16, 17, 21, 0, 17, 20, 21, 0,
+		};
+		std::vector<int> angles = { -90, 90, 0, 180, -45, 45, 135, -135 };
+		float angle = angles[dir] * 3.141592653589793238f / 180;
+		for (int i = 0; i < positions.size(); i += 2) {
+			//Translate to center
+			positions[i] -= 0.5f;
+			positions[i + 1] -= 0.5f;
+			if (ticks == 3 && dir > 3) positions[i] += 0.1f;
+			//Scale
+			positions[i] *= unitWidth * 1.5f;
+			positions[i + 1] *= unitWidth * 1.5f;
+			//Rotate
+			float newx = positions[i] * cos(angle) - positions[i + 1] * sin(angle);
+			float newy = positions[i] * sin(angle) + positions[i + 1] * cos(angle);
+			positions[i] = newx; positions[i + 1] = newy;
+			//Translate to correct position
+			positions[i] += intersections[xy_to_loc(x, y) * 2] + unitWidth;
+			positions[i + 1] += intersections[xy_to_loc(x, y) * 2 + 1] - unitWidth;
+		}
+		int posIndex, polyIndex;
+		if (ticks == 1) {
+			posIndex = 20; polyIndex = 24;
+		}
+		if (ticks == 2) {
+			posIndex = 32; polyIndex = 40;
+		}
+		if (ticks == 3) {
+			posIndex = 44; polyIndex = 56;
+		}
+		int baseIndex = static_cast<int>(intersectionFlags.size());
+		for (int i = 0; i < posIndex; i++) {
+			intersections.push_back(positions[i]);
+			if (i % 2 == 0) intersectionFlags.push_back(IntersectionFlags::NO_POINT);
+		}
+		for (int i = 0; i < polyIndex; i++) {
+			polygons.push_back(polys[i] + baseIndex);
+		}
+	}
+
 	std::shared_ptr<Memory> _memory;
 
 	int _width, _height;
@@ -339,4 +397,5 @@ private:
 	friend class PuzzleList;
 	friend class Special;
 	friend class MultiGenerate;
+	friend class ArrowWatchdog;
 };

@@ -167,11 +167,11 @@ void Panel::Resize(int width, int height)
 	}
 	if (_width != _height || width != height) {
 		float maxDim = max(maxx - minx, maxy - miny);
-		float unitSize = maxDim / max(width, height);
-		minx = 0.5f - unitSize * width / 2;
-		maxx = 0.5f + unitSize * width / 2;
-		miny = 0.5f - unitSize * height / 2;
-		maxy = 0.5f + unitSize * height / 2;
+		float unitSize = maxDim / max(width - 1, height - 1);
+		minx = 0.5f - unitSize * (width - 1) / 2;
+		maxx = 0.5f + unitSize * (width - 1) / 2;
+		miny = 0.5f - unitSize * (height - 1) / 2;
+		maxy = 0.5f + unitSize * (height - 1) / 2;
 	}
 	_width = width;
 	_height = height;
@@ -214,7 +214,7 @@ void Panel::ReadAllData() {
 	float width = _memory->ReadPanelData<float>(id, PATH_WIDTH_SCALE);
 	int seqLen = _memory->ReadPanelData<int>(id, SEQUENCE_LEN);
 	std::vector<int> seq = _memory->ReadArray<int>(id, SEQUENCE, seqLen);
-	float power = _memory->ReadPanelData<float>(id, POWER);
+	std::vector<float> power = _memory->ReadPanelData<float>(id, POWER, 2);
 	float openRate = _memory->ReadPanelData<float>(id, OPEN_RATE);
 	int cptr = _memory->ReadPanelData<int>(id, DECORATION_COLORS);
 	std::vector<Color> colors; if (cptr) colors = _memory->ReadArray<Color>(id, DECORATION_COLORS, numDecorations);
@@ -233,7 +233,10 @@ void Panel::ReadAllData() {
 	Color cableTarget = _memory->ReadPanelData<Color>(id, CABLE_TARGET_2);
 	//std::vector<int> targets = _memory->ReadArray<int>(id, PANEL_TARGET, 6);
 	int isPillar = _memory->ReadPanelData<int>(id, IS_CYLINDER);
-	void* traced = _memory->ReadPanelData<void*>(id, TRACED_EDGES);
+	int numTraced = _memory->ReadPanelData<int>(id, TRACED_EDGES);
+	int numSol = _memory->ReadPanelData<int>(id, TRACED_EDGES + 4); //Don't know what this number is for yet
+	int tracedptr = _memory->ReadPanelData<int>(id, TRACED_EDGE_DATA);
+	std::vector<SolutionPoint> traced; if (tracedptr) traced = _memory->ReadArray<SolutionPoint>(id, TRACED_EDGE_DATA, numTraced);
 }
 
 void Panel::ReadDecorations() {
@@ -251,19 +254,34 @@ void Panel::WriteDecorations() {
 	std::vector<int> decorations;
 	std::vector<Color> decorationColors;
 	bool any = false;
-	_style &= ~0x2f40; //Remove all element flags
+	bool arrows = false;
+	_style &= ~0x3fc0; //Remove all element flags
 	for (int y=_height-2; y>0; y-=2) {
 		for (int x=1; x<_width; x+=2) {
 			decorations.push_back(_grid[x][y]);
 			decorationColors.push_back(get_color_rgb(_grid[x][y] & 0xf));
 			if (_grid[x][y])
 				any = true;
-			if ((_grid[x][y] & Decoration::Shape::Stone) == Decoration::Shape::Stone) _style |= HAS_STONES;
-			if ((_grid[x][y] & Decoration::Shape::Star) == Decoration::Shape::Star) _style |= HAS_STARS;
-			if ((_grid[x][y] & Decoration::Shape::Poly) == Decoration::Shape::Poly) _style |= HAS_SHAPERS;
-			if ((_grid[x][y] & Decoration::Shape::Eraser) == Decoration::Shape::Eraser) _style |= HAS_ERASERS;
-			if ((_grid[x][y] & Decoration::Shape::Triangle) == Decoration::Shape::Triangle) _style |= HAS_TRIANGLES;
+			if ((_grid[x][y] & 0x700) == Decoration::Shape::Stone) _style |= HAS_STONES;
+			if ((_grid[x][y] & 0x700) == Decoration::Shape::Star) _style |= HAS_STARS;
+			if ((_grid[x][y] & 0x700) == Decoration::Shape::Poly) _style |= HAS_SHAPERS;
+			if ((_grid[x][y] & 0x700) == Decoration::Shape::Eraser) _style |= HAS_ERASERS;
+			if ((_grid[x][y] & 0x700) == Decoration::Shape::Triangle) _style |= HAS_TRIANGLES;
+			if ((_grid[x][y] & 0x700) == Decoration::Shape::Arrow) {
+				_style |= HAS_TRIANGLES | HAS_STONES;
+				arrows = true;
+			}
 		}
+	}
+	if (arrows) {
+		for (int i = 0; i < decorations.size(); i++) {
+			if (decorations[i] == 0) decorations[i] = Decoration::Triangle; //To force it to be unsolvable
+		}
+		//_memory->WritePanelData<int>(id, TRACED_EDGES, { 0 });
+		//SolutionPoint sp;
+		//sp.pointA = 0; sp.pointB = 0;
+		//_memory->WriteArray<SolutionPoint>(id, TRACED_EDGE_DATA, { sp });
+		//_memory->WritePanelData<int>(id, TRACED_EDGES + 4, { 0 });
 	}
 	if (!any) {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { 0 });
@@ -402,6 +420,7 @@ void Panel::WriteIntersections() {
 	std::vector<int> connections_a;
 	std::vector<int> connections_b;
 	std::vector<int> symmetryData;
+	std::vector<int> polygons;
 
 	unitWidth = (maxx - minx) / (_width - 1);
 	if (Point::pillarWidth) unitWidth = 1.0f / _width;
@@ -554,6 +573,14 @@ void Panel::WriteIntersections() {
 		}
 	}
 
+	//Arrows (if applicable)
+	for (int y = 1; y < _height; y += 2) {
+		for (int x = 1; x < _width; x += 2) {
+			if ((_grid[x][y] & 0x700) == Decoration::Arrow)
+				render_arrow(x, y, (_grid[x][y] & 0xf000) >> 12, (_grid[x][y] & 0xf0000) >> 16, intersections, intersectionFlags, polygons);
+		}
+	}
+
 	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
 	_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
 	_memory->WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
@@ -571,5 +598,9 @@ void Panel::WriteIntersections() {
 	else {
 		_style &= ~Style::SYMMETRICAL;
 		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 });
+	}
+	if (polygons.size() > 0) {
+		_memory->WritePanelData<int>(id, NUM_COLORED_REGIONS, { static_cast<int>(polygons.size()) / 4 });
+		_memory->WriteArray<int>(id, COLORED_REGIONS, polygons);
 	}
 }

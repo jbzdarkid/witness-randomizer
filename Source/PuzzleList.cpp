@@ -1,4 +1,5 @@
 #include "PuzzleList.h"
+#include "Watchdog.h"
 
 void PuzzleList::GenerateAllN()
 {
@@ -1506,9 +1507,13 @@ void PuzzleList::GenerateTreehouseH()
 	generator->generate(0x17DB0, Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 2,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 2);
+	generator->removeFlagOnce(Generate::Config::TreehouseLayout);
+	generator->setSymbol(Decoration::Start, 5, 10);
+	generator->setSymbol(Decoration::Exit, 6, 10);
 	generator->generate(0x17DDB, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 2,
 		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 2, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 2);
+	specialCase->clearTarget(0x17DDB);
 	//Orange Bridge 2
 	generator->setFlag(Generate::Config::ResetColors);
 	generator->pathWidth = 1;
@@ -1673,7 +1678,28 @@ void PuzzleList::GenerateVaultsH()
 
 void PuzzleList::GenerateTrianglePanelsH()
 {
-
+	generator->setLoadingData(L"Arrows", 14);
+	generator->resetConfig();
+	specialCase->createArrowPuzzle(0x17CFB, 5, 3, 0, 1, { { 0, 3}, {6, 1} });
+	specialCase->createArrowPuzzle(0x3C12B, 1, 1, 0, 2, { { 1, 4 },{ 6, 3 },{ 5, 0 } });
+	specialCase->createArrowPuzzle(0x17CE7, 1, 3, 5, 1, { { 0, 5 },{ 6, 3 } });
+	specialCase->createArrowPuzzle(0x17CF0, 5, 5, 6, 1, { { 1, 4}, {1, 6}, { 3, 0 },{ 3, 2 } });
+	specialCase->createArrowPuzzle(0x17C71, 5, 1, 7, 1, { { 0, 1}, {3, 6} });
+	generator->setSymbol(Decoration::Start, 0, 0);
+	specialCase->createArrowPuzzle(0x17CF7, 5, 5, 3, 1, { { 4, 1 },{ 1, 2 },{3, 6}, {6, 1} });
+	specialCase->createArrowPuzzle(0x17D01, 1, 1, 4, 2, { { 4, 5 },{ 6, 1 } });
+	generator->setGridSize(2, 1);
+	specialCase->createArrowPuzzle(0x17F9B, 1, 1, 2, 2, { });
+	generator->resetConfig();
+	specialCase->createArrowPuzzle(0x17D27, 1, 5, 5, 2, { { 3, 0 },{ 0, 5 } });
+	specialCase->createArrowPuzzle(0x17D28, 5, 1, 0, 2, { { 2, 1 },{ 4, 1 },{3, 4} });
+	specialCase->createArrowPuzzle(0x17FA9, 1, 3, 2, 2, { { 3, 4 },{ 5, 6 } });
+	generator->setSymbol(Decoration::Start, 6, 6);
+	specialCase->createArrowPuzzle(0x17FA0, 1, 3, 2, 1, { { 1, 4 },{ 2, 5 },{ 4, 5 },{ 5, 2 },{5, 0} });
+	specialCase->createArrowPuzzle(0x17C42, 1, 5, 5, 2, { { 4, 5 },{ 2, 3 },{ 3, 2 },{ 5, 2 },{ 5, 4 } });
+	generator->setGridSize(2, 1);
+	specialCase->createArrowPuzzle(0x17F93, 3, 1, 0, 1, { {1, 0} });
+	generator->resetConfig();
 }
 
 void PuzzleList::GenerateMountainH()
@@ -1761,7 +1787,7 @@ void PuzzleList::GenerateKeepH()
 		{ Decoration::Star | Decoration::Color::Blue, 2 },{ Decoration::Triangle | Decoration::Color::Yellow, 2 },{ Decoration::Triangle | Decoration::Color::Blue, 2 } });
 
 	specialCase->clearTarget(0x0360E); //Must solve pressure plate side
-	//TODO: Add watchdog to keep the other panel powered off until all 4 puzzles are solved
+	(new KeepWatchdog())->start();
 }
 
 void PuzzleList::GenerateJungleH()

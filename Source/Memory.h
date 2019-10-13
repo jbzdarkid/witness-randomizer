@@ -36,6 +36,10 @@ public:
 	template <class T>
 	std::vector<T> ReadArray(int panel, int offset, int size) {
 		if (size == 0) return std::vector<T>();
+		if (offset == 0x230 || offset == 0x238) { //Traced edge data - this moves sometimes so it should not be cached
+			//Invalidate cache entry for old array address
+			_computedAddresses.erase(reinterpret_cast<uintptr_t>(ComputeOffset({ GLOBALS, 0x18, panel * 8, offset })));
+		}
 		_arraySizes[std::make_pair(panel, offset)] = size;
 		return ReadData<T>({ GLOBALS, 0x18, panel * 8, offset, 0 }, size);
 	}

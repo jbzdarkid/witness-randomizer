@@ -225,6 +225,17 @@ void Generate::write(int id)
 		Color color = _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
 		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { color });
 	}
+	if (hasFlag(Config::ArrowRecolor)) {
+		Color bgColor = _panel->_memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR);
+		Color purple = { 0.6f, 0, 1, 1 };
+		_panel->_memory->WritePanelData<Color>(id, OUTER_BACKGROUND, { { 0.5f, 0.5f, 0.5f, 1 } });
+		_panel->_memory->WritePanelData<Color>(id, BACKGROUND_REGION_COLOR, { purple });
+		_panel->_memory->WritePanelData<int>(id, OUTER_BACKGROUND_MODE, { 1 });
+		_panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_A, { purple });
+		_panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_B, { purple });
+		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { { 0.9f, 0.8f, 1, 1 } });
+		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { { 0.9f, 0.8f, 1, 1 } });
+	}
 
 	_panel->writeColors = hasFlag(Config::WriteColors);
 	_panel->decorationsOnly = hasFlag(Config::DecorationsOnly);
@@ -511,6 +522,8 @@ bool Generate::place_all_symbols(PuzzleSymbols & symbols)
 	for (std::pair<int, int> s : symbols[Decoration::Stone]) if (!place_stones(s.first & 0xf, s.second))
 		return false;
 	for (std::pair<int, int> s : symbols[Decoration::Triangle]) if (!place_triangles(s.first & 0xf, s.second, s.first >> 16))
+		return false;
+	for (std::pair<int, int> s : symbols[Decoration::Arrow]) if (!place_arrows(s.first & 0xf, s.second, s.first >> 12))
 		return false;
 	for (std::pair<int, int> s : symbols[Decoration::Star]) if (!place_stars(s.first & 0xf, s.second))
 		return false;
@@ -1428,6 +1441,45 @@ int Generate::count_sides(Point pos)
 		if (!off_edge(p) && get(p) == PATH) {
 			count++;
 		}
+	}
+	return count;
+}
+
+bool Generate::place_arrows(int color, int amount, int targetCount)
+{
+	std::set<Point> open = _openpos;
+	while (amount > 0) {
+		if (open.size() == 0)
+			return false;
+		Point pos = pick_random(open);
+		open.erase(pos);
+		if (pos.first == _width / 2)
+			continue; //Because of a glitch where arrows in the center column won't draw right
+		int fails = 0;
+		while (fails++ < 20) {
+			int choice = rand() % 8;
+			Point dir = _8DIRECTIONS2[choice];
+			int count = count_crossings(pos, dir);
+			if (count == 0 || count > 3 || targetCount && count != targetCount) continue;
+			if (dir.first < 0 && count == (pos.first + 1) / 2 || dir.first > 0 && count == (_panel->_width - pos.first) / 2 ||
+				dir.second < 0 && count == (pos.second + 1) / 2 || dir.second > 0 && count == (_panel->_height - pos.second) / 2 && rand() % 10 > 0)
+				continue;
+			set(pos, Decoration::Arrow | color | (count << 12) | (choice << 16));
+			_openpos.erase(pos);
+			amount--;
+			break;
+		}
+	}
+	return true;
+}
+
+int Generate::count_crossings(Point pos, Point dir)
+{
+	pos = pos + dir / 2;
+	int count = 0;
+	while (!off_edge(pos)) {
+		if (get(pos) == PATH) count++;
+		pos = pos + dir;
 	}
 	return count;
 }

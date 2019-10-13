@@ -75,6 +75,7 @@ private:
 #define OUTER_BACKGROUND 0x20C
 #define OUTER_BACKGROUND_MODE 0x21C
 #define TRACED_EDGES 0x230
+#define TRACED_EDGE_DATA 0x238 
 #define AUDIO_PREFIX 0x278
 #define POWER 0x2A8
 #define TARGET 0x2BC
@@ -142,6 +143,7 @@ private:
 #define OUTER_BACKGROUND 0x204 
 #define OUTER_BACKGROUND_MODE 0x214 
 #define TRACED_EDGES 0x228 
+#define TRACED_EDGE_DATA 0x230 
 #define AUDIO_PREFIX 0x270 
 #define POWER 0x2A0 
 #define TARGET 0x2B4 
