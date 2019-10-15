@@ -226,15 +226,15 @@ void Generate::write(int id)
 		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { color });
 	}
 	if (hasFlag(Config::ArrowRecolor)) {
-		Color bgColor = _panel->_memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR);
-		Color purple = { 0.6f, 0, 1, 1 };
-		_panel->_memory->WritePanelData<Color>(id, OUTER_BACKGROUND, { { 0.5f, 0.5f, 0.5f, 1 } });
-		_panel->_memory->WritePanelData<Color>(id, BACKGROUND_REGION_COLOR, { purple });
+		_panel->_memory->WritePanelData<Color>(id, OUTER_BACKGROUND, { backgroundColor });
+		if (arrowColor.a == 0) _panel->_memory->WritePanelData<Color>(id, BACKGROUND_REGION_COLOR, { _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
+		else _panel->_memory->WritePanelData<Color>(id, BACKGROUND_REGION_COLOR, { arrowColor });
 		_panel->_memory->WritePanelData<int>(id, OUTER_BACKGROUND_MODE, { 1 });
-		_panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_A, { purple });
-		_panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_B, { purple });
-		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { { 0.9f, 0.8f, 1, 1 } });
-		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { { 0.9f, 0.8f, 1, 1 } });
+		if (successColor.a == 0) _panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_A, { _panel->_memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR) });
+		else _panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_A, { successColor });
+		_panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_B, { _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
+		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { { 1, 1, 1, 1 } });
+		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { { 1, 1, 1, 1 } });
 	}
 
 	_panel->writeColors = hasFlag(Config::WriteColors);
@@ -693,7 +693,7 @@ bool Generate::generate_longest_path()
 			|| newPos == exit && _path.size() / 2 + 3 < reqLength ||
 			_panel->symmetry && get_sym_point(newPos) == exit && _path.size() / 2 + 3 < reqLength) continue;
 		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
-		if (on_edge(newPos) && Point::pillarWidth == 0 && newPos + dir != block && (off_edge(newPos + dir) || get(newPos + dir) != 0)) {
+		if (on_edge(newPos) && Point::pillarWidth == 0 && _panel->symmetry != Panel::Symmetry::Horizontal && newPos + dir != block && (off_edge(newPos + dir) || get(newPos + dir) != 0)) {
 			if (centerFlag && off_edge(newPos + dir)) {
 				centerFlag = false;
 			}

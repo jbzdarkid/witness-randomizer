@@ -237,7 +237,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//generator->seed(ctr++);
 			//generator->seed(0);
 			generator->resetConfig();
-
+			
 			break;
 
 			case IDC_ROTATED:

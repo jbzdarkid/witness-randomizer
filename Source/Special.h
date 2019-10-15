@@ -36,7 +36,7 @@ public:
 	void generateJungleVault(int id);
 	void generateApplePuzzle(int id, bool changeExit, bool flip);
 	void generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols);
-	void generateMountaintop(int id);
+	void generateMountaintop(int id, std::vector<std::pair<int, int>> symbolVec);
 	void generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec);
 	bool generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<PuzzleSymbols> symbols, std::set<Point> path);
 	void generate2Bridge(int id1, int id2);
@@ -46,6 +46,7 @@ public:
 	void modifyGate(int id);
 	void addDecoyExits(std::shared_ptr<Generate> gen, int amount);
 	void initSSGrid(std::shared_ptr<Generate> gen);
+	void initRotateGrid(std::shared_ptr<Generate> gen);
 	void generateSymmetryGate(int id);
 	bool checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr<Panel> panel2, Panel::Symmetry correctSym);
 	void createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps);

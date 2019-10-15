@@ -277,11 +277,6 @@ void Panel::WriteDecorations() {
 		for (int i = 0; i < decorations.size(); i++) {
 			if (decorations[i] == 0) decorations[i] = Decoration::Triangle; //To force it to be unsolvable
 		}
-		//_memory->WritePanelData<int>(id, TRACED_EDGES, { 0 });
-		//SolutionPoint sp;
-		//sp.pointA = 0; sp.pointB = 0;
-		//_memory->WriteArray<SolutionPoint>(id, TRACED_EDGE_DATA, { sp });
-		//_memory->WritePanelData<int>(id, TRACED_EDGES + 4, { 0 });
 	}
 	if (!any) {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { 0 });

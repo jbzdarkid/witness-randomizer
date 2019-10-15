@@ -19,6 +19,7 @@ public:
 		_panel = NULL;
 		_parity = -1;
 		_seed = rand();
+		arrowColor = backgroundColor = successColor = { 0, 0, 0, 0 };
 		resetConfig();
 	}
 	enum Config {
@@ -72,6 +73,7 @@ public:
 	std::set<Point> openPos;
 	std::set<Point> blockPos;
 	std::set<Point> customPath;
+	Color arrowColor, backgroundColor, successColor;
 
 private:
 

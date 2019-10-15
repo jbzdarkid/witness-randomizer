@@ -244,6 +244,9 @@ bool MultiGenerate::place_triangles(int color, int amount)
 	for (Point p : generators[0]->_openpos) {
 		if (can_place_triangle(p)) open.insert(p);
 	}
+	if (generators[0]->get(1, 1) == 0xA05) { //Perspective puzzle
+		open.erase({ 1, 5 }); open.erase({ 9, 5 });
+	}
 	while (amount > 0) {
 		if (open.size() < amount)
 			return false;
