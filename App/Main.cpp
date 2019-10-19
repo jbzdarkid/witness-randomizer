@@ -237,6 +237,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//generator->seed(ctr++);
 			//generator->seed(0);
 			generator->resetConfig();
+
+			//specialCase->generateMountainFloor({ 0x09EFF, 0x09F01, 0x09FC1, 0x09F8E }, 0x09FDA);
 			
 			break;
 

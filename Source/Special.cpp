@@ -671,7 +671,7 @@ void Special::generateMountaintop(int id, std::vector<std::pair<int, int>> symbo
 	generator->generateMulti(id, gens, symbolVec);
 }
 
-void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec) {
+void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec, bool flip) {
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->generate(ids[0]);
 	std::vector<PuzzleSymbols> symbols;
@@ -686,7 +686,22 @@ void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<
 	while (!generateMultiPuzzle(ids, gens, symbols, generator->_path)) {
 		generator->generate(ids[0]);
 	}
-	for (int i = 0; i < ids.size(); i++) gens[i].write(ids[i]);
+	for (int i = 0; i < ids.size(); i++) {
+		gens[i].write(ids[i]);
+		if (symbolVec[0][0].first == (Decoration::Triangle | Decoration::Color::Orange)) { //Hard mode
+			int numIntersections = ReadPanelData<int>(ids[i], NUM_DOTS);
+			std::vector<float> intersections = ReadArray<float>(ids[i], DOT_POSITIONS, numIntersections * 2);
+			for (int j = 0; j < intersections.size(); j += 2) {
+				float x = intersections[j], y = intersections[j + 1];
+				if (i == 1) { intersections[j] = y; intersections[j + 1] = x; }
+				if (i == 2) { intersections[j + 1] = 1 - y; }
+				if (i == 3) { intersections[j] = 1 - y; intersections[j + 1] = x; }
+				if (i == 4) { intersections[j] = 1 - x; }
+				if (i == 5) { intersections[j] = 1 - x; intersections[j + 1] = 1 - y; }
+			}
+			WriteArray<float>(ids[i], DOT_POSITIONS, intersections);
+		}
+	}
 }
 
 bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<PuzzleSymbols> symbols, std::set<Point> path) {
@@ -725,7 +740,6 @@ void Special::generate2Bridge(int id1, int id2)
 		g->setFlag(Generate::Config::WriteColors);
 	}
 	while (!generate2Bridge(id1, id2, gens));
-
 	gens[1]->write(id1);
 	gens[1]->write(id2);
 }
@@ -792,6 +806,124 @@ bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Gene
 	}
 
 	return false;
+}
+
+void Special::generate2BridgeH(int id1, int id2)
+{
+	std::vector<std::shared_ptr<Generate>> gens;
+	for (int i = 0; i < 3; i++) gens.push_back(std::make_shared<Generate>());
+	for (std::shared_ptr<Generate> g : gens) {
+		g->setFlag(Generate::Config::DisableWrite);
+		g->setFlag(Generate::Config::DisableReset);
+		g->setFlag(Generate::Config::DecorationsOnly);
+		g->setFlag(Generate::Config::ShortPath);
+		g->setFlag(Generate::Config::WriteColors);
+	}
+	while (!generate2BridgeH(id1, id2, gens));
+	
+	
+	gens[0]->write(id1);
+	gens[0]->write(id2);
+
+	int numIntersections = ReadPanelData<int>(id1, NUM_DOTS);
+	std::vector<int> intersectionFlags = ReadArray<int>(id1, DOT_FLAGS, numIntersections);
+	std::vector<int> intersectionFlags2 = ReadArray<int>(id2, DOT_FLAGS, numIntersections);
+	for (int x = 0; x < gens[0]->_panel->_width; x += 2) {
+		for (int y = 0; y < gens[0]->_panel->_height; y += 2) {
+			if (gens[0]->get(x, y) == Decoration::Dot_Intersection) {
+				intersectionFlags[gens[0]->_panel->xy_to_loc(x, y)] = Decoration::Dot_Intersection;
+				intersectionFlags2[gens[0]->_panel->xy_to_loc(x, y)] = Decoration::Dot_Intersection;
+			}
+			else {
+				intersectionFlags[gens[0]->_panel->xy_to_loc(x, y)] &= ~Decoration::Dot;
+				intersectionFlags2[gens[0]->_panel->xy_to_loc(x, y)] &= ~Decoration::Dot;
+			}
+		}
+	}
+	WriteArray<int>(id1, DOT_FLAGS, intersectionFlags);
+	WriteArray<int>(id2, DOT_FLAGS, intersectionFlags2);
+	WritePanelData<int>(id1, NEEDS_REDRAW, { 1 });
+	WritePanelData<int>(id2, NEEDS_REDRAW, { 1 });
+}
+
+bool Special::generate2BridgeH(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens)
+{
+	for (int i = 0; i < gens.size(); i++) {
+		gens[i]->_custom_grid.clear();
+		gens[i]->setPath(std::set<Point>());
+		std::vector<Point> walls = { { 12, 1 },{ 12, 3 },{ 3, 8 },{ 9, 8 } };
+		for (Point p : walls) gens[i]->setSymbol(Decoration::Gap, p.first, p.second);
+		if (i == 0) {
+			gens[i]->setObstructions({ { 3, 0 },{ 3, 2 },{ 3, 4 },{4, 5}, {5, 6}, {6, 7}, {8, 7}, {9, 0}, {9, 2}, {9, 4}, {10, 5}, {12, 5} });
+		}
+		else {
+			gens[i]->setObstructions({ {1, 4}, { 1, 6 },{ 1, 8 }, {4, 1}, {6, 7}, {7, 8} });
+		}
+	}
+
+	gens[0]->_exits = { { 12, 8 } };
+	gens[1]->_exits = { { 0, 0 } };
+
+	gens[0]->generate(id1);
+	gens[1]->setPath(gens[0]->_path);
+	gens[1]->customPath.clear();
+	gens[1]->_custom_grid = gens[0]->_panel->_grid;
+	gens[1]->generate(id2);
+	std::vector<Point> points = { {12, 2}, { 11, 2 }, { 10, 2 }, { 10, 3 }, { 10, 4 }, { 9, 4 }, { 8, 4 }, { 7, 4 }, { 6, 4 } };
+	for (int i = 0; i < points.size(); i++) {
+		if (gens[1]->get(points[i]) == PATH) break;
+		gens[1]->set_path(points[i]);
+		if (i == points.size() - 1) return false;
+	}
+	int state = 0;
+	for (int i = 8; i >= 0; i--) {
+		if (state == 0) {
+			if (gens[1]->get(i, 2) == PATH) state++;
+		}
+		else if (state == 1) {
+			if (gens[1]->get(i, 2) != PATH) {
+				state++;
+				gens[1]->set_path({ i, 2 });
+			}
+		}
+		else if (state == 2) {
+			if (gens[1]->get(i, 2) == PATH && gens[0]->get(i, 2) != PATH) break;
+			if (gens[1]->get(i, 2) == PATH && gens[0]->get(i, 2) == PATH) return false;
+			gens[1]->set_path({ i, 2 });
+		}
+	}
+	state = 0;
+	for (int i = 12; i >= 0; i--) {
+		if (state == 0) {
+			if (gens[1]->get(i, 6) == PATH) state++;
+		}
+		else if (state == 1) {
+			if (gens[1]->get(i, 6) != PATH) {
+				state++;
+				gens[1]->set_path({ i, 6 });
+				gens[0]->set(i + 1, 6, Decoration::Dot_Intersection);
+			}
+		}
+		else if (state == 2) {
+			if (gens[1]->get(i, 6) == PATH && gens[0]->get(i, 6) != PATH) break;
+			if (gens[1]->get(i, 6) == PATH && gens[0]->get(i, 6) == PATH) return false;
+			gens[1]->set_path({ i, 6 });
+		}
+	}
+
+	int count = 0;
+	std::set<Point> open = gens[0]->_gridpos;
+	while (open.size() > 0) {
+		Point pos = *(open.begin());
+		std::set<Point> region = gens[1]->get_region(pos);
+		if (region.size() == 1 || region.size() > 6) return false;
+		int symbol = gens[0]->make_shape_symbol(region, false, false);
+		if (!symbol) return false;
+		gens[0]->set(pick_random(region), symbol | Decoration::Color::Yellow);
+		for (Point p : region) open.erase(p);
+		count++;
+	}
+	return count == 6;
 }
 
 bool checkShape(std::set<Point> shape, int direction) {

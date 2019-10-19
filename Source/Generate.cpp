@@ -1191,6 +1191,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 	int colorIndex = rand() % colors.size();
 	int colorIndexN = rand() % (negativeColors.size() + 1);
 	bool shapesCanceled = false, shapesCombined = false;
+	if (amount == 1) shapesCombined = true;
 	while (amount > 0) {
 		if (open.size() == 0)
 			return false;

@@ -659,7 +659,7 @@ void PuzzleList::GenerateMountainN()
 		{ { Decoration::Star | Decoration::Color::Magenta, 2 },{ Decoration::Star | Decoration::Color::Green, 2 } },
 		{ { Decoration::Poly | Decoration::Can_Rotate, 1 } },
 		{ { Decoration::Stone | Decoration::Color::Cyan, 1 },{ Decoration::Stone | Decoration::Color::Yellow, 1 },{ Decoration::Star | Decoration::Color::Cyan, 1 },{ Decoration::Star | Decoration::Color::Yellow, 1 } },
-		{ { Decoration::Poly, 3 },{ Decoration::Eraser | Decoration::Color::White , 1 } } });
+		{ { Decoration::Poly, 3 },{ Decoration::Eraser | Decoration::Color::White , 1 } } }, false);
 
 	specialCase->generate2Bridge(0x09E86, 0x09ED8);
 
@@ -1804,6 +1804,41 @@ void PuzzleList::GenerateMountainH()
 	specialCase->initRotateGrid(generator);
 	generator->setFlag(Generate::Config::ShortPath);
 	generator->generate(0x09F6E, Decoration::Poly | Decoration::Color::Yellow, 3, Decoration::Star | Decoration::Color::Yellow, 3);
+
+	//Rainbow Row
+	generator->resetConfig();
+	generator->setGridSize(5, 5);
+	generator->setFlag(Generate::Config::WriteColors);
+	generator->generate(0x09FD3, Decoration::Stone | Decoration::Color::Cyan, 3, Decoration::Stone | Decoration::Color::Magenta, 3,
+		Decoration::Star | Decoration::Color::Cyan, 3, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Yellow, 6 );
+	generator->generate(0x09FD4, Decoration::Stone | Decoration::Color::Cyan, 2, Decoration::Stone | Decoration::Color::Magenta, 1,
+		Decoration::Star | Decoration::Color::Cyan, 3, Decoration::Star | Decoration::Color::Magenta, 3, Decoration::Star | Decoration::Color::Yellow, 2,
+		Decoration::Triangle | Decoration::Color::Cyan, 1, Decoration::Triangle | Decoration::Color::Magenta, 1, Decoration::Triangle | Decoration::Color::Yellow, 2);
+	generator->generate(0x09FD6, Decoration::Poly | Decoration::Color::Cyan, 1, Decoration::Poly | Decoration::Color::Yellow, 2,
+		Decoration::Poly | Decoration::Negative | Decoration::Color::Cyan, 1, Decoration::Poly | Decoration::Negative | Decoration::Color::Yellow, 1,
+		Decoration::Poly | Decoration::Negative | Decoration::Color::Purple, 1, Decoration::Star | Decoration::Color::Cyan, 4,
+		Decoration::Star | Decoration::Color::Purple, 3, Decoration::Star | Decoration::Color::Yellow, 2);
+	generator->setGridSize(6, 6);
+	generator->generate(0x09FD7, Decoration::Star | Decoration::Color::Yellow, 8, Decoration::Star | Decoration::Color::Green, 6,
+		Decoration::Star | Decoration::Color::Cyan, 6, Decoration::Star | Decoration::Color::Magenta, 6);
+	generator->setGridSize(5, 5);
+	generator->blockPos = { {1, 1}, {1, 5}, {3, 3}, {5, 3}, {5, 5}, {5, 7}, {7, 1}, {7, 5}, {7, 9}, {9, 1}, {9, 5}, {9, 9} };
+	generator->generate(0x09FD8, Decoration::Star | Decoration::Color::Green, 4, Decoration::Star | Decoration::Color::Magenta, 5,
+	Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Green, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Magenta, 1, Decoration::Eraser | Decoration::Color::Magenta, 1);
+	generator->resetConfig();
+
+	specialCase->generateMultiPuzzle({ 0x09FCC, 0x09FCE, 0x09FCF, 0x09FD0, 0x09FD1, 0x09FD2 }, {
+	{ { Decoration::Triangle | Decoration::Color::Orange, 2 } },
+	{ { Decoration::Stone | Decoration::Color::Black, 1 },{ Decoration::Stone | Decoration::Color::White, 1 },
+	{ Decoration::Star | Decoration::Color::Black, 1 },{ Decoration::Star | Decoration::Color::White, 2 } },
+	{ { Decoration::Star | Decoration::Color::Magenta, 1 },{ Decoration::Star | Decoration::Color::Cyan, 1 },
+	{ Decoration::Triangle | Decoration::Color::Magenta, 1 },{ Decoration::Triangle | Decoration::Color::Cyan, 1 }, { Decoration::Eraser | Decoration::Color::White, 1 } },
+	{ { { Decoration::Poly | Decoration::Can_Rotate, 1 },{ Decoration::Poly | Decoration::Negative | Decoration::Color::Blue | Decoration::Can_Rotate, 2 } } },
+	{ { Decoration::Dot_Intersection, 5 }, { Decoration::Triangle | Decoration::Color::Orange, 3 }, { Decoration::Eraser | Decoration::Color::White, 1 } },
+	{ { Decoration::Poly | Decoration::Can_Rotate, 1 } } }, true);
+
+	specialCase->generate2BridgeH(0x09E86, 0x09ED8);
+	(new BridgeWatchdog(0x09E86, 0x09ED8))->start();
 
 
 }

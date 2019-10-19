@@ -74,3 +74,16 @@ public:
 	int exitPos;
 	std::vector<Point> DIRECTIONS;
 };
+
+class BridgeWatchdog : public Watchdog {
+public:
+	BridgeWatchdog(int id1, int id2) : Watchdog(1) {
+		solLength1 = false;
+		solLength2 = false;
+		this->id1 = id1; this->id2 = id2;
+	}
+	virtual bool condition();
+	virtual void action(bool status);
+	bool checkTouch(int id);
+	int id1, id2, solLength1, solLength2;
+};
