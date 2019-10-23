@@ -44,11 +44,13 @@ public:
 	void generate2BridgeH(int id1, int id2);
 	bool generate2BridgeH(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
 	void generateMountainFloor(std::vector<int> ids, int idfloor);
+	void generateMountainFloorH(std::vector<int> ids, int idfloor);
 	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now
 	void modifyGate(int id);
 	void addDecoyExits(std::shared_ptr<Generate> gen, int amount);
 	void initSSGrid(std::shared_ptr<Generate> gen);
 	void initRotateGrid(std::shared_ptr<Generate> gen);
+	void initPillarSymmetry(std::shared_ptr<Generate> gen, int id, Panel::Symmetry symmetry);
 	void generateSymmetryGate(int id);
 	bool checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr<Panel> panel2, Panel::Symmetry correctSym);
 	void createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps);

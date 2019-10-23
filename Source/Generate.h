@@ -27,7 +27,7 @@ public:
 		DisableCancelShapes = 0x100, RequireCancelShapes = 0x200, BigShapes = 0x400, SplitShapes = 0x800, RequireCombineShapes = 0x1000, TreehouseLayout = 0x2000, DisableReset = 0x4000,
 		AlternateColors = 0x8000, WriteColors = 0x10000, Write2Color = 0x20000, FixBackground = 0x40000, CombineErasers = 0x80000, LongPath = 0x100000, ShortPath = 0x200000, SplitStones = 0x400000,
 		DecorationsOnly = 0x800000, FalseParity = 0x1000000, DisableDotIntersection = 0x2000000, WriteDotColor = 0x4000000, WriteDotColor2 = 0x8000000, LongestPath = 0x10000000, WriteInvisible = 0x20000000,
-		ArrowRecolor = 0x40000000
+		ArrowRecolor = 0x40000000, MountainFloorH = 0x80000000
 	};
 
 	void generate(int id) { PuzzleSymbols symbols({ }); while (!generate(id, symbols)); }
@@ -39,6 +39,7 @@ public:
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7);
 	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7, int symbol8, int amount8);
+	void generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7, int symbol8, int amount8, int symbol9, int amount9);
 	void generate(int id, std::vector<std::pair<int, int>> symbolVec);
 	void generateMulti(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec);
 	void generateMulti(int id, int numSolutions, std::vector<std::pair<int, int>> symbolVec);
@@ -118,8 +119,8 @@ private:
 	bool place_stones(int color, int amount);
 	Shape generate_shape(std::set<Point>& region, std::set<Point>& bufferRegion, Point pos, int maxSize);
 	Shape generate_shape(std::set<Point>& region, Point pos, int maxSize) { std::set<Point> buffer; return generate_shape(region, buffer, pos, maxSize); }
-	int make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation);
-	int make_shape_symbol(Shape shape, bool rotated, bool negative) { return make_shape_symbol(shape, rotated, negative, -1); }
+	int make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation, int depth);
+	int make_shape_symbol(Shape shape, bool rotated, bool negative) { return make_shape_symbol(shape, rotated, negative, -1, 0); }
 	bool place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative);
 	int count_color(std::set<Point>& region, int color);
 	bool place_stars(int color, int amount);
@@ -129,6 +130,7 @@ private:
 	bool place_arrows(int color, int amount, int targetCount);
 	int count_crossings(Point pos, Point dir);
 	bool place_erasers(std::vector<int> colors, std::vector<int> eraseSymbols);
+	bool combine_shapes(std::vector<Shape>& shapes);
 
 	std::shared_ptr<Panel> _panel;
 	std::vector<std::vector<int>> _custom_grid;

@@ -158,3 +158,14 @@ bool BridgeWatchdog::checkTouch(int id)
 	for (SolutionPoint sp : edges) if (intersectionFlags[sp.pointA] == Decoration::Dot_Intersection || intersectionFlags[sp.pointB] == Decoration::Dot_Intersection) return true;
 	return false;
 }
+
+bool PowerWatchdog::condition()
+{
+	float power = ReadPanelData<float>(id, POWER);
+	return power != 1;
+}
+
+void PowerWatchdog::action(bool status)
+{
+	WritePanelData<float>(id, POWER, { 1, 1 });
+}

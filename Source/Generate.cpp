@@ -42,6 +42,11 @@ void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amoun
 	while (!generate(id, symbols));
 }
 
+void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amount2, int symbol3, int amount3, int symbol4, int amount4, int symbol5, int amount5, int symbol6, int amount6, int symbol7, int amount7, int symbol8, int amount8, int symbol9, int amount9) {
+	PuzzleSymbols symbols({ std::make_pair(symbol1, amount1), std::make_pair(symbol2, amount2), std::make_pair(symbol3, amount3), std::make_pair(symbol4, amount4),  std::make_pair(symbol5, amount5), std::make_pair(symbol6, amount6), std::make_pair(symbol7, amount7), std::make_pair(symbol8, amount8), std::make_pair(symbol9, amount9) });
+	while (!generate(id, symbols));
+}
+
 void Generate::generate(int id, std::vector<std::pair<int, int>> symbolVec)
 {
 	PuzzleSymbols symbols(symbolVec);
@@ -845,7 +850,7 @@ bool Generate::place_start(int amount)
 				break;
 			}
 		}
-		if (adjacent) continue;
+		if (adjacent && rand() % 10 > 0) continue;
 		_starts.insert(pos);
 		_panel->SetGridSymbol(pos.first, pos.second, Decoration::Start, Decoration::Color::None);
 		amount--;
@@ -949,6 +954,7 @@ bool Generate::can_place_dot(Point pos) {
 	if (get(pos) & DOT)
 		return false;
 	if (_panel->symmetry) {
+		if (get_sym_point(pos) == pos) return false;
 		Panel::Symmetry backupSym = _panel->symmetry;
 		_panel->symmetry = Panel::Symmetry::None; //To prevent endless recursion
 		if (!can_place_dot(get_sym_point(pos))) {
@@ -1140,12 +1146,12 @@ Shape Generate::generate_shape(std::set<Point>& region, std::set<Point>& bufferR
 	return shape;
 }
 
-int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation)
+int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int rotation, int depth)
 {
 	int symbol = static_cast<int>(Decoration::Poly);
 	if (rotated) {
 		if (rotation == -1) {
-			if (make_shape_symbol(shape, rotated, negative, 0) == make_shape_symbol(shape, rotated, negative, 1))
+			if (make_shape_symbol(shape, rotated, negative, 0, depth + 1) == make_shape_symbol(shape, rotated, negative, 1, depth + 1))
 				return 0; //Check to make sure the shape is not the same when rotated
 			rotation = rand() % 4;
 		}
@@ -1169,8 +1175,12 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 		if (p.second < ymin) ymin = p.second;
 		if (p.second > ymax) ymax = p.second;
 	}
-	if (xmax - xmin > 6 || ymax - ymin > 6)
-		return 0; //Shapes cannot be more than 4 in width and height
+	if (xmax - xmin > 6 || ymax - ymin > 6) { //Shapes cannot be more than 4 in width and height
+		if (Point::pillarWidth == 0 || ymax - ymin > 6 || depth > Point::pillarWidth / 2) return 0;
+		Shape newShape;
+		for (Point p : shape) newShape.insert({ (p.first - xmax + Point::pillarWidth) % Point::pillarWidth, p.second });
+		return make_shape_symbol(newShape, rotated, negative, rotation, depth + 1);
+	}
 	for (Point p : shape) {
 		symbol |= (1 << ((p.first - xmin) / 2 + (ymax  - p.second) * 2)) << 16;
 	}
@@ -1187,6 +1197,10 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 	std::set<Point> open = _openpos;
 	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : hasFlag(Config::BigShapes) ? 5 : 4;
 	int targetArea = amount * shapeSize * 7 / 8;
+	if (hasFlag(Generate::Config::MountainFloorH) && _panel->_width == 9) {
+		targetArea = 0;
+		removeFlag(Generate::Config::MountainFloorH);
+	}
 	int totalArea = 0;
 	int colorIndex = rand() % colors.size();
 	int colorIndexN = rand() % (negativeColors.size() + 1);
@@ -1233,6 +1247,10 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		if (numShapes == 1 && bufferRegion.size() > 0) numShapes++;
 		if (numShapes < amount && region.size() > shapeSize && rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
 		if (region.size() <= shapeSize + 1 && bufferRegion.size() == 0 && rand() % 2 == 1) numShapes = 1;
+		if (hasFlag(Config::MountainFloorH)) {
+			if (region.size() < 20) continue;
+			numShapes = 6;
+		}
 		if (hasFlag(Config::SplitShapes) && numShapes != 1) continue;
 		if (hasFlag(Config::RequireCombineShapes) && numShapes == 1) continue;
 		bool balance = false;
@@ -1260,7 +1278,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		if (!balance && numShapesN && (numShapesN + numShapes >= 7 || numShapesN > 1 && numRotated > 0))
 			continue; //Trying to prevent the game's shape calculator from lagging too much
-		if (open2.size() < numShapes + numShapesN) continue;
+		if (!(hasFlag(Config::MountainFloorH) && _panel->_width == 11) && open2.size() < numShapes + numShapesN) continue;
 		if (numShapes == 1) {
 			shapes.push_back(region);
 			region.clear();
@@ -1318,6 +1336,11 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		if (numShapes > 1) shapesCombined = true;
 		numNegative -= static_cast<int>(shapesN.size());
+		if (hasFlag(Generate::Config::MountainFloorH) && amount == 6) {
+			if (!combine_shapes(shapes) || !combine_shapes(shapes))
+				return false;
+			amount -= 2;
+		}
 		for (Shape& shape : shapes) {
 			int symbol = make_shape_symbol(shape, (numRotated-- > 0), (numShapes-- <= 0));
 			if (symbol == 0)
@@ -1325,6 +1348,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			//Attempt not to put shapes adjacent
 			Point pos;
 			for (int i = 0; i < 10; i++) {
+				if (open2.size() == 0) return false;
 				pos = pick_random(open2);
 				bool pass = true;
 				for (Point dir : _8DIRECTIONS2) {
@@ -1608,4 +1632,29 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		}
 	}
 	return true;
+}
+
+bool Generate::combine_shapes(std::vector<Shape>& shapes)
+{
+	for (int i = 0; i < shapes.size(); i++) {
+		for (int j = 0; j < shapes.size(); j++) {
+			if (i == j) continue;
+			if (shapes[i].size() + shapes[j].size() <= 5) continue;
+			if (shapes[i].size() > 5 || shapes[j].size() > 5) continue;
+			//Look for adjacent points
+			for (Point p1 : shapes[i]) {
+				for (Point p2 : shapes[j]) {
+					for (Point dir : _DIRECTIONS2) {
+						if (p1 + dir == p2) {
+							//Combine shapes
+							for (Point p : shapes[i]) shapes[j].insert(p);
+							shapes.erase(shapes.begin() + i);
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
 }

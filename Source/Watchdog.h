@@ -87,3 +87,12 @@ public:
 	bool checkTouch(int id);
 	int id1, id2, solLength1, solLength2;
 };
+
+class PowerWatchdog : public Watchdog {
+public:
+	PowerWatchdog(int id) : Watchdog(0.1f) { this->id = id; }
+	virtual bool condition();
+	virtual void action(bool status);
+
+	int id;
+};

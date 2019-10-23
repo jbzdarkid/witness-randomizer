@@ -1840,7 +1840,50 @@ void PuzzleList::GenerateMountainH()
 	specialCase->generate2BridgeH(0x09E86, 0x09ED8);
 	(new BridgeWatchdog(0x09E86, 0x09ED8))->start();
 
+	generator->resetConfig();
+	specialCase->generateMountainFloorH({ 0x09EFF, 0x09F01, 0x09FC1, 0x09F8E }, 0x09FDA);
 
+	//TODO: Mess with the door
+
+	//Pillar Puzzles
+	generator->resetConfig();
+	generator->setGridSize(6, 5);
+	generator->setFlag(Generate::Config::ResetColors);
+	specialCase->initPillarSymmetry(generator, 0x0383D, Panel::Symmetry::PillarHorizontal);
+	generator->generate(0x0383D, Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 3,
+		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
+	specialCase->initPillarSymmetry(generator, 0x0383A, Panel::Symmetry::PillarParallel);
+	generator->generate(0x0383A, Decoration::Triangle | Decoration::Color::Orange, 8);
+	specialCase->initPillarSymmetry(generator, 0x0383F, Panel::Symmetry::PillarParallel);
+	generator->generate(0x0383F, Decoration::Triangle | Decoration::Color::Orange, 4,
+		Decoration::Dot_Intersection, 45, Decoration::Start, 5);
+	specialCase->initPillarSymmetry(generator, 0x09E56, Panel::Symmetry::PillarVertical);
+	generator->generate(0x09E56, Decoration::Star | Decoration::Color::Orange, 3, Decoration::Star | Decoration::Color::Magenta, 3,
+		Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Triangle | Decoration::Color::Magenta, 2,
+		Decoration::Eraser | Decoration::Color::Magenta, 1, Decoration::Start, 3);
+	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
+	generator->setGridSize(6, 4);
+	specialCase->initPillarSymmetry(generator, 0x03859, Panel::Symmetry::PillarRotational);
+	generator->generate(0x03859, Decoration::Poly, 3, Decoration::Stone | Decoration::Color::Black, 2,
+		Decoration::Stone | Decoration::Color::White, 2);
+	generator->setFlagOnce(Generate::Config::RequireCancelShapes);
+	generator->setFlagOnce(Generate::Config::DisableDotIntersection);
+	generator->setGridSize(6, 5);
+	specialCase->initPillarSymmetry(generator, 0x09E5A, Panel::Symmetry::PillarHorizontal);
+	generator->generate(0x09E5A, Decoration::Dot, 6, Decoration::Poly | Decoration::Color::Orange, 2,
+		Decoration::Poly | Decoration::Negative | Decoration::Color::Blue, 4);
+	generator->setFlag(Generate::Config::Write2Color);
+	generator->setFlag(Generate::Config::WriteInvisible);
+	int type = rand() % 2;
+	specialCase->initPillarSymmetry(generator, 0x339BB, type ? Panel::Symmetry::PillarHorizontal : Panel::Symmetry::PillarRotational);
+	generator->generate(0x339BB, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 1,
+		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
+		Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Poly | Decoration::Can_Rotate, 2,
+		Decoration::Dot_Intersection | Decoration::Color::Cyan, 2, Decoration::Dot_Intersection | Decoration::Color::Yellow, 2);
+	specialCase->initPillarSymmetry(generator, 0x33961, type ? Panel::Symmetry::PillarRotational : Panel::Symmetry::PillarHorizontal);
+	generator->generate(0x33961, Decoration::Triangle | Decoration::Color::Orange, 4, Decoration::Triangle | Decoration::Color::Magenta, 1,
+		Decoration::Star | Decoration::Color::Orange, 1, Decoration::Star | Decoration::Color::Magenta, 1, Decoration::Poly | Decoration::Color::Orange, 1,
+		Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 2, Decoration::Eraser | Decoration::Color::Magenta, 1);
 }
 
 void PuzzleList::GenerateCavesH()

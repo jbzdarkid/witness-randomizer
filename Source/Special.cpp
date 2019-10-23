@@ -672,6 +672,7 @@ void Special::generateMountaintop(int id, std::vector<std::pair<int, int>> symbo
 }
 
 void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec, bool flip) {
+	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->generate(ids[0]);
 	std::vector<PuzzleSymbols> symbols;
@@ -702,6 +703,8 @@ void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<
 			WriteArray<float>(ids[i], DOT_POSITIONS, intersections);
 		}
 	}
+	generator->resetConfig();
+	generator->resetVars();
 }
 
 bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<PuzzleSymbols> symbols, std::set<Point> path) {
@@ -1041,6 +1044,93 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 	generator->resetConfig();
 }
 
+void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
+{
+	generator->resetConfig();
+	std::vector<Point> floorPos = { { 3, 3 },{ 7, 3 },{ 3, 7 },{ 7, 7 } };
+	generator->openPos = std::set<Point>(floorPos.begin(), floorPos.end());
+	generator->setFlag(Generate::Config::DisableWrite);
+	generator->setFlag(Generate::Config::MountainFloorH);
+	generator->setSymmetry(Panel::Symmetry::Rotational);
+	generator->setSymbol(Decoration::Start, 0, 10); generator->setSymbol(Decoration::Start, 10, 0);
+	generator->setSymbol(Decoration::Exit, 0, 0); generator->setSymbol(Decoration::Exit, 10, 10);
+	//Make sure no duplicated symbols
+	std::set<int> sym;
+	do {
+		generator->generate(idfloor, Decoration::Poly, 6);
+		sym.clear();
+		for (Point p : floorPos) sym.insert(generator->get(p));
+	} while (sym.size() < 4);
+
+	int combine = 0;
+	for (int i = 0; i < 4; i++) {
+		int symbol = generator->get(floorPos[i]);
+		//Convert to shape
+		Shape shape;
+		for (int j = 0; j < 16; j++) {
+			if (symbol & (1 << (j + 16))) {
+				shape.insert(Point((j % 4) * 2 + 1, 8 - ((j / 4) * 2 + 1)));
+			}
+		}
+		//Translate randomly
+		Shape newShape;
+		int fails = 0;
+		do {
+			if (fails++ == 50) {
+				generateMountainFloorH(ids, idfloor);
+				return;
+			}
+			Point shift = Point((rand() % 4) * 2, -(rand() % 4) * 2);
+			newShape.clear();
+			for (Point p : shape) newShape.insert(p + shift);
+		} while (!checkShape(newShape, i % 2));
+
+		Generate gen;
+		for (Point p : newShape) {
+			for (Point dir : Generate::_DIRECTIONS2) {
+				if (!newShape.count(p + dir)) {
+					gen.setSymbol(PATH, p.first + dir.first / 2, p.second + dir.second / 2);
+				}
+			}
+		}
+		gen.setPath({ { 0, 0 } }); //Just to stop it from trying to make a path
+		gen.setFlag(Generate::Config::DecorationsOnly);
+		gen.setFlag(Generate::Config::DisableWrite);
+		gen.setFlag(Generate::Config::MountainFloorH);
+		PuzzleSymbols symbols({ { Decoration::Poly, 1 },{ Decoration::Poly | Decoration::Can_Rotate, 1 },
+			{ Decoration::Eraser | Decoration::Color::Green, 1 } });
+		if (newShape.size() > 5) {
+			if (combine == 0) symbols = PuzzleSymbols({ { Decoration::Poly, 2 },{ Decoration::Poly | Decoration::Can_Rotate, 1 },
+				{ Decoration::Eraser | Decoration::Color::Green, 1 } });
+			if (combine == 1) symbols = PuzzleSymbols({ { Decoration::Poly, 3},{ Decoration::Poly | Decoration::Negative | Decoration::Color::Cyan, 1 },
+				{ Decoration::Eraser | Decoration::Color::Green, 1 } });
+			combine++;
+		}
+		fails = 0;
+		while (!gen.generate(ids[i], symbols)) {
+			if (fails++ > 20) {
+				generateMountainFloorH(ids, idfloor);
+				return;
+			}
+		}
+
+		int count = 0;
+		for (Point p : newShape) {
+			if (gen.get_symbol_type(gen.get(p)) == Decoration::Poly) count++;
+			if (gen.get_symbol_type(gen.get(p)) == Decoration::Eraser) count--;
+		}
+		if (count != (newShape.size() > 5 ? combine == 2 ? 3 : 2 : 1)) {
+			i--; continue;
+		}
+		gen.write(ids[i]);
+	}
+	generator->clear();
+	generator->_panel->WriteIntersections();
+	WritePanelData<int>(idfloor, NEEDS_REDRAW, { 1 });
+	generator->resetVars();
+	generator->resetConfig();
+}
+
 void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec) {
 	int width = gridSize.first * 2 + 1, height = gridSize.second * 2 + 1;
 	std::vector<std::shared_ptr<Generate>> gens;
@@ -1145,6 +1235,22 @@ void Special::initRotateGrid(std::shared_ptr<Generate> gen)
 {
 	gen->setSymbol(Decoration::Start, 4, 0);  gen->setSymbol(Decoration::Start, 10, 4), gen->setSymbol(Decoration::Start, 6, 10), gen->setSymbol(Decoration::Start, 0, 6);
 	gen->setSymbol(Decoration::Exit, 6, 0);  gen->setSymbol(Decoration::Exit, 10, 6), gen->setSymbol(Decoration::Exit, 4, 10), gen->setSymbol(Decoration::Exit, 0, 4);
+}
+
+void Special::initPillarSymmetry(std::shared_ptr<Generate> gen, int id, Panel::Symmetry symmetry)
+{
+	gen->setSymmetry(symmetry);
+	switch (symmetry) {
+	case Panel::Symmetry::PillarParallel:
+		gen->setSymbol(Decoration::Start, 0, gen->_height - 1);  gen->setSymbol(Decoration::Start, 6, gen->_height - 1), gen->setSymbol(Decoration::Exit, 0, 0);  gen->setSymbol(Decoration::Exit, 6, 0); break;
+	case Panel::Symmetry::PillarVertical:
+		gen->setSymbol(Decoration::Start, 2, gen->_height - 1);  gen->setSymbol(Decoration::Start, 4, gen->_height - 1), gen->setSymbol(Decoration::Exit, 2, 0);  gen->setSymbol(Decoration::Exit, 4, 0); break;
+	case Panel::Symmetry::PillarHorizontal:
+		gen->setSymbol(Decoration::Start, 0, gen->_height - 1);  gen->setSymbol(Decoration::Exit, 6, gen->_height - 1), gen->setSymbol(Decoration::Exit, 0, 0);  gen->setSymbol(Decoration::Start, 6, 0); break;
+	case Panel::Symmetry::PillarRotational:
+		gen->setSymbol(Decoration::Start, 0, gen->_height - 1);  gen->setSymbol(Decoration::Exit, 6, gen->_height - 1), gen->setSymbol(Decoration::Exit, 0, 0);  gen->setSymbol(Decoration::Start, 6, 0); break;
+	}
+	WritePanelData<Color>(id, SUCCESS_COLOR_B, { ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
 }
 
 void Special::generateSymmetryGate(int id)
@@ -1256,6 +1362,6 @@ void Special::createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::v
 
 
 void Special::test() {
-
+	
 }
 
