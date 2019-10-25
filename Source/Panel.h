@@ -1,6 +1,7 @@
 #pragma once
 #include "json.hpp"
 #include "Memory.h"
+#include "Randomizer.h"
 #include <stdint.h>
 
 struct Point {
@@ -224,6 +225,7 @@ private:
 	int get_num_grid_blocks() { return (_width / 2) * (_height / 2);  }
 	int get_parity() { return (get_num_grid_points() + 1) % 2; }
 	Color get_color_rgb(int color) {
+		Color xcolor;
 		switch (color) {
 		case Decoration::Color::Black: return { 0, 0, 0, 1 };
 		case Decoration::Color::White: return { 1, 1, 1, 1 };
@@ -235,6 +237,10 @@ private:
 		case Decoration::Color::Yellow: return { 1, 1, 0, 1 };
 		case Decoration::Color::Orange: return { 1, 0.5, 0, 1 };
 		case Decoration::Color::Purple: return { 0.5, 0, 1, 1 };
+		case Decoration::Color::X: //return { 0.7f, 0.5f, 0, 1 };
+			xcolor = _memory->ReadPanelData<Color>(0x0008F, BACKGROUND_REGION_COLOR);
+			xcolor.a = 1;
+			return xcolor;
 		default: return { 0, 0, 0, 0 };
 		}
 	}

@@ -64,6 +64,7 @@ public:
 	virtual void action(bool status);
 	void initPath();
 	bool checkArrow(int x, int y);
+	bool checkArrowPillar(int x, int y);
 
 	int id;
 	std::vector<std::vector<int>> backupGrid;

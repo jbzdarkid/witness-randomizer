@@ -548,7 +548,7 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 	if (_obstructions.size() > 0) {
 		std::vector<Point> walls = pick_random(_obstructions);
 		for (Point p : walls) if (get(p) == 0) set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
-		bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) :
+		bool result = (hasFlag(Config::ShortPath) ? generate_path_length(1) : _parity != -1 ? generate_longest_path() : 
 			hitPoints.size() > 0 ? generate_special_path() : generate_path_length(_panel->get_num_grid_points() * 3 / 4));
 		for (Point p : walls) if (get(p) & Decoration::Gap) set(p, 0);
 		return result;
@@ -1478,12 +1478,13 @@ bool Generate::place_arrows(int color, int amount, int targetCount)
 			return false;
 		Point pos = pick_random(open);
 		open.erase(pos);
-		if (pos.first == _width / 2)
+		if (pos.first == _panel->_width / 2 || Point::pillarWidth > 0 && pos.first == _panel->_width / 2 - 1)
 			continue; //Because of a glitch where arrows in the center column won't draw right
 		int fails = 0;
 		while (fails++ < 20) {
 			int choice = rand() % 8;
 			Point dir = _8DIRECTIONS2[choice];
+			if (Point::pillarWidth > 0 && dir.second == 0) continue;
 			int count = count_crossings(pos, dir);
 			if (count == 0 || count > 3 || targetCount && count != targetCount) continue;
 			if (dir.first < 0 && count == (pos.first + 1) / 2 || dir.first > 0 && count == (_panel->_width - pos.first) / 2 ||

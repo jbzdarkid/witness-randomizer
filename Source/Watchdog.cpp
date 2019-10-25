@@ -80,10 +80,18 @@ void ArrowWatchdog::initPath()
 	int tracedptr = ReadPanelData<int>(id, TRACED_EDGE_DATA);
 	if (!tracedptr) return;
 	std::vector<SolutionPoint> traced = ReadArray<SolutionPoint>(id, TRACED_EDGE_DATA, numTraced);
+	if (style & Panel::Style::SYMMETRICAL) {
+		for (int i = 0; i < numTraced; i++) {
+			SolutionPoint sp;
+			sp.pointA = (width / 2 + 1) * (height / 2 + 1) - 1 - traced[i].pointA;
+			sp.pointB = (width / 2 + 1) * (height / 2 + 1) - 1 - traced[i].pointB;
+			traced.push_back(sp);
+		}
+	}
 	grid = backupGrid;
 	tracedLength = numTraced;
 	if (traced.size() == 0) return;
-	int exitPos = (width / 2 + 1) * (height / 2 + 1);
+	int exitPos = Point::pillarWidth > 0 ? (width / 2) * (height / 2 + 1) : (width / 2 + 1) * (height / 2 + 1);
 	for (SolutionPoint p : traced) {
 		int p1 = p.pointA, p2 = p.pointB;
 		if (p1 == this->exitPos || p2 == this->exitPos) {
@@ -99,15 +107,34 @@ void ArrowWatchdog::initPath()
 		}
 		int x1 = (p1 % (width / 2 + 1)) * 2, y1 = height - 1 - (p1 / (width / 2 + 1)) * 2;
 		int x2 = (p2 % (width / 2 + 1)) * 2, y2 = height - 1 - (p2 / (width / 2 + 1)) * 2;
-		grid[x1][y1] = PATH;
-		grid[x2][y2] = PATH;
-		grid[(x1 + x2) / 2][(y1 + y2) / 2] = PATH;
+		if (Point::pillarWidth > 0) {
+			x1 = (p1 % (width / 2)) * 2, y1 = height - 1 - (p1 / (width / 2)) * 2;
+			x2 = (p2 % (width / 2)) * 2, y2 = height - 1 - (p2 / (width / 2)) * 2;
+			grid[x1][y1] = PATH;
+			grid[x2][y2] = PATH;
+			if (x1 == x2 || x1 == x2 + 2 || x1 == x2 - 2) grid[(x1 + x2) / 2][(y1 + y2) / 2] = PATH;
+			else grid[width - 1][(y1 + y2) / 2] = PATH;
+		}
+		else {
+			grid[x1][y1] = PATH;
+			grid[x2][y2] = PATH;
+			grid[(x1 + x2) / 2][(y1 + y2) / 2] = PATH;
+		}
 	}
 }
 
 bool ArrowWatchdog::checkArrow(int x, int y)
 {
+	if (Point::pillarWidth > 0) return checkArrowPillar(x, y);
 	int symbol = grid[x][y];
+	if ((symbol & 0x700) == Decoration::Triangle && (symbol & 0xf0000) != 0) {
+		int count = 0;
+		if (grid[x - 1][y] == PATH) count++;
+		if (grid[x + 1][y] == PATH) count++;
+		if (grid[x][y - 1] == PATH) count++;
+		if (grid[x][y + 1] == PATH) count++;
+		return count == (symbol >> 16);
+	}
 	if ((symbol & 0x700) != Decoration::Arrow)
 		return true;
 	int targetCount = (symbol & 0xf000) >> 12;
@@ -119,6 +146,32 @@ bool ArrowWatchdog::checkArrow(int x, int y)
 			if (++count > targetCount) return false;
 		}
 		x += dir.first; y += dir.second;
+	}
+	return count == targetCount;
+}
+
+bool ArrowWatchdog::checkArrowPillar(int x, int y)
+{
+	int symbol = grid[x][y];
+	if ((symbol & 0x700) == Decoration::Triangle && (symbol & 0xf0000) != 0) {
+		int count = 0;
+		if (grid[x - 1][y] == PATH) count++;
+		if (grid[x + 1][y] == PATH) count++;
+		if (grid[x][y - 1] == PATH) count++;
+		if (grid[x][y + 1] == PATH) count++;
+		return count == (symbol >> 16);
+	}
+	if ((symbol & 0x700) != Decoration::Arrow)
+		return true;
+	int targetCount = (symbol & 0xf000) >> 12;
+	Point dir = DIRECTIONS[(symbol & 0xf0000) >> 16];
+	x = (x + (dir.first > 2 ? -2 : dir.first) / 2 + Point::pillarWidth) % Point::pillarWidth; y += dir.second / 2;
+	int count = 0;
+	while (y >= 0 && y < height) {
+		if (grid[x][y] == PATH) {
+			if (++count > targetCount) return false;
+		}
+		x = (x + dir.first + Point::pillarWidth) % Point::pillarWidth; y += dir.second;
 	}
 	return count == targetCount;
 }

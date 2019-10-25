@@ -61,10 +61,7 @@
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText;
 
-//int panel = 0x09EFF; //Panel to edit //Upper left
-//int panel = 0x09F01; //Panel to edit //Upper right
-//int panel = 0x09FC1; //Panel to edit //Lower left
-int panel = 0x09F8E; //Panel to edit //Lower right
+int panel = 0x00FF8; //Panel to edit //Lower right
 
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();

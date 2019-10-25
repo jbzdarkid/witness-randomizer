@@ -54,6 +54,8 @@ public:
 	void generateSymmetryGate(int id);
 	bool checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr<Panel> panel2, Panel::Symmetry correctSym);
 	void createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps);
+	void createArrowSecretDoor(int id);
+	void generateCenterPerspective(int id, std::vector<std::pair<int, int>> symbolVec, int symbolType);
 
 	void test();
 

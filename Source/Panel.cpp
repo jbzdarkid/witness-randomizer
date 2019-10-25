@@ -2,6 +2,7 @@
 #include "Random.h"
 #include "Memory.h"
 #include "Randomizer.h"
+#include "Watchdog.h"
 #include <sstream>
 
 int Point::pillarWidth = 0;
@@ -56,7 +57,8 @@ void Panel::Read() {
 }
 
 void Panel::Write() {
-
+	_memory->WritePanelData<int>(id, GRID_SIZE_X, { (_width + 1) / 2 });
+	_memory->WritePanelData<int>(id, GRID_SIZE_Y, { (_height + 1) / 2 });
 	if (_resized && _memory->ReadPanelData<int>(id, NUM_COLORED_REGIONS) > 0) {
 		//Make two triangles that cover the whole panel TODO: Get this to work for the pillars too
 		std::vector<int> newRegions = { 0, xy_to_loc(_width - 1, 0), xy_to_loc(0, 0), 0, xy_to_loc(_width - 1, _height - 1), xy_to_loc(_width - 1, 0), 0, 0 };
@@ -78,11 +80,8 @@ void Panel::Write() {
 		_memory->WriteArray<int>(id, DOT_FLAGS, iflags);
 	}
 	WriteDecorations();
-
 	//_style &= ~NO_BLINK;
 	_memory->WritePanelData<int>(id, STYLE_FLAGS, { _style });
-	_memory->WritePanelData<int>(id, GRID_SIZE_X, {(_width + 1)/2});
-	_memory->WritePanelData<int>(id, GRID_SIZE_Y, {(_height + 1)/2});
 	if (pathWidth != 1) _memory->WritePanelData<float>(id, PATH_WIDTH_SCALE, { pathWidth });
 	_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
 }
@@ -290,6 +289,9 @@ void Panel::WriteDecorations() {
 		_memory->WriteArray<int>(id, DECORATIONS, decorations);
 		for (int i = 0; i < decorations.size(); i++) decorations[i] = 0;
 		_memory->WriteArray<int>(id, DECORATION_FLAGS, decorations);
+	}
+	if (arrows) {
+		(new ArrowWatchdog(id))->start();
 	}
 }
 

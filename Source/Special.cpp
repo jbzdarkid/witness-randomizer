@@ -1360,6 +1360,33 @@ void Special::createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::v
 	(new ArrowWatchdog(id))->start();
 }
 
+void Special::createArrowSecretDoor(int id)
+{
+	generator->backgroundColor = { 0.5f, 0.5f, 0.5f, 1 };
+	generator->initPanel(id);
+	generator->clear();
+	generator->set(1, 1, Decoration::Arrow | (3 << 12) | (4 << 16));
+	generator->set(1, 5, Decoration::Arrow | (3 << 12) | (2 << 16));
+	generator->set(1, 9, Decoration::Arrow | (3 << 12) | (5 << 16));
+	generator->set(9, 1, Decoration::Arrow | (3 << 12) | (7 << 16));
+	generator->set(9, 5, Decoration::Arrow | (3 << 12) | (3 << 16));
+	generator->set(9, 9, Decoration::Arrow | (3 << 12) | (6 << 16));
+	generator->setFlagOnce(Generate::Config::ArrowRecolor);
+	generator->write(id);
+	(new ArrowWatchdog(id))->start();
+}
+
+void Special::generateCenterPerspective(int id, std::vector<std::pair<int, int>> symbolVec, int symbolType)
+{
+	std::vector<std::vector<Point>> obstructions = { { { 5, 0 },{ 5, 2 },{ 5, 4 } },{ { 5, 6 },{ 5, 8 },{ 5, 10 } },{ { 0, 5 },{ 2, 5 },{ 4, 5 } },{ { 6, 5 },{ 8, 5 },{ 10, 5 } } };
+	generator->setObstructions(obstructions);
+	do {
+		generator->setFlagOnce(Generate::Config::DisableWrite);
+		generator->generate(id, symbolVec);
+	} while (generator->get_symbol_type(generator->get(5, 5)) != symbolType);
+	generator->write(id);
+}
+
 
 void Special::test() {
 	
