@@ -24,6 +24,12 @@ public:
 		generator->setLoadingHandle(handle);
 	}
 
+	void setSeed(int seed) {
+		this->seed = seed;
+		if (seed >= 0) generator->seed(seed);
+		else generator->seed(rand());
+	}
+
 	//--------------------------Normal difficulty---------------------------
 
 	void GenerateTutorialN();
@@ -72,6 +78,7 @@ private:
 	std::shared_ptr<Generate> generator;
 	std::shared_ptr<Special> specialCase;
 	HWND _handle;
+	int seed;
 
 	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
 	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }

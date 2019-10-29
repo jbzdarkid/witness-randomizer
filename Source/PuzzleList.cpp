@@ -26,10 +26,11 @@ void PuzzleList::GenerateAllN()
 
 void PuzzleList::GenerateAllH()
 {
+	generator->setLoadingData(328);
 	GenerateTutorialH();
 	GenerateSymmetryH();
 	GenerateQuarryH();
-	GenerateBunkerH();
+	//GenerateBunkerH(); //Can't randomize because panels refuse to render the symbols
 	GenerateSwampH();
 	GenerateTreehouseH();
 	GenerateTownH();
@@ -50,8 +51,8 @@ void PuzzleList::GenerateTutorialN()
 {
 	generator->setLoadingData(L"Tutorial", 21);
 	generator->resetConfig();
-	//TODO: Display a message on this panel								0x00064, // Tutorial Straight
-	//TODO: Display a message on this panel								0x00182, // Tutorial Bend
+	specialCase->drawSeedAndDifficulty(0x00064, seed, false);
+	specialCase->drawGoodLuckPanel(0x00182);
 	//Mazes
 	generator->setFlag(Generate::Config::FullGaps);
 	generator->setGridSize(6, 6);
@@ -897,8 +898,8 @@ void PuzzleList::GenerateTutorialH()
 {
 	generator->setLoadingData(L"Tutorial", 21);
 	generator->resetConfig();
-	//TODO: Display a message on this panel								0x00064, // Tutorial Straight
-	//TODO: Display a message on this panel								0x00182, // Tutorial Bend
+	specialCase->drawSeedAndDifficulty(0x00064, seed, true);
+	specialCase->drawGoodLuckPanel(0x00182);
 	generator->setFlag(Generate::Config::WriteDotColor);
 	generator->setFlag(Generate::Config::LongestPath);
 	//Mazes
@@ -1888,6 +1889,9 @@ void PuzzleList::GenerateMountainH()
 
 void PuzzleList::GenerateCavesH()
 {
+	generator->setLoadingData(L"Caves", 55);
+	generator->resetConfig();
+
 	specialCase->createArrowSecretDoor(0x17FA2);
 
 	//Arrow Puzzles

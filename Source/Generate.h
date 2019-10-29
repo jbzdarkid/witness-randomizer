@@ -67,6 +67,7 @@ public:
 	void removeFlagOnce(Config option) { _config &= ~option; _oneTimeRemove |= option; };
 	void resetConfig();
 	void seed(long seed) { srand(seed); _seed = rand(); }
+	void incrementProgress();
 
 	float pathWidth;
 	Endpoint::Direction pivotDirection;

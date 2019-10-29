@@ -222,3 +222,33 @@ void PowerWatchdog::action(bool status)
 {
 	WritePanelData<float>(id, POWER, { 1, 1 });
 }
+
+ChallengeWatchdog::ChallengeWatchdog(int id, Point size, std::vector<std::pair<int, int>> symbolVec) : Watchdog(0.1f)
+{
+	this->id = id;
+	this->symbolVec = symbolVec;
+	gen.setFlag(Generate::Config::DisableWrite);
+	gen.setGridSize(size.first, size.second);
+	ready = false;
+	_memory->WritePanelData<int>(id, POWER_OFF_ON_FAIL, { 0 });
+}
+
+bool ChallengeWatchdog::condition()
+{
+	return _memory->ReadPanelData<float>(id, POWER) > 0;
+}
+
+void ChallengeWatchdog::action(bool status)
+{
+	if (status) {
+		if (ready) {
+			gen.write(id);
+			ready = false;
+		}
+		return;
+	}
+	if (!ready) {
+		gen.generate(0x0A16E, symbolVec);
+		ready = true;
+	}
+}

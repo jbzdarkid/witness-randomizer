@@ -117,8 +117,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// TODO: text needs to be resized!
 			if (seedIsRNG || wcslen(text.c_str()) == 0) {
-				seed = Random::RandInt(0, 100000);
+				seed = Random::RandInt(1, 999999);
 				seedIsRNG = true;
+				randomizer->seed = -1;
 			}
 
 			randomizer->ClearOffsets();
@@ -129,7 +130,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			*/
 			//if (randomizer->GameIsRandomized()) break;
 			//Random::SetSeed(seed);
-			srand(seed);
+			//srand(seed);
+			randomizer->seed = seed;
 
 			// Show seed and force redraw
 			std::wstring seedString = std::to_wstring(seed);
@@ -139,8 +141,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// Randomize, then apply settings
 			//randomizer->Randomize();
-			//randomizer->GenerateNormal(hwndLoadingText);
-			randomizer->GenerateHard(hwndLoadingText);
+			randomizer->GenerateNormal(hwndLoadingText);
+			//randomizer->GenerateHard(hwndLoadingText);
 			/*
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
@@ -463,9 +465,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 				50 + x * 15, 380 + y * 15, 12, 12, hwnd, (HMENU)directions[x + y * 3], hInstance, NULL);
 		}
 	}
-
-	//_panel->Read(panel);
-	//generator->initPanel(_panel);
 
 	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
 		CheckDlgButton(hwnd, IDC_SYMMETRYX, TRUE);

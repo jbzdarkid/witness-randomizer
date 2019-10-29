@@ -23,6 +23,8 @@ public:
 		COLORS = 8,
 	};
 
+	int seed = -1;
+
 private:
 	int _lastRandomizedFrame = 1 << 30;
 	void RandomizeTutorial();

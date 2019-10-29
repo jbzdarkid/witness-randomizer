@@ -56,6 +56,8 @@ public:
 	void createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps);
 	void createArrowSecretDoor(int id);
 	void generateCenterPerspective(int id, std::vector<std::pair<int, int>> symbolVec, int symbolType);
+	void drawSeedAndDifficulty(int id, int seed, bool hard);
+	void drawGoodLuckPanel(int id);
 
 	void test();
 

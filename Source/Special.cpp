@@ -689,6 +689,7 @@ void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<
 	}
 	for (int i = 0; i < ids.size(); i++) {
 		gens[i].write(ids[i]);
+		generator->incrementProgress();
 		if (symbolVec[0][0].first == (Decoration::Triangle | Decoration::Color::Orange)) { //Hard mode
 			int numIntersections = ReadPanelData<int>(ids[i], NUM_DOTS);
 			std::vector<float> intersections = ReadArray<float>(ids[i], DOT_POSITIONS, numIntersections * 2);
@@ -745,6 +746,7 @@ void Special::generate2Bridge(int id1, int id2)
 	while (!generate2Bridge(id1, id2, gens));
 	gens[1]->write(id1);
 	gens[1]->write(id2);
+	generator->incrementProgress();
 }
 
 bool Special::generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens)
@@ -827,6 +829,7 @@ void Special::generate2BridgeH(int id1, int id2)
 	
 	gens[0]->write(id1);
 	gens[0]->write(id2);
+	generator->incrementProgress();
 
 	int numIntersections = ReadPanelData<int>(id1, NUM_DOTS);
 	std::vector<int> intersectionFlags = ReadArray<int>(id1, DOT_FLAGS, numIntersections);
@@ -1040,6 +1043,7 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 		gen.setVal(symbol, pos.first, pos.second);
 		gen.write(ids[i]);
 	}
+	generator->incrementProgress();
 	generator->resetVars();
 	generator->resetConfig();
 }
@@ -1127,6 +1131,7 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 	generator->clear();
 	generator->_panel->WriteIntersections();
 	WritePanelData<int>(idfloor, NEEDS_REDRAW, { 1 });
+	generator->incrementProgress();
 	generator->resetVars();
 	generator->resetConfig();
 }
@@ -1385,6 +1390,126 @@ void Special::generateCenterPerspective(int id, std::vector<std::pair<int, int>>
 		generator->generate(id, symbolVec);
 	} while (generator->get_symbol_type(generator->get(5, 5)) != symbolType);
 	generator->write(id);
+}
+
+void Special::drawSeedAndDifficulty(int id, int seed, bool hard)
+{
+	std::vector<float> normalPos = { /*N*/ 8, 28, 8, 12, 19, 28, 19, 12, /*O*/ 25, 12, 31, 12, 31, 28, 25, 28,
+		/*R*/ 38, 12, 45, 17, 38, 21, 38, 28, 45, 28, /*M*/ 51, 28, 51, 12, 56, 19, 61, 12, 61, 28,
+		/*A*/ 68, 28, 72, 12, 76, 28, 70, 22, 74, 22, /*L*/ 83, 12, 83, 28, 91, 28 };
+	std::vector<int> normalConnectA = { /*N*/ 0, 1, 2, /*O*/ 4, 5, 6, 7, /*R*/ 8, 9, 10, 10, 10, /*M*/ 13, 14, 15, 16,
+		/*A*/ 18, 19, 21, /*L*/ 23, 24 };
+	std::vector<int> normalConnectB = { /*N*/ 1, 2, 3, /*O*/ 5, 6, 7, 4, /*R*/ 9, 10, 8, 11, 12, /*M*/ 14, 15, 16, 17,
+		/*A*/ 19, 20, 22, /*L*/ 24, 25 };
+
+	std::vector<float> expertPos = { /*E*/ 17, 11, 8, 11, 8, 27, 17, 27, 8, 19, 17, 19, /*X*/ 23, 11, 30, 27, 30, 11, 23, 27,
+		/*P*/ 37, 11, 44, 16, 37, 20, 37, 27, /*E*/ 59, 11, 50, 11, 50, 27, 59, 27, 50, 19, 59, 19,
+		/*R*/ 66, 11, 73, 16, 66, 20, 66, 27, 73, 27, /*T*/ 84, 11, 84, 27, 79, 11, 89, 11 };
+	std::vector<int> expertConnectA = { /*E*/ 0, 1, 2, 4, /*X*/ 6, 8, /*P*/ 10, 11, 12, 12, /*E*/ 14, 15, 16, 18,
+		/*R*/ 20, 21, 22, 22, 22, /*T*/ 25, 27 };
+	std::vector<int> expertConnectB = { /*E*/ 1, 2, 3, 5, /*X*/ 7, 9, /*P*/ 11, 12, 10, 13, /*E*/ 15, 16, 17, 19,
+		/*R*/ 21, 22, 20, 23, 24, /*T*/ 26, 28 };
+
+	std::vector<float> randomPos = { /*R*/ 9, 71, 16, 76, 9, 80, 9, 87, 16, 87, /*A*/ 22, 87, 26, 72, 30, 87, 25, 82, 28, 82,
+		/*N*/ 36, 87, 36, 71, 47, 87, 47, 71, /*D*/ 53, 71, 53, 87, 58, 87, 62, 79, 58, 71, /*O*/ 67, 71, 67, 87, 73, 87, 73, 71,
+		/*M*/ 79, 87, 79, 71, 84, 78, 89, 71, 89, 87 };
+	std::vector<int> randomConnectA = { /*R*/ 0, 1, 2, 2, 2, /*A*/ 5, 6, 8, /*N*/ 10, 11, 12, /*D*/ 14, 15, 16, 17, 18,
+		/*O*/ 19, 20, 21, 22, /*M*/ 23, 24, 25, 26 };
+	std::vector<int> randomConnectB = { /*R*/ 1, 2, 0, 3, 4, /*A*/ 6, 7, 9, /*N*/ 11, 12, 13, /*D*/ 15, 16, 17, 18, 14,
+		/*O*/ 20, 21, 22, 19, /*M*/ 24, 25, 26, 27 };
+
+	std::vector<std::vector<float>> seedPos = { /*0*/ { 0, 0, 9, 0, 9, 16, 0, 16 }, /*1*/ { 2, 5, 7, 0, 7, 16 },
+		/*2*/ { 0, 0, 9, 0, 0, 8, 9, 8, 0, 16, 9, 16 }, /*3*/ { }, /*4*/ { 9, 8, 0, 8, 9, 0, 9, 16 }, /*5*/ { },
+		/*6*/ { }, /*7*/ { 0, 0, 9, 0, 9, 6, 4, 11, 4, 16, }, /*8*/ { }, /*9*/ { } };
+	seedPos[3] = seedPos[5] = seedPos[6] = seedPos[8] = seedPos[9] = seedPos[2];
+	std::vector<std::vector<int>> seedConnectA = { /*0*/ { 0, 1, 2, 3, 0 }, /*1*/ {0, 1}, /*2*/ {0, 1, 2, 2, 4},
+		/*3*/ { 0, 1, 2, 3, 4 }, /*4*/ { 0, 1, 2 }, /*5*/ { 0, 0, 2, 3, 4 }, /*6*/ { 0, 0, 2, 3, 4 }, /*7*/ { 0, 1, 2, 3 },
+		/*8*/ { 0, 0, 2, 1, 4 }, /*9*/{ 0, 0, 2, 1, 4 } };
+	std::vector<std::vector<int>> seedConnectB = { /*0*/ { 1, 2, 3, 0, 2 }, /*1*/ {1, 2}, /*2*/ {1, 3, 3, 4, 5},
+		/*3*/ { 1, 3, 3, 5, 5 }, /*4*/ { 1, 2, 3 }, /*5*/ { 1, 2, 3, 5, 5 }, /*6*/ { 1, 4, 3, 5, 5 }, /*7*/ { 1, 2, 3, 4 },
+		/*8*/ { 1, 4, 3, 5, 5 }, /*9*/{ 1, 2, 3, 5, 5 } };
+
+	std::vector<float> intersections = hard ? expertPos : normalPos;
+	std::vector<int> connectionsA = hard ? expertConnectA : normalConnectA;
+	std::vector<int> connectionsB = hard ? expertConnectB : normalConnectB;
+
+	if (seed <= 0) {
+		int offset = static_cast<int>(intersections.size() / 2);
+		for (int i : randomConnectA)
+			connectionsA.push_back(i + offset);
+		for (int i : randomConnectB)
+			connectionsB.push_back(i + offset);
+		for (float f : randomPos)
+			intersections.push_back(f);
+	}
+	else {
+		for (int x = 82; x >= 5; x -= 15) {
+			int digit = seed % 10;
+			int offset = static_cast<int>(intersections.size() / 2);
+			for (int i : seedConnectA[digit])
+				connectionsA.push_back(i + offset);
+			for (int i : seedConnectB[digit])
+				connectionsB.push_back(i + offset);
+			for (int i = 0; i < seedPos[digit].size(); i += 2) {
+				intersections.push_back(seedPos[digit][i] + x);
+				intersections.push_back(seedPos[digit][i + 1] + 70);
+			}
+			seed /= 10;
+		}
+	}
+
+	std::vector<int> intersectionFlags;
+	for (int i = 0; i < intersections.size(); i++) {
+		intersections[i] /= 100.0f;
+		if (i % 2 == 0) {
+			intersectionFlags.push_back(0);
+			intersections[i] += 0.01f;
+		}
+		else intersections[i] = 1 - intersections[i];
+	}
+	
+	//Add the straight line
+	intersections.push_back(0.1f); intersections.push_back(0.5f); intersections.push_back(0.9f); intersections.push_back(0.5f);
+	intersectionFlags.push_back(Decoration::Start); intersectionFlags.push_back(Decoration::Exit);
+	connectionsA.push_back(static_cast<int>(intersectionFlags.size()) - 2); connectionsB.push_back(static_cast<int>(intersectionFlags.size()) - 1);
+
+	WritePanelData<float>(id, PATH_WIDTH_SCALE, { 0.6f });
+	WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
+	WriteArray<float>(id, DOT_POSITIONS, intersections);
+	WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
+	WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connectionsA.size()) });
+	WriteArray<int>(id, DOT_CONNECTION_A, connectionsA);
+	WriteArray<int>(id, DOT_CONNECTION_B, connectionsB);
+	WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+}
+
+void Special::drawGoodLuckPanel(int id)
+{
+	std::vector<float> intersections = { /*G*/ 32, 7, 22, 7, 22, 22, 32, 22, 32, 15, 29, 15, /*O*/ 39, 7, 39, 22, 47, 22, 47, 7,
+		/*O*/ 54, 7, 62, 7, 62, 22, 54, 22, /*D*/ 69, 7, 74, 7, 77, 14.5, 74, 22, 69, 22, /*L*/ 22, 79, 22, 94, 31, 94,
+		/*U*/ 38, 79, 38, 94, 46, 94, 46, 79, /*C*/ 60, 79, 55, 79, 52, 86.5, 55, 94, 60, 94, /*K*/ 67, 79, 67, 94, 74, 79, 69, 86.5, 74, 94,
+		/*!*/ 80, 79, 80, 89, 80, 94, /*SIGMA*/ 66, 39, 66, 32, 32, 32, 51, 51, 32, 69, 66, 69, 66, 62 };
+	std::vector<int> connectionsA = { /*G*/ 0, 1, 2, 3, 4, /*O*/ 6, 7, 8, 9, /*O*/ 10, 11, 12, 13, /*D*/ 14, 15, 16, 17, 18,
+		/*L*/ 19, 20, /*U*/ 22, 23, 24, /*C*/ 26, 27, 28, 29, /*K*/ 31, 33, 34, /*!*/ 36, /*SIGMA*/ 39, 40, 41, 42, 43, 44 };
+	std::vector<int> connectionsB = { /*G*/ 1, 2, 3, 4, 5, /*O*/ 7, 8, 9, 6, /*O*/ 11, 12, 13, 10, /*D*/ 15, 16, 17, 18, 14,
+		/*L*/ 20, 21, /*U*/ 23, 24, 25, /*C*/ 27, 28, 29, 30, /*K*/ 32, 34, 35, /*!*/ 37, /*SIGMA*/ 40, 41, 42, 43, 44, 45 };
+
+	std::vector<int> intersectionFlags;
+	for (int i = 0; i < intersections.size(); i++) {
+		intersections[i] /= 100.0f;
+		if (i % 2 == 0) intersectionFlags.push_back(0);
+		else intersections[i] = 1 - intersections[i];
+	}
+	intersectionFlags[39] = Decoration::Start; intersectionFlags[45] = Decoration::Exit;
+
+	WritePanelData<float>(id, PATH_WIDTH_SCALE, { 0.6f });
+	WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
+	WriteArray<float>(id, DOT_POSITIONS, intersections);
+	WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
+	WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connectionsA.size()) });
+	WriteArray<int>(id, DOT_CONNECTION_A, connectionsA);
+	WriteArray<int>(id, DOT_CONNECTION_B, connectionsB);
+	WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
 }
 
 

@@ -58,6 +58,7 @@ void Generate::generateMulti(int id, std::vector<std::shared_ptr<Generate>> gens
 	MultiGenerate gen;
 	gen.splitStones = hasFlag(Config::SplitStones);
 	gen.generate(id, gens, symbolVec);
+	incrementProgress();
 }
 
 void Generate::generateMulti(int id, int numSolutions, std::vector<std::pair<int, int>> symbolVec)
@@ -67,6 +68,7 @@ void Generate::generateMulti(int id, int numSolutions, std::vector<std::pair<int
 	std::vector<std::shared_ptr<Generate>> gens;
 	for (; numSolutions > 0; numSolutions--) gens.push_back(std::make_shared<Generate>());
 	gen.generate(id, gens, symbolVec);
+	incrementProgress();
 }
 
 std::vector<Point> Generate::_DIRECTIONS1 = { Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0) };
@@ -199,13 +201,7 @@ void Generate::write(int id)
 
 	erase_path();
 
-	_areaTotal++;
-	_genTotal++;
-	if (_handle) {
-		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
-		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
-		SetWindowText(_handle, text.c_str());
-	}
+	incrementProgress();
 
 	if (hasFlag(Config::ResetColors)) {
 		_panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
@@ -272,6 +268,17 @@ void Generate::resetConfig()
 	_config = 0;
 	_oneTimeAdd = Config::None;
 	_oneTimeRemove = Config::None;
+}
+
+void Generate::incrementProgress()
+{
+	_areaTotal++;
+	_genTotal++;
+	if (_handle) {
+		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
+		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
+		SetWindowText(_handle, text.c_str());
+	}
 }
 
 //----------------------Private--------------------------

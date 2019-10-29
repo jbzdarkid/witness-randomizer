@@ -128,14 +128,3 @@ private:
 	friend class Randomizer;
 	friend class Special;
 };
-
-//I might need this code later
-/*
-if (_force) {
-	DWORD oldProtect = 0;
-	if (!VirtualProtectEx(_handle, ComputeOffset(offsets), sizeof(T) * data.size(), PAGE_READWRITE, &oldProtect)) {
-		ThrowError();
-		return;
-	}
-	_force = false;
-}*/

@@ -2,6 +2,7 @@
 #include "Memory.h"
 #include "Panel.h"
 #include "Randomizer.h"
+#include "Generate.h"
 
 class Watchdog
 {
@@ -96,4 +97,16 @@ public:
 	virtual void action(bool status);
 
 	int id;
+};
+
+class ChallengeWatchdog : public Watchdog { //Not working, causes the game to crash
+public:
+	ChallengeWatchdog(int id, Point size, std::vector<std::pair<int, int>> symbolVec);
+	virtual bool condition();
+	virtual void action(bool status);
+
+	int id;
+	bool ready;
+	std::vector<std::pair<int, int>> symbolVec;
+	Generate gen;
 };
