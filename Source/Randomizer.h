@@ -23,7 +23,8 @@ public:
 		COLORS = 8,
 	};
 
-	int seed = -1;
+	int seed;
+	bool seedIsRNG;
 
 private:
 	int _lastRandomizedFrame = 1 << 30;

@@ -1112,7 +1112,7 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 		}
 		fails = 0;
 		while (!gen.generate(ids[i], symbols)) {
-			if (fails++ > 20) {
+			if (fails++ > 50) {
 				generateMountainFloorH(ids, idfloor);
 				return;
 			}
@@ -1124,9 +1124,15 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 			if (gen.get_symbol_type(gen.get(p)) == Decoration::Eraser) count--;
 		}
 		if (count != (newShape.size() > 5 ? combine == 2 ? 3 : 2 : 1)) {
-			i--; continue;
+			i--;
+			if (newShape.size() > 5) combine--;
+			continue;
 		}
 		gen.write(ids[i]);
+	}
+	if (combine != 2) {
+		generateMountainFloorH(ids, idfloor);
+		return;
 	}
 	generator->clear();
 	generator->_panel->WriteIntersections();

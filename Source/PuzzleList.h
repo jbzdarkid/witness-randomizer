@@ -24,8 +24,9 @@ public:
 		generator->setLoadingHandle(handle);
 	}
 
-	void setSeed(int seed) {
+	void setSeed(int seed, bool isRNG) {
 		this->seed = seed;
+		this->seedIsRNG = isRNG;
 		if (seed >= 0) generator->seed(seed);
 		else generator->seed(rand());
 	}
@@ -79,6 +80,7 @@ private:
 	std::shared_ptr<Special> specialCase;
 	HWND _handle;
 	int seed;
+	bool seedIsRNG;
 
 	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
 	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }

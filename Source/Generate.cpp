@@ -276,6 +276,7 @@ void Generate::incrementProgress()
 	_genTotal++;
 	if (_handle) {
 		int total = (_totalPuzzles == 0 ? _areaPuzzles : _totalPuzzles);
+		if (total == 0) return;
 		std::wstring text = _areaName + L": " + std::to_wstring(_areaTotal) + L"/" + std::to_wstring(_areaPuzzles) + L" (" + std::to_wstring(_genTotal * 100 / total) + L"%)";
 		SetWindowText(_handle, text.c_str());
 	}
@@ -321,6 +322,7 @@ void Generate::resetVars() {
 	openPos.clear();
 	blockPos.clear();
 	customPath.clear();
+	_splitPoints.clear();
 }
 
 void Generate::init_treehouse_layout()
@@ -1520,6 +1522,7 @@ int Generate::count_crossings(Point pos, Point dir)
 bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymbols)
 {
 	std::set<Point> open = _openpos;
+	if (_panel->id == 0x288FC && hasFlag(Generate::Config::DisableWrite)) open.erase({ 5, 5 });
 	int amount = static_cast<int>(colors.size());
 	while (amount > 0) {
 		if (open.size() == 0)
@@ -1542,6 +1545,7 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 			}
 			if (!found) continue;
 		}
+		if (_panel->id == 0x288FC && hasFlag(Generate::Config::DisableWrite) && !region.count({ 5, 5 })) continue;
 		if (hasFlag(Config::MakeStonesUnsolvable)) {
 			std::set<Point> valid;
 			std::set<Point> check = open2;
@@ -1634,6 +1638,7 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		else {
 			if (_splitPoints.size() == 0) pos = pick_random(open2);
 			else for (Point p : _splitPoints) if (region.count(p)) { pos = p; break; }
+			if (_panel->id == 0x288FC && hasFlag(Generate::Config::DisableWrite)) pos = { 5, 5 };
 			set(pos, Decoration::Eraser | color);
 			_openpos.erase(pos);
 			amount--;
@@ -1656,6 +1661,21 @@ bool Generate::combine_shapes(std::vector<Shape>& shapes)
 						if (p1 + dir == p2) {
 							//Combine shapes
 							for (Point p : shapes[i]) shapes[j].insert(p);
+							//Make sure there are no holes
+							std::set<Point> area = _gridpos;
+							for (Point p : shapes[j]) area.erase(p);
+							while (area.size() > 0) {
+								std::set<Point> region = get_region(*area.begin());
+								bool connected = false;
+								for (Point p : region) {
+									if (p.first == 1 || p.second == 1 || p.first == _panel->_width - 2 || p.second == _panel->_height - 2) {
+										connected = true;
+										break;
+									}
+								}
+								if (!connected) return false;
+								for (Point p : region) area.erase(p);
+							}
 							shapes.erase(shapes.begin() + i);
 							return true;
 						}

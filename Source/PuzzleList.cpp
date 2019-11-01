@@ -3,7 +3,7 @@
 
 void PuzzleList::GenerateAllN()
 {
-	generator->setLoadingData(328);
+	generator->setLoadingData(336);
 	GenerateTutorialN();
 	GenerateSymmetryN();
 	GenerateQuarryN();
@@ -26,7 +26,7 @@ void PuzzleList::GenerateAllN()
 
 void PuzzleList::GenerateAllH()
 {
-	generator->setLoadingData(328);
+	generator->setLoadingData(349);
 	GenerateTutorialH();
 	GenerateSymmetryH();
 	GenerateQuarryH();
@@ -51,7 +51,7 @@ void PuzzleList::GenerateTutorialN()
 {
 	generator->setLoadingData(L"Tutorial", 21);
 	generator->resetConfig();
-	specialCase->drawSeedAndDifficulty(0x00064, seed, false);
+	specialCase->drawSeedAndDifficulty(0x00064, seedIsRNG ? -1 : seed, false);
 	specialCase->drawGoodLuckPanel(0x00182);
 	//Mazes
 	generator->setFlag(Generate::Config::FullGaps);
@@ -197,10 +197,11 @@ void PuzzleList::GenerateQuarryN()
 	generator->generate(0x014E8, Decoration::Dot, 15, Decoration::Eraser | Decoration::Color::Green, 1);
 	//Stones
 	//The colors here don't correspond because of "Push Colors" flag. I don't reset the colors because I want to be able to use red stones
-	generator->setFlag(Generate::Config::MakeStonesUnsolvable);
+	
 	generator->setGridSize(3, 3);
 	generator->generate(0x00557, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x005F1, Decoration::Stone | Decoration::Color::White, 4, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Eraser | Decoration::Color::Green, 1);
+	generator->setFlag(Generate::Config::MakeStonesUnsolvable);
 	generator->setGridSize(4, 4);
 	generator->generate(0x00620, Decoration::Stone | Decoration::Color::White, 7, Decoration::Stone | Decoration::Color::Black, 6, Decoration::Eraser | Decoration::Color::Green, 1);
 	generator->generate(0x009F5, Decoration::Stone | Decoration::Color::White, 6, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Eraser | Decoration::Color::Green, 1);
@@ -586,7 +587,7 @@ void PuzzleList::GenerateMountainN()
 	specialCase->generateMountaintop(0x17C34, { { Decoration::Stone | Decoration::Color::Black, 2 },{ Decoration::Stone | Decoration::Color::White, 1, },
 		{ Decoration::Star | Decoration::Color::Black, 1, },{ Decoration::Star | Decoration::Color::White, 1 } }); //TODO: Improve the speed on this
 	
-	generator->setLoadingData(L"Mountain", 31);
+	generator->setLoadingData(L"Mountain", 39);
 	generator->resetConfig();
 	//Purple Bridge
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
@@ -829,13 +830,10 @@ void PuzzleList::GenerateKeepN()
 	generator->write(0x033EA);
 
 	generator->resetConfig();
-	generator->setSymbol(Decoration::Gap_Row, 3, 2);
-	generator->setSymbol(Decoration::Gap_Column, 8, 5);
+	generator->setObstructions({ {3, 2}, {8, 5} });
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->generate(0x01BE9, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Cyan, 4,
 		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
-	generator->set(3, 2, 0);
-	generator->set(8, 5, 0);
 	std::set<Point> path2 = generator->_path;
 	generator->write(0x01BE9);
 
@@ -898,7 +896,7 @@ void PuzzleList::GenerateTutorialH()
 {
 	generator->setLoadingData(L"Tutorial", 21);
 	generator->resetConfig();
-	specialCase->drawSeedAndDifficulty(0x00064, seed, true);
+	specialCase->drawSeedAndDifficulty(0x00064, seedIsRNG ? -1 : seed, true);
 	specialCase->drawGoodLuckPanel(0x00182);
 	generator->setFlag(Generate::Config::WriteDotColor);
 	generator->setFlag(Generate::Config::LongestPath);
@@ -1395,8 +1393,7 @@ void PuzzleList::GenerateSwampH()
 
 void PuzzleList::GenerateTreehouseH()
 {
-	//TODO: Possibly mess with Orange Bridge 1 to make it not go out as far
-	generator->setLoadingData(L"Treehouse", 56); //TODO: Fix the loading handles for specialCase puzzles so that the count is right.
+	generator->setLoadingData(L"Treehouse", 58);
 	generator->resetConfig();
 	generator->setFlag(Generate::Config::ResetColors);
 	generator->initPanel(0x0288C);
@@ -1728,7 +1725,7 @@ void PuzzleList::GenerateMountainH()
 		{ Decoration::Star | Decoration::Color::White, 1 },{ Decoration::Star | Decoration::Color::Black, 1 },
 		{ Decoration::Stone | Decoration::Color::White, 1 },{ Decoration::Stone | Decoration::Color::Black, 1 } }); //TODO: Improve the speed on this
 
-	generator->setLoadingData(L"Mountain", 31);
+	generator->setLoadingData(L"Mountain", 39);
 	generator->resetConfig();
 	//Purple Bridge
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
@@ -1889,7 +1886,7 @@ void PuzzleList::GenerateMountainH()
 
 void PuzzleList::GenerateCavesH()
 {
-	generator->setLoadingData(L"Caves", 55);
+	generator->setLoadingData(L"Caves", 51);
 	generator->resetConfig();
 
 	specialCase->createArrowSecretDoor(0x17FA2);

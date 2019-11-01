@@ -119,9 +119,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (seedIsRNG || wcslen(text.c_str()) == 0) {
 				seed = Random::RandInt(1, 999999);
 				seedIsRNG = true;
-				randomizer->seed = -1;
+				randomizer->seedIsRNG = true;
 			}
+			else randomizer->seedIsRNG = false;
 
+			randomizer->seed = seed;
 			randomizer->ClearOffsets();
 			/* TODO:
 			if (!randomizer->GameIsRunning()) {
@@ -131,7 +133,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//if (randomizer->GameIsRandomized()) break;
 			//Random::SetSeed(seed);
 			//srand(seed);
-			randomizer->seed = seed;
 
 			// Show seed and force redraw
 			std::wstring seedString = std::to_wstring(seed);
@@ -141,8 +142,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// Randomize, then apply settings
 			//randomizer->Randomize();
-			randomizer->GenerateNormal(hwndLoadingText);
-			//randomizer->GenerateHard(hwndLoadingText);
+			//randomizer->GenerateNormal(hwndLoadingText);
+			randomizer->GenerateHard(hwndLoadingText);
 			/*
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
