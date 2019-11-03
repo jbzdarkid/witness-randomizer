@@ -57,6 +57,7 @@ void Randomizer::GenerateNormal(HWND loadingHandle) {
 	//puzzles->GenerateOrchardN();
 	//puzzles->GenerateKeepN();
 	//puzzles->GenerateJungleN();
+	Panel::SavePanels(seed, false);
 }
 
 void Randomizer::GenerateHard(HWND loadingHandle) {
@@ -78,6 +79,7 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 	//puzzles->GenerateOrchardH();
 	//puzzles->GenerateKeepH();
 	//puzzles->GenerateJungleH();
+	Panel::SavePanels(seed, true);
 }
 
 template <class T>
@@ -152,7 +154,7 @@ void Randomizer::PreventSnipes()
 	// Distance-gate swamp snipe 1 to prevent RNG swamp snipe
 	_memory->WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, { 15.0 });
 	// Distance-gate shadows laser to prevent sniping through the bars
-	//_memory->WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, { 2.5 }); //Removing since this area is not random anymore
+	_memory->WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, { 2.5 }); //Removing since this area is not random anymore
 }
 
 // Private methods

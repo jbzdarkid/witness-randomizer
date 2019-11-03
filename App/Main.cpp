@@ -33,6 +33,9 @@
 #define IDC_SYMMETRYX 0x305
 #define IDC_SYMMETRYY 0x306
 
+#define IDC_DIFFICULTY_NORMAL 0x501
+#define IDC_DIFFICULTY_EXPERT 0x502
+
 #define SHAPE_11 0x1000
 #define SHAPE_12 0x2000
 #define SHAPE_13 0x4000
@@ -59,10 +62,11 @@
 #define ARROW_UP_LEFT 0x60000
 #define ARROW_DOWN_LEFT 0x70000
 
-HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText;
+#define DEBUG true
 
 int panel = 0x00FF8; //Panel to edit //Lower right
 
+HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText, hwndNormal, hwndMessage;
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
 std::shared_ptr<Generate> generator = std::make_shared<Generate>();
@@ -77,6 +81,7 @@ Decoration::Shape symbol;
 Decoration::Color color;
 int currentShape;
 int currentDir;
+bool hard = false;
 std::vector<long long> shapePos = { SHAPE_11, SHAPE_12, SHAPE_13, SHAPE_14, SHAPE_21, SHAPE_22, SHAPE_23, SHAPE_24,
 							  SHAPE_31, SHAPE_32, SHAPE_33, SHAPE_34, SHAPE_41, SHAPE_42, SHAPE_43, SHAPE_44 };
 std::vector<long long> defaultShape = { SHAPE_21, SHAPE_31, SHAPE_32, SHAPE_33 };
@@ -137,13 +142,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			// Show seed and force redraw
 			std::wstring seedString = std::to_wstring(seed);
 			SetWindowText(hwndRandomize, L"Randomizing...");
-			SetWindowText(hwndSeed, seedString.c_str());
+			ShowWindow(hwndLoadingText, SW_SHOW);
 			RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
 
 			// Randomize, then apply settings
 			//randomizer->Randomize();
-			//randomizer->GenerateNormal(hwndLoadingText);
-			randomizer->GenerateHard(hwndLoadingText);
+			if (hard) randomizer->GenerateHard(hwndLoadingText);
+			else randomizer->GenerateNormal(hwndLoadingText);
 			/*
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
 			if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
@@ -151,11 +156,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			*/
 
 			randomizer->AdjustSpeed();
-			randomizer->PreventSnipes();
 
 			// Cleanup, and set timer for "randomization done"
 			SetWindowText(hwndRandomize, L"Randomized!");
-			SetTimer(hwnd, IDT_RANDOMIZED, 10000, NULL);
+			ShowWindow(hwndMessage, SW_SHOW);
 			break;
 		}
 
@@ -240,66 +244,74 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//generator->seed(ctr++);
 			//generator->seed(0);
 			generator->resetConfig();
+
+			Panel::LoadPanels(144, false);
 			
 			break;
 
-			case IDC_ROTATED:
-				CheckDlgButton(hwnd, IDC_ROTATED, !IsDlgButtonChecked(hwnd, IDC_ROTATED));
-				break;
+		case IDC_DIFFICULTY_NORMAL:
+			hard = false;
+			break;
+		case IDC_DIFFICULTY_EXPERT:
+			hard = true;
+			break;
+		case IDC_ROTATED:
+			CheckDlgButton(hwnd, IDC_ROTATED, !IsDlgButtonChecked(hwnd, IDC_ROTATED));
+			break;
 
-			case IDC_NEGATIVE:
-				CheckDlgButton(hwnd, IDC_NEGATIVE, !IsDlgButtonChecked(hwnd, IDC_NEGATIVE));
-				break;
+		case IDC_NEGATIVE:
+			CheckDlgButton(hwnd, IDC_NEGATIVE, !IsDlgButtonChecked(hwnd, IDC_NEGATIVE));
+			break;
 
-			case IDC_SYMMETRYX:
-				CheckDlgButton(hwnd, IDC_SYMMETRYX, !IsDlgButtonChecked(hwnd, IDC_SYMMETRYX));
-				if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX) && IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
-					_panel->symmetry = Panel::Symmetry::Rotational;
-				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX))
-					_panel->symmetry = Panel::Symmetry::Horizontal;
-				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
-					_panel->symmetry = Panel::Symmetry::Vertical;
-				else _panel->symmetry = Panel::Symmetry::None;
-				_panel->Write(panel);
-				break;
+		case IDC_SYMMETRYX:
+			CheckDlgButton(hwnd, IDC_SYMMETRYX, !IsDlgButtonChecked(hwnd, IDC_SYMMETRYX));
+			if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX) && IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+				_panel->symmetry = Panel::Symmetry::Rotational;
+			else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX))
+				_panel->symmetry = Panel::Symmetry::Horizontal;
+			else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+				_panel->symmetry = Panel::Symmetry::Vertical;
+			else _panel->symmetry = Panel::Symmetry::None;
+			_panel->Write(panel);
+			break;
 
-			case IDC_SYMMETRYY:
-				CheckDlgButton(hwnd, IDC_SYMMETRYY, !IsDlgButtonChecked(hwnd, IDC_SYMMETRYY));
-				if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX) && IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
-					_panel->symmetry = Panel::Symmetry::Rotational;
-				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX))
-					_panel->symmetry = Panel::Symmetry::Horizontal;
-				else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
-					_panel->symmetry = Panel::Symmetry::Vertical;
-				else _panel->symmetry = Panel::Symmetry::None;
-				_panel->Write(panel);
-				break;
+		case IDC_SYMMETRYY:
+			CheckDlgButton(hwnd, IDC_SYMMETRYY, !IsDlgButtonChecked(hwnd, IDC_SYMMETRYY));
+			if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX) && IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+				_panel->symmetry = Panel::Symmetry::Rotational;
+			else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYX))
+				_panel->symmetry = Panel::Symmetry::Horizontal;
+			else if (IsDlgButtonChecked(hwnd, IDC_SYMMETRYY))
+				_panel->symmetry = Panel::Symmetry::Vertical;
+			else _panel->symmetry = Panel::Symmetry::None;
+			_panel->Write(panel);
+			break;
 
-			case SHAPE_11: CheckDlgButton(hwnd, SHAPE_11, !IsDlgButtonChecked(hwnd, SHAPE_11)); currentShape ^= SHAPE_11; break;
-			case SHAPE_12: CheckDlgButton(hwnd, SHAPE_12, !IsDlgButtonChecked(hwnd, SHAPE_12)); currentShape ^= SHAPE_12; break;
-			case SHAPE_13: CheckDlgButton(hwnd, SHAPE_13, !IsDlgButtonChecked(hwnd, SHAPE_13)); currentShape ^= SHAPE_13; break;
-			case SHAPE_14: CheckDlgButton(hwnd, SHAPE_14, !IsDlgButtonChecked(hwnd, SHAPE_14)); currentShape ^= SHAPE_14; break;
-			case SHAPE_21: CheckDlgButton(hwnd, SHAPE_21, !IsDlgButtonChecked(hwnd, SHAPE_21)); currentShape ^= SHAPE_21; break;
-			case SHAPE_22: CheckDlgButton(hwnd, SHAPE_22, !IsDlgButtonChecked(hwnd, SHAPE_22)); currentShape ^= SHAPE_22; break;
-			case SHAPE_23: CheckDlgButton(hwnd, SHAPE_23, !IsDlgButtonChecked(hwnd, SHAPE_23)); currentShape ^= SHAPE_23; break;
-			case SHAPE_24: CheckDlgButton(hwnd, SHAPE_24, !IsDlgButtonChecked(hwnd, SHAPE_24)); currentShape ^= SHAPE_24; break;
-			case SHAPE_31: CheckDlgButton(hwnd, SHAPE_31, !IsDlgButtonChecked(hwnd, SHAPE_31)); currentShape ^= SHAPE_31; break;
-			case SHAPE_32: CheckDlgButton(hwnd, SHAPE_32, !IsDlgButtonChecked(hwnd, SHAPE_32)); currentShape ^= SHAPE_32; break;
-			case SHAPE_33: CheckDlgButton(hwnd, SHAPE_33, !IsDlgButtonChecked(hwnd, SHAPE_33)); currentShape ^= SHAPE_33; break;
-			case SHAPE_34: CheckDlgButton(hwnd, SHAPE_34, !IsDlgButtonChecked(hwnd, SHAPE_34)); currentShape ^= SHAPE_34; break;
-			case SHAPE_41: CheckDlgButton(hwnd, SHAPE_41, !IsDlgButtonChecked(hwnd, SHAPE_41)); currentShape ^= SHAPE_41; break;
-			case SHAPE_42: CheckDlgButton(hwnd, SHAPE_42, !IsDlgButtonChecked(hwnd, SHAPE_42)); currentShape ^= SHAPE_42; break;
-			case SHAPE_43: CheckDlgButton(hwnd, SHAPE_43, !IsDlgButtonChecked(hwnd, SHAPE_43)); currentShape ^= SHAPE_43; break;
-			case SHAPE_44: CheckDlgButton(hwnd, SHAPE_44, !IsDlgButtonChecked(hwnd, SHAPE_44)); currentShape ^= SHAPE_44; break;
+		case SHAPE_11: CheckDlgButton(hwnd, SHAPE_11, !IsDlgButtonChecked(hwnd, SHAPE_11)); currentShape ^= SHAPE_11; break;
+		case SHAPE_12: CheckDlgButton(hwnd, SHAPE_12, !IsDlgButtonChecked(hwnd, SHAPE_12)); currentShape ^= SHAPE_12; break;
+		case SHAPE_13: CheckDlgButton(hwnd, SHAPE_13, !IsDlgButtonChecked(hwnd, SHAPE_13)); currentShape ^= SHAPE_13; break;
+		case SHAPE_14: CheckDlgButton(hwnd, SHAPE_14, !IsDlgButtonChecked(hwnd, SHAPE_14)); currentShape ^= SHAPE_14; break;
+		case SHAPE_21: CheckDlgButton(hwnd, SHAPE_21, !IsDlgButtonChecked(hwnd, SHAPE_21)); currentShape ^= SHAPE_21; break;
+		case SHAPE_22: CheckDlgButton(hwnd, SHAPE_22, !IsDlgButtonChecked(hwnd, SHAPE_22)); currentShape ^= SHAPE_22; break;
+		case SHAPE_23: CheckDlgButton(hwnd, SHAPE_23, !IsDlgButtonChecked(hwnd, SHAPE_23)); currentShape ^= SHAPE_23; break;
+		case SHAPE_24: CheckDlgButton(hwnd, SHAPE_24, !IsDlgButtonChecked(hwnd, SHAPE_24)); currentShape ^= SHAPE_24; break;
+		case SHAPE_31: CheckDlgButton(hwnd, SHAPE_31, !IsDlgButtonChecked(hwnd, SHAPE_31)); currentShape ^= SHAPE_31; break;
+		case SHAPE_32: CheckDlgButton(hwnd, SHAPE_32, !IsDlgButtonChecked(hwnd, SHAPE_32)); currentShape ^= SHAPE_32; break;
+		case SHAPE_33: CheckDlgButton(hwnd, SHAPE_33, !IsDlgButtonChecked(hwnd, SHAPE_33)); currentShape ^= SHAPE_33; break;
+		case SHAPE_34: CheckDlgButton(hwnd, SHAPE_34, !IsDlgButtonChecked(hwnd, SHAPE_34)); currentShape ^= SHAPE_34; break;
+		case SHAPE_41: CheckDlgButton(hwnd, SHAPE_41, !IsDlgButtonChecked(hwnd, SHAPE_41)); currentShape ^= SHAPE_41; break;
+		case SHAPE_42: CheckDlgButton(hwnd, SHAPE_42, !IsDlgButtonChecked(hwnd, SHAPE_42)); currentShape ^= SHAPE_42; break;
+		case SHAPE_43: CheckDlgButton(hwnd, SHAPE_43, !IsDlgButtonChecked(hwnd, SHAPE_43)); currentShape ^= SHAPE_43; break;
+		case SHAPE_44: CheckDlgButton(hwnd, SHAPE_44, !IsDlgButtonChecked(hwnd, SHAPE_44)); currentShape ^= SHAPE_44; break;
 
-			case ARROW_UP_LEFT: CheckDlgButton(hwnd, ARROW_UP_LEFT, !IsDlgButtonChecked(hwnd, ARROW_UP_LEFT)); if (IsDlgButtonChecked(hwnd, ARROW_UP_LEFT)) currentDir = ARROW_UP_LEFT; break;
-			case ARROW_UP: CheckDlgButton(hwnd, ARROW_UP, !IsDlgButtonChecked(hwnd, ARROW_UP)); if (IsDlgButtonChecked(hwnd, ARROW_UP)) currentDir = ARROW_UP; break;
-			case ARROW_UP_RIGHT: CheckDlgButton(hwnd, ARROW_UP_RIGHT, !IsDlgButtonChecked(hwnd, ARROW_UP_RIGHT)); if (IsDlgButtonChecked(hwnd, ARROW_UP_RIGHT)) currentDir = ARROW_UP_RIGHT; break;
-			case ARROW_LEFT: CheckDlgButton(hwnd, ARROW_LEFT, !IsDlgButtonChecked(hwnd, ARROW_LEFT)); if (IsDlgButtonChecked(hwnd, ARROW_LEFT)) currentDir = ARROW_LEFT; break;
-			case ARROW_RIGHT: CheckDlgButton(hwnd, ARROW_RIGHT, !IsDlgButtonChecked(hwnd, ARROW_RIGHT)); if (IsDlgButtonChecked(hwnd, ARROW_RIGHT)) currentDir = ARROW_RIGHT; break;
-			case ARROW_DOWN_LEFT: CheckDlgButton(hwnd, ARROW_DOWN_LEFT, !IsDlgButtonChecked(hwnd, ARROW_DOWN_LEFT)); if (IsDlgButtonChecked(hwnd, ARROW_DOWN_LEFT)) currentDir = ARROW_DOWN_LEFT; break;
-			case ARROW_DOWN: CheckDlgButton(hwnd, ARROW_DOWN, !IsDlgButtonChecked(hwnd, ARROW_DOWN)); if (IsDlgButtonChecked(hwnd, ARROW_DOWN)) currentDir = ARROW_DOWN; break;
-			case ARROW_DOWN_RIGHT: CheckDlgButton(hwnd, ARROW_DOWN_RIGHT, !IsDlgButtonChecked(hwnd, ARROW_DOWN_RIGHT)); if (IsDlgButtonChecked(hwnd, ARROW_DOWN_RIGHT)) currentDir = ARROW_DOWN_RIGHT; break;
+		case ARROW_UP_LEFT: CheckDlgButton(hwnd, ARROW_UP_LEFT, !IsDlgButtonChecked(hwnd, ARROW_UP_LEFT)); if (IsDlgButtonChecked(hwnd, ARROW_UP_LEFT)) currentDir = ARROW_UP_LEFT; break;
+		case ARROW_UP: CheckDlgButton(hwnd, ARROW_UP, !IsDlgButtonChecked(hwnd, ARROW_UP)); if (IsDlgButtonChecked(hwnd, ARROW_UP)) currentDir = ARROW_UP; break;
+		case ARROW_UP_RIGHT: CheckDlgButton(hwnd, ARROW_UP_RIGHT, !IsDlgButtonChecked(hwnd, ARROW_UP_RIGHT)); if (IsDlgButtonChecked(hwnd, ARROW_UP_RIGHT)) currentDir = ARROW_UP_RIGHT; break;
+		case ARROW_LEFT: CheckDlgButton(hwnd, ARROW_LEFT, !IsDlgButtonChecked(hwnd, ARROW_LEFT)); if (IsDlgButtonChecked(hwnd, ARROW_LEFT)) currentDir = ARROW_LEFT; break;
+		case ARROW_RIGHT: CheckDlgButton(hwnd, ARROW_RIGHT, !IsDlgButtonChecked(hwnd, ARROW_RIGHT)); if (IsDlgButtonChecked(hwnd, ARROW_RIGHT)) currentDir = ARROW_RIGHT; break;
+		case ARROW_DOWN_LEFT: CheckDlgButton(hwnd, ARROW_DOWN_LEFT, !IsDlgButtonChecked(hwnd, ARROW_DOWN_LEFT)); if (IsDlgButtonChecked(hwnd, ARROW_DOWN_LEFT)) currentDir = ARROW_DOWN_LEFT; break;
+		case ARROW_DOWN: CheckDlgButton(hwnd, ARROW_DOWN, !IsDlgButtonChecked(hwnd, ARROW_DOWN)); if (IsDlgButtonChecked(hwnd, ARROW_DOWN)) currentDir = ARROW_DOWN; break;
+		case ARROW_DOWN_RIGHT: CheckDlgButton(hwnd, ARROW_DOWN_RIGHT, !IsDlgButtonChecked(hwnd, ARROW_DOWN_RIGHT)); if (IsDlgButtonChecked(hwnd, ARROW_DOWN_RIGHT)) currentDir = ARROW_DOWN_RIGHT; break;
 		}
 	}
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -326,151 +338,170 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	RECT rect;
     GetClientRect(GetDesktopWindow(), &rect);
 	HWND hwnd = CreateWindow(WINDOW_CLASS, PRODUCT_NAME, WS_OVERLAPPEDWINDOW,
-      rect.right - 550, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
+      rect.right - 650, 200, 600, DEBUG ? 700 : 280, nullptr, nullptr, hInstance, nullptr);
 
 	CreateWindow(L"STATIC", L"Version: " VERSION_STR,
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		390, 15, 90, 16, hwnd, NULL, hInstance, NULL);
+		490, 15, 90, 16, hwnd, NULL, hInstance, NULL);
 
-	CreateWindow(L"STATIC", L"Enter a seed:",
+	CreateWindow(L"STATIC", L"Choose Difficuty:",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		10, 15, 90, 16, hwnd, NULL, hInstance, NULL);
+		10, 15, 120, 16, hwnd, NULL, hInstance, NULL);
+	hwndNormal = CreateWindow(L"BUTTON", L"NORMAL - Puzzles that should be reasonably challenging for most players. Puzzle mechanics are mostly identical to those in the original game.",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | BS_MULTILINE,
+		10, 35, 570, 35, hwnd, (HMENU)IDC_DIFFICULTY_NORMAL, hInstance, NULL);
+	CreateWindow(L"BUTTON", L"EXPERT - Very challenging puzzles with complex mechanics and mind-boggling new tricks and gimmicks. For brave players seeking the ultimate challenge.",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | BS_MULTILINE,
+		10, 75, 570, 35, hwnd, (HMENU)IDC_DIFFICULTY_EXPERT, hInstance, NULL);
+	SendMessage(hwndNormal, BM_SETCHECK, BST_CHECKED, 1);
+
+	CreateWindow(L"STATIC", L"Enter a seed (optional):",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		10, 125, 160, 16, hwnd, NULL, hInstance, NULL);
 	hwndSeed = CreateWindow(MSFTEDIT_CLASS, L"",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
-        100, 10, 50, 26, hwnd, NULL, hInstance, NULL);
+        180, 120, 50, 26, hwnd, NULL, hInstance, NULL);
 	SendMessage(hwndSeed, EM_SETEVENTMASK, NULL, ENM_CHANGE); // Notify on text change
 
 	hwndRandomize = CreateWindow(L"BUTTON", L"Randomize",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 10, 110, 26, hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
+		250, 120, 130, 26, hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
 
 	hwndLoadingText = CreateWindow(L"STATIC", L"",
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		135, 50, 160, 16, hwnd, NULL, hInstance, NULL);
+		400, 125, 160, 16, hwnd, NULL, hInstance, NULL);
+	ShowWindow(hwndLoadingText, SW_HIDE);
 
-	CreateWindow(L"STATIC", L"Col/Row:",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		160, 130, 100, 26, hwnd, NULL, hInstance, NULL);
-	hwndCol = CreateWindow(MSFTEDIT_CLASS, L"",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
-		220, 130, 50, 26, hwnd, NULL, hInstance, NULL);
-	hwndRow = CreateWindow(MSFTEDIT_CLASS, L"",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
-		270, 130, 50, 26, hwnd, NULL, hInstance, NULL);
-	SetWindowText(hwndCol, L"0");
-	SetWindowText(hwndRow, L"0");
-	
-	hwndElem = CreateWindow(L"COMBOBOX", L"",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_DROPDOWN | CBS_HASSTRINGS,
-		160, 160, 150, 300, hwnd, NULL, hInstance, NULL);
+	hwndMessage = CreateWindow(L"STATIC", L"LEAVE THIS RANDOMIZER OPEN DURING GAMEPLAY\r\n\r\nTo resume later after quitting the game, click \"Randomize\" after the game finishes loading. You do not need to re-enter the seed you used previously.",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_CENTER | BS_MULTILINE,
+		10, 160, 580, 80, hwnd, NULL, hInstance, NULL);
+	ShowWindow(hwndMessage, SW_HIDE);
 
-	const int NUM_ELEMS = 17;
-	TCHAR elems[NUM_ELEMS][24] =
-	{
-		TEXT("Stone"), TEXT("Star"), TEXT("Eraser"), TEXT("Shape"),
-		TEXT("Triangle 1"), TEXT("Triangle 2"), TEXT("Triangle 3"),
-		TEXT("Arrow 1"), TEXT("Arrow 2"), TEXT("Arrow 3"),
-		TEXT("Start"), TEXT("Exit"), TEXT("Gap (Row)"), TEXT("Gap (Column)"),
-		TEXT("Dot (Intersection)"), TEXT("Dot (Row)"), TEXT("Dot (Column)"),
-	};
-	TCHAR option[24];
-	memset(&option, 0, sizeof(option));
-	for (int i = 0; i < NUM_ELEMS; i++)
-	{
-		wcscpy_s(option, sizeof(option) / sizeof(TCHAR), (TCHAR*)elems[i]);
-		SendMessage(hwndElem, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)option);
-	}
-	SendMessage(hwndElem, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
+	if (DEBUG) {
+		CreateWindow(L"STATIC", L"Col/Row:",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+			160, 330, 100, 26, hwnd, NULL, hInstance, NULL);
+		hwndCol = CreateWindow(MSFTEDIT_CLASS, L"",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
+			220, 330, 50, 26, hwnd, NULL, hInstance, NULL);
+		hwndRow = CreateWindow(MSFTEDIT_CLASS, L"",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
+			270, 330, 50, 26, hwnd, NULL, hInstance, NULL);
+		SetWindowText(hwndCol, L"0");
+		SetWindowText(hwndRow, L"0");
 
-	hwndColor = CreateWindow(L"COMBOBOX", L"",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_DROPDOWN | CBS_HASSTRINGS,
-		160, 190, 150, 300, hwnd, NULL, hInstance, NULL);
+		hwndElem = CreateWindow(L"COMBOBOX", L"",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_DROPDOWN | CBS_HASSTRINGS,
+			160, 360, 150, 300, hwnd, NULL, hInstance, NULL);
 
-	const int NUM_COLORS = 12;
-	TCHAR colors[NUM_COLORS][24] =
-	{
-		TEXT("Black"), TEXT("White"), TEXT("Red"), TEXT("Orange"), TEXT("Yellow"), TEXT("Green"),
-		TEXT("Cyan"), TEXT("Blue"), TEXT("Purple"), TEXT("Magenta"), TEXT("None"), TEXT("???")
-	};
-	memset(&option, 0, sizeof(option));
-	for (int i = 0; i < NUM_COLORS; i++)
-	{
-		wcscpy_s(option, sizeof(option) / sizeof(TCHAR), (TCHAR*)colors[i]);
-		SendMessage(hwndColor, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)option);
-	}
-	SendMessage(hwndColor, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
-
-	CreateWindow(L"BUTTON", L"Place Symbol",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 220, 150, 26, hwnd, (HMENU)IDC_ADD, hInstance, NULL);
-	CreateWindow(L"BUTTON", L"Remove Symbol",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 250, 150, 26, hwnd, (HMENU)IDC_REMOVE, hInstance, NULL);
-	CreateWindow(L"BUTTON", L"Test",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-		160, 330, 150, 26, hwnd, (HMENU)IDC_TEST, hInstance, NULL);
-
-	CreateWindow(L"STATIC", L"Shape:",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		50, 150, 50, 16, hwnd, NULL, hInstance, NULL);
-
-	for (int x = 0; x < 4; x++) {
-		for (int y = 0; y < 4; y++) {
-			CreateWindow(L"BUTTON", L"",
-				WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-				50 + x * 15, 180 + y * 15, 12, 12, hwnd, (HMENU)shapePos[x + y * 4], hInstance, NULL);
+		const int NUM_ELEMS = 17;
+		TCHAR elems[NUM_ELEMS][24] =
+		{
+			TEXT("Stone"), TEXT("Star"), TEXT("Eraser"), TEXT("Shape"),
+			TEXT("Triangle 1"), TEXT("Triangle 2"), TEXT("Triangle 3"),
+			TEXT("Arrow 1"), TEXT("Arrow 2"), TEXT("Arrow 3"),
+			TEXT("Start"), TEXT("Exit"), TEXT("Gap (Row)"), TEXT("Gap (Column)"),
+			TEXT("Dot (Intersection)"), TEXT("Dot (Row)"), TEXT("Dot (Column)"),
+		};
+		TCHAR option[24];
+		memset(&option, 0, sizeof(option));
+		for (int i = 0; i < NUM_ELEMS; i++)
+		{
+			wcscpy_s(option, sizeof(option) / sizeof(TCHAR), (TCHAR*)elems[i]);
+			SendMessage(hwndElem, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)option);
 		}
-	}
-	for (long long chk : defaultShape) {
-		CheckDlgButton(hwnd, static_cast<int>(chk), TRUE);
-		currentShape |= chk;
-	}
+		SendMessage(hwndElem, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
 
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		50, 260, 12, 12, hwnd, (HMENU)IDC_ROTATED, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Rotated",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		65, 260, 80, 16, hwnd, NULL, hInstance, NULL);
+		hwndColor = CreateWindow(L"COMBOBOX", L"",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_DROPDOWN | CBS_HASSTRINGS,
+			160, 390, 150, 300, hwnd, NULL, hInstance, NULL);
 
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		50, 280, 12, 12, hwnd, (HMENU)IDC_NEGATIVE, hInstance, NULL);
-	CreateWindow(L"STATIC", L"Negative",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		65, 280, 80, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		50, 320, 12, 12, hwnd, (HMENU)IDC_SYMMETRYX, hInstance, NULL);
-	CreateWindow(L"STATIC", L"H. Symmetry",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		65, 320, 90, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"BUTTON", L"",
-		WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-		50, 340, 12, 12, hwnd, (HMENU)IDC_SYMMETRYY, hInstance, NULL);
-	CreateWindow(L"STATIC", L"V. Symmetry",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		65, 340, 90, 16, hwnd, NULL, hInstance, NULL);
-
-	CreateWindow(L"STATIC", L"Direction:",
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
-		50, 360, 90, 16, hwnd, NULL, hInstance, NULL);
-
-	for (int x = 0; x < 3; x++) {
-		for (int y = 0; y < 3; y++) {
-			if (x == 1 && y == 1) continue;
-			CreateWindow(L"BUTTON", L"",
-				WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-				50 + x * 15, 380 + y * 15, 12, 12, hwnd, (HMENU)directions[x + y * 3], hInstance, NULL);
+		const int NUM_COLORS = 12;
+		TCHAR colors[NUM_COLORS][24] =
+		{
+			TEXT("Black"), TEXT("White"), TEXT("Red"), TEXT("Orange"), TEXT("Yellow"), TEXT("Green"),
+			TEXT("Cyan"), TEXT("Blue"), TEXT("Purple"), TEXT("Magenta"), TEXT("None"), TEXT("???")
+		};
+		memset(&option, 0, sizeof(option));
+		for (int i = 0; i < NUM_COLORS; i++)
+		{
+			wcscpy_s(option, sizeof(option) / sizeof(TCHAR), (TCHAR*)colors[i]);
+			SendMessage(hwndColor, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)option);
 		}
-	}
+		SendMessage(hwndColor, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
 
-	if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
-		CheckDlgButton(hwnd, IDC_SYMMETRYX, TRUE);
-	if (_panel->symmetry == Panel::Symmetry::Vertical|| _panel->symmetry == Panel::Symmetry::Rotational)
-		CheckDlgButton(hwnd, IDC_SYMMETRYY, TRUE);
+		CreateWindow(L"BUTTON", L"Place Symbol",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+			160, 420, 150, 26, hwnd, (HMENU)IDC_ADD, hInstance, NULL);
+		CreateWindow(L"BUTTON", L"Remove Symbol",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+			160, 450, 150, 26, hwnd, (HMENU)IDC_REMOVE, hInstance, NULL);
+		CreateWindow(L"BUTTON", L"Test",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+			160, 530, 150, 26, hwnd, (HMENU)IDC_TEST, hInstance, NULL);
+
+		CreateWindow(L"STATIC", L"Shape:",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+			50, 350, 50, 16, hwnd, NULL, hInstance, NULL);
+
+		for (int x = 0; x < 4; x++) {
+			for (int y = 0; y < 4; y++) {
+				CreateWindow(L"BUTTON", L"",
+					WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+					50 + x * 15, 380 + y * 15, 12, 12, hwnd, (HMENU)shapePos[x + y * 4], hInstance, NULL);
+			}
+		}
+		for (long long chk : defaultShape) {
+			CheckDlgButton(hwnd, static_cast<int>(chk), TRUE);
+			currentShape |= chk;
+		}
+
+		CreateWindow(L"BUTTON", L"",
+			WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+			50, 460, 12, 12, hwnd, (HMENU)IDC_ROTATED, hInstance, NULL);
+		CreateWindow(L"STATIC", L"Rotated",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+			65, 460, 80, 16, hwnd, NULL, hInstance, NULL);
+
+		CreateWindow(L"BUTTON", L"",
+			WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+			50, 480, 12, 12, hwnd, (HMENU)IDC_NEGATIVE, hInstance, NULL);
+		CreateWindow(L"STATIC", L"Negative",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+			65, 480, 80, 16, hwnd, NULL, hInstance, NULL);
+
+		CreateWindow(L"BUTTON", L"",
+			WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+			50, 520, 12, 12, hwnd, (HMENU)IDC_SYMMETRYX, hInstance, NULL);
+		CreateWindow(L"STATIC", L"H. Symmetry",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+			65, 520, 90, 16, hwnd, NULL, hInstance, NULL);
+
+		CreateWindow(L"BUTTON", L"",
+			WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+			50, 540, 12, 12, hwnd, (HMENU)IDC_SYMMETRYY, hInstance, NULL);
+		CreateWindow(L"STATIC", L"V. Symmetry",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+			65, 540, 90, 16, hwnd, NULL, hInstance, NULL);
+
+		CreateWindow(L"STATIC", L"Direction:",
+			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+			50, 560, 90, 16, hwnd, NULL, hInstance, NULL);
+
+		for (int x = 0; x < 3; x++) {
+			for (int y = 0; y < 3; y++) {
+				if (x == 1 && y == 1) continue;
+				CreateWindow(L"BUTTON", L"",
+					WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+					50 + x * 15, 580 + y * 15, 12, 12, hwnd, (HMENU)directions[x + y * 3], hInstance, NULL);
+			}
+		}
+
+		if (_panel->symmetry == Panel::Symmetry::Horizontal || _panel->symmetry == Panel::Symmetry::Rotational)
+			CheckDlgButton(hwnd, IDC_SYMMETRYX, TRUE);
+		if (_panel->symmetry == Panel::Symmetry::Vertical || _panel->symmetry == Panel::Symmetry::Rotational)
+			CheckDlgButton(hwnd, IDC_SYMMETRYY, TRUE);
+	}
 
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);

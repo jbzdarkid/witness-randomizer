@@ -145,6 +145,8 @@ public:
 	void SetGridSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color);
 	void ClearGridSymbol(int x, int y);
 	void Resize(int width, int height);
+	static void SavePanels(int seed, bool hard);
+	static void LoadPanels(int seed, bool hard);
 
 	enum Style {
 		SYMMETRICAL = 0x2, //Not on the town symmetry puzzles? IDK why.
@@ -397,6 +399,8 @@ private:
 	int _style;
 	bool _resized;
 	int id;
+
+	static std::vector<Panel> generatedPanels;
 
 	friend class PanelExtractionTests;
 	friend class Generate;

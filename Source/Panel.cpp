@@ -4,8 +4,10 @@
 #include "Randomizer.h"
 #include "Watchdog.h"
 #include <sstream>
+#include <fstream>
 
 int Point::pillarWidth = 0;
+std::vector<Panel> Panel::generatedPanels;
 
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
@@ -84,6 +86,7 @@ void Panel::Write() {
 	_memory->WritePanelData<int>(id, STYLE_FLAGS, { _style });
 	if (pathWidth != 1) _memory->WritePanelData<float>(id, PATH_WIDTH_SCALE, { pathWidth });
 	_memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
+	generatedPanels.push_back(*this);
 }
 
 void Panel::SetSymbol(int x, int y, Decoration::Shape symbol, Decoration::Color color)
@@ -177,6 +180,77 @@ void Panel::Resize(int width, int height)
 	_grid.resize(width);
 	for (auto& row : _grid) row.resize(height);
 	_resized = true;
+}
+
+void Panel::SavePanels(int seed, bool hard)
+{
+	std::string difficulty = hard ? "E" : "N";
+	std::ofstream file("puzzledata" + difficulty + std::to_string(seed) + ".dat");
+	for (Panel panel : generatedPanels) {
+		file << panel.id << " ";
+		file << panel._width << " " << panel._height << " ";
+		for (std::vector<int> vec : panel._grid) {
+			for (int i : vec) {
+				file << i << " ";
+			}
+		}
+		file << panel._startpoints.size() << " ";
+		for (Point p : panel._startpoints) {
+			file << p.first << " " << p.second << " ";
+		}
+		file << panel._endpoints.size() << " ";
+		for (Endpoint e : panel._endpoints) {
+			file << e.GetX() << " " << e.GetY() << " " << e.GetDir() << " " << e.GetFlags() << " ";
+		}
+		file << panel.minx << " " << panel.miny << " " << panel.maxx << " " << panel.maxy << " " << panel.unitWidth << " " << panel.unitHeight << " ";
+		file << panel._style << "  " << panel._resized << " " << panel.symmetry << " " << panel.pathWidth << " " << panel.writeColors << " " << panel.decorationsOnly << " " << Point::pillarWidth << " " << std::endl;
+	}
+}
+
+void Panel::LoadPanels(int seed, bool hard)
+{
+	
+	std::string difficulty = hard ? "E" : "N";
+	std::ifstream file("puzzledata" + difficulty + std::to_string(seed) + ".dat");
+	while (!file.eof()) {
+		int id;
+		file >> id;
+		Panel panel(id);
+		panel._grid.clear();
+		panel._startpoints.clear();
+		panel._endpoints.clear();
+		file >> panel._width >> panel._height;
+		for (int x = 0; x < panel._width; x++) {
+			panel._grid.push_back(std::vector<int>());
+			for (int y = 0; y < panel._height; y++) {
+				int val;
+				file >> val;
+				panel._grid[x].push_back(val);
+			}
+		}
+		int numStarts; file >> numStarts;
+		while (numStarts-- > 0) {
+			Point p;
+			file >> p.first >> p.second;
+			panel._startpoints.push_back(p);
+		}
+		int numExits; file >> numExits;
+		while (numExits-- > 0) {
+			int x, y, dir, flags;
+			file >> x >> y >> dir >> flags;
+			panel._endpoints.push_back(Endpoint(x, y, static_cast<Endpoint::Direction>(dir), flags));
+		}
+		file >> panel.minx >> panel.miny >> panel.maxx >> panel.maxy >> panel.unitWidth >> panel.unitHeight;
+		int symmetry;
+		file >> panel._style >> panel._resized >> symmetry >> panel.pathWidth >> panel.writeColors >> panel.decorationsOnly >> Point::pillarWidth;
+		panel.symmetry = static_cast<Panel::Symmetry>(symmetry);
+		std::string skip; std::getline(file, skip); //Go to the next line
+		if (file.fail()) {
+			if (file.eof()) return;
+			file.clear();
+		}
+		else panel.Write();
+	}
 }
 
 //Only for testing
