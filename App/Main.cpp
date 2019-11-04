@@ -4,70 +4,103 @@
 
 #include <cassert>
 #include <iostream>
+#include <string>
+#include <thread>
 
 #include "Memory.h"
+class Randomizer {
+public:
+    Randomizer(const std::shared_ptr<Memory>&) {}
+    void Randomize() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+};
 
 #define EXE_NAME L"witness64_d3d11.exe"
-
 #define PROC_ATTACH 0x401
-#define IDC_TOGGLESPEED 0x402
-#define IDC_SPEEDRUNNER 0x403
-#define IDC_HARDMODE 0x404
-#define IDC_READ 0x405
-#define IDC_RANDOM 0x406
-#define IDC_WRITE 0x407
-#define IDC_DUMP 0x408
-#define IDT_RANDOMIZED 0x409
-#define IDC_TOGGLELASERS 0x410
-#define IDC_TOGGLESNIPES 0x411
+#define RANDOMIZE_READY 0x402
+#define RANDOMIZING 0403
+#define RANDOMIZE_DONE 0x404
+#define CHECK_NEWGAME 0x405
 
 // Globals
 HWND g_hwnd;
+HWND g_seed;
+HWND g_randomizerStatus;
 HINSTANCE g_hInstance;
 auto g_witnessProc = std::make_shared<Memory>();
+std::shared_ptr<Randomizer> g_randomizer;
+
+// Notifications I need:
+// Game shutdown
+// Load game?
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	if (message == WM_DESTROY) {
 		PostQuitMessage(0);
-    } else if (message == WM_COMMAND) {
+    } else if (message == WM_COMMAND || message == WM_TIMER) {
         switch (LOWORD(wParam)) {
             case PROC_ATTACH:
                 if (!g_witnessProc->Initialize(EXE_NAME)) {
-                    OutputDebugString(L"Failed to initialize, trying again in 5 seconds");
-                    SetTimer(g_hwnd, PROC_ATTACH, 5000, NULL); // Re-attach in 10s
+                    SetTimer(g_hwnd, PROC_ATTACH, 1000, NULL); // Retry in 1s
+                } else {
+                    g_randomizer = std::make_shared<Randomizer>(g_witnessProc);
+                    PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_READY, NULL);
+                    SetTimer(g_hwnd, CHECK_NEWGAME, 1000, NULL); // Start checking for new game
                 }
                 break;
-            case IDC_TOGGLELASERS:
-                OutputDebugString(L"Hello, world!");
+            case CHECK_NEWGAME:
+                if (g_witnessProc) {
+                    // It shouldn't be possible to pause earlier than this, so subsequent checks will fail.
+                    if (g_witnessProc->GetCurrentFrame() < 80) { // New game
+                        SetWindowText(g_seed, L"");
+                        PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_READY, NULL);
+                    }
+                    SetTimer(g_hwnd, CHECK_NEWGAME, 1000, NULL); // Continue checking for new game
+                }
+                break;
+            case RANDOMIZE_READY:
+                SetWindowText(g_randomizerStatus, L"Randomize");
+                EnableWindow(g_randomizerStatus, TRUE);
+                break;
+            case RANDOMIZING:
+                if (!g_randomizer) break;
+                SetWindowText(g_randomizerStatus, L"Randomizing...");
+                std::thread([]{
+                    g_randomizer->Randomize();
+                    PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_DONE, NULL);
+                }).detach();
+                break;
+            case RANDOMIZE_DONE:
+                SetWindowText(g_randomizerStatus, L"Randomized!");
                 break;
             default:
-                assert(false);
                 break;
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
-void CreateLabel(int x, int y, int width, LPCWSTR text) {
-	CreateWindow(L"STATIC", text,
+HWND CreateLabel(int x, int y, int width, LPCWSTR text) {
+	return CreateWindow(L"STATIC", text,
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 		x, y, width, 16, g_hwnd, NULL, g_hInstance, NULL);
 }
 
-void CreateButton(int x, int y, int width, LPCWSTR text, int message) {
+HWND CreateButton(int x, int y, int width, LPCWSTR text, int message) {
 #pragma warning(push)
 #pragma warning(disable: 4312)
-	CreateWindow(L"BUTTON", text,
+	return CreateWindow(L"BUTTON", text,
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		x, y, width, 26, g_hwnd, (HMENU)message, g_hInstance, NULL);
 #pragma warning(pop)
 }
 
-/*
-	hwndSeed = CreateWindow(MSFTEDIT_CLASS, L"",
+HWND CreateText(int x, int y, int width, LPCWSTR defaultText = L"") {
+	return CreateWindow(MSFTEDIT_CLASS, L"",
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER,
-        100, 10, 50, 26, hwnd, NULL, hInstance, NULL);
-*/
+        x, y, width, 26, g_hwnd, NULL, g_hInstance, NULL);
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
 	LoadLibrary(L"Msftedit.dll");
@@ -93,7 +126,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
       rect.right - 550, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
 
     CreateLabel(390, 15, 90, L"Version: " VERSION_STR);
-    CreateButton(10, 72, 100, L"Button text", IDC_TOGGLELASERS);
+    g_seed = CreateText(10, 10, 100);
+    g_randomizerStatus = CreateButton(120, 10, 100, L"Randomize", RANDOMIZING);
+    EnableWindow(g_randomizerStatus, FALSE);
     PostMessage(g_hwnd, WM_COMMAND, PROC_ATTACH, NULL);
 
 	ShowWindow(g_hwnd, nCmdShow);

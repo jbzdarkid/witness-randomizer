@@ -2,6 +2,7 @@
 #include <psapi.h>
 #include <tlhelp32.h>
 #include <iostream>
+#include <cassert>
 
 #undef PROCESSENTRY32
 #undef Process32Next
@@ -53,15 +54,15 @@ Memory::~Memory() {
     }
 }
 
-int Memory::GetCurrentFrame()
-{
+int Memory::GetCurrentFrame() {
 	int SCRIPT_FRAMES;
 	if (GLOBALS == 0x5B28C0) {
 		SCRIPT_FRAMES = 0x5BE3B0;
 	} else if (GLOBALS == 0x62D0A0) {
-		SCRIPT_FRAMES = 0x63651C;
+		SCRIPT_FRAMES = 0x63954C;
 	} else {
-		throw std::exception("Unknown value for Globals!");
+        assert(false);
+        return 0x7FFFFFFF;
 	}
 	return ReadData<int>({SCRIPT_FRAMES}, 1)[0];
 }
@@ -108,14 +109,15 @@ int Memory::ExecuteSigScans()
 }
 
 void Memory::ThrowError() {
-	std::string message(256, '\0');
-	int length = FormatMessageA(4096, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.size()), nullptr);
+	std::wstring message(256, '\0');
+	int length = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.size()), nullptr);
 	message.resize(length);
-	throw std::exception(message.c_str());
+#ifndef NDEBUG
+    MessageBox(NULL, message.c_str(), L"Please tell darkid about this", MB_OK);
+#endif
 }
 
-void* Memory::ComputeOffset(std::vector<int> offsets)
-{
+void* Memory::ComputeOffset(std::vector<int> offsets) {
 	// Leave off the last offset, since it will be either read/write, and may not be of type unitptr_t.
 	int final_offset = offsets.back();
 	offsets.pop_back();
@@ -128,7 +130,10 @@ void* Memory::ComputeOffset(std::vector<int> offsets)
 		if (search == std::end(_computedAddresses)) {
 			// If the address is not yet computed, then compute it.
 			uintptr_t computedAddress = 0;
-			if (!ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
+			if (bool result = !ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
+                if (GetLastError() == ERROR_PARTIAL_COPY) {
+                    int k = 1;
+                }
 				ThrowError();
 			}
 			_computedAddresses[cumulativeAddress] = computedAddress;

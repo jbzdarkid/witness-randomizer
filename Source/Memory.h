@@ -11,8 +11,7 @@
 // http://stackoverflow.com/q/32798185
 // http://stackoverflow.com/q/36018838
 // http://stackoverflow.com/q/1387064
-class Memory
-{
+class Memory {
 public:
 	Memory();
 	bool Initialize(const std::wstring& processName);
@@ -46,11 +45,12 @@ public:
 	void AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc);
 	int ExecuteSigScans();
 
-	void ClearOffsets() {_computedAddresses = std::map<uintptr_t, uintptr_t>();}
-
 private:
 	template<class T>
 	std::vector<T> ReadData(const std::vector<int>& offsets, size_t numItems) {
+        if (GetExitCodeProcess(_process) != STILL_ACTIVE) {
+            // Signal error, somehow
+        }
 		std::vector<T> data;
 		data.resize(numItems);
 		for (int i=0; i<5; i++) {
