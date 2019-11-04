@@ -45,7 +45,7 @@ private:
 	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
 	void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
-	std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe");
+	std::shared_ptr<Memory> _memory = std::make_shared<Memory>(L"witness64_d3d11.exe");
 
 	friend class SwapTests_Shipwreck_Test;
 };

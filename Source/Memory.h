@@ -14,7 +14,8 @@
 class Memory
 {
 public:
-	Memory(const std::string& processName);
+	Memory();
+	bool Initialize(const std::wstring& processName);
 	~Memory();
 
 	Memory(const Memory& memory) = delete;

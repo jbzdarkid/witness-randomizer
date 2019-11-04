@@ -21,9 +21,9 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{128784c2-9157-4291-8fd6-44637be162fb}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -32,11 +32,6 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <ItemGroup>
-    <ClCompile Include="PanelExtractionTests.cpp" />
-    <ClCompile Include="Temp.cpp" />
-    <ClCompile Include="RandomTests.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Source\Source.vcxproj">
       <Project>{6b5df051-a51a-48cb-8acd-c6fad726019f}</Project>

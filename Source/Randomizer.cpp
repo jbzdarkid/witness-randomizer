@@ -1,4 +1,67 @@
 /*
+Things to do for V2:
+- Better interface design. It's way too simplistic, take (some) notes from talos.
+  - Seed: [   ] (Randomize)
+  ?? Challenge
+
+  - [] Prevent speedrun snipes // Shadows, Swamp, Town, Quarry stairs
+  - [] Speed up various autoscrollers // Swamp platforms, Desert/Mountain elevators, Desert rotating panels
+
+  (Additional required panels)
+  - [] Desert 8
+  - [] Pond 5
+  - [] Both keep halves
+  - [] Town lattice requires stars door // and stars door will be randomized
+
+  (Debug version only)
+  - [] Noclip
+  - [] Noclip speed
+
+
+- Really randomize panels. Sorted by ROI
+  - Random with style
+    - Tutorial
+    - Mountain 1 orange, green, blue, purple
+    - Mountain 2 multipanel
+    - Mountain 3 pillars
+    - Laser areas (Glass Factory, Symmetry, Quarry, Treehouse, Swamp, Keep pressure plates, Town 25 dots)
+    - (low) Discarded panels
+    - (low) Tutorials // Dots, Stones, Swamp
+
+  - Keep Hedges become like hedges 4, intersection between path and panel
+  - Keep Pressure plates: Random with style
+
+  - No idea how to randomize:
+    - Symmetry transparent
+    - Desert
+    - Shadows
+    - Town (lattice, RGB area, snipes, triple)
+    - Monastery
+    - Jungle
+    - Bunker
+    - UTM
+    - Mountain 2 rainbow
+    - Challenge
+
+- Any RNG rerolls should be based on previous seed so that everyone can go to next seed easily
+
+- Stability. Duh. I need to clearly define the ownership between the randomizer and the game.
+
+- Challenge should have some way to 'reroll every run'
+- Challenge should not turn off after time limit?
+- Challenge triangles should not turn off
+
+
+
+
+*/
+
+
+
+
+
+
+/*
  * Try to wire up both keep halves
  * Wire up both halves of symmetry laser
  * Turn off floating panel in desert

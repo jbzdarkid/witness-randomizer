@@ -6,12 +6,16 @@
 #undef PROCESSENTRY32
 #undef Process32Next
 
-Memory::Memory(const std::string& processName) {
+Memory::Memory() {
+}
+
+[[nodiscard]]
+bool Memory::Initialize(const std::wstring& processName) {
 	// First, get the handle of the process
-	PROCESSENTRY32 entry;
+	PROCESSENTRY32W entry;
 	entry.dwSize = sizeof(entry);
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	while (Process32Next(snapshot, &entry)) {
+	while (Process32NextW(snapshot, &entry)) {
 		if (processName == entry.szExeFile) {
 			_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
 			break;
@@ -19,7 +23,7 @@ Memory::Memory(const std::string& processName) {
 	}
 	if (!_handle) {
 		std::cerr << "Couldn't find " << processName.c_str() << ", is it open?" << std::endl;
-		throw std::exception("Unable to find process!");
+        return false;
 	}
 
 	// Next, get the process base address
@@ -27,9 +31,9 @@ Memory::Memory(const std::string& processName) {
 	std::vector<HMODULE> moduleList(1024);
 	EnumProcessModulesEx(_handle, &moduleList[0], static_cast<DWORD>(moduleList.size()), &numModules, 3);
 
-	std::string name(64, '\0');
+	std::wstring name(64, '\0');
 	for (DWORD i = 0; i < numModules / sizeof(HMODULE); i++) {
-		int length = GetModuleBaseNameA(_handle, moduleList[i], &name[0], static_cast<DWORD>(name.size()));
+		int length = GetModuleBaseNameW(_handle, moduleList[i], &name[0], static_cast<DWORD>(name.size()));
 		name.resize(length);
 		if (processName == name) {
 			_baseAddress = (uintptr_t)moduleList[i];
@@ -37,12 +41,16 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (_baseAddress == 0) {
-		throw std::exception("Couldn't find the base process address!");
+        std::cerr << "Couldn't locate base address" << std::endl;
+        return false;
 	}
+    return true;
 }
 
 Memory::~Memory() {
-	CloseHandle(_handle);
+    if (_handle != nullptr) {
+	    CloseHandle(_handle);
+    }
 }
 
 int Memory::GetCurrentFrame()
