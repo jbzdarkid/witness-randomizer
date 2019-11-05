@@ -2,25 +2,87 @@
 #include <psapi.h>
 #include <tlhelp32.h>
 #include <iostream>
+#include <string>
 #include <cassert>
 
 #undef PROCESSENTRY32
 #undef Process32Next
 
+Memory::Memory(const std::wstring& processName) : _processName(processName) {
+}
+
+Memory::~Memory() {
+    if (_threadActive) {
+        _threadActive = false;
+        _thread.join();
+    }
+    if (_handle != nullptr) {
+	    CloseHandle(_handle);
+    }
+}
+
+void Memory::StartHeartbeat(HWND window, std::chrono::milliseconds beat) {
+    if (_threadActive) return;
+    _threadActive = true;
+    _thread = std::thread([sharedThis = shared_from_this(), window, beat]{
+        while (sharedThis->_threadActive) {
+            sharedThis->Heartbeat(window);
+            std::this_thread::sleep_for(beat);
+        }
+    });
+    _thread.detach();
+}
+
+void Memory::Heartbeat(HWND window) {
+    if (!_handle && !Initialize()) {
+        // Couldn't initialize, definitely not running
+        PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::NotRunning);
+        return;
+    }
+
+    DWORD exitCode = 0;
+    assert(_handle);
+    GetExitCodeProcess(_handle, &exitCode);
+    if (exitCode != STILL_ACTIVE) {
+        // Process has exited, clean up.
+        _computedAddresses.clear();
+        _handle = NULL;
+        PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::NotRunning);
+        return;
+    }
+
+#if GLOBALS == 0x5B28C0
+    int currentFrame = ReadData<int>({0x5BE3B0}, 1)[0];
+#elif GLOBALS == 0x62D0A0
+    int currentFrame = ReadData<int>({0x63954C}, 1)[0];
+#endif
+    int frameDelta = currentFrame - _previousFrame;
+    _previousFrame = currentFrame;
+    if (frameDelta < 0 && currentFrame < 250) {
+        PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::NewGame);
+        return;
+    }
+
+    // TODO: Some way to return ProcStatus::Randomized vs ProcStatus::NotRandomized vs ProcStatus::DeRandomized;
+
+    PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::Running);
+}
+
+
 [[nodiscard]]
-bool Memory::Initialize(const std::wstring& processName) {
+bool Memory::Initialize() {
 	// First, get the handle of the process
 	PROCESSENTRY32W entry;
 	entry.dwSize = sizeof(entry);
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	while (Process32NextW(snapshot, &entry)) {
-		if (processName == entry.szExeFile) {
+		if (_processName == entry.szExeFile) {
 			_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
 			break;
 		}
 	}
 	if (!_handle) {
-		std::cerr << "Couldn't find " << processName.c_str() << ", is it open?" << std::endl;
+		std::cerr << "Couldn't find " << _processName.c_str() << ", is it open?" << std::endl;
         return false;
 	}
 
@@ -33,7 +95,7 @@ bool Memory::Initialize(const std::wstring& processName) {
 	for (DWORD i = 0; i < numModules / sizeof(HMODULE); i++) {
 		int length = GetModuleBaseNameW(_handle, moduleList[i], &name[0], static_cast<DWORD>(name.size()));
 		name.resize(length);
-		if (processName == name) {
+		if (_processName == name) {
 			_baseAddress = (uintptr_t)moduleList[i];
 			break;
 		}
@@ -43,42 +105,6 @@ bool Memory::Initialize(const std::wstring& processName) {
         return false;
 	}
     return true;
-}
-
-ProcStatus Memory::Heartbeat(const std::wstring& processName) {
-    if (!_handle && !Initialize(processName)) {
-        // Couldn't initialize, definitely not running
-        return ProcStatus::NotRunning;
-    }
-
-    DWORD exitCode = 0;
-    GetExitCodeProcess(_handle, &exitCode);
-    if (exitCode != STILL_ACTIVE) {
-        // Process has exited, clean up.
-        _computedAddresses.clear();
-        _handle = NULL;
-        return ProcStatus::NotRunning;
-    }
-
-    int currentFrame = 0x7FFFFFFF;
-	if (GLOBALS == 0x5B28C0) {
-        currentFrame = ReadData<int>({0x5BE3B0}, 1)[0];
-	} else if (GLOBALS == 0x62D0A0) {
-        currentFrame = ReadData<int>({0x63954C}, 1)[0];
-	} else {
-        assert(false);
-	}
-    if (currentFrame < 80) return ProcStatus::NewGame;
-
-    // TODO: Some way to return ProcStatus::Randomized vs ProcStatus::NotRandomized vs ProcStatus::DeRandomized;
-
-    return ProcStatus::Running;
-}
-
-Memory::~Memory() {
-    if (_handle != nullptr) {
-	    CloseHandle(_handle);
-    }
 }
 
 void Memory::AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc)

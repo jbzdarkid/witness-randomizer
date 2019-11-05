@@ -1,12 +1,14 @@
 #pragma once
 #include <functional>
 #include <map>
+#include <thread>
 #include <vector>
 #include <windows.h>
 
 // #define GLOBALS 0x5B28C0
 #define GLOBALS 0x62D0A0
 
+#define HEARTBEAT 0x401
 enum class ProcStatus {
     NotRunning,
     Running,
@@ -17,11 +19,11 @@ enum class ProcStatus {
 // http://stackoverflow.com/q/32798185
 // http://stackoverflow.com/q/36018838
 // http://stackoverflow.com/q/1387064
-class Memory {
+class Memory final : public std::enable_shared_from_this<Memory> {
 public:
-	Memory() = default;
-    ProcStatus Heartbeat(const std::wstring& processName);
+	Memory(const std::wstring& processName);
 	~Memory();
+    void StartHeartbeat(HWND window, std::chrono::milliseconds beat = std::chrono::milliseconds(1000));
 
 	Memory(const Memory& memory) = delete;
 	Memory& operator=(const Memory& other) = delete;
@@ -74,10 +76,15 @@ private:
 		ThrowError();
 	}
 
-	bool Initialize(const std::wstring& processName);
+    void Heartbeat(HWND window);
+	bool Initialize();
 	void ThrowError();
 	void* ComputeOffset(std::vector<int> offsets);
 
+    int _previousFrame = 0;
+    bool _threadActive = false;
+    std::thread _thread;
+    std::wstring _processName;
 	std::map<uintptr_t, uintptr_t> _computedAddresses;
 	uintptr_t _baseAddress = 0;
 	HANDLE _handle = nullptr;
