@@ -7,9 +7,6 @@
 #undef PROCESSENTRY32
 #undef Process32Next
 
-Memory::Memory() {
-}
-
 [[nodiscard]]
 bool Memory::Initialize(const std::wstring& processName) {
 	// First, get the handle of the process
@@ -48,23 +45,40 @@ bool Memory::Initialize(const std::wstring& processName) {
     return true;
 }
 
+ProcStatus Memory::Heartbeat(const std::wstring& processName) {
+    if (!_handle && !Initialize(processName)) {
+        // Couldn't initialize, definitely not running
+        return ProcStatus::NotRunning;
+    }
+
+    DWORD exitCode = 0;
+    GetExitCodeProcess(_handle, &exitCode);
+    if (exitCode != STILL_ACTIVE) {
+        // Process has exited, clean up.
+        _computedAddresses.clear();
+        _handle = NULL;
+        return ProcStatus::NotRunning;
+    }
+
+    int currentFrame = 0x7FFFFFFF;
+	if (GLOBALS == 0x5B28C0) {
+        currentFrame = ReadData<int>({0x5BE3B0}, 1)[0];
+	} else if (GLOBALS == 0x62D0A0) {
+        currentFrame = ReadData<int>({0x63954C}, 1)[0];
+	} else {
+        assert(false);
+	}
+    if (currentFrame < 80) return ProcStatus::NewGame;
+
+    // TODO: Some way to return ProcStatus::Randomized vs ProcStatus::NotRandomized vs ProcStatus::DeRandomized;
+
+    return ProcStatus::Running;
+}
+
 Memory::~Memory() {
     if (_handle != nullptr) {
 	    CloseHandle(_handle);
     }
-}
-
-int Memory::GetCurrentFrame() {
-	int SCRIPT_FRAMES;
-	if (GLOBALS == 0x5B28C0) {
-		SCRIPT_FRAMES = 0x5BE3B0;
-	} else if (GLOBALS == 0x62D0A0) {
-		SCRIPT_FRAMES = 0x63954C;
-	} else {
-        assert(false);
-        return 0x7FFFFFFF;
-	}
-	return ReadData<int>({SCRIPT_FRAMES}, 1)[0];
 }
 
 void Memory::AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc)

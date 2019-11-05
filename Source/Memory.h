@@ -7,20 +7,24 @@
 // #define GLOBALS 0x5B28C0
 #define GLOBALS 0x62D0A0
 
+enum class ProcStatus {
+    NotRunning,
+    Running,
+    NewGame
+};
+
 // https://github.com/erayarslan/WriteProcessMemory-Example
 // http://stackoverflow.com/q/32798185
 // http://stackoverflow.com/q/36018838
 // http://stackoverflow.com/q/1387064
 class Memory {
 public:
-	Memory();
-	bool Initialize(const std::wstring& processName);
+	Memory() = default;
+    ProcStatus Heartbeat(const std::wstring& processName);
 	~Memory();
 
 	Memory(const Memory& memory) = delete;
 	Memory& operator=(const Memory& other) = delete;
-
-	int GetCurrentFrame();
 
 	template <class T>
 	std::vector<T> ReadArray(int panel, int offset, int size) {
@@ -48,9 +52,6 @@ public:
 private:
 	template<class T>
 	std::vector<T> ReadData(const std::vector<int>& offsets, size_t numItems) {
-        if (GetExitCodeProcess(_process) != STILL_ACTIVE) {
-            // Signal error, somehow
-        }
 		std::vector<T> data;
 		data.resize(numItems);
 		for (int i=0; i<5; i++) {
@@ -73,8 +74,8 @@ private:
 		ThrowError();
 	}
 
+	bool Initialize(const std::wstring& processName);
 	void ThrowError();
-
 	void* ComputeOffset(std::vector<int> offsets);
 
 	std::map<uintptr_t, uintptr_t> _computedAddresses;
