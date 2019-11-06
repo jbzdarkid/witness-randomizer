@@ -157,12 +157,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ChallengeRandomizer.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="Panels.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="Randomizer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChallengeRandomizer.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Random.cpp" />
+    <ClCompile Include="Randomizer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

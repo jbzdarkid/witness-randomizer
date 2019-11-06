@@ -1,7 +1,7 @@
 #include "ChallengeRandomizer.h"
 #include <iostream>
 
-// Reads the (relative!) address of the RNG, then shifts it to point at RNG2
+// Modify an opcode to use RNG2 instead of main RNG
 void ChallengeRandomizer::AdjustRng(int offset) {
 	int currentRng = _memory->ReadData<int>({offset}, 0x1)[0];
 	_memory->WriteData<int>({offset}, {currentRng + 0x20});
@@ -39,22 +39,6 @@ ChallengeRandomizer::ChallengeRandomizer(const std::shared_ptr<Memory>& memory, 
 	});
 
 	if (!alreadyInjected) {
-		// reveal_exit_hall
-		_memory->AddSigScan({0x45, 0x8B, 0xF7, 0x48, 0x8B, 0x4D}, [&](int index){
-			_memory->WriteData<byte>({index + 0x15}, {0xEB});
-		});
-
-		// begin_endgame_1
-		_memory->AddSigScan({0x83, 0x7C, 0x01, 0xD0, 0x04}, [&](int index){
-			if (GLOBALS == 0x5B28C0) { // Version differences.
-				index += 0x75;
-			} else if (GLOBALS == 0x62D0A0) {
-				index += 0x86;
-			}
-			// Overwriting a 74 12 opcode
-			_memory->WriteData<byte>({index}, {0xEB});
-		});
-
 		// shuffle_integers
 		_memory->AddSigScan({0x48, 0x89, 0x5C, 0x24, 0x10, 0x56, 0x48, 0x83, 0xEC, 0x20, 0x48, 0x63, 0xDA, 0x48, 0x8B, 0xF1, 0x83, 0xFB, 0x01}, [&](int index) {
 			AdjustRng(index + 0x23);

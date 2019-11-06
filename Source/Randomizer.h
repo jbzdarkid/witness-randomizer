@@ -4,14 +4,13 @@
 
 class Randomizer {
 public:
+    Randomizer(const std::shared_ptr<Memory>& memory);
 	void Randomize();
-	bool GameIsRandomized();
+	void RandomizeChallenge();
 
 	void AdjustSpeed();
 	void RandomizeLasers();
 	void PreventSnipes();
-
-	void ClearOffsets() {_memory->ClearOffsets();}
 
 	enum SWAP {
 		NONE = 0,
@@ -36,7 +35,6 @@ private:
 	void RandomizeJungle();
 	void RandomizeSwamp();
 	void RandomizeMountain();
-	void RandomizeChallenge();
 	void RandomizeAudioLogs();
 
 	void Randomize(std::vector<int>& panels, int flags);
@@ -45,7 +43,7 @@ private:
 	void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
 	void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
-	std::shared_ptr<Memory> _memory = std::make_shared<Memory>(L"witness64_d3d11.exe");
+	std::shared_ptr<Memory> _memory;
 
 	friend class SwapTests_Shipwreck_Test;
 };

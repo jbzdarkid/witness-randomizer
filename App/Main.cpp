@@ -8,18 +8,8 @@
 #include <thread>
 
 #include "Memory.h"
-#include <Random.h>
-class Randomizer {
-public:
-    Randomizer(const std::shared_ptr<Memory>&) {}
-    void Randomize(int seed) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    }
-    
-    void RandomizeChallenge(int seed) {
-        Randomize(seed);
-    }
-};
+#include "Random.h"
+#include "Randomizer.h"
 
 // Heartbeat is defined to 0x401 by Memory.h
 #define RANDOMIZE_READY 0x402
@@ -45,7 +35,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 switch ((ProcStatus)lParam) {
                     case ProcStatus::NotRunning:
                         // Shut down randomizer, wait for startup
-                        if (g_randomizer) g_randomizer = nullptr;
+                        if (g_randomizer) {
+                            g_randomizer = nullptr;
+                            EnableWindow(g_randomizerStatus, FALSE);
+                        }
                         break;
                     case ProcStatus::Running:
                         if (!g_randomizer) {
@@ -85,14 +78,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                         SetWindowText(g_seed, std::to_wstring(seed).c_str());
 				        RedrawWindow(g_seed, NULL, NULL, RDW_UPDATENOW);
                     }
-                    std::thread([hwnd, seed]{
+                    Random::SetSeed(seed);
+                    std::thread([hwnd]{
                         if (IsDlgButtonChecked(hwnd, CHALLENGE_ONLY)) {
                             SetWindowText(g_randomizerStatus, L"Randomizing Challenge...");
-                            g_randomizer->RandomizeChallenge(seed);
+                            g_randomizer->RandomizeChallenge();
                             PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_CHALLENGE_DONE, NULL);
                         } else {
                             SetWindowText(g_randomizerStatus, L"Randomizing...");
-                            g_randomizer->Randomize(seed);
+                            g_randomizer->Randomize();
                             PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_DONE, NULL);
                         }
                     }).detach();

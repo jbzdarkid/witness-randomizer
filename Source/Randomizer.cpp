@@ -109,23 +109,26 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	throw std::exception("Couldn't find value in data!");
 }
 
-bool Randomizer::GameIsRandomized() {
-	int currentFrame = _memory->GetCurrentFrame();
-	if (currentFrame >= _lastRandomizedFrame) {
-		// Time went forwards, presumably we're still on the same save
-		_lastRandomizedFrame = currentFrame;
-		return true;
-	}
-	// Otherwise, time has gone backwards, so assume new game
-	return false;
-}
+Randomizer::Randomizer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
-void Randomizer::Randomize()
-{
-	if (GameIsRandomized()) return;  // Nice sanity check, but should be unnecessary (since Main checks anyways)
-	_lastRandomizedFrame = _memory->GetCurrentFrame();
+void Randomizer::Randomize() {
+	// reveal_exit_hall - Prevent actually ending the game (EEE)
+	_memory->AddSigScan({0x45, 0x8B, 0xF7, 0x48, 0x8B, 0x4D}, [&](int index){
+		_memory->WriteData<byte>({index + 0x15}, {0xEB}); // jz -> jmp
+	});
 
-	// Seed challenge first for future-proofing (?)
+	// begin_endgame_1 - Prevent actually ending the game (Wonkavator)
+	_memory->AddSigScan({0x83, 0x7C, 0x01, 0xD0, 0x04}, [&](int index){
+		if (GLOBALS == 0x5B28C0) { // Version differences.
+			index += 0x75;
+		} else if (GLOBALS == 0x62D0A0) {
+			index += 0x86;
+		}
+		_memory->WriteData<byte>({index}, {0xEB}); // jz -> jmp
+	});
+    // Sig scans will be run during challenge randomization.
+
+	// Seed challenge first for future-proofing
 	RandomizeChallenge();
 
 	// Content swaps -- must happen before squarePanels

@@ -59,6 +59,8 @@ void Memory::Heartbeat(HWND window) {
     int frameDelta = currentFrame - _previousFrame;
     _previousFrame = currentFrame;
     if (frameDelta < 0 && currentFrame < 250) {
+        // Some addresses (e.g. Entity Manager) may get re-allocated on newgame.
+        _computedAddresses.clear();
         PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::NewGame);
         return;
     }
@@ -171,9 +173,6 @@ void* Memory::ComputeOffset(std::vector<int> offsets) {
 			// If the address is not yet computed, then compute it.
 			uintptr_t computedAddress = 0;
 			if (bool result = !ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
-                if (GetLastError() == ERROR_PARTIAL_COPY) {
-                    int k = 1;
-                }
 				ThrowError();
 			}
 			_computedAddresses[cumulativeAddress] = computedAddress;
