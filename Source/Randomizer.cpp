@@ -38,11 +38,11 @@
 #include <iostream>
 #include <numeric>
 
-void Randomizer::GenerateNormal(HWND loadingHandle) {
+void Randomizer::GenerateNormal(HWND loadingHandle) { //TODO: Auto activate lasers
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
 	puzzles->setLoadingHandle(loadingHandle);
 	puzzles->setSeed(seed, seedIsRNG);
-	RandomizeDesert();
+	Random::SetSeed(seed);
 	puzzles->GenerateAllN();
 	//puzzles->GenerateTutorialN();
 	//puzzles->GenerateSymmetryN();
@@ -55,16 +55,17 @@ void Randomizer::GenerateNormal(HWND loadingHandle) {
 	//puzzles->GenerateMountainN();
 	//puzzles->GenerateCavesN();
 	//puzzles->GenerateOrchardN();
+	//puzzles->GenerateDesertN();
 	//puzzles->GenerateKeepN();
 	//puzzles->GenerateJungleN();
 	Panel::SavePanels(seed, false);
 }
 
-void Randomizer::GenerateHard(HWND loadingHandle) {
+void Randomizer::GenerateHard(HWND loadingHandle) { //TODO: Auto activate lasers
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
 	puzzles->setLoadingHandle(loadingHandle);
 	puzzles->setSeed(seed, seedIsRNG);
-	RandomizeDesert();
+	Random::SetSeed(seed);
 	puzzles->GenerateAllH();
 	//puzzles->GenerateTutorialH();
 	//puzzles->GenerateSymmetryH();
@@ -77,6 +78,7 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 	//puzzles->GenerateMountainH();
 	//puzzles->GenerateCavesH();
 	//puzzles->GenerateOrchardH();
+	//puzzles->GenerateDesertH();
 	//puzzles->GenerateKeepH();
 	//puzzles->GenerateJungleH();
 	Panel::SavePanels(seed, true);
@@ -171,13 +173,6 @@ void Randomizer::RandomizeSymmetry() {
 
 void Randomizer::RandomizeDesert() {
 	Randomize(desertPanels, SWAP::LINES);
-
-	// Turn off desert surface 8
-	_memory->WritePanelData<float>(0x09F94, POWER, { 0.0, 0.0 });
-	// Turn off desert flood final
-	_memory->WritePanelData<float>(0x18076, POWER, { 0.0, 0.0 });
-	// Change desert floating target to desert flood final
-	_memory->WritePanelData<int>(0x17ECA, TARGET, { 0x18077 });
 }
 
 void Randomizer::RandomizeQuarry() {
@@ -390,6 +385,8 @@ void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
 		_memory->WritePanelData<byte>(panel2, offset, panel1data);
 		_memory->WritePanelData<byte>(panel1, offset, panel2data);
 	}
+	_memory->WritePanelData<int>(panel1, NEEDS_REDRAW, { 1 });
+	_memory->WritePanelData<int>(panel2, NEEDS_REDRAW, { 1 });
 }
 
 void Randomizer::ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets) {

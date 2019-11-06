@@ -242,10 +242,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_TEST:
 			generator->seed(static_cast<unsigned int>(time(NULL)));
 			//generator->seed(ctr++);
-			//generator->seed(0);
+			generator->seed(0);
 			generator->resetConfig();
+			//generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
+			//specialCase->testPanel(0x0A3CB);
 
-			Panel::LoadPanels(144, false);
+			Panel::LoadPanels(17, true);
+
+			//generator->setGridSize(7, 7);
+			//generator->pathWidth = 0.8f;
+			//generator->generateMaze(0x00084);
+			//Panel::SavePanels(17, true);
 			
 			break;
 

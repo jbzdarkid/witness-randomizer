@@ -31,6 +31,8 @@ public:
 		else generator->seed(rand());
 	}
 
+	void CopyTargets();
+
 	//--------------------------Normal difficulty---------------------------
 
 	void GenerateTutorialN();

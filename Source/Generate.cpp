@@ -1,6 +1,7 @@
 #include "Generate.h"
 #include "Randomizer.h"
 #include "MultiGenerate.h"
+#include "Special.h"
 
 void Generate::generate(int id, int symbol, int amount) {
 	PuzzleSymbols symbols({ std::make_pair(symbol, amount) });
@@ -204,41 +205,42 @@ void Generate::write(int id)
 	incrementProgress();
 
 	if (hasFlag(Config::ResetColors)) {
-		_panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 0 });
-		_panel->_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
+		_panel->colorMode = 0;
 	}
 	else if (hasFlag(Config::AlternateColors)) {
-		_panel->_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
-		_panel->_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
+		_panel->colorMode = 1;
+	}
+	else if (hasFlag(Config::WriteColors)) {
+		_panel->colorMode = 2;
 	}
 	if (hasFlag(Config::Write2Color)) {
-		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR_A, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A) });
-		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR_B, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B) });
-		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B) });
-		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A) });
+		Special::WritePanelData(id, PATTERN_POINT_COLOR_A, _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A));
+		Special::WritePanelData(id, PATTERN_POINT_COLOR_B, _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B));
+		Special::WritePanelData(id, REFLECTION_PATH_COLOR, _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B));
+		Special::WritePanelData(id, ACTIVE_COLOR, _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A));
 	}
 	if (hasFlag(Config::WriteInvisible)) {
-		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { _panel->_memory->ReadPanelData<Color>(0x00076, REFLECTION_PATH_COLOR) });
+		Special::WritePanelData(id, REFLECTION_PATH_COLOR, _panel->_memory->ReadPanelData<Color>(0x00076, REFLECTION_PATH_COLOR));
 	}
 	if (hasFlag(Config::WriteDotColor))
-		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { { 0.1f, 0.1f, 0.1f, 1 } });
+		Special::WritePanelData(id, PATTERN_POINT_COLOR, { 0.1f, 0.1f, 0.1f, 1 });
 	if (hasFlag(Config::WriteDotColor2)) {
 		Color color = _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
-		_panel->_memory->WritePanelData<Color>(id, PATTERN_POINT_COLOR, { color });
+		Special::WritePanelData(id, PATTERN_POINT_COLOR, color);
 	}
 	if (hasFlag(Config::ArrowRecolor)) {
-		_panel->_memory->WritePanelData<Color>(id, OUTER_BACKGROUND, { backgroundColor });
-		if (arrowColor.a == 0) _panel->_memory->WritePanelData<Color>(id, BACKGROUND_REGION_COLOR, { _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
-		else _panel->_memory->WritePanelData<Color>(id, BACKGROUND_REGION_COLOR, { arrowColor });
-		_panel->_memory->WritePanelData<int>(id, OUTER_BACKGROUND_MODE, { 1 });
-		if (successColor.a == 0) _panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_A, { _panel->_memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR) });
-		else _panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_A, { successColor });
-		_panel->_memory->WritePanelData<Color>(id, SUCCESS_COLOR_B, { _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
-		_panel->_memory->WritePanelData<Color>(id, ACTIVE_COLOR, { { 1, 1, 1, 1 } });
-		_panel->_memory->WritePanelData<Color>(id, REFLECTION_PATH_COLOR, { { 1, 1, 1, 1 } });
+		Special::WritePanelData(id, OUTER_BACKGROUND, { backgroundColor });
+		if (arrowColor.a == 0)
+			Special::WritePanelData(id, BACKGROUND_REGION_COLOR, { _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
+		Special::WritePanelData(id, BACKGROUND_REGION_COLOR, { arrowColor });
+		Special::WritePanelData(id, OUTER_BACKGROUND_MODE, 1);
+		if (successColor.a == 0) Special::WritePanelData(id, SUCCESS_COLOR_A, _panel->_memory->ReadPanelData<Color>(id, BACKGROUND_REGION_COLOR));
+		else Special::WritePanelData(id, SUCCESS_COLOR_A, successColor);
+		Special::WritePanelData(id, SUCCESS_COLOR_B, _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A));
+		Special::WritePanelData(id, ACTIVE_COLOR, { 1, 1, 1, 1 });
+		Special::WritePanelData(id, REFLECTION_PATH_COLOR, { 1, 1, 1, 1 });
 	}
 
-	_panel->writeColors = hasFlag(Config::WriteColors);
 	_panel->decorationsOnly = hasFlag(Config::DecorationsOnly);
 	_panel->Write(id);
 	

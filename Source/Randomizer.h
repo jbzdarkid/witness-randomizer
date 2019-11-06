@@ -53,6 +53,8 @@ private:
 	std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe");
 
 	friend class SwapTests_Shipwreck_Test;
+	friend class Panel;
+	friend class PuzzleList;
 };
 
 #if GLOBALS == 0x5B28C0

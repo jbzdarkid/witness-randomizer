@@ -1,4 +1,5 @@
 #include "Panel.h"
+#include "Special.h"
 #include "Random.h"
 #include "Memory.h"
 #include "Randomizer.h"
@@ -54,7 +55,8 @@ void Panel::Read() {
 	ReadDecorations();
 	pathWidth = 1;
 	_resized = false;
-	writeColors = false;
+	//writeColors = false;
+	colorMode = -1;
 	decorationsOnly = false;
 }
 
@@ -186,6 +188,7 @@ void Panel::SavePanels(int seed, bool hard)
 {
 	std::string difficulty = hard ? "E" : "N";
 	std::ofstream file("puzzledata" + difficulty + std::to_string(seed) + ".dat");
+	file << generatedPanels.size() << std::endl;
 	for (Panel panel : generatedPanels) {
 		file << panel.id << " ";
 		file << panel._width << " " << panel._height << " ";
@@ -203,16 +206,43 @@ void Panel::SavePanels(int seed, bool hard)
 			file << e.GetX() << " " << e.GetY() << " " << e.GetDir() << " " << e.GetFlags() << " ";
 		}
 		file << panel.minx << " " << panel.miny << " " << panel.maxx << " " << panel.maxy << " " << panel.unitWidth << " " << panel.unitHeight << " ";
-		file << panel._style << "  " << panel._resized << " " << panel.symmetry << " " << panel.pathWidth << " " << panel.writeColors << " " << panel.decorationsOnly << " " << Point::pillarWidth << " " << std::endl;
+		file << panel._style << "  " << panel._resized << " " << panel.symmetry << " " << panel.pathWidth << " " << panel.colorMode << " " << panel.decorationsOnly << " " << Point::pillarWidth << " " << std::endl;
+	}
+	file << Special::writeInt.size() << std::endl;
+	for (MemoryWrite<int> m : Special::writeInt)
+		file << m.id << " " << m.offset << " " << m.data[0] << std::endl;
+	file << Special::writeFloat.size() << std::endl;
+	for (MemoryWrite<float> m : Special::writeFloat)
+		file << m.id << " " << m.offset << " " << m.data[0] << std::endl;
+	file << Special::writeColor.size() << std::endl;
+	for (MemoryWrite<Color> m : Special::writeColor)
+		file << m.id << " " << m.offset << " " << m.data[0].r << " " << m.data[0].g << " " << m.data[0].b << " " << m.data[0].a << std::endl;
+	file << Special::writeIntVec.size() << std::endl;
+	for (MemoryWrite<int> m : Special::writeIntVec) {
+		file << m.id << " " << m.offset << " " << m.data.size();
+		for (int i : m.data) file << " " << i;
+		file << std::endl;
+	}
+	file << Special::writeFloatVec.size() << std::endl;
+	for (MemoryWrite<float> m : Special::writeFloatVec) {
+		file << m.id << " " << m.offset << " " << m.data.size();
+		for (float f : m.data) file << " " << f;
+		file << std::endl;
+	}
+	file << Special::writeColorVec.size() << std::endl;
+	for (MemoryWrite<Color> m : Special::writeColorVec) {
+		file << m.id << " " << m.offset << " " << m.data.size();
+		for (Color c : m.data) file << " " << c.r << " " << c.g << " " << c.b << " " << c.a;
+		file << std::endl;
 	}
 }
 
 void Panel::LoadPanels(int seed, bool hard)
 {
-	
 	std::string difficulty = hard ? "E" : "N";
 	std::ifstream file("puzzledata" + difficulty + std::to_string(seed) + ".dat");
-	while (!file.eof()) {
+	int size; file >> size;
+	while (size-- > 0) {
 		int id;
 		file >> id;
 		Panel panel(id);
@@ -242,7 +272,7 @@ void Panel::LoadPanels(int seed, bool hard)
 		}
 		file >> panel.minx >> panel.miny >> panel.maxx >> panel.maxy >> panel.unitWidth >> panel.unitHeight;
 		int symmetry;
-		file >> panel._style >> panel._resized >> symmetry >> panel.pathWidth >> panel.writeColors >> panel.decorationsOnly >> Point::pillarWidth;
+		file >> panel._style >> panel._resized >> symmetry >> panel.pathWidth >> panel.colorMode >> panel.decorationsOnly >> Point::pillarWidth;
 		panel.symmetry = static_cast<Panel::Symmetry>(symmetry);
 		std::string skip; std::getline(file, skip); //Go to the next line
 		if (file.fail()) {
@@ -251,6 +281,66 @@ void Panel::LoadPanels(int seed, bool hard)
 		}
 		else panel.Write();
 	}
+	Random::SetSeed(seed);
+	Randomizer().RandomizeDesert();
+	file >> size;
+	while (size-- > 0) {
+		int id; file >> id;
+		int offset; file >> offset;
+		int data; file >> data;
+		Special::WritePanelData(id, offset, data);
+	}
+	file >> size;
+	while (size-- > 0) {
+		int id; file >> id;
+		int offset; file >> offset;
+		float data; file >> data;
+		Special::WritePanelData(id, offset, data);
+	}
+	file >> size;
+	while (size-- > 0) {
+		int id; file >> id;
+		int offset; file >> offset;
+		Color data; file >> data.r >> data.g >> data.b >> data.a;
+		Special::WritePanelData(id, offset, data);
+	}
+	file >> size;
+	while (size-- > 0) {
+		int id; file >> id;
+		int offset; file >> offset;
+		int datasize; file >> datasize;
+		std::vector<int> data;
+		while (datasize-- > 0) {
+			int i; file >> i; data.push_back(i);
+		}
+		Special::WriteArray(id, offset, data);
+	}
+	file >> size;
+	while (size-- > 0) {
+		int id; file >> id;
+		int offset; file >> offset;
+		int datasize; file >> datasize;
+		std::vector<float> data;
+		while (datasize-- > 0) {
+			float i; file >> i; data.push_back(i);
+		}
+		Special::WriteArray(id, offset, data);
+	}
+	file >> size;
+	while (size-- > 0) {
+		int id; file >> id;
+		int offset; file >> offset;
+		int datasize; file >> datasize;
+		std::vector<Color> data;
+		while (datasize-- > 0) {
+			Color c; file >> c.r >> c.g >> c.b >> c.a; data.push_back(c);
+		}
+		Special::WriteArray(id, offset, data);
+	}
+	(new KeepWatchdog())->start();
+	if (hard) (new BridgeWatchdog(0x09E86, 0x09ED8))->start();
+	Special::drawSeedAndDifficulty(0x00064, seed, hard);
+	Special::drawGoodLuckPanel(0x00182);
 }
 
 //Only for testing
@@ -350,14 +440,19 @@ void Panel::WriteDecorations() {
 		for (int i = 0; i < decorations.size(); i++) {
 			if (decorations[i] == 0) decorations[i] = Decoration::Triangle; //To force it to be unsolvable
 		}
+		_memory->WritePanelData<int>(id, OUTER_BACKGROUND_MODE, { 1 });
 	}
 	if (!any) {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { 0 });
 	}
 	else {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-		if (writeColors)
+		if (colorMode == 2)
 			_memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
+		else if (colorMode >= 0) {
+			_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
+			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { colorMode });
+		}
 	}
 	if (any || _memory->ReadPanelData<int>(id, DECORATIONS)) {
 		_memory->WriteArray<int>(id, DECORATIONS, decorations);
@@ -597,7 +692,7 @@ void Panel::WriteIntersections() {
 					symmetryData.push_back(get_num_grid_points() + j);
 					break;
 				}
-				if (j == _endpoints.size() - 1) symmetryData.push_back(0); //No exit matches up with it symmetrically
+				if (j == _endpoints.size() - 1) symmetryData.push_back(get_num_grid_points() + i); //No exit matches up with it symmetrically
 			}
 		}
 	}
@@ -607,7 +702,8 @@ void Panel::WriteIntersections() {
 		for (int x = 0; x < _width; x++) {
 			if (x % 2 == y % 2) continue;
 			if (_grid[x][y] == 0 || _grid[x][y] == OPEN) continue;
-			if (locate_segment(x, y, connections_a, connections_b) == -1) continue;
+			if (locate_segment(x, y, connections_a, connections_b) == -1)
+				continue;
 			if (_grid[x][y] & IntersectionFlags::GAP) {
 				if (!break_segment_gap(x, y, connections_a, connections_b, intersections, intersectionFlags))
 					continue;
@@ -626,6 +722,8 @@ void Panel::WriteIntersections() {
 				}
 			}
 			else {
+				if (_grid[x][y] == IntersectionFlags::COLUMN || _grid[x][y] == IntersectionFlags::ROW)
+					continue;
 				if (_grid[x][y] & IntersectionFlags::DOT) {
 					_style |= HAS_DOTS;
 					if (_grid[x][y] & IntersectionFlags::DOT_IS_BLUE || _grid[x][y] & IntersectionFlags::DOT_IS_ORANGE)
