@@ -53,7 +53,7 @@ enum IntersectionFlags {
 
 class Endpoint {
 public:
-	enum Direction {
+	enum class Direction {
 		LEFT,
 		RIGHT,
 		UP,

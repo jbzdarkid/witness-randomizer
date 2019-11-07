@@ -37,6 +37,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -53,6 +61,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -130,15 +154,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Witness Randomizer"
-        "ProductCode" = "8:{0A0A8EA4-812F-4B39-8C02-9FB2EEFB38FC}"
-        "PackageCode" = "8:{F7844209-B903-470B-BAFF-39E0C2E6C919}"
+        "ProductCode" = "8:{BF672BB2-4FD0-44B6-B279-C5F7346649DC}"
+        "PackageCode" = "8:{F55A05A7-103A-4E8D-B88F-94C00188B9A6}"
         "UpgradeCode" = "8:{4CB5496B-A47E-41D3-B4A7-677E29AB7513}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:5.1.0"
+        "ProductVersion" = "8:5.1.1"
         "Manufacturer" = "8:jbzdarkid"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://www.github.com/jbzdarkid/witness-randomizer/issues"
@@ -666,7 +690,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9D683AD9CFDD4F1E90EB22DB4509B5E4"
             {
-            "SourcePath" = "8:..\\x64\\Debug\\WitnessRandomizer.exe"
+            "SourcePath" = "8:..\\GithubPackage\\WitnessRandomizer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_CC86D8CA6D3943FAB5F6A91D54540360"

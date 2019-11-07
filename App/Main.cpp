@@ -17,6 +17,8 @@
 #define RANDOMIZE_DONE 0x404
 #define RANDOMIZE_CHALLENGE_DONE 0x405
 #define CHALLENGE_ONLY 0x406
+#define DISABLE_SNIPES 0x407
+#define SPEED_UP_AUTOSCROLLERS 0x408
 
 // Globals
 HWND g_hwnd;
@@ -79,8 +81,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				        RedrawWindow(g_seed, NULL, NULL, RDW_UPDATENOW);
                     }
                     Random::SetSeed(seed);
-                    std::thread([hwnd]{
-                        if (IsDlgButtonChecked(hwnd, CHALLENGE_ONLY)) {
+                    std::thread([]{
+                        if (IsDlgButtonChecked(g_hwnd, DISABLE_SNIPES)) {
+                            g_randomizer->PreventSnipes();
+                        }
+                        if (IsDlgButtonChecked(g_hwnd, SPEED_UP_AUTOSCROLLERS)) {
+                            g_randomizer->AdjustSpeed();
+                        }
+                        if (IsDlgButtonChecked(g_hwnd, CHALLENGE_ONLY)) {
                             SetWindowText(g_randomizerStatus, L"Randomizing Challenge...");
                             g_randomizer->RandomizeChallenge();
                             PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_CHALLENGE_DONE, NULL);
@@ -105,6 +113,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 if (IsWindowEnabled(g_randomizerStatus)) {
                     PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_READY, NULL);
                 }
+                break;
+            case DISABLE_SNIPES:
+                CheckDlgButton(hwnd, DISABLE_SNIPES, !IsDlgButtonChecked(hwnd, DISABLE_SNIPES));
+                break;
+            case SPEED_UP_AUTOSCROLLERS:
+                CheckDlgButton(hwnd, SPEED_UP_AUTOSCROLLERS, !IsDlgButtonChecked(hwnd, SPEED_UP_AUTOSCROLLERS));
                 break;
         }
     }
@@ -167,6 +181,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     EnableWindow(g_randomizerStatus, FALSE);
     CreateCheckbox(10, 300, CHALLENGE_ONLY);
     CreateLabel(30, 300, 200, L"Randomize the challenge only");
+    CreateCheckbox(10, 320, DISABLE_SNIPES);
+    CheckDlgButton(g_hwnd, DISABLE_SNIPES, TRUE);
+    CreateLabel(30, 320, 240, L"Disable Swamp and Shadows snipes");
+    CreateCheckbox(10, 340, SPEED_UP_AUTOSCROLLERS);
+    CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
     EnableWindow(g_randomizerStatus, FALSE);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
