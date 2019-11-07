@@ -62,7 +62,7 @@
 #define ARROW_UP_LEFT 0x60000
 #define ARROW_DOWN_LEFT 0x70000
 
-#define DEBUG true
+#define DEBUG false
 
 int panel = 0x00FF8; //Panel to edit //Lower right
 
@@ -244,15 +244,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//generator->seed(ctr++);
 			generator->seed(0);
 			generator->resetConfig();
-			//generator->generate(0x04CA4, Decoration::Dot_Intersection, 25, Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
 			//specialCase->testPanel(0x0A3CB);
 
-			Panel::LoadPanels(17, true);
-
-			//generator->setGridSize(7, 7);
-			//generator->pathWidth = 0.8f;
-			//generator->generateMaze(0x00084);
-			//Panel::SavePanels(17, true);
+			Panel::LoadPanels(145, true);
 			
 			break;
 

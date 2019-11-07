@@ -56,10 +56,14 @@ public:
 		grid = backupGrid = panel._grid;
 		width = static_cast<int>(grid.size());
 		height = static_cast<int>(grid[0].size());
+		pillarWidth = 0;
 		solLength = 0, tracedLength;
 		style = ReadPanelData<int>(id, STYLE_FLAGS);
 		DIRECTIONS = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0), Point(2, 2), Point(2, -2), Point(-2, -2), Point(-2, 2) };
 		exitPos = panel.xy_to_loc(panel._endpoints[0].GetX(), panel._endpoints[0].GetY());
+	}
+	ArrowWatchdog(int id, int pillarWidth) : ArrowWatchdog(id) {
+		this->pillarWidth = pillarWidth;
 	}
 	virtual bool condition();
 	virtual void action(bool status);
@@ -70,7 +74,7 @@ public:
 	int id;
 	std::vector<std::vector<int>> backupGrid;
 	std::vector<std::vector<int>> grid;
-	int width, height;
+	int width, height, pillarWidth;
 	int solLength, tracedLength;
 	int style;
 	int exitPos;

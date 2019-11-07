@@ -190,7 +190,7 @@ void Panel::SavePanels(int seed, bool hard)
 	std::ofstream file("puzzledata" + difficulty + std::to_string(seed) + ".dat");
 	file << generatedPanels.size() << std::endl;
 	for (Panel panel : generatedPanels) {
-		file << panel.id << " ";
+		file << panel.id << " " << Point::pillarWidth << " ";
 		file << panel._width << " " << panel._height << " ";
 		for (std::vector<int> vec : panel._grid) {
 			for (int i : vec) {
@@ -206,7 +206,7 @@ void Panel::SavePanels(int seed, bool hard)
 			file << e.GetX() << " " << e.GetY() << " " << e.GetDir() << " " << e.GetFlags() << " ";
 		}
 		file << panel.minx << " " << panel.miny << " " << panel.maxx << " " << panel.maxy << " " << panel.unitWidth << " " << panel.unitHeight << " ";
-		file << panel._style << "  " << panel._resized << " " << panel.symmetry << " " << panel.pathWidth << " " << panel.colorMode << " " << panel.decorationsOnly << " " << Point::pillarWidth << " " << std::endl;
+		file << panel._style << "  " << panel._resized << " " << panel.symmetry << " " << panel.pathWidth << " " << panel.colorMode << " " << panel.decorationsOnly << std::endl;
 	}
 	file << Special::writeInt.size() << std::endl;
 	for (MemoryWrite<int> m : Special::writeInt)
@@ -244,7 +244,7 @@ void Panel::LoadPanels(int seed, bool hard)
 	int size; file >> size;
 	while (size-- > 0) {
 		int id;
-		file >> id;
+		file >> id >> Point::pillarWidth;
 		Panel panel(id);
 		panel._grid.clear();
 		panel._startpoints.clear();
@@ -272,7 +272,7 @@ void Panel::LoadPanels(int seed, bool hard)
 		}
 		file >> panel.minx >> panel.miny >> panel.maxx >> panel.maxy >> panel.unitWidth >> panel.unitHeight;
 		int symmetry;
-		file >> panel._style >> panel._resized >> symmetry >> panel.pathWidth >> panel.colorMode >> panel.decorationsOnly >> Point::pillarWidth;
+		file >> panel._style >> panel._resized >> symmetry >> panel.pathWidth >> panel.colorMode >> panel.decorationsOnly;
 		panel.symmetry = static_cast<Panel::Symmetry>(symmetry);
 		std::string skip; std::getline(file, skip); //Go to the next line
 		if (file.fail()) {
@@ -460,7 +460,7 @@ void Panel::WriteDecorations() {
 		_memory->WriteArray<int>(id, DECORATION_FLAGS, decorations);
 	}
 	if (arrows) {
-		(new ArrowWatchdog(id))->start();
+		(new ArrowWatchdog(id, Point::pillarWidth))->start();
 	}
 }
 
@@ -647,7 +647,7 @@ void Panel::WriteIntersections() {
 		}
 	}
 
-	double endDist = 0.05;
+	double endDist = Point::pillarWidth == 0 ? 0.05 : 0.03;
 
 	for (int i = 0; i < _endpoints.size(); i++) {
 		Endpoint endpoint = _endpoints[i];

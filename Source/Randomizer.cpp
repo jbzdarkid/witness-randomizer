@@ -172,7 +172,25 @@ void Randomizer::RandomizeSymmetry() {
 }
 
 void Randomizer::RandomizeDesert() {
-	Randomize(desertPanels, SWAP::LINES);
+	std::vector<int> puzzles = desertPanels;
+	std::vector<int> valid1 = { 0x00698, 0x0048F, 0x09F92, 0x09DA6, 0x0078D, 0x04D18, 0x0117A, 0x17ECA, 0x0A02D };
+	std::vector<int> valid2 = { 0x00698, 0x09F92, 0x0A036, 0x0A049, 0x0A053, 0x00422, 0x006E3, 0x00C72, 0x008BB, 0x0078D, 0x01205, 0x181AB, 0x012D7, 0x17ECA, 0x0A02D };
+	std::vector<int> valid3 = { 0x00698, 0x0048F, 0x09F92, 0x0A036, 0x0A049, 0x00422, 0x008BB, 0x0078D, 0x18313, 0x01205, 0x012D7 };
+	int endIndex = static_cast<int>(desertPanels.size());
+	for (int i = 0; i < endIndex - 1; i++) {
+		const int target = Random::RandInt(i, endIndex - 1);
+		//Prevent ambiguity caused by shadows
+		if (i == target || i == 1 && std::find(valid1.begin(), valid1.end(), desertPanels[target]) == valid1.end() || 
+			(i == 2 || i == 9) && std::find(valid2.begin(), valid2.end(), desertPanels[target]) == valid2.end() ||
+			i == 10 && std::find(valid3.begin(), valid3.end(), desertPanels[target]) == valid3.end()) {
+			i--;
+			continue;
+		}
+		if (i != target) {
+			SwapPanels(puzzles[i], puzzles[target], SWAP::LINES);
+			std::swap(desertPanels[i], desertPanels[target]);
+		}
+	}
 }
 
 void Randomizer::RandomizeQuarry() {

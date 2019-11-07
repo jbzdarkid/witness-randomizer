@@ -2079,7 +2079,7 @@ void PuzzleList::GenerateCavesH()
 	generator->arrowColor = { 0.8f, 0.5f, 1, 1 };
 	generator->successColor = { 1, 1, 1, 1 };
 	generator->pathWidth = 0.5f;
-	generator->generate(0x09DD5, Decoration::Arrow, 10);
+	generator->generate(0x09DD5, Decoration::Arrow, 8);
 	generator->pathWidth = 1;
 	generator->successColor = { 0, 0, 0, 0 };
 	//Challenge Entrance
