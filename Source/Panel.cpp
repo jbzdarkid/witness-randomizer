@@ -12,8 +12,7 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	return -1;
 }
 
-Panel::Panel(int id) {
-	_memory = std::make_shared<Memory>("witness64_d3d11.exe");
+Panel::Panel(const std::shared_ptr<Memory>& memory, int id) : _memory(memory) {
 	_width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X, 1)[0] - 1;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y, 1)[0] - 1;
 	_grid.resize(_width);
@@ -45,7 +44,7 @@ nlohmann::json Panel::Serialize() {
 	for (int x=0; x<_width; x++) {
 		for (int y=0; y<_height; y++) {
 			if (x%2 == 1 && y%2 == 1) {
-				puzzle["grid"][x][y] = Decoration::to_json(_grid[x][y]);
+				puzzle["grid"][x][y] = Decoration_to_json(_grid[x][y]);
 			} else {
 				if (_grid[x][y] & IntersectionFlags::HAS_DOT) {
 					puzzle["dots"].emplace_back(nlohmann::json({{"x", x}, {"y", y}}));
@@ -67,17 +66,6 @@ nlohmann::json Panel::Serialize() {
 
 	std::string out = puzzle.dump();
 	return puzzle;
-}
-
-void Panel::Random() {
-/*
-	for (auto& row : _decorations) {
-		for (auto& cell : row) {
-			cell.SetShape(cell.GetShape() & 0xFFFFFFF0);
-			cell.SetShape(cell.GetShape() | Random::RandInt(1, 10));
-		}
-	}
-*/
 }
 
 void Panel::ReadDecorations(int id) {

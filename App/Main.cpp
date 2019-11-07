@@ -20,6 +20,19 @@
 #define DISABLE_SNIPES 0x407
 #define SPEED_UP_AUTOSCROLLERS 0x408
 
+/* ------- Temp ------- */
+#define TMP1 0x501
+#define TMP2 0x502
+#define TMP3 0x503
+#define TMP4 0x504
+
+#include "Panel.h"
+int panel = 0x33D4;
+std::shared_ptr<Panel> g_panel;
+/* ------- Temp ------- */
+
+
+
 // Globals
 HWND g_hwnd;
 HWND g_seed;
@@ -120,6 +133,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             case SPEED_UP_AUTOSCROLLERS:
                 CheckDlgButton(hwnd, SPEED_UP_AUTOSCROLLERS, !IsDlgButtonChecked(hwnd, SPEED_UP_AUTOSCROLLERS));
                 break;
+            case TMP1:
+                g_panel = std::make_shared<Panel>(g_witnessProc, panel);
+                break;
+            case TMP2:
+                if(g_panel) g_panel->Write(panel);
+                break;
+            case TMP3:
+                if(g_panel) g_panel->Random();
+                break;
+            case TMP4:
+                if(g_panel) g_panel->Serialize();
+                break;
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -186,7 +211,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateLabel(30, 320, 240, L"Disable Swamp and Shadows snipes");
     CreateCheckbox(10, 340, SPEED_UP_AUTOSCROLLERS);
     CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
-    EnableWindow(g_randomizerStatus, FALSE);
+
+    CreateButton(200, 100, 100, L"Read", TMP1);
+    CreateButton(200, 130, 100, L"Write", TMP2);
+    CreateButton(200, 160, 100, L"Random", TMP3);
+    CreateButton(200, 190, 100, L"Dump", TMP4);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 
