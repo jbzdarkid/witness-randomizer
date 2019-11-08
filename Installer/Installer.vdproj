@@ -44,6 +44,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
             }
         }
         "Release"
@@ -154,15 +162,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Witness Randomizer"
-        "ProductCode" = "8:{BF672BB2-4FD0-44B6-B279-C5F7346649DC}"
-        "PackageCode" = "8:{F55A05A7-103A-4E8D-B88F-94C00188B9A6}"
+        "ProductCode" = "8:{5A3C6188-EA4B-4FEE-94EE-BF7D91681792}"
+        "PackageCode" = "8:{E8C66354-4ED4-4958-9D6C-A0DC3BD6C3EA}"
         "UpgradeCode" = "8:{4CB5496B-A47E-41D3-B4A7-677E29AB7513}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:5.1.1"
+        "ProductVersion" = "8:5.2.0"
         "Manufacturer" = "8:jbzdarkid"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://www.github.com/jbzdarkid/witness-randomizer/issues"

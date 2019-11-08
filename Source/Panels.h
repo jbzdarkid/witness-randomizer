@@ -544,7 +544,6 @@ std::vector<int> junglePanels = {
 	0x03616, // Jungle Laser
 };
 
-
 std::vector<int> audiologs = {
 	0x3C0F7, // Boat Treehouse Rock
 	0x3C0FD, // Boat Broken Boat
@@ -610,6 +609,22 @@ std::vector<int> audiologs = {
 //	0x338CA, // UTM Invisible Dots
 };
 
+std::vector<int> orchard {
+	0x00143, // Orchard Apple Tree 1
+	0x0003B, // Orchard Apple Tree 2
+	0x00055, // Orchard Apple Tree 3
+	0x032F7, // Orchard Apple Tree 4
+	0x032FF, // Orchard Apple Tree 5
+};
+
+std::vector<int> transparent {
+	0x009B8, // Symmetry Island Transparent 1
+	0x003E8, // Symmetry Island Transparent 2
+	0x00A15, // Symmetry Island Transparent 3
+	0x00B53, // Symmetry Island Transparent 4
+	0x00B8D, // Symmetry Island Transparent 5
+};
+
 // There might be something to do with these, I haven't decided yet.
 std::vector<int> nothingPanels = {
 // Doors & Shortcuts & Shortcut doors & Door controls
@@ -670,18 +685,6 @@ std::vector<int> nothingPanels = {
 	0x0A054, // Town Summon Boat
 	0x09DB8, // Swamp Summon Boat
 	0x17CDF, // Jungle Summon Boat
-
-// Identical sets
-	0x00143, // Orchard Apple Tree 1
-	0x0003B, // Orchard Apple Tree 2
-	0x00055, // Orchard Apple Tree 3
-	0x032F7, // Orchard Apple Tree 4
-	0x032FF, // Orchard Apple Tree 5
-	0x009B8, // Symmetry Island Transparent 1
-	0x003E8, // Symmetry Island Transparent 2
-	0x00A15, // Symmetry Island Transparent 3
-	0x00B53, // Symmetry Island Transparent 4
-	0x00B8D, // Symmetry Island Transparent 5
 
 // Misc
 	0x03629, // Tutorial Gate Open

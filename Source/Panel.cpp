@@ -4,6 +4,8 @@
 #include "Randomizer.h"
 #include <sstream>
 
+#pragma warning (disable:26451)
+
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 	for (size_t i=startIndex ; i<data.size(); i++) {

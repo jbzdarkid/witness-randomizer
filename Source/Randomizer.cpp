@@ -139,18 +139,18 @@ void Randomizer::Randomize() {
 
 	// Individual area modifications
 	RandomizeTutorial();
-	RandomizeSymmetry();
 	RandomizeDesert();
 	RandomizeQuarry();
 	RandomizeTreehouse();
 	RandomizeKeep();
 	RandomizeShadows();
-	RandomizeTown();
 	RandomizeMonastery();
 	RandomizeBunker();
 	RandomizeJungle();
 	RandomizeSwamp();
 	RandomizeMountain();
+	RandomizeTown();
+	RandomizeSymmetry();
 	// RandomizeAudioLogs();
 }
 
@@ -188,6 +188,10 @@ void Randomizer::RandomizeTutorial() {
 }
 
 void Randomizer::RandomizeSymmetry() {
+	std::vector<int> randomOrder(transparent.size(), 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	RandomizeRange(randomOrder, SWAP::NONE, 1, 5);
+	ReassignTargets(transparent, randomOrder);
 }
 
 void Randomizer::RandomizeDesert() {
@@ -238,6 +242,16 @@ void Randomizer::RandomizeShadows() {
 }
 
 void Randomizer::RandomizeTown() {
+    // @Hack...? To open the gate at the end
+	std::vector<int> randomOrder(orchard.size() + 1, 0);
+	std::iota(randomOrder.begin(), randomOrder.end(), 0);
+	RandomizeRange(randomOrder, SWAP::NONE, 1, 5);
+    // Ensure that we open the gate before the final puzzle (by swapping)
+    int panel3Index = find(randomOrder, 3);
+    int panel4Index = find(randomOrder, 4);
+    randomOrder[min(panel3Index, panel4Index)] = 3;
+    randomOrder[max(panel3Index, panel4Index)] = 4;
+	ReassignTargets(orchard, randomOrder);
 }
 
 void Randomizer::RandomizeMonastery() {
