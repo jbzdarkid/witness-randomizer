@@ -39,6 +39,12 @@
 #include <numeric>
 
 void Randomizer::GenerateNormal(HWND loadingHandle) { //TODO: Auto activate lasers
+	int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
+	if (lastSeed > 0) {
+		int difficulty = Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12);
+		Panel::LoadPanels(lastSeed, difficulty - 1);
+		return;
+	}
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
 	puzzles->setLoadingHandle(loadingHandle);
 	puzzles->setSeed(seed, seedIsRNG);
@@ -62,6 +68,12 @@ void Randomizer::GenerateNormal(HWND loadingHandle) { //TODO: Auto activate lase
 }
 
 void Randomizer::GenerateHard(HWND loadingHandle) { //TODO: Auto activate lasers
+	int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
+	if (lastSeed > 0) {
+		int difficulty = Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12);
+		Panel::LoadPanels(lastSeed, difficulty - 1);
+		return;
+	}
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
 	puzzles->setLoadingHandle(loadingHandle);
 	puzzles->setSeed(seed, seedIsRNG);

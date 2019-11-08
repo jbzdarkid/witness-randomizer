@@ -235,6 +235,8 @@ void Panel::SavePanels(int seed, bool hard)
 		for (Color c : m.data) file << " " << c.r << " " << c.g << " " << c.b << " " << c.a;
 		file << std::endl;
 	}
+	Special::WritePanelData(0x00064, BACKGROUND_REGION_COLOR + 12, seed);
+	Special::WritePanelData(0x00182, BACKGROUND_REGION_COLOR + 12, hard ? 2 : 1);
 }
 
 void Panel::LoadPanels(int seed, bool hard)

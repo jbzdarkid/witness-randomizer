@@ -1579,7 +1579,7 @@ void PuzzleList::GenerateTreehouseH()
 		Decoration::Triangle | Decoration::Color::Orange, 1, Decoration::Triangle | Decoration::Color::Magenta, 1);
 	generator->generate(0x17D8E, Decoration::Star | Decoration::Color::Orange, 3, Decoration::Star | Decoration::Color::Magenta, 3, Decoration::Star | Decoration::Color::Green, 2,
 		Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Triangle | Decoration::Color::Magenta, 2, Decoration::Triangle | Decoration::Color::Green, 2);
-	specialCase->generatePivotPanel(0x17DB7, { 4, 4 }, { { Decoration::Triangle | Decoration::Color::Orange, 2 },{ Decoration::Triangle | Decoration::Color::Magenta, 2 },{ Decoration::Triangle | Decoration::Color::Green, 2 } });
+	specialCase->generatePivotPanel(0x17DB7, { 4, 4 }, { { Decoration::Triangle | Decoration::Color::Orange, 2 },{ Decoration::Triangle | Decoration::Color::Magenta, 2 },{ Decoration::Triangle | Decoration::Color::Green, 1 } });
 	generator->generate(0x17DB1, { { Decoration::Star | Decoration::Color::Orange, 3}, { Decoration::Star | Decoration::Color::Magenta, 3}, { Decoration::Star | Decoration::Color::Green, 3},
 		{ Decoration::Star | Decoration::Color::White, 3 },
 		{Decoration::Triangle | Decoration::Color::Orange, 2}, {Decoration::Triangle | Decoration::Color::Magenta, 2}, { Decoration::Triangle | Decoration::Color::Green, 1},
