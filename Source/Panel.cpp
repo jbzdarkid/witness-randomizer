@@ -338,7 +338,10 @@ void Panel::LoadPanels(int seed, bool hard)
 		Special::WriteArray(id, offset, data);
 	}
 	(new KeepWatchdog())->start();
-	if (hard) (new BridgeWatchdog(0x09E86, 0x09ED8))->start();
+	if (hard) {
+		(new BridgeWatchdog(0x09E86, 0x09ED8))->start();
+		(new TreehouseWatchdog(0x17DAE))->start();
+	}
 	Special::drawSeedAndDifficulty(0x00064, seed, hard);
 	Special::drawGoodLuckPanel(0x00182);
 }

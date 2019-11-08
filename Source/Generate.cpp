@@ -614,7 +614,8 @@ bool Generate::generate_path_length(int minLength)
 		Point newPos = pos + dir;
 		if (off_edge(newPos) || get(newPos) != 0 || get(pos + dir / 2) != 0
 			|| newPos == exit && _path.size() / 2 + 2 < minLength) continue;
-		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos))) continue;
+		if (_panel->symmetry && (off_edge(get_sym_point(newPos)) || newPos == get_sym_point(newPos)))
+			continue;
 		set_path(newPos);
 		set_path(pos + dir / 2);
 		pos = newPos;

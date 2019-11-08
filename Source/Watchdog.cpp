@@ -252,3 +252,17 @@ void ChallengeWatchdog::action(bool status)
 		ready = true;
 	}
 }
+
+bool TreehouseWatchdog::condition()
+{
+	return _memory->ReadPanelData<int>(0x03613, TRACED_EDGES) > 0;
+}
+
+void TreehouseWatchdog::action(bool status)
+{
+	if (status) {
+		_memory->WritePanelData<float>(0x17DAE, POWER, { 1.0f, 1.0f });
+		_memory->WritePanelData<int>(0x17DAE, NEEDS_REDRAW, { 1 });
+		terminate = true;
+	}
+}

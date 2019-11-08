@@ -1528,6 +1528,6 @@ void Special::drawGoodLuckPanel(int id)
 
 
 void Special::test() {
-	
+
 }
 

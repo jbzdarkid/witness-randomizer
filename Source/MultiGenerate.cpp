@@ -20,9 +20,6 @@ bool MultiGenerate::generate(int id, PuzzleSymbols symbols)
 		}
 	}
 
-	if (!place_all_symbols(symbols))
-		return false;
-
 	std::vector<std::string> solution1; //For debugging only
 	for (int y = 0; y < generators[0]->_panel->_height; y++) {
 		std::string row;
@@ -56,6 +53,9 @@ bool MultiGenerate::generate(int id, PuzzleSymbols symbols)
 		}
 		solution3.push_back(row);
 	}
+
+	if (!place_all_symbols(symbols))
+		return false;
 
 	if (!generators[0]->hasFlag(Generate::Config::DisableWrite)) generators[0]->write(id);
 	return true;

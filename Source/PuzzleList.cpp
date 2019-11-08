@@ -51,11 +51,6 @@ void PuzzleList::GenerateAllH()
 
 void PuzzleList::CopyTargets()
 {
-	//Shadows Laser 0x19650
-	//Bunker Laser 0x09DE0
-	//Monastery Laser 0x17CA4
-	//Town Red Hexagonal 0x28B39
-	//Jungle Pop-up Wall 0x17CAB
 	Special::copyTarget(0x00021, 0x19650);
 	Special::copyTarget(0x00061, 0x09DE0);
 	Special::copyTarget(0x17CFB, 0x28B39);
@@ -1452,16 +1447,16 @@ void PuzzleList::GenerateTreehouseH()
 	generator->setFlag(Generate::Config::TreehouseLayout);
 	//Yellow Bridge
 	generator->setGridSize(4, 4);
-	generator->generate(0x17DC4, Decoration::Star | Decoration::Color::Orange, 7, Decoration::Triangle | Decoration::Color::Orange, 1);
-	generator->generate(0x17DC2, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 2);
-	generator->generate(0x17D9C, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 2);
-	generator->generate(0x17DB9, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 3);
+	generator->generate(0x17D72, Decoration::Star | Decoration::Color::Orange, 7, Decoration::Triangle | Decoration::Color::Orange, 1);
+	generator->generate(0x17D8F, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 2);
+	generator->generate(0x17D74, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 2);
+	generator->generate(0x17DAC, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 3);
 	generator->generate(0x17D9E, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 3);
-	generator->generate(0x17DAC, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Triangle | Decoration::Color::Orange, 4);
+	generator->generate(0x17DB9, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Triangle | Decoration::Color::Orange, 4);
 	generator->setGridSize(5, 5);
-	generator->generate(0x17D74, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 6);
-	generator->generate(0x17D8F, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Triangle | Decoration::Color::Orange, 6);
-	generator->generate(0x17D72, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 5);
+	generator->generate(0x17D9C, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17DC2, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17DC4, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 5);
 	generator->removeFlagOnce(Generate::Config::TreehouseLayout);
 	generator->generate(0x0A182, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 3, Decoration::Stone | Decoration::Color::Orange, 3);
 	//Pink Bridge 1
@@ -1548,19 +1543,18 @@ void PuzzleList::GenerateTreehouseH()
 	generator->generate(0x17DEC, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 3,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 2);
+	specialCase->clearTarget(0x17DEC);
 	generator->generate(0x17DAE, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 1,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 2, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1);
 	generator->generate(0x17DB0, Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 2,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 2);
-	generator->removeFlagOnce(Generate::Config::TreehouseLayout);
-	generator->setSymbol(Decoration::Start, 5, 10);
-	generator->setSymbol(Decoration::Exit, 6, 10);
 	generator->generate(0x17DDB, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 2,
 		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 2, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 2);
-	specialCase->clearTarget(0x17DDB);
+	(new TreehouseWatchdog(0x17DAE))->start();
+
 	//Orange Bridge 2
 	generator->setFlag(Generate::Config::ResetColors);
 	generator->pathWidth = 1;
@@ -1572,7 +1566,7 @@ void PuzzleList::GenerateTreehouseH()
 		Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Triangle | Decoration::Color::Magenta, 2 );
 	generator->generate(0x17D8C, Decoration::Star | Decoration::Color::Orange, 1, Decoration::Star | Decoration::Color::Magenta, 2,
 		Decoration::Triangle | Decoration::Color::Orange, 3, Decoration::Triangle | Decoration::Color::Magenta, 2 );
-	specialCase->generatePivotPanel(0x17CE3, { 4, 4 }, { { Decoration::Triangle | Decoration::Color::Orange, 3 },{ Decoration::Triangle | Decoration::Color::Magenta, 3 } });
+	specialCase->generatePivotPanel(0x17CE3, { 4, 4 }, { { Decoration::Triangle | Decoration::Color::Orange, 3 },{ Decoration::Triangle | Decoration::Color::Magenta, 2 } });
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.9f;
 	generator->generate(0x17DCD, Decoration::Star | Decoration::Color::Orange, 3, Decoration::Star | Decoration::Color::Magenta, 4,
