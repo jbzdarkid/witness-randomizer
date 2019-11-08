@@ -248,7 +248,7 @@ private:
 		}
 	}
 
-	std::tuple<int, int> loc_to_xy(int location) {
+	std::pair<int, int> loc_to_xy(int location) {
 		int height2 = (_height - 1) / 2;
 		int width2 = (_width + 1) / 2;
 
@@ -265,7 +265,7 @@ private:
 		return rowsFromBottom * width2 + x/2;
 	}
 
-	std::tuple<int, int> dloc_to_xy(int location) {
+	std::pair<int, int> dloc_to_xy(int location) {
 		int height2 = (_height - 3) / 2;
 		int width2 = _width / 2;
 
@@ -284,8 +284,9 @@ private:
 
 	int locate_segment(int x, int y, std::vector<int>& connections_a, std::vector<int>& connections_b) {
 		for (int i = 0; i < connections_a.size(); i++) {
-			auto[x1, y1] = loc_to_xy(connections_a[i]);
-			auto[x2, y2] = loc_to_xy(connections_b[i]);
+			std::pair<int,int> coord1 = loc_to_xy(connections_a[i]);
+			std::pair<int,int> coord2 = loc_to_xy(connections_b[i]);
+			int x1 = coord1.first, y1 = coord1.second, x2 = coord2.first, y2 = coord2.second;
 			if (Point::pillarWidth) {
 				if ((x1 == (x - 1 + Point::pillarWidth) % Point::pillarWidth && x2 == (x + 1) % Point::pillarWidth && y1 == y && y2 == y) ||
 					(y1 == y - 1 && y2 == y + 1 && x1 == x && x2 == x)) {
