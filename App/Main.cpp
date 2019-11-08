@@ -40,11 +40,20 @@ HWND g_randomizerStatus;
 HINSTANCE g_hInstance;
 auto g_witnessProc = std::make_shared<Memory>(L"witness64_d3d11.exe");
 std::shared_ptr<Randomizer> g_randomizer;
+void SetRandomSeed();
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	if (message == WM_DESTROY) {
 		PostQuitMessage(0);
-    } else if (message == WM_COMMAND || message == WM_TIMER) {
+    } else if (message == WM_NOTIFY) {
+        MSGFILTER* m = (MSGFILTER *)lParam;
+        if (m->msg == WM_KEYDOWN && m->wParam == VK_RETURN) {
+            if (IsWindowEnabled(g_randomizerStatus) == TRUE) {
+                PostMessage(g_hwnd, WM_COMMAND, RANDOMIZING, NULL);
+                return 1; // Non-zero to indicate that message was handled
+            }
+        }
+    } else if (message == WM_COMMAND || message == WM_TIMER || message == WM_NOTIFY) {
         switch (LOWORD(wParam)) {
             case HEARTBEAT:
                 switch ((ProcStatus)lParam) {
@@ -76,42 +85,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 }
                 break;
             case RANDOMIZING:
-                if (!g_randomizer) {
-                    assert(false);
-                    break;
-                }
+                if (!g_randomizer) break; // E.g. an enter press at the wrong time
                 EnableWindow(g_randomizerStatus, FALSE);
 
-                {
-                    int seed = 0;
-                    std::wstring text(128, L'\0');
-                    int size = GetWindowText(g_seed, text.data(), static_cast<int>(text.size()));
-                    if (size > 0) { // Set seed
-                        seed = _wtoi(text.c_str());
-                    } else { // Random seed
-                        seed = Random::RandInt(0, 999999);
-                        SetWindowText(g_seed, std::to_wstring(seed).c_str());
-				        RedrawWindow(g_seed, NULL, NULL, RDW_UPDATENOW);
+                SetRandomSeed();
+                std::thread([]{
+                    if (IsDlgButtonChecked(g_hwnd, DISABLE_SNIPES)) {
+                        g_randomizer->PreventSnipes();
                     }
-                    Random::SetSeed(seed);
-                    std::thread([]{
-                        if (IsDlgButtonChecked(g_hwnd, DISABLE_SNIPES)) {
-                            g_randomizer->PreventSnipes();
-                        }
-                        if (IsDlgButtonChecked(g_hwnd, SPEED_UP_AUTOSCROLLERS)) {
-                            g_randomizer->AdjustSpeed();
-                        }
-                        if (IsDlgButtonChecked(g_hwnd, CHALLENGE_ONLY)) {
-                            SetWindowText(g_randomizerStatus, L"Randomizing Challenge...");
-                            g_randomizer->RandomizeChallenge();
-                            PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_CHALLENGE_DONE, NULL);
-                        } else {
-                            SetWindowText(g_randomizerStatus, L"Randomizing...");
-                            g_randomizer->Randomize();
-                            PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_DONE, NULL);
-                        }
-                    }).detach();
-                }
+                    if (IsDlgButtonChecked(g_hwnd, SPEED_UP_AUTOSCROLLERS)) {
+                        g_randomizer->AdjustSpeed();
+                    }
+                    if (IsDlgButtonChecked(g_hwnd, CHALLENGE_ONLY)) {
+                        SetWindowText(g_randomizerStatus, L"Randomizing Challenge...");
+                        g_randomizer->RandomizeChallenge();
+                        PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_CHALLENGE_DONE, NULL);
+                    } else {
+                        SetWindowText(g_randomizerStatus, L"Randomizing...");
+                        g_randomizer->Randomize();
+                        PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_DONE, NULL);
+                    }
+                }).detach();
                 break;
             case RANDOMIZE_DONE:
                 EnableWindow(g_randomizerStatus, FALSE);
@@ -120,6 +114,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             case RANDOMIZE_CHALLENGE_DONE:
                 EnableWindow(g_randomizerStatus, FALSE);
                 SetWindowText(g_randomizerStatus, L"Randomized Challenge!");
+                std::thread([]{
+                    // Allow re-randomization for challenge -- it doesn't break the rest of the game.
+                    std::this_thread::sleep_for(std::chrono::seconds(10));
+                    PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_READY, NULL);
+                }).detach();
                 break;
             case CHALLENGE_ONLY:
                 CheckDlgButton(hwnd, CHALLENGE_ONLY, !IsDlgButtonChecked(hwnd, CHALLENGE_ONLY));
@@ -139,15 +138,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             case TMP2:
                 if(g_panel) g_panel->Write(panel);
                 break;
-            case TMP3:
-                if(g_panel) g_panel->Random();
-                break;
             case TMP4:
                 if(g_panel) g_panel->Serialize();
                 break;
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+void SetRandomSeed() {
+    std::wstring text(128, L'\0');
+    int length = GetWindowText(g_seed, text.data(), static_cast<int>(text.size()));
+    if (length > 0) { // Set seed
+        text.resize(length);
+        Random::SetSeed(_wtoi(text.c_str()));
+    } else { // Random seed
+        int seed = Random::RandInt(0, 999999);
+        SetWindowText(g_seed, std::to_wstring(seed).c_str());
+        RedrawWindow(g_seed, NULL, NULL, RDW_UPDATENOW);
+		Random::SetSeed(seed);
+    }
 }
 
 HWND CreateLabel(int x, int y, int width, LPCWSTR text) {
@@ -202,6 +212,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     CreateLabel(390, 15, 90, L"Version: " VERSION_STR);
     g_seed = CreateText(10, 10, 100);
+    PostMessage(g_seed, EM_SETEVENTMASK, 0, ENM_KEYEVENTS);
     g_randomizerStatus = CreateButton(120, 10, 180, L"Randomize", RANDOMIZING);
     EnableWindow(g_randomizerStatus, FALSE);
     CreateCheckbox(10, 300, CHALLENGE_ONLY);
@@ -212,10 +223,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateCheckbox(10, 340, SPEED_UP_AUTOSCROLLERS);
     CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
 
-    CreateButton(200, 100, 100, L"Read", TMP1);
-    CreateButton(200, 130, 100, L"Write", TMP2);
-    CreateButton(200, 160, 100, L"Random", TMP3);
-    CreateButton(200, 190, 100, L"Dump", TMP4);
+    // CreateButton(200, 100, 100, L"Read", TMP1);
+    // CreateButton(200, 130, 100, L"Write", TMP2);
+    // CreateButton(200, 160, 100, L"Random", TMP3);
+    // CreateButton(200, 190, 100, L"Dump", TMP4);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 
