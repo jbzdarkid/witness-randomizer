@@ -37,6 +37,8 @@ void PuzzleSerializer::ReadIntersections(Puzzle& p, int id) {
     }
 
     for (int j=0; j<numIntersections; j++) {
+        if (intersectionFlags[connections_a[j]] & Flags::IS_ENDPOINT) break;
+        if (intersectionFlags[connections_b[j]] & Flags::IS_ENDPOINT) break;
 		float x1 = intersectionLocations[2*connections_a[j]];
 		float y1 = intersectionLocations[2*connections_a[j]+1];
 		float x2 = intersectionLocations[2*connections_b[j]];
