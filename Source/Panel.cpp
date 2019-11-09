@@ -227,8 +227,8 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p, int id) {
 	// Dots
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
-			if (p.grid[x][y].dot == Cell::Dot::NONE) continue;
 			if (x%2 == y%2) continue; // Cells are invalid, intersections are already handled.
+			if (p.grid[x][y].dot == Cell::Dot::NONE) continue;
 
             // We need to introduce a new segment -- 
 			// Locate the segment we're breaking
@@ -272,40 +272,36 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p, int id) {
     // Gaps
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
-			if (p.grid[x][y].gap == Cell::Gap::NONE) continue;
 			if (x%2 == y%2) continue; // Cells are invalid, intersections are already handled.
+			if (p.grid[x][y].gap == Cell::Gap::NONE) continue;
 
-			for (int i=0; i<connections_a.size(); i++) {
-				auto [x1, y1] = loc_to_xy(p, connections_a[i]);
-				auto [x2, y2] = loc_to_xy(p, connections_b[i]);
-				if ((x1+1 == x && x2-1 == x && y1 == y && y2 == y) ||
-					(y1+1 == y && y2-1 == y && x1 == x && x2 == x)) {
-					int other_connection = connections_b[i];
-					connections_b[i] = static_cast<int>(intersectionFlags.size()); // This endpoint
-					
-					connections_a.push_back(other_connection);
-					connections_b.push_back(static_cast<int>(intersectionFlags.size() + 1)); // Next endpoint
-					break;
-				}
-			}
-            // Add the two halves of this gap to the end
 			float xPos = min + (x/2.0f) * width_interval;
 			float yPos = max - (y/2.0f) * height_interval;
             // Reminder: Y goes from 0.0 (bottom) to 1.0 (top)
             if (x%2 == 0) { // Vertical gap
+                connections_a.push_back(xy_to_loc(p, x, y-1));
+                connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos);
 			    intersectionLocations.push_back(yPos + verti_gap_size / 2);
+                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_VERTI_CONN);
+
+                connections_a.push_back(xy_to_loc(p, x, y+1));
+                connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos);
 			    intersectionLocations.push_back(yPos - verti_gap_size / 2);
                 intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_VERTI_CONN);
-                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
+                connections_a.push_back(xy_to_loc(p, x-1, y));
+                connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos - horiz_gap_size / 2);
 			    intersectionLocations.push_back(yPos);
+                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_HORIZ_CONN);
+
+                connections_a.push_back(xy_to_loc(p, x+1, y));
+                connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos + horiz_gap_size / 2);
 			    intersectionLocations.push_back(yPos);
-                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_VERTI_CONN);
-                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_VERTI_CONN);
+                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_HORIZ_CONN);
             }
 		}
 	}
