@@ -1,4 +1,4 @@
-#include "Panel.h"
+#include "Puzzle.h"
 #include "Memory.h"
 
 #pragma warning (disable:26451)
@@ -92,7 +92,7 @@ void PuzzleSerializer::ReadIntersections(Puzzle& p, int id) {
 			else if (y1 < y2) y++;
 			else if (y1 > y2) y--;
             p.grid[x][y].dot = FlagsToDot(intersectionFlags[i]);
-        } else if (intersectionFlags[i] & Flags::HAS_NO_CONN) {
+        } else if (intersectionFlags[i] & Flags::HAS_ONE_CONN) {
 			     if (x1 < x2) x--;
 			else if (x1 > x2) x++;
 			else if (y1 < y2) y++;
@@ -111,14 +111,14 @@ void PuzzleSerializer::ReadDecorations(Puzzle& p, int id) {
 		auto [x, y] = dloc_to_xy(p, i);
         auto d = std::make_shared<Decoration>();
         p.grid[x][y].decoration = d;
-        d->type = static_cast<Shape>(decorations[i] & 0xFF00);
+        d->type = static_cast<Type>(decorations[i] & 0xFF00);
         switch(d->type) {
-            case Shape::Poly:
-            case Shape::RPoly:
-            case Shape::Ylop:
+            case Type::Poly:
+            case Type::RPoly:
+            case Type::Ylop:
                 d->polyshape = decorations[i] & 0xFFFF0000;
                 break;
-            case Shape::Triangle:
+            case Type::Triangle:
                 d->count = decorations[i] & 0x000F0000;
                 break;
         }
@@ -149,7 +149,6 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p, int id) {
     float horiz_gap_size = width_interval / 2;
     float verti_gap_size = height_interval / 2;
 
-    // TODO: Compute HAS_NO_CONN / HAS_HORIZ_CONN / HAS_VERTI_CONN in this loop.
 	// @Cleanup: If I write directly to locations, then I can simplify this gross loop iterator.
     // int numIntersections = (p.width / 2 + 1) * (p.height / 2 + 1);
     // Grided intersections
@@ -179,19 +178,35 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p, int id) {
                     break;
             }
 
-			intersectionFlags.push_back(flags);
-
-			// Create connections for this intersection -- always write the smaller value into a, the larger into b
+            int numConnections = 0;
+            if (p.grid[x][y].end != Cell::Dir::NONE) numConnections++;
+			// Create connections for this intersection for bottom/left only.
             // Bottom connection
 			if (y > 0 && p.grid[x][y-1].gap == Cell::Gap::NONE) {
 				connections_a.push_back(xy_to_loc(p, x, y-2));
 				connections_b.push_back(xy_to_loc(p, x, y));
+                flags |= Flags::HAS_VERTI_CONN;
+                numConnections++;
 			}
+            // Top connection
+            if (y < p.height - 1 && p.grid[x][y+1].gap == Cell::Gap::NONE) {
+                flags |= Flags::HAS_VERTI_CONN;
+                numConnections++;
+            }
             // Left connection
 			if (x > 0 && p.grid[x-1][y].gap == Cell::Gap::NONE) {
 				connections_a.push_back(xy_to_loc(p, x-2, y));
 				connections_b.push_back(xy_to_loc(p, x, y));
+                flags |= Flags::HAS_HORIZ_CONN;
+                numConnections++;
 			}
+            // Right connection
+            if (x < p.width - 1 && p.grid[x+1][y].gap == Cell::Gap::NONE) {
+                flags |= Flags::HAS_HORIZ_CONN;
+                numConnections++;
+            }
+            if (numConnections == 1) flags |= HAS_ONE_CONN;
+			intersectionFlags.push_back(flags);
 		}
 	}
 
@@ -273,7 +288,7 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p, int id) {
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
 			if (x%2 == y%2) continue; // Cells are invalid, intersections are already handled.
-			if (p.grid[x][y].gap == Cell::Gap::NONE) continue;
+			if (p.grid[x][y].gap != Cell::Gap::BREAK) continue;
 
 			float xPos = min + (x/2.0f) * width_interval;
 			float yPos = max - (y/2.0f) * height_interval;
@@ -283,25 +298,25 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p, int id) {
                 connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos);
 			    intersectionLocations.push_back(yPos + verti_gap_size / 2);
-                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_VERTI_CONN);
+                intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
 
                 connections_a.push_back(xy_to_loc(p, x, y+1));
                 connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos);
 			    intersectionLocations.push_back(yPos - verti_gap_size / 2);
-                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_VERTI_CONN);
+                intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
                 connections_a.push_back(xy_to_loc(p, x-1, y));
                 connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos - horiz_gap_size / 2);
 			    intersectionLocations.push_back(yPos);
-                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_HORIZ_CONN);
+                intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
 
                 connections_a.push_back(xy_to_loc(p, x+1, y));
                 connections_b.push_back(static_cast<int>(intersectionFlags.size())); // This endpoint
 			    intersectionLocations.push_back(xPos + horiz_gap_size / 2);
 			    intersectionLocations.push_back(yPos);
-                intersectionFlags.push_back(Flags::HAS_NO_CONN | Flags::HAS_HORIZ_CONN);
+                intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
             }
 		}
 	}

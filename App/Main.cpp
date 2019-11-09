@@ -21,11 +21,13 @@
 #define SPEED_UP_AUTOSCROLLERS 0x408
 
 /* ------- Temp ------- */
-#include "Panel.h"
+#include "Puzzle.h"
+#include "Solver.h"
 #include <sstream>
 
 #define TMP1 0x501
 #define TMP2 0x502
+#define TMP3 0x503
 
 HWND g_panelId;
 Puzzle g_puzzle;
@@ -154,6 +156,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                     PuzzleSerializer(g_witnessProc).WritePuzzle(g_puzzle, panelId);
                 }
                 break;
+            case TMP3:
+                Solver::Solve(g_puzzle);
+                break;
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -239,6 +244,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_panelId = CreateText(200, 100, 100, L"A3B2");
     CreateButton(200, 130, 100, L"Read", TMP1);
     CreateButton(200, 160, 100, L"Write", TMP2);
+    CreateButton(200, 190, 100, L"Validate", TMP3);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 

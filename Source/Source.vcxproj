@@ -158,19 +158,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ChallengeRandomizer.h" />
-    <ClInclude Include="json.hpp" />
     <ClInclude Include="Memory.h" />
-    <ClInclude Include="Panel.h" />
+    <ClInclude Include="Puzzle.h" />
     <ClInclude Include="Panels.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Randomizer.h" />
+    <ClInclude Include="Solver.h" />
+    <ClInclude Include="Validator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChallengeRandomizer.cpp" />
     <ClCompile Include="Memory.cpp" />
-    <ClCompile Include="Panel.cpp" />
+    <ClCompile Include="Puzzle.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Randomizer.cpp" />
+    <ClCompile Include="Solver.cpp" />
+    <ClCompile Include="Validator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

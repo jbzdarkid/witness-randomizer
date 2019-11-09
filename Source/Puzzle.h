@@ -4,13 +4,15 @@
 
 class Memory;
 
-enum Shape {
+enum Type {
     Stone =      0x100,
+    Square = Stone, // @Deprecated
     Star =       0x200,
     Poly =       0x400,
     Eraser =     0x500,
+    Nega = Eraser, // @Deprecated
     Triangle =   0x600,
-    RPoly =     0x1000,
+    RPoly =     0x1000, // @Cleanup!
     Ylop =      0x2000,
 };
 
@@ -28,14 +30,22 @@ enum Color {
 };
 
 struct Decoration {
-    Shape type;
+    Type type;
     Color color;
     int polyshape = 0;
     // For triangles only
     int count = 0;
 };
 
+
 struct Cell {
+    inline static Cell Undefined() {
+        Cell c;
+        c.undefined = true;
+        return c;
+    }
+    bool undefined = false;
+
     bool start = false;
     enum class Dir {NONE, LEFT, RIGHT, UP, DOWN};
     Dir end = Dir::NONE;
@@ -44,17 +54,53 @@ struct Cell {
     Dot dot = Dot::NONE;
     enum class Gap {NONE, BREAK, FULL};
     Gap gap = Gap::NONE;
+
+    // Line color
+    enum class Color {NONE, BLACK, BLUE, YELLOW};
+    Color color = Color::NONE;
 };
+
+struct Negation {};
+struct Pos {int x; int y;};
 
 struct Puzzle {
     int16_t height;
     int16_t width;
     bool hasDecorations = false;
-    std::vector<std::vector<Cell>> grid;
 
     enum class Symmetry {NONE, X, Y, XY};
     Symmetry sym = Symmetry::NONE;
     bool pillar = false;
+
+    inline Cell GetCell(int x, int y) const {
+        x = Mod(x);
+        if (!SafeCell(x, y)) return Cell::Undefined();
+        return grid[x][y];
+    }
+    inline Cell::Color GetLine(int x, int y) const {
+        return grid[x][y].color;
+    }
+    // @TODO:
+    Pos GetSymmetricalPos(int x, int y);
+
+    bool valid;
+    std::vector<Negation> negations;
+    std::vector<Pos> invalidElements;
+
+// private:
+    std::vector<std::vector<Cell>> grid;
+
+private:
+    inline int Mod(int x) const {
+        if (!pillar) return x;
+        return (x + width * height * 2) % width;
+    }
+
+    inline bool SafeCell(int x, int y) const {
+        if (x < 0 || x >= width) return false;
+        if (y < 0 || y >= height) return false;
+        return true;
+    }
 };
 
 class PuzzleSerializer {
@@ -73,7 +119,7 @@ private:
         DOT_IS_BLUE =          0x100,
         DOT_IS_ORANGE =        0x200,
         DOT_IS_INVISIBLE =    0x1000,
-        HAS_NO_CONN =       0x100000,
+        HAS_ONE_CONN =       0x100000,
         HAS_VERTI_CONN =    0x200000,
         HAS_HORIZ_CONN =    0x400000,
     };
