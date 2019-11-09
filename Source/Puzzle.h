@@ -37,7 +37,6 @@ struct Decoration {
     int count = 0;
 };
 
-
 struct Cell {
     inline static Cell Undefined() {
         Cell c;
@@ -63,7 +62,9 @@ struct Cell {
 struct Negation {};
 struct Pos {int x; int y;};
 
-struct Puzzle {
+#include <cassert> // TODO: Move this + impl to cpp
+class Puzzle {
+public:
     int16_t height;
     int16_t width;
     bool hasDecorations = false;
@@ -71,6 +72,10 @@ struct Puzzle {
     enum class Symmetry {NONE, X, Y, XY};
     Symmetry sym = Symmetry::NONE;
     bool pillar = false;
+
+    bool valid;
+    std::vector<Negation> negations;
+    std::vector<Pos> invalidElements;
 
     inline Cell GetCell(int x, int y) const {
         x = Mod(x);
@@ -80,12 +85,23 @@ struct Puzzle {
     inline Cell::Color GetLine(int x, int y) const {
         return grid[x][y].color;
     }
+    inline void NewGrid(int newWidth, int newHeight) {
+        if (newWidth == 0) {
+            assert(false);
+            newWidth = width;
+            newHeight = height;
+        } else {
+            // @Cleanup! This should be in the ctor...
+            width = 2*newWidth + 1;
+            height = 2*newHeight + 1;
+        }
+        grid.clear();
+        grid.resize(width);
+        for (int x=0; x<width; x++) grid[x].resize(height);
+    }
+
     // @TODO:
     Pos GetSymmetricalPos(int x, int y);
-
-    bool valid;
-    std::vector<Negation> negations;
-    std::vector<Pos> invalidElements;
 
 // private:
     std::vector<std::vector<Cell>> grid;

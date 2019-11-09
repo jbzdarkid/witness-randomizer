@@ -15,7 +15,7 @@
 #endif
 
 struct Region{};
-struct Puzzle;
+class Puzzle;
 struct Pos;
 class Validator {
 public:

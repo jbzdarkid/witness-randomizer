@@ -5,7 +5,7 @@
 #define MAX_SOLUTIONS 10000
 #endif
 
-struct Puzzle;
+class Puzzle;
 class Solver {
 public:
     static std::vector<Puzzle> Solve(Puzzle& p);

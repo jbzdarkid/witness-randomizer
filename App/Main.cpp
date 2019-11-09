@@ -23,14 +23,17 @@
 /* ------- Temp ------- */
 #include "Puzzle.h"
 #include "Solver.h"
+#include "Randomizer2.h"
 #include <sstream>
 
 #define TMP1 0x501
 #define TMP2 0x502
 #define TMP3 0x503
+#define TMP4 0x504
 
 HWND g_panelId;
 Puzzle g_puzzle;
+std::shared_ptr<Randomizer2> g_randomizer2;
 /* ------- Temp ------- */
 
 // Globals
@@ -61,12 +64,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                         // Shut down randomizer, wait for startup
                         if (g_randomizer) {
                             g_randomizer = nullptr;
+                            g_randomizer2 = nullptr;
                             EnableWindow(g_randomizerStatus, FALSE);
                         }
                         break;
                     case ProcStatus::Running:
                         if (!g_randomizer) {
                             g_randomizer = std::make_shared<Randomizer>(g_witnessProc);
+                            g_randomizer2 = std::make_shared<Randomizer2>(g_witnessProc);
                             PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_READY, NULL);
                         }
                         break;
@@ -159,6 +164,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             case TMP3:
                 Solver::Solve(g_puzzle);
                 break;
+            case TMP4:
+                g_randomizer2->Randomize();
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -244,7 +251,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     g_panelId = CreateText(200, 100, 100, L"A3B2");
     CreateButton(200, 130, 100, L"Read", TMP1);
     CreateButton(200, 160, 100, L"Write", TMP2);
-    CreateButton(200, 190, 100, L"Validate", TMP3);
+    CreateButton(200, 190, 100, L"Solve", TMP3);
+    CreateButton(200, 220, 100, L"Randomize2", TMP4);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 

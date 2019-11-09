@@ -7,16 +7,14 @@
 PuzzleSerializer::PuzzleSerializer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
 Puzzle PuzzleSerializer::ReadPuzzle(int id) {
-    Puzzle p;
-    p.width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X, 1)[0] - 1;
-    p.height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y, 1)[0] - 1;
-    if (p.width < 0 || p.height < 0) return p; // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
-    p.grid.resize(p.width);
-	for (auto& row : p.grid) row.resize(p.height);
+    int width = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_X, 1)[0] - 1;
+    int height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y, 1)[0] - 1;
+    if (width < 0 || height < 0) return Puzzle(); // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
 
+    Puzzle p;
+    p.NewGrid(width, height);
 	ReadIntersections(p, id);
 	ReadDecorations(p, id);
-
     return p;
 }
 
