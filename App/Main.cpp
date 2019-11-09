@@ -27,11 +27,10 @@
 #define TMP4 0x504
 
 #include "Panel.h"
-int panel = 0x33D4;
-std::shared_ptr<Panel> g_panel;
+// int panel = 0x33D4; // Tutorial vault
+int panel = 0x0005D; // Outside Tutorial Dots Tutorial 1
+Puzzle g_puzzle;
 /* ------- Temp ------- */
-
-
 
 // Globals
 HWND g_hwnd;
@@ -133,13 +132,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 CheckDlgButton(hwnd, SPEED_UP_AUTOSCROLLERS, !IsDlgButtonChecked(hwnd, SPEED_UP_AUTOSCROLLERS));
                 break;
             case TMP1:
-                g_panel = std::make_shared<Panel>(g_witnessProc, panel);
+                g_puzzle = PuzzleSerializer(g_witnessProc).ReadPuzzle(panel);
                 break;
             case TMP2:
-                if(g_panel) g_panel->Write(panel);
-                break;
-            case TMP4:
-                if(g_panel) g_panel->Serialize();
+                PuzzleSerializer(g_witnessProc).WritePuzzle(g_puzzle, panel);
                 break;
         }
     }
@@ -223,10 +219,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateCheckbox(10, 340, SPEED_UP_AUTOSCROLLERS);
     CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
 
-    // CreateButton(200, 100, 100, L"Read", TMP1);
-    // CreateButton(200, 130, 100, L"Write", TMP2);
-    // CreateButton(200, 160, 100, L"Random", TMP3);
-    // CreateButton(200, 190, 100, L"Dump", TMP4);
+    CreateButton(200, 100, 100, L"Read", TMP1);
+    CreateButton(200, 130, 100, L"Write", TMP2);
+    CreateButton(200, 190, 100, L"Dump", TMP4);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 
