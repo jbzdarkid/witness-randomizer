@@ -21,14 +21,13 @@
 #define SPEED_UP_AUTOSCROLLERS 0x408
 
 /* ------- Temp ------- */
+#include "Panel.h"
+#include <sstream>
+
 #define TMP1 0x501
 #define TMP2 0x502
-#define TMP3 0x503
-#define TMP4 0x504
 
-#include "Panel.h"
-// int panel = 0x33D4; // Tutorial vault
-int panel = 0x0005D; // Outside Tutorial Dots Tutorial 1
+HWND g_panelId;
 Puzzle g_puzzle;
 /* ------- Temp ------- */
 
@@ -132,10 +131,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 CheckDlgButton(hwnd, SPEED_UP_AUTOSCROLLERS, !IsDlgButtonChecked(hwnd, SPEED_UP_AUTOSCROLLERS));
                 break;
             case TMP1:
-                g_puzzle = PuzzleSerializer(g_witnessProc).ReadPuzzle(panel);
+                {
+                    std::wstring text(128, L'\0');
+                    int length = GetWindowText(g_panelId, text.data(), static_cast<int>(text.size()));
+                    text.resize(length);
+                    std::wstringstream s;
+                    int panelId;
+                    s << text;
+                    s >> std::hex >> panelId;
+                    g_puzzle = PuzzleSerializer(g_witnessProc).ReadPuzzle(panelId);
+                }
                 break;
             case TMP2:
-                PuzzleSerializer(g_witnessProc).WritePuzzle(g_puzzle, panel);
+                {
+                    std::wstring text(128, L'\0');
+                    int length = GetWindowText(g_panelId, text.data(), static_cast<int>(text.size()));
+                    text.resize(length);
+                    std::wstringstream s;
+                    int panelId;
+                    s << text;
+                    s >> std::hex >> panelId;
+                    PuzzleSerializer(g_witnessProc).WritePuzzle(g_puzzle, panelId);
+                }
                 break;
         }
     }
@@ -219,9 +236,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateCheckbox(10, 340, SPEED_UP_AUTOSCROLLERS);
     CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
 
-    CreateButton(200, 100, 100, L"Read", TMP1);
-    CreateButton(200, 130, 100, L"Write", TMP2);
-    CreateButton(200, 190, 100, L"Dump", TMP4);
+    g_panelId = CreateText(200, 100, 100, L"A3B2");
+    CreateButton(200, 130, 100, L"Read", TMP1);
+    CreateButton(200, 160, 100, L"Write", TMP2);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 
