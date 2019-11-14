@@ -152,7 +152,8 @@ int Memory::ExecuteSigScans()
 
 void Memory::ThrowError() {
 	std::wstring message(256, '\0');
-	int length = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.size()), nullptr);
+    DWORD error = GetLastError();
+	int length = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error, 1024, &message[0], static_cast<DWORD>(message.size()), nullptr);
 	message.resize(length);
 #ifndef NDEBUG
     MessageBox(NULL, message.c_str(), L"Please tell darkid about this", MB_OK);

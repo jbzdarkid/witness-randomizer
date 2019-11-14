@@ -2,6 +2,8 @@
 #include "Puzzle.h"
 #include "Validator.h"
 
+int Solver::MAX_SOLUTIONS = 10000;
+
 std::vector<Puzzle> Solver::Solve(Puzzle& p) {
     std::vector<Puzzle> solutions;
     // var start = (new Date()).getTime()

@@ -165,7 +165,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 Solver::Solve(g_puzzle);
                 break;
             case TMP4:
-                g_randomizer2->Randomize();
+                SetRandomSeed();
+                g_randomizer2->RandomizeKeep();
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);

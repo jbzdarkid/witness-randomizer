@@ -1,13 +1,10 @@
 #pragma once
 #include <vector>
 
-#ifndef MAX_SOLUTIONS
-#define MAX_SOLUTIONS 10000
-#endif
-
 class Puzzle;
 class Solver {
 public:
+    static int MAX_SOLUTIONS;
     static std::vector<Puzzle> Solve(Puzzle& p);
 
 private:

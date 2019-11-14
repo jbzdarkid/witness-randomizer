@@ -5,8 +5,8 @@
 #include <vector>
 #include <windows.h>
 
-// #define GLOBALS 0x5B28C0
-#define GLOBALS 0x62D0A0
+#define GLOBALS 0x5B28C0
+// #define GLOBALS 0x62D0A0
 
 #define HEARTBEAT 0x401
 enum class ProcStatus {
@@ -102,6 +102,8 @@ private:
 };
 
 #if GLOBALS == 0x5B28C0
+#define POSITION 0x24
+#define ORIENTATION 0x34
 #define PATH_COLOR 0xC8
 #define REFLECTION_PATH_COLOR 0xD8
 #define DOT_COLOR 0xF8
@@ -169,6 +171,8 @@ private:
 #define METADATA 0xF2 // sizeof(short)
 #define HOTEL_EP_NAME 0x4BC640
 #elif GLOBALS == 0x62D0A0
+#define POSITION #error
+#define ORIENTATION #error
 #define PATH_COLOR 0xC0
 #define REFLECTION_PATH_COLOR 0xD0
 #define DOT_COLOR 0xF0
