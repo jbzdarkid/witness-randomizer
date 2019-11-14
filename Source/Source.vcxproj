@@ -161,6 +161,7 @@
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Puzzle.h" />
     <ClInclude Include="Panels.h" />
+    <ClInclude Include="PuzzlerSerializer.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Randomizer.h" />
     <ClInclude Include="Randomizer2.h" />
@@ -171,6 +172,7 @@
     <ClCompile Include="ChallengeRandomizer.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Puzzle.cpp" />
+    <ClCompile Include="PuzzlerSerializer.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Randomizer.cpp" />
     <ClCompile Include="Randomizer2.cpp" />

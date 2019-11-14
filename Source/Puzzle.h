@@ -62,7 +62,6 @@ struct Cell {
 struct Negation {};
 struct Pos {int x; int y;};
 
-#include <cassert> // TODO: Move this + impl to cpp
 class Puzzle {
 public:
     int16_t height;
@@ -77,28 +76,9 @@ public:
     std::vector<Negation> negations;
     std::vector<Pos> invalidElements;
 
-    inline Cell GetCell(int x, int y) const {
-        x = Mod(x);
-        if (!SafeCell(x, y)) return Cell::Undefined();
-        return grid[x][y];
-    }
-    inline Cell::Color GetLine(int x, int y) const {
-        return grid[x][y].color;
-    }
-    inline void NewGrid(int newWidth, int newHeight) {
-        if (newWidth == 0) {
-            assert(false);
-            newWidth = width;
-            newHeight = height;
-        } else {
-            // @Cleanup! This should be in the ctor...
-            width = 2*newWidth + 1;
-            height = 2*newHeight + 1;
-        }
-        grid.clear();
-        grid.resize(width);
-        for (int x=0; x<width; x++) grid[x].resize(height);
-    }
+    inline Cell GetCell(int x, int y) const;
+    inline Cell::Color GetLine(int x, int y) const;
+    inline void NewGrid(int newWidth, int newHeight);
 
     // @TODO:
     Pos GetSymmetricalPos(int x, int y);
@@ -107,52 +87,6 @@ public:
     std::vector<std::vector<Cell>> grid;
 
 private:
-    inline int Mod(int x) const {
-        if (!pillar) return x;
-        return (x + width * height * 2) % width;
-    }
-
-    inline bool SafeCell(int x, int y) const {
-        if (x < 0 || x >= width) return false;
-        if (y < 0 || y >= height) return false;
-        return true;
-    }
-};
-
-class PuzzleSerializer {
-public:
-    PuzzleSerializer(const std::shared_ptr<Memory>& memory);
-    Puzzle ReadPuzzle(int id);
-    void WritePuzzle(const Puzzle& p, int id);
-
-private:
-    // @Bug: Blue and orange are swapped?
-    enum Flags {
-        IS_ENDPOINT =            0x1,
-        IS_STARTPOINT =          0x2,
-        IS_FULL_GAP =            0x8,
-        HAS_DOT =               0x20,
-        DOT_IS_BLUE =          0x100,
-        DOT_IS_ORANGE =        0x200,
-        DOT_IS_INVISIBLE =    0x1000,
-        HAS_ONE_CONN =       0x100000,
-        HAS_VERTI_CONN =    0x200000,
-        HAS_HORIZ_CONN =    0x400000,
-    };
-
-    void ReadIntersections(Puzzle& p, int id);
-    void ReadDecorations(Puzzle& p, int id);
-    void WriteIntersections(const Puzzle& p, int id);
-    void WriteDecorations(const Puzzle& p, int id);
-
-    std::tuple<int, int> loc_to_xy(const Puzzle& p, int location) const;
-    int xy_to_loc(const Puzzle& p, int x, int y) const;
-    // Decoration location
-    std::tuple<int, int> dloc_to_xy(const Puzzle& p, int location) const;
-    int xy_to_dloc(const Puzzle& p, int x, int y) const;
-    Cell::Dot FlagsToDot(int flags) const;
-    // Iterate connection lists for another location which is connected to us; return that other location.
-    int FindConnection(int i, const std::vector<int>& connections_a, const std::vector<int>& connections_b) const;
-
-    std::shared_ptr<Memory> _memory;
+    inline int Mod(int x) const;
+    inline bool SafeCell(int x, int y) const;
 };
