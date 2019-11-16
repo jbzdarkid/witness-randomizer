@@ -170,7 +170,10 @@ void* Memory::ComputeOffset(std::vector<int> offsets) {
 		cumulativeAddress += offset;
 
 		const auto search = _computedAddresses.find(cumulativeAddress);
-		if (search == std::end(_computedAddresses)) {
+        // This is an issue with re-randomization. Always. Just disable it in debug mode!
+#ifdef NDEBUG
+	    if (search == std::end(_computedAddresses)) {
+#endif
 			// If the address is not yet computed, then compute it.
 			uintptr_t computedAddress = 0;
 			if (bool result = !ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
@@ -180,7 +183,9 @@ void* Memory::ComputeOffset(std::vector<int> offsets) {
                 ThrowError();
             }
 			_computedAddresses[cumulativeAddress] = computedAddress;
+#ifdef NDEBUG
 		}
+#endif
 
 		cumulativeAddress = _computedAddresses[cumulativeAddress];
 	}
@@ -188,6 +193,21 @@ void* Memory::ComputeOffset(std::vector<int> offsets) {
 }
 
 uintptr_t Memory::Allocate(size_t bytes) {
+/*
+uintptr_t ForeignProcessMemory::AllocateMemory(size_t Size, DWORD Flags) const {
+    if (!ProcessHandle) {
+        return 0;
+    }
+    return (uintptr_t)VirtualAllocEx(ProcessHandle, nullptr, Size, MEM_RESERVE | MEM_COMMIT, Flags);
+}
+
+void ForeignProcessMemory::DeallocateMemory(uintptr_t Addr) const {
+    if (!ProcessHandle || Addr == 0) {
+        return;
+    }
+    VirtualFreeEx(ProcessHandle, (void*)Addr, 0, MEM_RELEASE);
+}
+*/
     uintptr_t current = _freeMem;
     _freeMem += bytes;
 

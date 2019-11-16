@@ -3,6 +3,7 @@
 #include "Random.h"
 #include "Solver.h"
 #include "Memory.h"
+#include "Randomizer2Core.h"
 #include "PuzzlerSerializer.h"
 #include <cassert>
 #include <string>
@@ -155,173 +156,184 @@ void Randomizer2::Randomize() {
 
 }
 
-void DebugColorGrid(const std::vector<std::vector<int>>& colorGrid) {
-    for (int y=0; y<colorGrid[0].size(); y++) {
-        std::wstring row;
-        for (int x=0; x<colorGrid.size(); x++) {
-            row += std::to_wstring(colorGrid[x][y]);
-        }
-        row += L'\n';
-        OutputDebugString(row.c_str());
-    }
-    OutputDebugString(L"\n");
-}
-
-void FloodFill(const Puzzle& p, std::vector<std::vector<int>>& colorGrid, int color, int x, int y) {
-    if (!p.SafeCell(x, y)) return;
-    if (colorGrid[x][y] != 0) return; // Already processed.
-    colorGrid[x][y] = color;
-
-    FloodFill(p, colorGrid, color, x, y+1);
-    FloodFill(p, colorGrid, color, x, y-1);
-    FloodFill(p, colorGrid, color, x+1, y);
-    FloodFill(p, colorGrid, color, x-1, y);
-}
-
-void FloodFillOutside(const Puzzle&p, std::vector<std::vector<int>>& colorGrid, int x, int y) {
-    if (!p.SafeCell(x, y)) return;
-    if (colorGrid[x][y] != 0) return; // Already processed.
-    if (x%2 != y%2 && p.grid[x][y].gap != Cell::Gap::FULL) return; // Only flood-fill through full gaps
-    colorGrid[x][y] = 1; // Outside color
-
-    FloodFillOutside(p, colorGrid, x, y+1);
-    FloodFillOutside(p, colorGrid, x, y-1);
-    FloodFillOutside(p, colorGrid, x+1, y);
-    FloodFillOutside(p, colorGrid, x-1, y);
-}
-
-/*
-    undefined -> 1 (color of outside) or * (any colored cell) or -1 (edge/intersection not part of any region)
-
-    0 -> {} (this is a special edge case, which I don't need right now)
-    1 -> 0 (uncolored / ready to color)
-    2 -> 
-*/
-std::vector<std::vector<int>> CreateColorGrid(const Puzzle& p) {
-    std::vector<std::vector<int>> colorGrid;
-    colorGrid.resize(p.width);
-
-    for (int x=0; x<p.width; x++) {
-        colorGrid[x].resize(p.height);
-        for (int y=0; y<p.height; y++) {
-            // Mark all unbroken edges and intersections as 'do not color'
-            if (x%2 != y%2) {
-                if (p.grid[x][y].gap == Cell::Gap::NONE) colorGrid[x][y] = 1;
-            } else if (x%2 == 0 && y%2 == 0) {
-                // @Future: What about empty intersections?
-                colorGrid[x][y] = 1; // do not color intersections
-            }
-        }
-    }
-
-    // @Future: Skip this loop if pillar = true;
-    for (int y=1; y<p.height; y+=2) {
-        FloodFillOutside(p, colorGrid, 0, y);
-        FloodFillOutside(p, colorGrid, p.width - 1, y);
-    }
-
-    for (int x=1; x<p.width; x+=2) {
-        FloodFillOutside(p, colorGrid, x, 0);
-        FloodFillOutside(p, colorGrid, x, p.height - 1);
-    }
-
-    int color = 1;
-    for (int x=0; x<p.width; x++) {
-        for (int y=0; y<p.height; y++) {
-            if (colorGrid[x][y] != 0) continue; // No dead colors
-            color++;
-            FloodFill(p, colorGrid, color, x, y);
-        }
-    }
-
-    return colorGrid;
-}
-
 void Randomizer2::RandomizeKeep() {
-    Puzzle p;
-    p.NewGrid(4, 4);
-    // p.width = 9;
-    // p.height = 10;
-    // p.grid.clear();
-    // p.grid.resize(p.width);
-    // for (int x=0; x<p.width; x++) p.grid[x].resize(p.height);
+    // *** Hedges 1 ***
+    {
+        Puzzle p;
+        p.NewGrid(4, 4);
 
-    p.grid[2][1].gap = Cell::Gap::FULL;
-    p.grid[4][1].gap = Cell::Gap::FULL;
-    p.grid[6][1].gap = Cell::Gap::FULL;
-    p.grid[3][2].gap = Cell::Gap::FULL;
-    p.grid[5][2].gap = Cell::Gap::FULL;
-    p.grid[8][3].gap = Cell::Gap::FULL;
-    p.grid[2][5].gap = Cell::Gap::FULL;
-    p.grid[6][5].gap = Cell::Gap::FULL;
-    p.grid[7][6].gap = Cell::Gap::FULL;
-    p.grid[2][7].gap = Cell::Gap::FULL;
-    p.grid[4][7].gap = Cell::Gap::FULL;
-    // p.grid[0][9].gap = Cell::Gap::FULL;
-    // p.grid[2][9].gap = Cell::Gap::FULL;
-    // p.grid[6][9].gap = Cell::Gap::FULL;
-    // p.grid[8][9].gap = Cell::Gap::FULL;
+        p.grid[2][1].gap = Cell::Gap::FULL;
+        p.grid[4][1].gap = Cell::Gap::FULL;
+        p.grid[6][1].gap = Cell::Gap::FULL;
+        p.grid[3][2].gap = Cell::Gap::FULL;
+        p.grid[5][2].gap = Cell::Gap::FULL;
+        p.grid[8][3].gap = Cell::Gap::FULL;
+        p.grid[2][5].gap = Cell::Gap::FULL;
+        p.grid[6][5].gap = Cell::Gap::FULL;
+        p.grid[7][6].gap = Cell::Gap::FULL;
+        p.grid[2][7].gap = Cell::Gap::FULL;
+        p.grid[4][7].gap = Cell::Gap::FULL;
 
-    p.grid[6][0].end = Cell::Dir::UP;
-    p.grid[4][8].start = true;
+        p.grid[4][8].start = true;
+        p.grid[6][0].end = Cell::Dir::UP;
 
-    auto colorGrid = CreateColorGrid(p);
-
-    std::vector<Pos> edges;
-    for (int x=0; x<p.width; x++) {
-        for (int y=0; y<p.height; y++) {
-            if (x%2 == y%2) continue;
-            if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
-            edges.emplace_back(Pos{x, y});
+        std::vector<Pos> cutEdges = Randomizer2Core::CutEdgesToBeUnique(p);
+        assert(cutEdges.size() == 5);
+        Puzzle copy = p;
+        std::vector<int> gates = {0x00344, 0x00488,  0x00489, 0x00495, 0x00496};
+        for (int i=0; i<gates.size(); i++) {
+            Pos pos = cutEdges[i];
+            copy.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            SetGate(gates[i], pos.x, pos.y);
         }
+        auto solutions = Solver::Solve(copy);
+        assert(solutions.size() == 1);
+        p.sequence = solutions[0].sequence;
+        PuzzleSerializer(_memory).WritePuzzle(solutions[0], 0x139);
     }
 
-    Puzzle copy = p;
-    std::vector<int> gates = {0x00344, 0x00488,  0x00489, 0x00495, 0x00496};
-    for (int i=0; i<5; i++) {
-        for (int j=0; j<edges.size(); j++) {
-            int edge = Random::RandInt(0, static_cast<int>(edges.size() - 1));
-            Pos pos = edges[edge];
-            edges.erase(edges.begin() + edge);
+    // *** Hedges 2 ***
+    {
+        Puzzle p;
+        p.NewGrid(4, 4);
 
-            int color1 = 0;
-            int color2 = 0;
-            if (pos.x%2 == 0 && pos.y%2 == 1) { // Vertical
-                if (pos.x > 0) color1 = colorGrid[pos.x-1][pos.y];
-                else color1 = 1;
+        p.grid[2][1].gap = Cell::Gap::FULL;
+        p.grid[1][2].gap = Cell::Gap::FULL;
+        p.grid[5][2].gap = Cell::Gap::FULL;
+        p.grid[7][4].gap = Cell::Gap::FULL;
+        p.grid[4][5].gap = Cell::Gap::FULL;
+        p.grid[6][5].gap = Cell::Gap::FULL;
+        p.grid[1][6].gap = Cell::Gap::FULL;
+        p.grid[2][7].gap = Cell::Gap::FULL;
+        p.grid[5][8].gap = Cell::Gap::FULL;
 
-                if (pos.x < p.width - 1) color2 = colorGrid[pos.x+1][pos.y];
-                else color2 = 1;
-            } else { // Horizontal
-                assert(pos.x%2 == 1 && pos.y%2 == 0);
-                if (pos.y > 0) color1 = colorGrid[pos.x][pos.y-1];
-                else color1 = 1;
+        p.grid[0][8].start = true;
+        p.grid[8][0].end = Cell::Dir::RIGHT;
 
-                if (pos.y < p.height - 1) color2 = colorGrid[pos.x][pos.y+1];
-                else color2 = 1;
-            }
-            // Enforce color1 < color2
-            if (color1 > color2) std::swap(color1, color2);
-
-            // Colors mismatch, valid cut
-            if (color1 != color2) {
-                // @Performance... have a lookup table instead?
-                for (int x=0; x<p.width; x++) {
-                    for (int y=0; y<p.height; y++) {
-                        if (colorGrid[x][y] == color2) colorGrid[x][y] = color1;
-                    }
-                }
-                copy.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
-                SetGate(gates[i], pos.x, pos.y);
-                break;
-            }
+        std::vector<Pos> cutEdges = Randomizer2Core::CutEdgesToBeUnique(p);
+        assert(cutEdges.size() == 7);
+        for (Pos pos : cutEdges) {
+            p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
+        auto solutions = Solver::Solve(p);
+        assert(solutions.size() == 1);
+
+        Puzzle q;
+        q.NewGrid(4, 4);
+        q.grid[0][8].start = true;
+        q.grid[8][0].end = Cell::Dir::RIGHT;
+        q.sequence = solutions[0].sequence;
+        for (Pos pos : cutEdges) {
+            q.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
+        }
+        // Cut to 4 of 9 additional edges (total: 11)
+        Randomizer2Core::CutEdgesNotOutsideNotBreakingSequence(q, 4);
+        PuzzleSerializer(_memory).WritePuzzle(q, 0x19DC);
+    }
+    
+    // *** Hedges 3 **
+    {
+        std::vector<int> audioMarkers = {
+            0x000034a9,
+            0x000034b1,
+            0x000034be,
+            0x000034c4,
+            0x000034cb,
+            0x000034cc,
+            0x000034cd,
+            0x000034ce,
+            0x000034df,
+            0x000034e0,
+            0x000034e1,
+            0x000034e2,
+            0x000034f3,
+            0x000131cb,
+            0x00017e34,
+            0x00017e6f,
+            0x00017e76,
+            0x00017e77,
+            0x00017e7a,
+            0x00017e7e,
+            0x00017e8b,
+            0x00017e8d,
+            0x00017eb5,
+            0x000394a4,
+            0x0003b54e,
+        };
+        std::vector<int> good;
+        for (int marker : audioMarkers) {
+            // std::vector<char> assetName = _memory->ReadArray<char>(marker, 0xD8, 100);
+            std::vector<char> name = {'m', 'a', 'z', 'e', '_', 'p', 'e', 'b', 'b', 'l', 'e', '\0'};
+            _memory->WriteNewArray(marker, 0xD8, name);
+        }
+
+        Puzzle p;
+        p.NewGrid(4, 4);
+
+        p.grid[2][1].gap = Cell::Gap::FULL;
+        p.grid[5][2].gap = Cell::Gap::FULL;
+        p.grid[7][2].gap = Cell::Gap::FULL;
+        p.grid[4][3].gap = Cell::Gap::FULL;
+        p.grid[1][4].gap = Cell::Gap::FULL;
+        p.grid[6][5].gap = Cell::Gap::FULL;
+        p.grid[1][6].gap = Cell::Gap::FULL;
+        p.grid[3][6].gap = Cell::Gap::FULL;
+        p.grid[6][7].gap = Cell::Gap::FULL;
+
+        p.grid[0][8].start = true;
+        p.grid[8][2].end = Cell::Dir::RIGHT;
+
+        std::vector<Pos> cutEdges = Randomizer2Core::CutEdgesToBeUnique(p);
+        assert(cutEdges.size() == 7);
+        for (Pos pos : cutEdges) {
+            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+        }
+        PuzzleSerializer(_memory).WritePuzzle(p, 0x19E7);
     }
 
-    auto solutions = Solver::Solve(copy);
-    assert(solutions.size() == 1);
-    p.sequence = solutions[0].sequence;
-    PuzzleSerializer(_memory).WritePuzzle(solutions[0], 0x139);
+    // *** Hedges 4 ***
+    {
+        Puzzle p;
+        p.NewGrid(4, 4);
+
+        p.grid[3][0].gap = Cell::Gap::FULL;
+        p.grid[4][1].gap = Cell::Gap::FULL;
+        p.grid[8][1].gap = Cell::Gap::FULL;
+        p.grid[1][2].gap = Cell::Gap::FULL;
+        p.grid[4][3].gap = Cell::Gap::FULL;
+        p.grid[8][3].gap = Cell::Gap::FULL;
+        p.grid[1][4].gap = Cell::Gap::FULL;
+        p.grid[5][4].gap = Cell::Gap::FULL;
+        p.grid[2][5].gap = Cell::Gap::FULL;
+        p.grid[6][5].gap = Cell::Gap::FULL;
+        p.grid[3][6].gap = Cell::Gap::FULL;
+        p.grid[0][7].gap = Cell::Gap::FULL;
+        p.grid[8][7].gap = Cell::Gap::FULL;
+        p.grid[5][8].gap = Cell::Gap::FULL;
+
+        p.grid[0][8].start = true;
+        p.grid[4][0].end = Cell::Dir::UP;
+
+        std::vector<Pos> cutEdges = Randomizer2Core::CutEdgesToBeUnique(p);
+        assert(cutEdges.size() == 2);
+        for (Pos pos : cutEdges) {
+            p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
+        }
+        auto solutions = Solver::Solve(p);
+        assert(solutions.size() == 1);
+
+        Puzzle q;
+        q.NewGrid(4, 4);
+        q.grid[0][8].start = true;
+        q.grid[4][0].end = Cell::Dir::UP;
+        q.sequence = solutions[0].sequence;
+        for (Pos pos : cutEdges) {
+            q.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
+        }
+        // 9 cuts, -2 from existing cuts
+        Randomizer2Core::CutEdgesNotOutsideNotBreakingSequence(q, 7);
+        PuzzleSerializer(_memory).WritePuzzle(q, 0x1A0F);
+    }
 }
 
 void Randomizer2::SetGate(int panel, int X, int Y) {

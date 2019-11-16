@@ -41,6 +41,8 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
     VERTI_GAP_SIZE = HEIGHT_INTERVAL / 2;
 
 	WriteIntersections(p);
+    WriteDots(p);
+    WriteGaps(p);
     WriteEndpoints(p);
     WriteDecorations(p, id);
     WriteSequence(p, id);
