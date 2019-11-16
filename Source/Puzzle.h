@@ -64,21 +64,23 @@ struct Pos {int x; int y;};
 
 class Puzzle {
 public:
-    int16_t height;
-    int16_t width;
+    int16_t height = 0;
+    int16_t width = 0;
     bool hasDecorations = false;
 
     enum class Symmetry {NONE, X, Y, XY};
     Symmetry sym = Symmetry::NONE;
     bool pillar = false;
 
-    bool valid;
+    bool valid = false;
     std::vector<Negation> negations;
     std::vector<Pos> invalidElements;
 
-    inline Cell GetCell(int x, int y) const;
-    inline Cell::Color GetLine(int x, int y) const;
-    inline void NewGrid(int newWidth, int newHeight);
+    std::vector<Pos> sequence;
+
+    Cell GetCell(int x, int y) const;
+    Cell::Color GetLine(int x, int y) const;
+    void NewGrid(int newWidth, int newHeight);
 
     // @TODO:
     Pos GetSymmetricalPos(int x, int y);
@@ -86,7 +88,7 @@ public:
 // private:
     std::vector<std::vector<Cell>> grid;
 
-private:
-    inline int Mod(int x) const;
-    inline bool SafeCell(int x, int y) const;
+// private:
+    int Mod(int x) const;
+    bool SafeCell(int x, int y) const;
 };

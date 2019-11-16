@@ -2,18 +2,17 @@
 #include "Memory.h"
 #include <cassert>
 
-
-inline Cell Puzzle::GetCell(int x, int y) const {
+Cell Puzzle::GetCell(int x, int y) const {
     x = Mod(x);
     if (!SafeCell(x, y)) return Cell::Undefined();
     return grid[x][y];
 }
 
-inline Cell::Color Puzzle::GetLine(int x, int y) const {
+Cell::Color Puzzle::GetLine(int x, int y) const {
     return grid[x][y].color;
 }
 
-inline void Puzzle::NewGrid(int newWidth, int newHeight) {
+void Puzzle::NewGrid(int newWidth, int newHeight) {
     if (newWidth == 0) {
         assert(false);
         newWidth = width;
@@ -28,12 +27,12 @@ inline void Puzzle::NewGrid(int newWidth, int newHeight) {
     for (int x=0; x<width; x++) grid[x].resize(height);
 }
 
-inline int Puzzle::Mod(int x) const {
+int Puzzle::Mod(int x) const {
     if (!pillar) return x;
     return (x + width * height * 2) % width;
 }
 
-inline bool Puzzle::SafeCell(int x, int y) const {
+bool Puzzle::SafeCell(int x, int y) const {
     if (x < 0 || x >= width) return false;
     if (y < 0 || y >= height) return false;
     return true;

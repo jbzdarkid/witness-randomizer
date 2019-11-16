@@ -35,7 +35,14 @@ public:
 
 	template <class T>
 	void WriteArray(int panel, int offset, const std::vector<T>& data) {
-		WriteData<T>({GLOBALS, 0x18, panel*8, offset, 0}, data);
+		WriteData({GLOBALS, 0x18, panel*8, offset, 0}, data);
+	}
+
+	template <class T>
+	void WriteNewArray(int panel, int offset, const std::vector<T>& data) {
+        std::vector<uintptr_t> newAddr = {Allocate(data.size() * sizeof(T))};
+        WritePanelData(panel, offset, newAddr);
+		WriteArray(panel, offset, data);
 	}
 
 	template <class T>
@@ -45,7 +52,7 @@ public:
 
 	template <class T>
 	void WritePanelData(int panel, int offset, const std::vector<T>& data) {
-		WriteData<T>({GLOBALS, 0x18, panel*8, offset}, data);
+		WriteData({GLOBALS, 0x18, panel*8, offset}, data);
 	}
 
 	void AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc);
@@ -57,9 +64,12 @@ private:
         if (numItems == 0) return {};
 		std::vector<T> data;
 		data.resize(numItems);
+        void* computedOffset = ComputeOffset(offsets);
 		for (int i=0; i<5; i++) {
-			if (ReadProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * numItems, nullptr))
-			{
+			if (ReadProcessMemory(_handle, computedOffset, &data[0], sizeof(T) * numItems, nullptr)) {
+                if (i != 0) {
+                    int k = 0;
+                }
 				return data;
 			}
 		}
@@ -70,8 +80,12 @@ private:
 	template <class T>
 	void WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
         if (data.empty()) return;
+        void* computedOffset = ComputeOffset(offsets);
 		for (int i=0; i<5; i++) {
-			if (WriteProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), nullptr)) {
+			if (WriteProcessMemory(_handle, computedOffset, &data[0], sizeof(T) * data.size(), nullptr)) {
+                if (i != 0) {
+                    int k = 0;
+                }
 				return;
 			}
 		}
@@ -82,6 +96,7 @@ private:
 	bool Initialize();
 	void ThrowError();
 	void* ComputeOffset(std::vector<int> offsets);
+    uintptr_t Allocate(size_t bytes);
 
     int _previousFrame = 0;
     bool _threadActive = false;
@@ -90,6 +105,8 @@ private:
 	std::map<uintptr_t, uintptr_t> _computedAddresses;
 	uintptr_t _baseAddress = 0;
 	HANDLE _handle = nullptr;
+    uintptr_t _freeMem = 0;
+    uintptr_t _freeMemEnd = 0;
 	struct SigScan {
 		std::function<void(int)> scanFunc;
 		bool found;

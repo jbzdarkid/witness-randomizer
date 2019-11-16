@@ -10,6 +10,7 @@ public:
     
 private:
     void SetGate(int panel, int X, int Y);
+    void SetPos(int panel, float x, float y, float z);
 
     std::shared_ptr<Memory> _memory;
 };

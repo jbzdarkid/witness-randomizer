@@ -24,6 +24,7 @@
 #include "Puzzle.h"
 #include "Solver.h"
 #include "Randomizer2.h"
+#include "PuzzlerSerializer.h"
 #include <sstream>
 
 #define TMP1 0x501

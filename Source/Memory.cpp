@@ -70,7 +70,6 @@ void Memory::Heartbeat(HWND window) {
     PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::Running);
 }
 
-
 [[nodiscard]]
 bool Memory::Initialize() {
 	// First, get the handle of the process
@@ -106,6 +105,7 @@ bool Memory::Initialize() {
         std::cerr << "Couldn't locate base address" << std::endl;
         return false;
 	}
+
     return true;
 }
 
@@ -161,7 +161,7 @@ void Memory::ThrowError() {
 }
 
 void* Memory::ComputeOffset(std::vector<int> offsets) {
-	// Leave off the last offset, since it will be either read/write, and may not be of type unitptr_t.
+	// Leave off the last offset, since it will be either read/write, and may not be of type uintptr_t.
 	int final_offset = offsets.back();
 	offsets.pop_back();
 
@@ -176,10 +176,31 @@ void* Memory::ComputeOffset(std::vector<int> offsets) {
 			if (bool result = !ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
 				ThrowError();
 			}
+            if (computedAddress == 0) { // Attempting to dereference a nullptr
+                ThrowError();
+            }
 			_computedAddresses[cumulativeAddress] = computedAddress;
 		}
 
 		cumulativeAddress = _computedAddresses[cumulativeAddress];
 	}
 	return reinterpret_cast<void*>(cumulativeAddress + final_offset);
+}
+
+uintptr_t Memory::Allocate(size_t bytes) {
+    uintptr_t current = _freeMem;
+    _freeMem += bytes;
+
+    if (_freeMem > _freeMemEnd) {
+        // If we don't have enough space at our current location, go allocate some more space.
+        // Note that the remaining space in our current page is unused. Oh well.
+        _freeMem = reinterpret_cast<uintptr_t>(::VirtualAllocEx(_handle, NULL, 0x1000, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
+        _freeMemEnd = _freeMem + 0x1000;
+
+        current = _freeMem;
+        _freeMem += bytes;
+        assert(_freeMem <= _freeMemEnd); // Don't allocate data > 0x1000 at a time. Duh.
+    }
+
+    return current;
 }
