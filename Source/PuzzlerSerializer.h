@@ -17,7 +17,7 @@ private:
     enum Flags {
         IS_ENDPOINT =            0x1,
         IS_STARTPOINT =          0x2,
-        IS_FULL_GAP =            0x8,
+        HAS_NO_CONN =            0x8,
         HAS_DOT =               0x20,
         DOT_IS_BLUE =          0x100,
         DOT_IS_ORANGE =        0x200,

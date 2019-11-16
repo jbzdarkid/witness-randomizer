@@ -95,7 +95,7 @@ void PuzzleSerializer::ReadExtras(Puzzle& p) {
             p.grid[x][y].start = true;
 		}
         p.grid[x][y].dot = FlagsToDot(flags);
-        if (flags & Flags::IS_FULL_GAP) {
+        if (flags & Flags::HAS_NO_CONN) {
             p.grid[x][y].gap = Cell::Gap::FULL;
         }
 	}
@@ -175,14 +175,12 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p) {
     // Grided intersections
 	for (int y=p.height-1; y>=0; y-=2) {
 		for (int x=0; x<p.width; x+=2) {
-			_intersectionLocations.push_back(MIN + (x/2) * WIDTH_INTERVAL);
-			_intersectionLocations.push_back(MAX - (y/2) * HEIGHT_INTERVAL);
+            auto [xPos, yPos] = xy_to_pos(p, x, y);
+			_intersectionLocations.push_back(xPos);
+			_intersectionLocations.push_back(yPos);
 			int flags = 0;
             if (p.grid[x][y].start) {
                 flags |= Flags::IS_STARTPOINT;
-            }
-            if (p.grid[x][y].gap == Cell::Gap::FULL) {
-                flags |= Flags::IS_FULL_GAP;
             }
             switch (p.grid[x][y].dot) {
                 case Cell::Dot::BLACK:
@@ -201,15 +199,15 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p) {
 
             int numConnections = 0;
             if (p.grid[x][y].end != Cell::Dir::NONE) numConnections++;
-			// Create connections for this intersection for bottom/left only.
-            // Bottom connection
+			// Create connections for this intersection for top/left only.
+            // Top connection
 			if (y > 0 && p.grid[x][y-1].gap != Cell::Gap::FULL) {
 				_connectionsA.push_back(xy_to_loc(p, x, y-2));
 				_connectionsB.push_back(xy_to_loc(p, x, y));
                 flags |= Flags::HAS_VERTI_CONN;
                 numConnections++;
 			}
-            // Top connection
+            // Bottom connection
             if (y < p.height - 1 && p.grid[x][y+1].gap != Cell::Gap::FULL) {
                 flags |= Flags::HAS_VERTI_CONN;
                 numConnections++;
@@ -226,7 +224,9 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p) {
                 flags |= Flags::HAS_HORIZ_CONN;
                 numConnections++;
             }
+            if (numConnections == 0) flags |= HAS_NO_CONN;
             if (numConnections == 1) flags |= HAS_ONE_CONN;
+
 			_intersectionFlags.push_back(flags);
 		}
 	}
@@ -268,21 +268,25 @@ void PuzzleSerializer::WriteDots(const Puzzle& p) {
 			if (x%2 == y%2) continue; // Cells are invalid, intersections are already handled.
 			if (p.grid[x][y].dot == Cell::Dot::NONE) continue;
 
-            // We need to introduce a new segment -- 
-			// Locate the segment we're breaking
+            // We need to introduce a new segment which contains this dot. Break the existing segment, and add one.
+            int connectionLocation = -1;
 			for (int i=0; i<_connectionsA.size(); i++) {
 				auto [x1, y1] = loc_to_xy(p, _connectionsA[i]);
 				auto [x2, y2] = loc_to_xy(p, _connectionsB[i]);
 				if ((x1+1 == x && x2-1 == x && y1 == y && y2 == y) ||
 					(y1+1 == y && y2-1 == y && x1 == x && x2 == x)) {
-					int other_connection = _connectionsB[i];
-					_connectionsB[i] = static_cast<int>(_intersectionFlags.size());
-					
-					_connectionsA.push_back(other_connection);
-					_connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
-					break;
+                    connectionLocation = i;
+                    break;
 				}
 			}
+            if (connectionLocation == -1) continue; // @Error
+
+            // @Assume: B > A for connections. To remove, add the horiz/verti check, see gaps.
+            int other_connection = _connectionsB[connectionLocation];
+			_connectionsB[connectionLocation] = static_cast<int>(_intersectionFlags.size());
+			_connectionsA.push_back(other_connection);
+			_connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
+
 			// Add this dot to the end
             auto [xPos, yPos] = xy_to_pos(p, x, y);
 			_intersectionLocations.push_back(xPos);
@@ -313,11 +317,24 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
 			if (x%2 == y%2) continue; // Cells are invalid, intersections are already handled.
 			if (p.grid[x][y].gap != Cell::Gap::BREAK) continue;
 
+            // We need to introduce a new segment which contains this dot. Break the existing segment, and add one.
+            int connectionLocation = -1;
+			for (int i=0; i<_connectionsA.size(); i++) {
+				auto [x1, y1] = loc_to_xy(p, _connectionsA[i]);
+				auto [x2, y2] = loc_to_xy(p, _connectionsB[i]);
+				if ((x1+1 == x && x2-1 == x && y1 == y && y2 == y) ||
+					(y1+1 == y && y2-1 == y && x1 == x && x2 == x)) {
+					connectionLocation = i;
+                    break;
+				}
+			}
+            if (connectionLocation == -1) continue; // @Error
+
             auto [xPos, yPos] = xy_to_pos(p, x, y);
             // Reminder: Y goes from 0.0 (bottom) to 1.0 (top)
             if (x%2 == 0) { // Vertical gap
-                _connectionsA.push_back(xy_to_loc(p, x, y-1));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
+                _connectionsA[connectionLocation] = xy_to_loc(p, x, y-1);
+                _connectionsB[connectionLocation] = static_cast<int>(_intersectionFlags.size());
 			    _intersectionLocations.push_back(xPos);
 			    _intersectionLocations.push_back(yPos + VERTI_GAP_SIZE / 2);
                 _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
@@ -328,8 +345,8 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
 			    _intersectionLocations.push_back(yPos - VERTI_GAP_SIZE / 2);
                 _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
-                _connectionsA.push_back(xy_to_loc(p, x-1, y));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
+                _connectionsA[connectionLocation] = xy_to_loc(p, x-1, y);
+                _connectionsB[connectionLocation] = static_cast<int>(_intersectionFlags.size());
 			    _intersectionLocations.push_back(xPos - HORIZ_GAP_SIZE / 2);
 			    _intersectionLocations.push_back(yPos);
                 _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
@@ -422,8 +439,8 @@ int PuzzleSerializer::xy_to_dloc(const Puzzle& p, int x, int y) const {
 
 std::tuple<float, float> PuzzleSerializer::xy_to_pos(const Puzzle& p, int x, int y) const {
 	return {
-        MIN + (x/2) * WIDTH_INTERVAL,
-        MAX - (y/2) * HEIGHT_INTERVAL
+        MIN + (x/2.0f) * WIDTH_INTERVAL,
+        MAX - (y/2.0f) * HEIGHT_INTERVAL
     };
 }
 

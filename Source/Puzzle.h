@@ -38,25 +38,26 @@ struct Decoration {
 };
 
 struct Cell {
+    enum class Dot {NONE, BLACK, BLUE, YELLOW, INVISIBLE};
+    Dot dot = Dot::NONE;
+    enum class Gap {NONE, BREAK, FULL};
+    Gap gap = Gap::NONE;
+    // Line color
+    enum class Color {NONE, BLACK, BLUE, YELLOW};
+    Color color = Color::NONE;
+
+    std::shared_ptr<Decoration> decoration = nullptr;
+
+    bool start = false;
+    enum class Dir {NONE, LEFT, RIGHT, UP, DOWN};
+    Dir end = Dir::NONE;
+
     inline static Cell Undefined() {
         Cell c;
         c.undefined = true;
         return c;
     }
     bool undefined = false;
-
-    bool start = false;
-    enum class Dir {NONE, LEFT, RIGHT, UP, DOWN};
-    Dir end = Dir::NONE;
-    std::shared_ptr<Decoration> decoration = nullptr;
-    enum class Dot {NONE, BLACK, BLUE, YELLOW, INVISIBLE};
-    Dot dot = Dot::NONE;
-    enum class Gap {NONE, BREAK, FULL};
-    Gap gap = Gap::NONE;
-
-    // Line color
-    enum class Color {NONE, BLACK, BLUE, YELLOW};
-    Color color = Color::NONE;
 };
 
 struct Negation {};
