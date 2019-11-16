@@ -234,8 +234,8 @@ void PuzzleSerializer::WriteEndpoints(const Puzzle& p) {
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (p.grid[x][y].end == Cell::Dir::NONE) continue;
-            _connectionsA.push_back(xy_to_loc(p, x, y)); // Target to connect to
-		    _connectionsB.push_back(static_cast<int>(_intersectionFlags.size())); // This endpoint
+            _connectionsA.push_back(xy_to_loc(p, x, y));
+		    _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
 
             auto [xPos, yPos] = xy_to_pos(p, x, y);
             switch (p.grid[x][y].end) {
@@ -252,6 +252,7 @@ void PuzzleSerializer::WriteEndpoints(const Puzzle& p) {
 			        yPos -= .05f;
                     break;
             }
+            _endpointLocations.emplace_back(x, y, static_cast<int>(_intersectionFlags.size()));
 		    _intersectionLocations.push_back(xPos);
 		    _intersectionLocations.push_back(yPos);
 		    _intersectionFlags.push_back(Flags::IS_ENDPOINT);
@@ -273,10 +274,10 @@ void PuzzleSerializer::WriteDots(const Puzzle& p) {
 				if ((x1+1 == x && x2-1 == x && y1 == y && y2 == y) ||
 					(y1+1 == y && y2-1 == y && x1 == x && x2 == x)) {
 					int other_connection = _connectionsB[i];
-					_connectionsB[i] = static_cast<int>(_intersectionFlags.size()); // This endpoint
+					_connectionsB[i] = static_cast<int>(_intersectionFlags.size());
 					
 					_connectionsA.push_back(other_connection);
-					_connectionsB.push_back(static_cast<int>(_intersectionFlags.size())); // This endpoint
+					_connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
 					break;
 				}
 			}
@@ -314,25 +315,25 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
             // Reminder: Y goes from 0.0 (bottom) to 1.0 (top)
             if (x%2 == 0) { // Vertical gap
                 _connectionsA.push_back(xy_to_loc(p, x, y-1));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size())); // This endpoint
+                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
 			    _intersectionLocations.push_back(xPos);
 			    _intersectionLocations.push_back(yPos + VERTI_GAP_SIZE / 2);
                 _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
 
                 _connectionsA.push_back(xy_to_loc(p, x, y+1));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size())); // This endpoint
+                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
 			    _intersectionLocations.push_back(xPos);
 			    _intersectionLocations.push_back(yPos - VERTI_GAP_SIZE / 2);
                 _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
                 _connectionsA.push_back(xy_to_loc(p, x-1, y));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size())); // This endpoint
+                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
 			    _intersectionLocations.push_back(xPos - HORIZ_GAP_SIZE / 2);
 			    _intersectionLocations.push_back(yPos);
                 _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
 
                 _connectionsA.push_back(xy_to_loc(p, x+1, y));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size())); // This endpoint
+                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
 			    _intersectionLocations.push_back(xPos + HORIZ_GAP_SIZE / 2);
 			    _intersectionLocations.push_back(yPos);
                 _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
@@ -368,6 +369,14 @@ void PuzzleSerializer::WriteSequence(const Puzzle& p, int id) {
         // Only include intersections, the game does not treat segments as real objects
         if (pos.x%2 == 0 && pos.y%2 == 0) {
             sequence.emplace_back(xy_to_loc(p, pos.x, pos.y));
+        }
+    }
+
+    Pos endpoint = p.sequence[p.sequence.size() - 1];
+    for (auto [x, y, location] : _endpointLocations) {
+        if (x == endpoint.x && y == endpoint.y) {
+            sequence.emplace_back(location);
+            break;
         }
     }
 
