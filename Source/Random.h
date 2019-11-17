@@ -4,9 +4,9 @@
 class Random
 {
 public:
-	static void SetSeed(int seed);
-	static int RandInt(int min, int max);
+    static void SetSeed(int seed);
+    static int RandInt(int min, int max);
 
 private:
-	static int s_seed;
+    static int s_seed;
 };

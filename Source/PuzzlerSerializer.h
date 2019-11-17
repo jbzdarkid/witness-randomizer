@@ -53,9 +53,9 @@ private:
     std::shared_ptr<Memory> _memory;
 
     std::vector<float> _intersectionLocations;
-	std::vector<int> _intersectionFlags;
-	std::vector<int> _connectionsA;
-	std::vector<int> _connectionsB;
+    std::vector<int> _intersectionFlags;
+    std::vector<int> _connectionsA;
+    std::vector<int> _connectionsB;
     std::vector<std::tuple<int, int, int>> _endpointLocations;
 
     float MIN, MAX, WIDTH_INTERVAL, HEIGHT_INTERVAL, HORIZ_GAP_SIZE, VERTI_GAP_SIZE;
