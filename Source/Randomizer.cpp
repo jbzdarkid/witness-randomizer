@@ -156,35 +156,35 @@ void Randomizer::Randomize() {
 
 void Randomizer::AdjustSpeed() {
 	// Desert Surface Final Control
-	_memory->WritePanelData<float>(0x09F95, OPEN_RATE, {0.04f}); // 4x
+	_memory->WriteEntityData<float>(0x09F95, OPEN_RATE, {0.04f}); // 4x
 	// Swamp Sliding Bridge
-	_memory->WritePanelData<float>(0x0061A, OPEN_RATE, {0.1f}); // 4x
+	_memory->WriteEntityData<float>(0x0061A, OPEN_RATE, {0.1f}); // 4x
 	// Mountain 2 Elevator
-	_memory->WritePanelData<float>(0x09EEC, OPEN_RATE, {0.075f}); // 3x
+	_memory->WriteEntityData<float>(0x09EEC, OPEN_RATE, {0.075f}); // 3x
 }
 
 void Randomizer::RandomizeLasers() {
 	Randomize(lasers, SWAP::TARGETS);
 	// Read the target of keep front laser, and write it to keep back laser.
-	std::vector<int> keepFrontLaserTarget = _memory->ReadPanelData<int>(0x0360E, TARGET, 1);
-	_memory->WritePanelData<int>(0x03317, TARGET, keepFrontLaserTarget);
+	std::vector<int> keepFrontLaserTarget = _memory->ReadEntityData<int>(0x0360E, TARGET, 1);
+	_memory->WriteEntityData<int>(0x03317, TARGET, keepFrontLaserTarget);
 }
 
 void Randomizer::PreventSnipes()
 {
 	// Distance-gate swamp snipe 1 to prevent RNG swamp snipe
-	_memory->WritePanelData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {15.0});
+	_memory->WriteEntityData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {15.0});
 	// Distance-gate shadows laser to prevent sniping through the bars
-	_memory->WritePanelData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
+	_memory->WriteEntityData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
 }
 
 // Private methods
 void Randomizer::RandomizeTutorial() {
 	// Disable tutorial cursor speed modifications (not working?)
-	_memory->WritePanelData<float>(0x00295, CURSOR_SPEED_SCALE, {1.0});
-	_memory->WritePanelData<float>(0x0C373, CURSOR_SPEED_SCALE, {1.0});
-	_memory->WritePanelData<float>(0x00293, CURSOR_SPEED_SCALE, {1.0});
-	_memory->WritePanelData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
+	_memory->WriteEntityData<float>(0x00295, CURSOR_SPEED_SCALE, {1.0});
+	_memory->WriteEntityData<float>(0x0C373, CURSOR_SPEED_SCALE, {1.0});
+	_memory->WriteEntityData<float>(0x00293, CURSOR_SPEED_SCALE, {1.0});
+	_memory->WriteEntityData<float>(0x002C2, CURSOR_SPEED_SCALE, {1.0});
 }
 
 void Randomizer::RandomizeSymmetry() {
@@ -198,11 +198,11 @@ void Randomizer::RandomizeDesert() {
 	Randomize(desertPanels, SWAP::LINES);
 
 	// Turn off desert surface 8
-	_memory->WritePanelData<float>(0x09F94, POWER, {0.0, 0.0});
+	_memory->WriteEntityData<float>(0x09F94, POWER, {0.0, 0.0});
 	// Turn off desert flood final
-	_memory->WritePanelData<float>(0x18076, POWER, {0.0, 0.0});
+	_memory->WriteEntityData<float>(0x18076, POWER, {0.0, 0.0});
 	// Change desert floating target to desert flood final
-	_memory->WritePanelData<int>(0x17ECA, TARGET, {0x18077});
+	_memory->WriteEntityData<int>(0x17ECA, TARGET, {0x18077});
 }
 
 void Randomizer::RandomizeQuarry() {
@@ -210,14 +210,14 @@ void Randomizer::RandomizeQuarry() {
 
 void Randomizer::RandomizeTreehouse() {
 	// Ensure that whatever pivot panels we have are flagged as "pivotable"
-	int panelFlags = _memory->ReadPanelData<int>(0x17DD1, STYLE_FLAGS, 1)[0];
-	_memory->WritePanelData<int>(0x17DD1, STYLE_FLAGS, {panelFlags | 0x8000});
-	panelFlags = _memory->ReadPanelData<int>(0x17CE3, STYLE_FLAGS, 1)[0];
-	_memory->WritePanelData<int>(0x17CE3, STYLE_FLAGS, {panelFlags | 0x8000});
-	panelFlags = _memory->ReadPanelData<int>(0x17DB7, STYLE_FLAGS, 1)[0];
-	_memory->WritePanelData<int>(0x17DB7, STYLE_FLAGS, {panelFlags | 0x8000});
-	panelFlags = _memory->ReadPanelData<int>(0x17E52, STYLE_FLAGS, 1)[0];
-	_memory->WritePanelData<int>(0x17E52, STYLE_FLAGS, {panelFlags | 0x8000});
+	int panelFlags = _memory->ReadEntityData<int>(0x17DD1, STYLE_FLAGS, 1)[0];
+	_memory->WriteEntityData<int>(0x17DD1, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _memory->ReadEntityData<int>(0x17CE3, STYLE_FLAGS, 1)[0];
+	_memory->WriteEntityData<int>(0x17CE3, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _memory->ReadEntityData<int>(0x17DB7, STYLE_FLAGS, 1)[0];
+	_memory->WriteEntityData<int>(0x17DB7, STYLE_FLAGS, {panelFlags | 0x8000});
+	panelFlags = _memory->ReadEntityData<int>(0x17E52, STYLE_FLAGS, 1)[0];
+	_memory->WriteEntityData<int>(0x17E52, STYLE_FLAGS, {panelFlags | 0x8000});
 }
 
 void Randomizer::RandomizeKeep() {
@@ -225,9 +225,9 @@ void Randomizer::RandomizeKeep() {
 
 void Randomizer::RandomizeShadows() {
 	// Change the shadows tutorial cable to only activate avoid
-	_memory->WritePanelData<int>(0x319A8, CABLE_TARGET_2, {0});
+	_memory->WriteEntityData<int>(0x319A8, CABLE_TARGET_2, {0});
 	// Change shadows avoid 8 to power shadows follow
-	_memory->WritePanelData<int>(0x1972F, TARGET, {0x1C34C});
+	_memory->WriteEntityData<int>(0x1972F, TARGET, {0x1C34C});
 
 	std::vector<int> randomOrder(shadowsPanels.size(), 0);
 	std::iota(randomOrder.begin(), randomOrder.end(), 0);
@@ -236,9 +236,9 @@ void Randomizer::RandomizeShadows() {
 	RandomizeRange(randomOrder, SWAP::NONE, 16, 21); // Follow
 	ReassignTargets(shadowsPanels, randomOrder);
 	// Turn off original starting panel
-	_memory->WritePanelData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
+	_memory->WriteEntityData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
 	// Turn on new starting panel
-	_memory->WritePanelData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
+	_memory->WriteEntityData<float>(shadowsPanels[randomOrder[0]], POWER, {1.0f, 1.0f});
 }
 
 void Randomizer::RandomizeTown() {
@@ -298,7 +298,7 @@ void Randomizer::RandomizeMountain() {
 	// Randomize final pillars order
 	std::vector<int> targets = {pillars[0] + 1};
 	for (const int pillar : pillars) {
-		int target = _memory->ReadPanelData<int>(pillar, TARGET, 1)[0];
+		int target = _memory->ReadEntityData<int>(pillar, TARGET, 1)[0];
 		targets.push_back(target);
 	}
 	targets[5] = pillars[5] + 1;
@@ -309,17 +309,17 @@ void Randomizer::RandomizeMountain() {
 	RandomizeRange(randomOrder, SWAP::NONE, 5, 9); // Right Pillars 1-4
 	ReassignTargets(pillars, randomOrder, targets);
 	// Turn off original starting panels
-	_memory->WritePanelData<float>(pillars[0], POWER, {0.0f, 0.0f});
-	_memory->WritePanelData<float>(pillars[5], POWER, {0.0f, 0.0f});
+	_memory->WriteEntityData<float>(pillars[0], POWER, {0.0f, 0.0f});
+	_memory->WriteEntityData<float>(pillars[5], POWER, {0.0f, 0.0f});
 	// Turn on new starting panels
-	_memory->WritePanelData<float>(pillars[randomOrder[0]], POWER, {1.0f, 1.0f});
-	_memory->WritePanelData<float>(pillars[randomOrder[5]], POWER, {1.0f, 1.0f});
+	_memory->WriteEntityData<float>(pillars[randomOrder[0]], POWER, {1.0f, 1.0f});
+	_memory->WriteEntityData<float>(pillars[randomOrder[5]], POWER, {1.0f, 1.0f});
 }
 
 void Randomizer::RandomizeChallenge() {
 	ChallengeRandomizer cr(_memory, Random::RandInt(1, 0x7FFFFFFF)); // 0 will trigger an "RNG not initialized" block
 	for (int panel : challengePanels) {
-		_memory->WritePanelData<int>(panel, POWER_OFF_ON_FAIL, {0});
+		_memory->WriteEntityData<int>(panel, POWER_OFF_ON_FAIL, {0});
 	}
 }
 
@@ -420,10 +420,10 @@ void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
 	}
 
 	for (auto const& [offset, size] : offsets) {
-		std::vector<byte> panel1data = _memory->ReadPanelData<byte>(panel1, offset, size);
-		std::vector<byte> panel2data = _memory->ReadPanelData<byte>(panel2, offset, size);
-		_memory->WritePanelData<byte>(panel2, offset, panel1data);
-		_memory->WritePanelData<byte>(panel1, offset, panel2data);
+		std::vector<byte> panel1data = _memory->ReadEntityData<byte>(panel1, offset, size);
+		std::vector<byte> panel2data = _memory->ReadEntityData<byte>(panel2, offset, size);
+		_memory->WriteEntityData<byte>(panel2, offset, panel1data);
+		_memory->WriteEntityData<byte>(panel1, offset, panel2data);
 	}
 }
 
@@ -433,7 +433,7 @@ void Randomizer::ReassignTargets(const std::vector<int>& panels, const std::vect
 		// The first panel may not have a wire to power it, so we use the panel ID itself.
 		targets = {panels[0] + 1};
 		for (const int panel : panels) {
-			int target = _memory->ReadPanelData<int>(panel, TARGET, 1)[0];
+			int target = _memory->ReadEntityData<int>(panel, TARGET, 1)[0];
 			targets.push_back(target);
 		}
 	}
@@ -441,17 +441,17 @@ void Randomizer::ReassignTargets(const std::vector<int>& panels, const std::vect
 	for (size_t i=0; i<order.size() - 1; i++) {
 		// Set the target of order[i] to order[i+1], using the "real" target as determined above.
 		const int panelTarget = targets[order[i+1]];
-		_memory->WritePanelData<int>(panels[order[i]], TARGET, {panelTarget});
+		_memory->WriteEntityData<int>(panels[order[i]], TARGET, {panelTarget});
 	}
 }
 
 void Randomizer::ReassignNames(const std::vector<int>& panels, const std::vector<int>& order) {
 	std::vector<int64_t> names;
 	for (const int panel : panels) {
-		names.push_back(_memory->ReadPanelData<int64_t>(panel, AUDIO_LOG_NAME, 1)[0]);
+		names.push_back(_memory->ReadEntityData<int64_t>(panel, AUDIO_LOG_NAME, 1)[0]);
 	}
 
 	for (int i=0; i<panels.size(); i++) {
-		_memory->WritePanelData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
+		_memory->WriteEntityData<int64_t>(panels[i], AUDIO_LOG_NAME, {names[order[i]]});
 	}
 }

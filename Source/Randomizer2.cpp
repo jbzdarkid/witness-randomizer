@@ -233,40 +233,6 @@ void Randomizer2::RandomizeKeep() {
     
     // *** Hedges 3 **
     {
-        std::vector<int> audioMarkers = {
-            0x000034a9,
-            0x000034b1,
-            0x000034be,
-            0x000034c4,
-            0x000034cb,
-            0x000034cc,
-            0x000034cd,
-            0x000034ce,
-            0x000034df,
-            0x000034e0,
-            0x000034e1,
-            0x000034e2,
-            0x000034f3,
-            0x000131cb,
-            0x00017e34,
-            0x00017e6f,
-            0x00017e76,
-            0x00017e77,
-            0x00017e7a,
-            0x00017e7e,
-            0x00017e8b,
-            0x00017e8d,
-            0x00017eb5,
-            0x000394a4,
-            0x0003b54e,
-        };
-        std::vector<int> good;
-        for (int marker : audioMarkers) {
-            // std::vector<char> assetName = _memory->ReadArray<char>(marker, 0xD8, 100);
-            std::vector<char> name = {'m', 'a', 'z', 'e', '_', 'p', 'e', 'b', 'b', 'l', 'e', '\0'};
-            _memory->WriteNewArray(marker, 0xD8, name);
-        }
-
         Puzzle p;
         p.NewGrid(4, 4);
 
@@ -282,6 +248,9 @@ void Randomizer2::RandomizeKeep() {
 
         p.grid[0][8].start = true;
         p.grid[8][2].end = Cell::Dir::RIGHT;
+
+        std::vector<int> pebbleMarkers = {0x034a9, 0x034b1, 0x034be, 0x034c4};
+
 
         std::vector<Pos> cutEdges = Randomizer2Core::CutEdgesToBeUnique(p);
         assert(cutEdges.size() == 7);
@@ -352,9 +321,9 @@ void Randomizer2::SetGate(int panel, int X, int Y) {
     }
 
     SetPos(panel, x, y, 19.2f);
-    _memory->WritePanelData<float>(panel, ORIENTATION, {0.0f, 0.0f, z, w});
+    _memory->WriteEntityData<float>(panel, ORIENTATION, {0.0f, 0.0f, z, w});
 }
 
 void Randomizer2::SetPos(int panel, float x, float y, float z) {
-    _memory->WritePanelData<float>(panel, POSITION, {x, y, z});
+    _memory->WriteEntityData<float>(panel, POSITION, {x, y, z});
 }

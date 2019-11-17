@@ -8,16 +8,17 @@
 #undef PROCESSENTRY32
 #undef Process32Next
 
-Memory::Memory(const std::wstring& processName) : _processName(processName) {
-}
+Memory::Memory(const std::wstring& processName) : _processName(processName) {}
 
 Memory::~Memory() {
     if (_threadActive) {
         _threadActive = false;
         _thread.join();
     }
+
     if (_handle != nullptr) {
-	    CloseHandle(_handle);
+        for (uintptr_t addr : _allocations) VirtualFreeEx(_handle, (void*)addr, 0, MEM_RELEASE);
+        CloseHandle(_handle);
     }
 }
 
@@ -133,7 +134,7 @@ int Memory::ExecuteSigScans()
 {
 	for (int i=0; i<0x200000; i+=0x1000) {
 		std::vector<byte> data = ReadData<byte>({i}, 0x1100);
-		
+
 		for (auto& [scanBytes, sigScan] : _sigScans) {
 			if (sigScan.found) continue;
 			int index = find(data, scanBytes);
