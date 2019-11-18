@@ -6,40 +6,46 @@
 #include <iostream>
 #include <cassert>
 
-std::vector<Pos> Randomizer2Core::CutEdgesToBeUnique(const Puzzle& p) {
-    auto [colorGrid, numColors] = CreateColorGrid(p);
+// @Cutnpaste
+std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges) {
     std::vector<Pos> edges;
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (x%2 == y%2) continue;
             if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
-            edges.emplace_back(Pos{x, y});
-        }
-    }
-    return CutEdgesInternal(p, colorGrid, edges, numColors);
-}
 
-void Randomizer2Core::CutEdgesNotOutsideNotBreakingSequence(Puzzle& p, size_t numEdges) {
-    auto [colorGrid, numColors] = CreateColorGrid(p);
-    assert(numEdges <= numColors);
-    std::vector<Pos> edges;
-    for (int x=1; x<p.width-1; x++) {
-        for (int y=1; y<p.height-1; y++) {
-            if (x%2 == y%2) continue;
-            if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
+            // If the puzzle already has a sequence, don't cut along it.
             bool inSequence = false;
             for (Pos pos : p.sequence) inSequence |= (pos.x == x && pos.y == y);
             if (inSequence) continue;
             edges.emplace_back(Pos{x, y});
         }
     }
-    std::vector<Pos> cutEdges = CutEdgesInternal(p, colorGrid, edges, numEdges);
-    for (Pos pos : cutEdges) {
-        p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
-    }
+    return CutEdgesInternal(p, edges, numEdges);
 }
 
-std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, std::vector<std::vector<int>>& colorGrid, std::vector<Pos>& edges, size_t numEdges) {
+std::vector<Pos> Randomizer2Core::CutEdges2(const Puzzle& p, size_t numEdges) {
+    std::vector<Pos> edges;
+    // Note the iterator bounds; we skip the outer edges.
+    for (int x=1; x<p.width-1; x++) {
+        for (int y=1; y<p.height-1; y++) {
+            if (x%2 == y%2) continue;
+            if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
+
+            // If the puzzle already has a sequence, don't cut along it.
+            bool inSequence = false;
+            for (Pos pos : p.sequence) inSequence |= (pos.x == x && pos.y == y);
+            if (inSequence) continue;
+            edges.emplace_back(Pos{x, y});
+        }
+    }
+    return CutEdgesInternal(p, edges, numEdges);
+}
+
+std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, std::vector<Pos>& edges, size_t numEdges) {
+    auto [colorGrid, numColors] = CreateColorGrid(p);
+    assert(numEdges <= numColors);
+
     std::vector<Pos> cutEdges;
     for (int i=0; i<numEdges; i++) {
         for (int j=0; j<edges.size(); j++) {
@@ -79,6 +85,7 @@ std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, std::vector<
             }
         }
     }
+    assert(cutEdges.size() == numEdges);
     return cutEdges;
 }
 

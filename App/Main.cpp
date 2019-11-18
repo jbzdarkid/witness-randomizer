@@ -24,7 +24,7 @@
 #include "Puzzle.h"
 #include "Solver.h"
 #include "Randomizer2.h"
-#include "PuzzlerSerializer.h"
+#include "PuzzleSerializer.h"
 #include <sstream>
 
 #define TMP1 0x501
@@ -167,7 +167,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 break;
             case TMP4:
                 SetRandomSeed();
-                g_randomizer2->RandomizeKeep();
+                g_randomizer2->Randomize();
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
