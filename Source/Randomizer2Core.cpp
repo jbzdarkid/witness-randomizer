@@ -6,31 +6,19 @@
 #include <iostream>
 #include <cassert>
 
-// @Cutnpaste
-std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges) {
+std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges, bool allowEdges) {
     std::vector<Pos> edges;
-    for (int x=0; x<p.width; x++) {
-        for (int y=0; y<p.height; y++) {
+    int xMin = allowEdges ? 0 : 1;
+    int xMax = allowEdges ? p.width : p.width-1;
+    int yMin = allowEdges ? 0 : 1;
+    int yMax = allowEdges ? p.height : p.height-1;
+
+    for (int x=xMin; x<xMax; x++) {
+        for (int y=yMin; y<yMax; y++) {
             if (x%2 == y%2) continue;
             if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
-
-            // If the puzzle already has a sequence, don't cut along it.
-            bool inSequence = false;
-            for (Pos pos : p.sequence) inSequence |= (pos.x == x && pos.y == y);
-            if (inSequence) continue;
-            edges.emplace_back(Pos{x, y});
-        }
-    }
-    return CutEdgesInternal(p, edges, numEdges);
-}
-
-std::vector<Pos> Randomizer2Core::CutEdges2(const Puzzle& p, size_t numEdges) {
-    std::vector<Pos> edges;
-    // Note the iterator bounds; we skip the outer edges.
-    for (int x=1; x<p.width-1; x++) {
-        for (int y=1; y<p.height-1; y++) {
-            if (x%2 == y%2) continue;
-            if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
+            if (p.grid[x][y].start) continue;
+            if (p.grid[x][y].end != Cell::Dir::NONE) continue;
 
             // If the puzzle already has a sequence, don't cut along it.
             bool inSequence = false;

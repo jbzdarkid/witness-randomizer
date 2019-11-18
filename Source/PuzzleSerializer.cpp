@@ -1,5 +1,6 @@
 #include "PuzzleSerializer.h"
 #include "Memory.h"
+#include <cassert>
 
 #pragma warning (disable:26451)
 #pragma warning (disable:26812)
@@ -46,6 +47,16 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
     WriteEndpoints(p);
     WriteDecorations(p, id);
     WriteSequence(p, id);
+
+#ifndef NDEBUG
+    int maxDots = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
+    assert(_intersectionFlags.size() <= maxDots);
+    assert(_intersectionLocations.size() <= maxDots*2);
+
+    int maxConnections = _memory->ReadEntityData<int>(id, NUM_CONNECTIONS, 1)[0];
+    assert(_connectionsA.size() <= maxConnections);
+    assert(_connectionsB.size() <= maxConnections);
+#endif
 
     _memory->WriteEntityData<int>(id, GRID_SIZE_X, {(p.width + 1)/2});
     _memory->WriteEntityData<int>(id, GRID_SIZE_Y, {(p.height + 1)/2});
@@ -376,6 +387,10 @@ void PuzzleSerializer::WriteDecorations(const Puzzle& p, int id) {
         }
     }
 
+#ifndef NDEBUG
+    int maxDecorations = _memory->ReadEntityData<int>(id, NUM_DECORATIONS, 1)[0];
+    assert(decorations.size() < maxDecorations);
+#endif
     _memory->WriteEntityData<int>(id, NUM_DECORATIONS, {static_cast<int>(decorations.size())});
     _memory->WriteArray<int>(id, DECORATIONS, decorations);
 }

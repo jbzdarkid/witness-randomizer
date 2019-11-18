@@ -65,8 +65,8 @@ struct Pos {int x; int y;};
 
 class Puzzle {
 public:
-    int16_t height = 0;
-    int16_t width = 0;
+    int height = 0;
+    int width = 0;
     bool hasDecorations = false;
 
     enum class Symmetry {NONE, X, Y, XY};
