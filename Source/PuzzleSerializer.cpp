@@ -10,6 +10,8 @@ PuzzleSerializer::PuzzleSerializer(const std::shared_ptr<Memory>& memory) : _mem
 Puzzle PuzzleSerializer::ReadPuzzle(int id) {
     int width = 2 * _memory->ReadEntityData<int>(id, GRID_SIZE_X, 1)[0] - 1;
     int height = 2 * _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0] - 1;
+    if (width == 0) width = height;
+    if (height == 0) height = width;
     if (width < 0 || height < 0) return Puzzle(); // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
 
     int numIntersections = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
