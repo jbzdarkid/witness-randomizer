@@ -41,9 +41,9 @@ public:
 
     template <class T>
     void WriteNewArray(int id, int offset, const std::vector<T>& data) {
-        uintptr_t addr = VirtualAllocEx(_handle, nullptr, data.size() * sizeof(T), MEM_RESERVE | MEM_COMMIT, MEM_READWRITE);
+        uintptr_t addr = (uintptr_t)VirtualAllocEx(_handle, nullptr, data.size() * sizeof(T), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
         _allocations.emplace_back(addr);
-        WriteEntityData(id, offset, addr);
+        WriteEntityData<uintptr_t>(id, offset, {addr});
         WriteArray(id, offset, data);
     }
 

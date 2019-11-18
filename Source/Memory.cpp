@@ -192,36 +192,3 @@ void* Memory::ComputeOffset(std::vector<int> offsets) {
     }
     return reinterpret_cast<void*>(cumulativeAddress + final_offset);
 }
-
-uintptr_t Memory::Allocate(size_t bytes) {
-/*
-uintptr_t ForeignProcessMemory::AllocateMemory(size_t Size, DWORD Flags) const {
-    if (!ProcessHandle) {
-        return 0;
-    }
-    return (uintptr_t)VirtualAllocEx(ProcessHandle, nullptr, Size, MEM_RESERVE | MEM_COMMIT, Flags);
-}
-
-void ForeignProcessMemory::DeallocateMemory(uintptr_t Addr) const {
-    if (!ProcessHandle || Addr == 0) {
-        return;
-    }
-    VirtualFreeEx(ProcessHandle, (void*)Addr, 0, MEM_RELEASE);
-}
-*/
-    uintptr_t current = _freeMem;
-    _freeMem += bytes;
-
-    if (_freeMem > _freeMemEnd) {
-        // If we don't have enough space at our current location, go allocate some more space.
-        // Note that the remaining space in our current page is unused. Oh well.
-        _freeMem = reinterpret_cast<uintptr_t>(::VirtualAllocEx(_handle, NULL, 0x1000, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
-        _freeMemEnd = _freeMem + 0x1000;
-
-        current = _freeMem;
-        _freeMem += bytes;
-        assert(_freeMem <= _freeMemEnd); // Don't allocate data > 0x1000 at a time. Duh.
-    }
-
-    return current;
-}
