@@ -10,6 +10,7 @@
 #include "Memory.h"
 #include "Random.h"
 #include "Randomizer.h"
+#include "Randomizer2.h"
 
 // Heartbeat is defined to 0x401 by Memory.h
 #define RANDOMIZE_READY 0x402
@@ -23,7 +24,6 @@
 /* ------- Temp ------- */
 #include "Puzzle.h"
 #include "Solver.h"
-#include "Randomizer2.h"
 #include "PuzzleSerializer.h"
 #include <sstream>
 
@@ -34,7 +34,9 @@
 
 HWND g_panelId;
 Puzzle g_puzzle;
-std::shared_ptr<Randomizer2> g_randomizer2;
+
+HWND g_rngDebug;
+#define TMP5 0x505
 /* ------- Temp ------- */
 
 // Globals
@@ -44,6 +46,7 @@ HWND g_randomizerStatus;
 HINSTANCE g_hInstance;
 auto g_witnessProc = std::make_shared<Memory>(L"witness64_d3d11.exe");
 std::shared_ptr<Randomizer> g_randomizer;
+std::shared_ptr<Randomizer2> g_randomizer2;
 void SetRandomSeed();
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -168,6 +171,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             case TMP4:
                 SetRandomSeed();
                 g_randomizer2->Randomize();
+            case TMP5:
+                {
+                    std::wstring text;
+                    for (int i=0; i<10; i++) {
+                        Random::SetSeed(i);
+                        int rng = Random::RandInt(0, 999999);
+                        text += std::to_wstring(rng) + L"\n";
+                    }
+                    SetWindowText(g_rngDebug, text.c_str());
+                }
         }
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
@@ -250,11 +263,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateCheckbox(10, 340, SPEED_UP_AUTOSCROLLERS);
     CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
 
-    g_panelId = CreateText(200, 100, 100, L"A3B2");
-    CreateButton(200, 130, 100, L"Read", TMP1);
-    CreateButton(200, 160, 100, L"Write", TMP2);
-    CreateButton(200, 190, 100, L"Solve", TMP3);
-    CreateButton(200, 220, 100, L"Randomize2", TMP4);
+    CreateButton(200, 50, 200, L"Test RNG", TMP5);
+    g_rngDebug = CreateWindow(L"STATIC", L"",
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
+		200, 80, 200, 200, g_hwnd, NULL, g_hInstance, NULL);
+
+    // g_panelId = CreateText(200, 100, 100, L"A3B2");
+    // CreateButton(200, 130, 100, L"Read", TMP1);
+    // CreateButton(200, 160, 100, L"Write", TMP2);
+    // CreateButton(200, 190, 100, L"Solve", TMP3);
+    // CreateButton(200, 220, 100, L"Randomize2", TMP4);
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 

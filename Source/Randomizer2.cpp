@@ -34,6 +34,7 @@ void Randomizer2::RandomizeTutorial() {
         Puzzle p;
         p.NewGrid(6, 6);
 
+        // @Bug: Mid-segment endpoints are not yet supported.
         switch (Random::RandInt(1, 4)) {
             case 1:
                 p.grid[Random::RandInt(0, p.width-1)][0].end = Cell::Dir::UP;
@@ -93,6 +94,7 @@ void Randomizer2::RandomizeTutorial() {
         p.grid[12][12].start = true;
         p.grid[6][0].end = Cell::Dir::UP;
 
+        // @Cleanup
         std::vector<Pos> cuts;
         bool toTheRight;
         // Start by generating a cut line, to ensure one of the two startpoints is inaccessible
