@@ -8,5 +8,5 @@ public:
     static int RandInt(int min, int max);
 
 private:
-    static int s_seed;
+    static uint32_t s_seed;
 };

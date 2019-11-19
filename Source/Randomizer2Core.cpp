@@ -77,15 +77,22 @@ std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, std::vector<
     return cutEdges;
 }
 
+#ifndef NDEBUG
+#include <Windows.h>
+#endif
+
 void Randomizer2Core::DebugColorGrid(const std::vector<std::vector<int>>& colorGrid) {
+#ifndef NDEBUG
     for (int y=0; y<colorGrid[0].size(); y++) {
         std::string row;
         for (int x=0; x<colorGrid.size(); x++) {
             row += std::to_string(colorGrid[x][y]);
         }
-        std::cerr << row << std::endl;
+        row += "\n";
+        OutputDebugStringA(row.c_str());
     }
-    std::cerr << std::endl;
+    OutputDebugStringA("\n");
+#endif
 }
 
 void Randomizer2Core::FloodFill(const Puzzle& p, std::vector<std::vector<int>>& colorGrid, int color, int x, int y) {
@@ -102,7 +109,7 @@ void Randomizer2Core::FloodFill(const Puzzle& p, std::vector<std::vector<int>>& 
 void Randomizer2Core::FloodFillOutside(const Puzzle& p, std::vector<std::vector<int>>& colorGrid, int x, int y) {
     if (!p.SafeCell(x, y)) return;
     if (colorGrid[x][y] != 0) return; // Already processed.
-    if (x%2 != y%2 && p.grid[x][y].gap != Cell::Gap::FULL) return; // Only flood-fill through full gaps
+    if (x%2 != y%2 && p.grid[x][y].gap == Cell::Gap::NONE) return; // Only flood-fill through gaps
     colorGrid[x][y] = 1; // Outside color
 
     FloodFillOutside(p, colorGrid, x, y+1);

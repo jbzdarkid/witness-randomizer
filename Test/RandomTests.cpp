@@ -33,3 +33,11 @@ TEST(RandomTests, SeedChangesInitialValue) {
 	ASSERT_NE(random3, random1);
 	ASSERT_NE(random3, random2);
 }
+
+TEST(RandomTests, EvenOdd) {
+    std::vector<int> outputs;
+    for (int i=0; i<100; i++) {
+        outputs.emplace_back(Random::RandInt(0, 1));
+    }
+    int k = 0;
+}

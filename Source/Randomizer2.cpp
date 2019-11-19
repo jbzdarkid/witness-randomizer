@@ -84,6 +84,77 @@ void Randomizer2::RandomizeTutorial() {
         }
         _serializer.WritePuzzle(p, 0xA3B5);
     }
+
+    { // Back right
+        Puzzle p;
+        p.NewGrid(6, 6);
+
+        p.grid[0][12].start = true;
+        p.grid[12][12].start = true;
+        p.grid[6][0].end = Cell::Dir::UP;
+
+        std::vector<Pos> cuts;
+        bool toTheRight;
+        // Start by generating a cut line, to ensure one of the two startpoints is inaccessible
+        int x, y;
+        switch (Random::RandInt(1, 4))
+        {
+            case 1:
+                x = 1;
+                y = 1;
+                toTheRight = true;
+                cuts.emplace_back(Pos{0, 1});
+                break;
+            case 2:
+                x = 1;
+                y = 1;
+                toTheRight = true;
+                cuts.emplace_back(Pos{1, 0});
+                break;
+            case 3:
+                x = 11;
+                y = 1;
+                toTheRight = false;
+                cuts.emplace_back(Pos{12, 1});
+                break;
+            case 4:
+                x = 11;
+                y = 1;
+                toTheRight = false;
+                cuts.emplace_back(Pos{11, 0});
+                break;
+        }
+        while (y < p.height) { // The final cut will push y below the bottom of the puzzle, which means we're done.
+            switch (Random::RandInt(1, 4)) {
+                case 1: // Go right
+                    if (x < p.width-2) {
+                        cuts.emplace_back(Pos{x+1, y});
+                        x += 2;
+                    }
+                    break;
+                case 2: // Go left
+                    if (x > 1) {
+                        cuts.emplace_back(Pos{x-1, y});
+                        x -= 2;
+                    }
+                    break;
+                case 3: 
+                case 4: // Go down (biased)
+                    cuts.emplace_back(Pos{x, y+1});
+                    y += 2;
+                    break;
+            }
+        }
+
+        for (Pos pos : cuts) {
+            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+        }
+
+        for (Pos pos : Randomizer2Core::CutEdges(p, 30 - cuts.size(), true)) {
+            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+        }
+        _serializer.WritePuzzle(p, 0xA3B2);
+    }
 }
 
 void Randomizer2::RandomizeKeep() {
@@ -109,7 +180,7 @@ void Randomizer2::RandomizeKeep() {
         std::vector<Pos> cutEdges = Randomizer2Core::CutEdges(p, 5, false);
         Puzzle copy = p;
         std::vector<int> gates = {0x00344, 0x00488,  0x00489, 0x00495, 0x00496};
-        for (int i=0; i<gates.size(); i++) {
+        for (int i=0; i<cutEdges.size(); i++) {
             Pos pos = cutEdges[i];
             copy.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
             SetGate(gates[i], pos.x, pos.y);
@@ -174,12 +245,13 @@ void Randomizer2::RandomizeKeep() {
         p.grid[0][8].start = true;
         p.grid[8][2].end = Cell::Dir::RIGHT;
 
-        std::vector<int> pebbleMarkers = {0x034a9, 0x034b1, 0x034be, 0x034c4};
-
         std::vector<Pos> cutEdges = Randomizer2Core::CutEdges(p, 7, false);
         for (Pos pos : cutEdges) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
         }
+
+        std::vector<int> pebbleMarkers = {0x034a9, 0x034b1, 0x034be, 0x034c4};
+
         // _serializer.WritePuzzle(p, 0x19E7);
     }
 
