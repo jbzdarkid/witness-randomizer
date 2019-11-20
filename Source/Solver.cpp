@@ -27,10 +27,10 @@ void Solver::SolveLoop(Puzzle& p, int x, int y, std::vector<Puzzle>& solutions) 
     if (cell.undefined) return;
     if (cell.gap != Cell::Gap::NONE) return;
 
-    if (p.sym == Puzzle::Symmetry::NONE) {
+    if (p.symmetry == Puzzle::Symmetry::NONE) {
         if (cell.color != Cell::Color::NONE) return; // Collided with ourselves
         p.grid[x][y].color = Cell::Color::BLACK; // Otherwise, mark this cell as visited
-        p.sequence.emplace_back(Pos{x, y});
+        p.sequence.emplace_back(x, y);
     } else {
         /*
         // Get the symmetrical position, and try coloring it
@@ -71,7 +71,7 @@ void Solver::SolveLoop(Puzzle& p, int x, int y, std::vector<Puzzle>& solutions) 
     // Tail recursion: Back out of this cell
     p.grid[x][y].color = Cell::Color::NONE;
     p.sequence.pop_back();
-    if (p.sym != Puzzle::Symmetry::NONE) {
+    if (p.symmetry != Puzzle::Symmetry::NONE) {
         /*
         auto sym = p.GetSymmetricalPos(x, y);
         p.grid[sym.x][sym.y].color = Cell::Color::NONE;

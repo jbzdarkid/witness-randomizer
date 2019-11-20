@@ -61,7 +61,12 @@ struct Cell {
 };
 
 struct Negation {};
-struct Pos {int x; int y;};
+struct Pos {
+    Pos(int x_, int y_) : x(x_), y(y_) {}
+    Pos(const std::tuple<int, int>& xy) : x(std::get<0>(xy)), y(std::get<1>(xy)) {}
+    int x;
+    int y;
+};
 
 class Puzzle {
 public:
@@ -70,7 +75,7 @@ public:
     bool hasDecorations = false;
 
     enum class Symmetry {NONE, X, Y, XY};
-    Symmetry sym = Symmetry::NONE;
+    Symmetry symmetry = Symmetry::NONE;
     bool pillar = false;
 
     bool valid = false;

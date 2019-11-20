@@ -24,7 +24,7 @@ std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges, boo
             bool inSequence = false;
             for (Pos pos : p.sequence) inSequence |= (pos.x == x && pos.y == y);
             if (inSequence) continue;
-            edges.emplace_back(Pos{x, y});
+            edges.emplace_back(x, y);
         }
     }
     return CutEdgesInternal(p, edges, numEdges);

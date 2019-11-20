@@ -14,6 +14,7 @@ Randomizer2::Randomizer2(const std::shared_ptr<Memory>& memory) : _memory(memory
 
 void Randomizer2::Randomize() {
     RandomizeTutorial();
+    RandomizeSymmetry();
     // RandomizeKeep();
 }
 
@@ -105,44 +106,44 @@ void Randomizer2::RandomizeTutorial() {
                 x = 1;
                 y = 1;
                 toTheRight = true;
-                cuts.emplace_back(Pos{0, 1});
+                cuts.emplace_back(0, 1);
                 break;
             case 2:
                 x = 1;
                 y = 1;
                 toTheRight = true;
-                cuts.emplace_back(Pos{1, 0});
+                cuts.emplace_back(1, 0);
                 break;
             case 3:
                 x = 11;
                 y = 1;
                 toTheRight = false;
-                cuts.emplace_back(Pos{12, 1});
+                cuts.emplace_back(12, 1);
                 break;
             case 4:
                 x = 11;
                 y = 1;
                 toTheRight = false;
-                cuts.emplace_back(Pos{11, 0});
+                cuts.emplace_back(11, 0);
                 break;
         }
         while (y < p.height) { // The final cut will push y below the bottom of the puzzle, which means we're done.
             switch (Random::RandInt(1, 4)) {
                 case 1: // Go right
                     if (x < p.width-2) {
-                        cuts.emplace_back(Pos{x+1, y});
+                        cuts.emplace_back(x+1, y);
                         x += 2;
                     }
                     break;
                 case 2: // Go left
                     if (x > 1) {
-                        cuts.emplace_back(Pos{x-1, y});
+                        cuts.emplace_back(x-1, y);
                         x -= 2;
                     }
                     break;
                 case 3: 
                 case 4: // Go down (biased)
-                    cuts.emplace_back(Pos{x, y+1});
+                    cuts.emplace_back(x, y+1);
                     y += 2;
                     break;
             }
@@ -156,6 +157,12 @@ void Randomizer2::RandomizeTutorial() {
             p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
         }
         _serializer.WritePuzzle(p, 0xA3B2);
+    }
+}
+
+void Randomizer2::RandomizeSymmetry() {
+    { // 
+    
     }
 }
 

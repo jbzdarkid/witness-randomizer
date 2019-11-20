@@ -5,8 +5,8 @@
 #include <vector>
 #include <windows.h>
 
-// #define GLOBALS 0x5B28C0
-#define GLOBALS 0x62D0A0
+#define GLOBALS 0x5B28C0
+// #define GLOBALS 0x62D0A0
 
 #define HEARTBEAT 0x401
 enum class ProcStatus {

@@ -32,7 +32,7 @@ void Validator::Validate(Puzzle& p) {
                     if (p.GetLine(x, y + 1) != Cell::Color::NONE) actualCount++;
                     if (decoration->count != actualCount) {
                         // console.log('Triangle at grid['+x+']['+y+'] has', actualCount, 'borders')
-                        p.invalidElements.emplace_back(Pos{x, y});
+                        p.invalidElements.emplace_back(x, y);
                     }
                 }
             }
@@ -43,7 +43,7 @@ void Validator::Validate(Puzzle& p) {
             if (cell.dot != Cell::Dot::NONE) {
                 if (cell.color == Cell::Color::NONE) {
                     // console.log('Dot at', x, y, 'is not covered')
-                    p.invalidElements.emplace_back(Pos{x, y});
+                    p.invalidElements.emplace_back(x, y);
                 } else if (cell.color == Cell::Color::BLUE && cell.dot == Cell::Dot::YELLOW) {
                     // console.log('Yellow dot at', x, y, 'is covered by blue line')
                     p.valid = false;

@@ -8,6 +8,7 @@ public:
     Randomizer2(const std::shared_ptr<Memory>& memory);
     void Randomize();
     void RandomizeTutorial();
+    void RandomizeSymmetry();
     void RandomizeKeep();
     
 private:
