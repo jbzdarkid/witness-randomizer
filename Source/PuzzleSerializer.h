@@ -43,7 +43,7 @@ private:
 
     std::tuple<int, int> loc_to_xy(const Puzzle& p, int location) const;
     int xy_to_loc(const Puzzle& p, int x, int y) const;
-    int extra_xy_to_loc(Pos pos) const;
+    int extra_xy_to_loc(const Puzzle& p, int x, int y) const;
     // Decoration location
     std::tuple<int, int> dloc_to_xy(const Puzzle& p, int location) const;
     int xy_to_dloc(const Puzzle& p, int x, int y) const;
@@ -52,17 +52,18 @@ private:
     Cell::Dot FlagsToDot(int flags) const;
     // Iterate connection lists for another location which is connected to us; return that other location.
     int FindConnection(int location) const;
-    void AddIntersection(int x, int y, float xPos, float yPos, int flags);
+    void AddIntersection(const Puzzle& p, int x, int y, float xPos, float yPos, int flags);
 
     std::shared_ptr<Memory> _memory;
 
-    std::vector<float> _intersectionLocations;
+    int _numGridLocations;
     int _numIntersections;
     std::vector<int> _intersectionFlags;
     std::vector<int> _connectionsA;
     std::vector<int> _connectionsB;
+    std::vector<float> _intersectionLocations;
     // Locations of non-grid points, i.e. dots, gaps, and endpoints
-    std::vector<std::tuple<int, int, int>> _extraLocations;
+    std::unordered_map<int, int> _extraLocations;
 
-    float MIN, MAX, WIDTH_INTERVAL, HEIGHT_INTERVAL, HORIZ_GAP_SIZE, VERTI_GAP_SIZE;
+    float MIN, MAX, WIDTH_INTERVAL, HEIGHT_INTERVAL, INTERVAL, GAP_SIZE;
 };

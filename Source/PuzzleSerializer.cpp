@@ -8,12 +8,13 @@
 PuzzleSerializer::PuzzleSerializer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
 Puzzle PuzzleSerializer::ReadPuzzle(int id) {
-    int width = _memory->ReadEntityData<int>(id, GRID_SIZE_X, 1)[0] - 1;
-    int height = _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0] - 1;
+    int width = _memory->ReadEntityData<int>(id, GRID_SIZE_X, 1)[0];
+    int height = _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0];
     if (width == 0) width = height;
     if (height == 0) height = width;
     if (width < 0 || height < 0) return Puzzle(); // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
 
+    _numGridLocations = width * height; // Highest location which represents a gridded intersection
     _numIntersections = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
     _intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, _numIntersections);
     int numConnections = _memory->ReadEntityData<int>(id, NUM_CONNECTIONS, 1)[0];
@@ -22,7 +23,7 @@ Puzzle PuzzleSerializer::ReadPuzzle(int id) {
     _intersectionLocations = _memory->ReadArray<float>(id, DOT_POSITIONS, _numIntersections*2);
 
     Puzzle p;
-    p.NewGrid(width, height);
+    p.NewGrid(width - 1, height - 1);
     ReadIntersections(p);
     ReadExtras(p);
     ReadDecorations(p, id);
@@ -36,14 +37,17 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
     _connectionsA.clear();
     _connectionsB.clear();
     _intersectionLocations.clear();
+    _extraLocations.clear();
 
     MIN = 0.1f;
     MAX = 0.9f;
     WIDTH_INTERVAL = (MAX - MIN) / (p.width/2);
     HEIGHT_INTERVAL = (MAX - MIN) / (p.height/2);
-    HORIZ_GAP_SIZE = WIDTH_INTERVAL / 2;
-    VERTI_GAP_SIZE = HEIGHT_INTERVAL / 2;
-
+    GAP_SIZE = min(WIDTH_INTERVAL, HEIGHT_INTERVAL) / 2;
+    // @Improvement: This will make grid cells square... but how do I keep the puzzle centered?
+    // INTERVAL = (MAX - MIN) / (max(p.width, p.height) / 2);
+    // GAP_SIZE = INTERVAL / 2;
+    
     WriteIntersections(p);
     WriteEndpoints(p);
     WriteDots(p);
@@ -82,14 +86,17 @@ void PuzzleSerializer::ReadIntersections(Puzzle& p) {
         }
     }
 
-    for (int j=0; j<_numIntersections; j++) {
-        if (_intersectionFlags[_connectionsA[j]] & Flags::IS_ENDPOINT) break;
-        if (_intersectionFlags[_connectionsB[j]] & Flags::IS_ENDPOINT) break;
-        float x1 = _intersectionLocations[2*_connectionsA[j]];
-        float y1 = _intersectionLocations[2*_connectionsA[j]+1];
-        float x2 = _intersectionLocations[2*_connectionsB[j]];
-        float y2 = _intersectionLocations[2*_connectionsB[j]+1];
-        auto [x, y] = loc_to_xy(p, _connectionsA[j]);
+    for (int i=0; i<_numIntersections; i++) {
+        int locationA = _connectionsA[i];
+        int locationB = _connectionsB[i];
+        if (locationA > locationB) std::swap(locationA, locationB); // A < B
+        if (locationB >= _numGridLocations) continue; // Connection goes to a non-grid location
+
+        float x1 = _intersectionLocations[2*locationA];
+        float y1 = _intersectionLocations[2*locationA+1];
+        float x2 = _intersectionLocations[2*locationB];
+        float y2 = _intersectionLocations[2*locationB+1];
+        auto [x, y] = loc_to_xy(p, locationA);
 
              if (x1 < x2) x++;
         else if (x1 > x2) x--;
@@ -100,12 +107,11 @@ void PuzzleSerializer::ReadIntersections(Puzzle& p) {
 }
 
 void PuzzleSerializer::ReadExtras(Puzzle& p) {
-    // This iterates bottom-top, left-right
+    // This iterates left-right, bottom-top
     int i = 0;
-    for (; i < _numIntersections; i++) {
+    for (; i < _numGridLocations; i++) {
         int flags = _intersectionFlags[i];
         auto [x, y] = loc_to_xy(p, i);
-        if (y < 0) break; // This is the expected exit point
         if (flags & Flags::IS_STARTPOINT) {
             p.grid[x][y].start = true;
         }
@@ -201,7 +207,7 @@ void PuzzleSerializer::ReadSymmetry(Puzzle& p, int id) {
 
 void PuzzleSerializer::WriteIntersections(const Puzzle& p) {
     // @Cleanup: If I write directly to locations, then I can simplify this gross loop iterator.
-    // int numIntersections = (p.width / 2 + 1) * (p.height / 2 + 1);
+    // Use _numGridIntersections computation: = (p.width / 2 + 1) * (p.height / 2 + 1);
     // Grided intersections
     for (int y=p.height-1; y>=0; y-=2) {
         for (int x=0; x<p.width; x+=2) {
@@ -255,18 +261,12 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p) {
             if (numConnections == 1) flags |= HAS_ONE_CONN;
 
             auto [xPos, yPos] = xy_to_pos(p, x, y);
-            AddIntersection(x, y, xPos, yPos, flags);
+            AddIntersection(p, x, y, xPos, yPos, flags);
         }
     }
 }
 
 void PuzzleSerializer::WriteEndpoints(const Puzzle& p) {
-    // int xMin, xMax, yMin, yMax;
-    // 
-    // if (p.symmetry == Puzzle::Symmetry::NONE) {
-    //     xMin = 
-    // }
-
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (p.grid[x][y].end == Cell::Dir::NONE) continue;
@@ -288,7 +288,7 @@ void PuzzleSerializer::WriteEndpoints(const Puzzle& p) {
                     yPos -= .05f;
                     break;
             }
-            AddIntersection(x, y, xPos, yPos, Flags::IS_ENDPOINT);
+            AddIntersection(p, x, y, xPos, yPos, Flags::IS_ENDPOINT);
         }
     }
 }
@@ -334,7 +334,7 @@ void PuzzleSerializer::WriteDots(const Puzzle& p) {
             }
 
             auto [xPos, yPos] = xy_to_pos(p, x, y);
-            AddIntersection(x, y, xPos, yPos, flags);
+            AddIntersection(p, x, y, xPos, yPos, flags);
         }
     }
 }
@@ -364,27 +364,19 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
             if (x%2 == 0) { // Vertical gap
                 _connectionsA[connectionLocation] = xy_to_loc(p, x, y-1);
                 _connectionsB[connectionLocation] = static_cast<int>(_intersectionFlags.size());
-                _intersectionLocations.push_back(xPos);
-                _intersectionLocations.push_back(yPos + VERTI_GAP_SIZE / 2);
-                _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
+                AddIntersection(p, x, y, xPos, yPos + GAP_SIZE / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
 
                 _connectionsA.push_back(xy_to_loc(p, x, y+1));
                 _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
-                _intersectionLocations.push_back(xPos);
-                _intersectionLocations.push_back(yPos - VERTI_GAP_SIZE / 2);
-                _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
+                AddIntersection(p, x, y, xPos, yPos - GAP_SIZE / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
                 _connectionsA[connectionLocation] = xy_to_loc(p, x-1, y);
                 _connectionsB[connectionLocation] = static_cast<int>(_intersectionFlags.size());
-                _intersectionLocations.push_back(xPos - HORIZ_GAP_SIZE / 2);
-                _intersectionLocations.push_back(yPos);
-                _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
+                AddIntersection(p, x, y, xPos - GAP_SIZE / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
 
                 _connectionsA.push_back(xy_to_loc(p, x+1, y));
                 _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
-                _intersectionLocations.push_back(xPos + HORIZ_GAP_SIZE / 2);
-                _intersectionLocations.push_back(yPos);
-                _intersectionFlags.push_back(Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
+                AddIntersection(p, x, y, xPos + GAP_SIZE / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
             }
         }
     }
@@ -424,8 +416,9 @@ void PuzzleSerializer::WriteSequence(const Puzzle& p, int id) {
         }
     }
 
-    Pos endpoint = p.sequence[p.sequence.size() - 1];
-    int location = extra_xy_to_loc(endpoint);
+    // TODO: Orphaned code?
+    // Pos endpoint = p.sequence[p.sequence.size() - 1];
+    // int location = extra_xy_to_loc(p, endpoint.x, endpoint.y);
 
     _memory->WriteEntityData<int>(id, SEQUENCE_LEN, {static_cast<int>(sequence.size())});
     _memory->WriteNewArray<int>(id, SEQUENCE, sequence);
@@ -449,20 +442,31 @@ void PuzzleSerializer::WriteSymmetry(const Puzzle& p, int id) {
             reflectionData[location] = symLocation;
             reflectionData[symLocation] = location;
             if (p.grid[x][y].end != Cell::Dir::NONE) {
-                location = extra_xy_to_loc(Pos{x, y});
-                symLocation = extra_xy_to_loc(p.GetSymmetricalPos(x, y));
+                // Rely on symmetry to set the other pair
+                location = extra_xy_to_loc(p, x, y);
+                Pos sym = p.GetSymmetricalPos(x, y);
+                symLocation = extra_xy_to_loc(p, sym.x, sym.y);
                 reflectionData[location] = symLocation;
-                reflectionData[symLocation] = location;
             }
         }
     }
 
-    auto [x, y] = loc_to_xy(p, 0);
-    Pos sym = p.GetSymmetricalPos(x, y);
-    int i = xy_to_loc(p, sym.x, sym.y);
+    for (int x=0; x<p.width; x++) {
+        for (int y=0; y<p.height; y++) {
+            if (x%2 == y%2) continue;
+            if (p.grid[x][y].gap != Cell::Gap::BREAK) continue;
 
-    int k = 1;
-    // TODO: Done? No, still need gaps (if they're reflected). No idea how to do this, though. Maybe I can safely assume that they're at consecutive locations?
+            Pos sym = p.GetSymmetricalPos(x, y);
+            int location = extra_xy_to_loc(p, x, y);
+            int symLocation = extra_xy_to_loc(p, sym.x, sym.y);
+            // Each gap results in two intersections, @Assume they're written consecutively
+            // Rely on symmetry to set the other pairs
+            reflectionData[location] = symLocation;
+            reflectionData[location-1] = symLocation-1;
+        }
+    }
+
+    _memory->WriteArray<int>(id, REFLECTION_DATA, reflectionData);
 }
 
 std::tuple<int, int> PuzzleSerializer::loc_to_xy(const Puzzle& p, int location) const {
@@ -484,12 +488,10 @@ int PuzzleSerializer::xy_to_loc(const Puzzle& p, int x, int y) const {
     return rowsFromBottom * width2 + x/2;
 }
 
-int PuzzleSerializer::extra_xy_to_loc(Pos pos) const {
-    for (auto [x, y, location] : _extraLocations) {
-        if (pos.x == x && pos.y == y) return location;
-    }
-
-    return -1; // @Error
+int PuzzleSerializer::extra_xy_to_loc(const Puzzle& p, int x, int y) const {
+    auto search = _extraLocations.find(x * p.height + y);
+    if (search == _extraLocations.end()) return -1; // @Error
+    return search->second;
 }
 
 std::tuple<int, int> PuzzleSerializer::dloc_to_xy(const Puzzle& p, int location) const {
@@ -532,8 +534,8 @@ int PuzzleSerializer::FindConnection(int location) const {
     return -1;
 }
 
-void PuzzleSerializer::AddIntersection(int x, int y, float xPos, float yPos, int flags) {
-    _extraLocations.emplace_back(x, y, static_cast<int>(_intersectionFlags.size()));
+void PuzzleSerializer::AddIntersection(const Puzzle& p, int x, int y, float xPos, float yPos, int flags) {
+    _extraLocations[x * p.height + y] = static_cast<int>(_intersectionFlags.size());
     _intersectionLocations.push_back(xPos);
     _intersectionLocations.push_back(yPos);
     _intersectionFlags.push_back(flags);
