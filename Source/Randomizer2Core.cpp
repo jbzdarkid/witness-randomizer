@@ -6,13 +6,25 @@
 #include <iostream>
 #include <cassert>
 
-std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges, bool allowEdges) {
-    std::vector<Pos> edges;
-    int xMin = allowEdges ? 0 : 1;
-    int xMax = allowEdges ? p.width : p.width-1;
-    int yMin = allowEdges ? 0 : 1;
-    int yMax = allowEdges ? p.height : p.height-1;
+std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges) {
+    return CutEdgesInternal(p, 0, p.width, 0, p.height, numEdges);
+}
 
+std::vector<Pos> Randomizer2Core::CutInsideEdges(const Puzzle& p, size_t numEdges) {
+    return CutEdgesInternal(p, 1, p.width-1, 1, p.height-1, numEdges);
+}
+
+std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_t numEdges) {
+    assert(p.symmetry != Puzzle::Symmetry::NONE);
+    if (p.symmetry == Puzzle::Symmetry::X) {
+        return CutEdgesInternal(p, 0, (p.width-1)/2, 0, p.height, numEdges);
+    }
+    assert(false);
+    return {};
+}
+
+std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, int xMax, int yMin, int yMax, size_t numEdges) {
+    std::vector<Pos> edges;
     for (int x=xMin; x<xMax; x++) {
         for (int y=yMin; y<yMax; y++) {
             if (x%2 == y%2) continue;
@@ -27,10 +39,8 @@ std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges, boo
             edges.emplace_back(x, y);
         }
     }
-    return CutEdgesInternal(p, edges, numEdges);
-}
+    assert(numEdges <= edges.size());
 
-std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, std::vector<Pos>& edges, size_t numEdges) {
     auto [colorGrid, numColors] = CreateColorGrid(p);
     assert(numEdges <= numColors);
 

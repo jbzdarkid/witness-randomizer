@@ -25,7 +25,7 @@ void Randomizer2::RandomizeTutorial() {
         p.grid[0][8].start = true;
         p.grid[8][0].end = Cell::Dir::UP;
 
-        for (Pos pos : Randomizer2Core::CutEdges(p, 14, true)) {
+        for (Pos pos : Randomizer2Core::CutEdges(p, 14)) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
         _serializer.WritePuzzle(p, 0x293);
@@ -36,24 +36,18 @@ void Randomizer2::RandomizeTutorial() {
         p.NewGrid(6, 6);
 
         // @Bug: Mid-segment endpoints are not yet supported.
-        switch (Random::RandInt(1, 4)) {
-            case 1:
-                p.grid[Random::RandInt(0, p.width-1)][0].end = Cell::Dir::UP;
-                break;
-            case 2:
-                p.grid[Random::RandInt(0, p.width-1)][p.height-1].end = Cell::Dir::DOWN;
-                break;
-            case 3:
-                p.grid[0][Random::RandInt(0, p.height-1)].end = Cell::Dir::LEFT;
-                break;
-            case 4:
-                p.grid[p.width-1][Random::RandInt(0, p.height-1)].end = Cell::Dir::RIGHT;
-                break;
-        }
+        int x = Random::RandInt(0, (p.width-1)/2)*2;
+        int y = Random::RandInt(0, (p.height-1)/2)*2;
+        int rng = Random::RandInt(1, 4);
+             if (rng == 1) p.grid[x][0].end = Cell::Dir::UP;
+        else if (rng == 2) p.grid[x][p.height-1].end = Cell::Dir::DOWN;
+        else if (rng == 3) p.grid[0][y].end = Cell::Dir::LEFT;
+        else if (rng == 4) p.grid[p.width-1][y].end = Cell::Dir::RIGHT;
+
         // [4/6/8][4/6/8]
         p.grid[Random::RandInt(0, 2)*2 + 4][Random::RandInt(0, 2)*2 + 4].start = true;
     
-        for (Pos pos : Randomizer2Core::CutEdges(p, 35, true)) {
+        for (Pos pos : Randomizer2Core::CutEdges(p, 35)) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
 
@@ -67,7 +61,7 @@ void Randomizer2::RandomizeTutorial() {
         p.grid[0][20].start = true;
         p.grid[20][0].end = Cell::Dir::RIGHT;
 
-        for (Pos pos : Randomizer2Core::CutEdges(p, 96, true)) {
+        for (Pos pos : Randomizer2Core::CutEdges(p, 96)) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
         _serializer.WritePuzzle(p, 0x2C2);
@@ -81,7 +75,7 @@ void Randomizer2::RandomizeTutorial() {
         p.grid[12][0].end = Cell::Dir::RIGHT;
         p.grid[12][12].end = Cell::Dir::RIGHT;
 
-        for (Pos pos : Randomizer2Core::CutEdges(p, 27, true)) {
+        for (Pos pos : Randomizer2Core::CutEdges(p, 27)) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
         }
         _serializer.WritePuzzle(p, 0xA3B5);
@@ -153,7 +147,7 @@ void Randomizer2::RandomizeTutorial() {
             p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
         }
 
-        for (Pos pos : Randomizer2Core::CutEdges(p, 30 - cuts.size(), true)) {
+        for (Pos pos : Randomizer2Core::CutEdges(p, 30 - cuts.size())) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
         }
         _serializer.WritePuzzle(p, 0xA3B2);
@@ -161,7 +155,28 @@ void Randomizer2::RandomizeTutorial() {
 }
 
 void Randomizer2::RandomizeSymmetry() {
-    { // 
+    // Back wall
+    {
+        Puzzle p;
+        p.NewGrid(3, 3);
+        p.symmetry = Puzzle::Symmetry::X;
+        p.grid[0][6].start = true;
+        p.grid[6][6].start = true;
+        p.grid[2][0].end = Cell::Dir::UP;
+        p.grid[4][0].end = Cell::Dir::UP;
+
+        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 2);
+        for (Pos pos : cutEdges) {
+            Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+        }
+        _serializer.WritePuzzle(p, 0x86);
+    }
+    {
+        Puzzle p;
+        p.NewGrid(4, 4);
+        p.symmetry = Puzzle::Symmetry::X;
     
     }
 }
@@ -186,7 +201,7 @@ void Randomizer2::RandomizeKeep() {
         p.grid[4][8].start = true;
         p.grid[6][0].end = Cell::Dir::UP;
 
-        std::vector<Pos> cutEdges = Randomizer2Core::CutEdges(p, 5, false);
+        std::vector<Pos> cutEdges = Randomizer2Core::CutInsideEdges(p, 5);
         Puzzle copy = p;
         std::vector<int> gates = {0x00344, 0x00488,  0x00489, 0x00495, 0x00496};
         for (int i=0; i<cutEdges.size(); i++) {
@@ -216,7 +231,7 @@ void Randomizer2::RandomizeKeep() {
         p.grid[0][8].start = true;
         p.grid[8][0].end = Cell::Dir::RIGHT;
 
-        std::vector<Pos> cutEdges = Randomizer2Core::CutEdges(p, 7, false);
+        std::vector<Pos> cutEdges = Randomizer2Core::CutInsideEdges(p, 7);
         for (Pos pos : cutEdges) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
@@ -231,7 +246,7 @@ void Randomizer2::RandomizeKeep() {
             q.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
         // Cut to 6 of 9 additional edges
-        for (Pos pos : Randomizer2Core::CutEdges(q, 6, false)) {
+        for (Pos pos : Randomizer2Core::CutInsideEdges(q, 6)) {
             q.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
         _serializer.WritePuzzle(q, 0x19DC);
@@ -254,7 +269,7 @@ void Randomizer2::RandomizeKeep() {
         p.grid[0][8].start = true;
         p.grid[8][2].end = Cell::Dir::RIGHT;
 
-        std::vector<Pos> cutEdges = Randomizer2Core::CutEdges(p, 7, false);
+        std::vector<Pos> cutEdges = Randomizer2Core::CutInsideEdges(p, 7);
         for (Pos pos : cutEdges) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
         }
@@ -286,7 +301,7 @@ void Randomizer2::RandomizeKeep() {
         p.grid[0][8].start = true;
         p.grid[4][0].end = Cell::Dir::UP;
 
-        std::vector<Pos> cutEdges = Randomizer2Core::CutEdges(p, 2, false);
+        std::vector<Pos> cutEdges = Randomizer2Core::CutInsideEdges(p, 2);
         for (Pos pos : cutEdges) {
             p.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
@@ -300,7 +315,7 @@ void Randomizer2::RandomizeKeep() {
         for (Pos pos : cutEdges) {
             q.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
-        for (Pos pos : Randomizer2Core::CutEdges(q, 7, false)) {
+        for (Pos pos : Randomizer2Core::CutInsideEdges(q, 7)) {
             q.grid[pos.x][pos.y].gap = Cell::Gap::FULL;
         }
         _serializer.WritePuzzle(q, 0x1A0F);
