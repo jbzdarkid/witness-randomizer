@@ -8,8 +8,8 @@
 PuzzleSerializer::PuzzleSerializer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
 Puzzle PuzzleSerializer::ReadPuzzle(int id) {
-    int width = 2 * _memory->ReadEntityData<int>(id, GRID_SIZE_X, 1)[0] - 1;
-    int height = 2 * _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0] - 1;
+    int width = _memory->ReadEntityData<int>(id, GRID_SIZE_X, 1)[0] - 1;
+    int height = _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0] - 1;
     if (width == 0) width = height;
     if (height == 0) height = width;
     if (width < 0 || height < 0) return Puzzle(); // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
@@ -45,11 +45,12 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
     VERTI_GAP_SIZE = HEIGHT_INTERVAL / 2;
 
     WriteIntersections(p);
+    WriteEndpoints(p);
     WriteDots(p);
     WriteGaps(p);
-    WriteEndpoints(p);
     WriteDecorations(p, id);
     WriteSequence(p, id);
+    WriteSymmetry(p, id);
 
 #ifndef NDEBUG
     int maxDots = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
@@ -190,9 +191,9 @@ void PuzzleSerializer::ReadSymmetry(Puzzle& p, int id) {
     Pos p1 = loc_to_xy(p, reflectionData[0]);
     Pos p2 = loc_to_xy(p, reflectionData[reflectionData[0]]);
     if (p1.x != p2.x) {
-        p.symmetry = Puzzle::Symmetry::Y;
-    } else if (p1.y != p2.y) {
         p.symmetry = Puzzle::Symmetry::X;
+    } else if (p1.y != p2.y) {
+        p.symmetry = Puzzle::Symmetry::Y;
     } else {
         p.symmetry = Puzzle::Symmetry::XY;
     }
@@ -260,6 +261,12 @@ void PuzzleSerializer::WriteIntersections(const Puzzle& p) {
 }
 
 void PuzzleSerializer::WriteEndpoints(const Puzzle& p) {
+    // int xMin, xMax, yMin, yMax;
+    // 
+    // if (p.symmetry == Puzzle::Symmetry::NONE) {
+    //     xMin = 
+    // }
+
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (p.grid[x][y].end == Cell::Dir::NONE) continue;
@@ -352,6 +359,7 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
             if (connectionLocation == -1) continue; // @Error
 
             auto [xPos, yPos] = xy_to_pos(p, x, y);
+            // TODO: Use AddIntersection here?
             // Reminder: Y goes from 0.0 (bottom) to 1.0 (top)
             if (x%2 == 0) { // Vertical gap
                 _connectionsA[connectionLocation] = xy_to_loc(p, x, y-1);
@@ -429,22 +437,32 @@ void PuzzleSerializer::WriteSymmetry(const Puzzle& p, int id) {
         return;
     }
 
-    // TODO: This. Probably 3 different sections for the different types?
-    // The idea is simple, though, just write symmetry data for all endpoints.
-    // Handle the default grid... then just separate iterators for dots/gaps/endpoints? Gross, but might work.
-    // I think this might put constraints on how I build the dots/gaps, actually. Let me see.
-    /*
-    Pos p1 = loc_to_xy(p, reflectionData[0]);
-    Pos p2 = loc_to_xy(p, reflectionData[reflectionData[0]]);
-    if (p1.x != p2.x) {
-        p.symmetry = Puzzle::Symmetry::Y;
-    } else if (p1.y != p2.y) {
-        p.symmetry = Puzzle::Symmetry::X;
-    } else {
-        p.symmetry = Puzzle::Symmetry::XY;
+    std::vector<int> reflectionData;
+    reflectionData.resize(_intersectionFlags.size());
+
+    // Wow, what a horrible solution. But hey, whatever, if it works.
+    for (int x=0; x<p.width; x+=2) {
+        for (int y=0; y<p.height; y+=2) {
+            Pos sym = p.GetSymmetricalPos(x, y);
+            int location = xy_to_loc(p, x, y);
+            int symLocation = xy_to_loc(p, sym.x, sym.y);
+            reflectionData[location] = symLocation;
+            reflectionData[symLocation] = location;
+            if (p.grid[x][y].end != Cell::Dir::NONE) {
+                location = extra_xy_to_loc(Pos{x, y});
+                symLocation = extra_xy_to_loc(p.GetSymmetricalPos(x, y));
+                reflectionData[location] = symLocation;
+                reflectionData[symLocation] = location;
+            }
+        }
     }
 
-    */
+    auto [x, y] = loc_to_xy(p, 0);
+    Pos sym = p.GetSymmetricalPos(x, y);
+    int i = xy_to_loc(p, sym.x, sym.y);
+
+    int k = 1;
+    // TODO: Done? No, still need gaps (if they're reflected). No idea how to do this, though. Maybe I can safely assume that they're at consecutive locations?
 }
 
 std::tuple<int, int> PuzzleSerializer::loc_to_xy(const Puzzle& p, int location) const {
@@ -457,6 +475,8 @@ std::tuple<int, int> PuzzleSerializer::loc_to_xy(const Puzzle& p, int location) 
 }
 
 int PuzzleSerializer::xy_to_loc(const Puzzle& p, int x, int y) const {
+    assert(x%2 == 0);
+    assert(y%2 == 0);
     int height2 = (p.height - 1) / 2;
     int width2 = (p.width + 1) / 2;
 

@@ -27,6 +27,25 @@ void Puzzle::NewGrid(int newWidth, int newHeight) {
     for (int x=0; x<width; x++) grid[x].resize(height);
 }
 
+Pos Puzzle::GetSymmetricalPos(int x, int y) const {
+    if (symmetry != Symmetry::NONE) {
+        if (pillar) {
+            x += width/2;
+            if (symmetry & Symmetry::X) {
+                x = width - x;
+            }
+        } else {
+            if (symmetry & Symmetry::X) {
+                x = (width-1) - x;
+            }
+        }
+        if (symmetry & Symmetry::Y) {
+            y = (height-1) - y;
+        }
+    }
+    return Pos{x, y};
+}
+
 int Puzzle::Mod(int x) const {
     if (!pillar) return x;
     return (x + width * height * 2) % width;

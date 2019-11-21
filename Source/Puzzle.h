@@ -74,7 +74,12 @@ public:
     int width = 0;
     bool hasDecorations = false;
 
-    enum class Symmetry {NONE, X, Y, XY};
+    enum Symmetry {
+        NONE = 0,
+        X = 1,
+        Y = 2,
+        XY = 3
+    };
     Symmetry symmetry = Symmetry::NONE;
     bool pillar = false;
 
@@ -87,9 +92,7 @@ public:
     Cell GetCell(int x, int y) const;
     Cell::Color GetLine(int x, int y) const;
     void NewGrid(int newWidth, int newHeight);
-
-    // @TODO:
-    Pos GetSymmetricalPos(int x, int y);
+    Pos GetSymmetricalPos(int x, int y) const;
 
 // private:
     std::vector<std::vector<Cell>> grid;
