@@ -44,7 +44,7 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
     WIDTH_INTERVAL = (MAX - MIN) / (p.width/2);
     HEIGHT_INTERVAL = (MAX - MIN) / (p.height/2);
     GAP_SIZE = min(WIDTH_INTERVAL, HEIGHT_INTERVAL) / 2;
-    // @Improvement: This will make grid cells square... but how do I keep the puzzle centered?
+    // @Improvement: This will make grid cells square... but how do I keep the puzzle centered? Maybe save extra metadata?
     // INTERVAL = (MAX - MIN) / (max(p.width, p.height) / 2);
     // GAP_SIZE = INTERVAL / 2;
     
@@ -78,7 +78,8 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
 }
 
 void PuzzleSerializer::ReadIntersections(Puzzle& p) {
-    // @Cleanup: Change defaults?
+    // @Cleanup: Just change the defaults, instead of this?
+    // Mark every edge as a full gap
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (x%2 == y%2) continue;
@@ -86,7 +87,8 @@ void PuzzleSerializer::ReadIntersections(Puzzle& p) {
         }
     }
 
-    for (int i=0; i<_numIntersections; i++) {
+    // Iterate all connections (that are in the grid) to see which edges are connected.
+    for (int i=0; i<_connectionsA.size(); i++) {
         int locationA = _connectionsA[i];
         int locationB = _connectionsB[i];
         if (locationA > locationB) std::swap(locationA, locationB); // A < B
@@ -121,6 +123,9 @@ void PuzzleSerializer::ReadExtras(Puzzle& p) {
         }
     }
 
+    // Maps "extra gap intersection location" -> grid location. Note that there should be two locations for each position.
+    std::unordered_map<int, Pos> gapLocations;
+
     // Iterate the remaining intersections (endpoints, dots, gaps)
     for (; i < _numIntersections; i++) {
         int location = FindConnection(i);
@@ -152,6 +157,21 @@ void PuzzleSerializer::ReadExtras(Puzzle& p) {
             else if (y1 < y2) y++;
             else if (y1 > y2) y--;
             p.grid[x][y].gap = Cell::Gap::BREAK;
+            gapLocations[i] = Pos{x, y};
+        }
+    }
+
+    // Fixups for asymmetrical gaps
+    for (int i=0; i<_connectionsA.size(); i++) {
+        // Only consider connections to non-grid locations
+        int locationA = _connectionsA[i];
+        if (locationA < _numGridLocations) continue;
+        int locationB = _connectionsB[i];
+        if (locationB < _numGridLocations) continue;
+
+        Pos pos = gapLocations[locationA];
+        if (pos == gapLocations[locationB]) {
+            p.grid[pos.x][pos.y].gap = Cell::Gap::NONE;
         }
     }
 }
@@ -343,7 +363,18 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (x%2 == y%2) continue; // Cells are invalid, intersections are already handled.
-            if (p.grid[x][y].gap != Cell::Gap::BREAK) continue;
+
+            bool shouldWriteGap = false;
+            if (p.grid[x][y].gap == Cell::Gap::BREAK) {
+                shouldWriteGap = true;
+            } else if (p.symmetry != Puzzle::Symmetry::NONE) {
+                Pos sym = p.GetSymmetricalPos(x, y);
+                // Write symmetrical gaps, but also add an extra connection so they don't look like a gap.
+                if (p.grid[sym.x][sym.y].gap == Cell::Gap::BREAK) {
+                    shouldWriteGap = true;
+                }
+            }
+            if (!shouldWriteGap) continue;
 
             // We need to introduce a new segment which contains this dot. Break the existing segment, and add one.
             int connectionLocation = -1;
@@ -358,25 +389,37 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
             }
             if (connectionLocation == -1) continue; // @Error
 
+            int gap1Location, gap2Location;
             auto [xPos, yPos] = xy_to_pos(p, x, y);
-            // TODO: Use AddIntersection here?
             // Reminder: Y goes from 0.0 (bottom) to 1.0 (top)
             if (x%2 == 0) { // Vertical gap
+                gap1Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA[connectionLocation] = xy_to_loc(p, x, y-1);
-                _connectionsB[connectionLocation] = static_cast<int>(_intersectionFlags.size());
+                _connectionsB[connectionLocation] = gap1Location;
                 AddIntersection(p, x, y, xPos, yPos + GAP_SIZE / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
 
+                gap2Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA.push_back(xy_to_loc(p, x, y+1));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
+                _connectionsB.push_back(gap2Location);
                 AddIntersection(p, x, y, xPos, yPos - GAP_SIZE / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
+                gap1Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA[connectionLocation] = xy_to_loc(p, x-1, y);
-                _connectionsB[connectionLocation] = static_cast<int>(_intersectionFlags.size());
+                _connectionsB[connectionLocation] = gap1Location;
                 AddIntersection(p, x, y, xPos - GAP_SIZE / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
 
+                gap2Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA.push_back(xy_to_loc(p, x+1, y));
-                _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
+                _connectionsB.push_back(gap2Location);
                 AddIntersection(p, x, y, xPos + GAP_SIZE / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
+            }
+            if (p.symmetry != Puzzle::Symmetry::NONE) {
+                if (p.grid[x][y].gap == Cell::Gap::NONE) {
+                    // A gap was asked to be introduced strictly for interaction reasons, but it shouldn't look like a gap.
+                    // Add a connection between two halves of the gap to cover it graphically.
+                    _connectionsA.push_back(gap1Location);
+                    _connectionsB.push_back(gap2Location);
+                }
             }
         }
     }
@@ -446,7 +489,7 @@ void PuzzleSerializer::WriteSymmetry(const Puzzle& p, int id) {
                 location = extra_xy_to_loc(p, x, y);
                 Pos sym = p.GetSymmetricalPos(x, y);
                 symLocation = extra_xy_to_loc(p, sym.x, sym.y);
-                reflectionData[location] = symLocation;
+                reflectionData[location] = symLocation; // @Assume the symmetrical endpoint will write the other pair
             }
         }
     }
@@ -463,6 +506,8 @@ void PuzzleSerializer::WriteSymmetry(const Puzzle& p, int id) {
             // Rely on symmetry to set the other pairs
             reflectionData[location] = symLocation;
             reflectionData[location-1] = symLocation-1;
+            reflectionData[symLocation] = location;
+            reflectionData[symLocation-1] = location-1;
         }
     }
 

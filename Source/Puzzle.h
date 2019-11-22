@@ -62,10 +62,12 @@ struct Cell {
 
 struct Negation {};
 struct Pos {
+    Pos() = default; // Required for use in std::maps
     Pos(int x_, int y_) : x(x_), y(y_) {}
     Pos(const std::tuple<int, int>& xy) : x(std::get<0>(xy)), y(std::get<1>(xy)) {}
-    int x;
-    int y;
+    bool operator==(Pos other) {return x == other.x && y == other.y;}
+    int x = 0;
+    int y = 0;
 };
 
 class Puzzle {
