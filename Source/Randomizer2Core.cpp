@@ -15,9 +15,16 @@ std::vector<Pos> Randomizer2Core::CutInsideEdges(const Puzzle& p, size_t numEdge
 }
 
 std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_t numEdges) {
+    Puzzle copy = p;
     assert(p.symmetry != Puzzle::Symmetry::NONE);
     if (p.symmetry == Puzzle::Symmetry::X) {
-        return CutEdgesInternal(p, 0, (p.width-1)/2, 0, p.height, numEdges);
+        if (p.width%4 == 1) { // Puzzle is even, so we need to prevent cutting the centerline
+            for (int y=0; y<p.height; y++) {
+                copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
+            }
+        }
+
+        return CutEdgesInternal(copy, 0, (p.width-1)/2, 0, p.height, numEdges);
     }
     assert(false);
     return {};
@@ -93,10 +100,11 @@ std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, in
 
 void Randomizer2Core::DebugColorGrid(const std::vector<std::vector<int>>& colorGrid) {
 #ifndef NDEBUG
+    static std::string colors = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     for (int y=0; y<colorGrid[0].size(); y++) {
         std::string row;
         for (int x=0; x<colorGrid.size(); x++) {
-            row += std::to_string(colorGrid[x][y]);
+            row += colors[colorGrid[x][y]];
         }
         row += "\n";
         OutputDebugStringA(row.c_str());
@@ -128,13 +136,10 @@ void Randomizer2Core::FloodFillOutside(const Puzzle& p, std::vector<std::vector<
     FloodFillOutside(p, colorGrid, x-1, y);
 }
 
-/*
-    undefined -> 1 (color of outside) or * (any colored cell) or -1 (edge/intersection not part of any region)
-
-    0 -> {} (this is a special edge case, which I don't need right now)
-    1 -> 0 (uncolored / ready to color)
-    2 -> 
-*/
+// Color key:
+// 0 (default): Uncolored
+// 1: Outside color and separator color
+// 2+: Flood-filled region color
 std::tuple<std::vector<std::vector<int>>, int> Randomizer2Core::CreateColorGrid(const Puzzle& p) {
     std::vector<std::vector<int>> colorGrid;
     colorGrid.resize(p.width);

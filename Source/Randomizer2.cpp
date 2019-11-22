@@ -177,7 +177,24 @@ void Randomizer2::RandomizeSymmetry() {
         Puzzle p;
         p.NewGrid(4, 4);
         p.symmetry = Puzzle::Symmetry::X;
-    
+        p.grid[0][8].start = true;
+        p.grid[8][8].start = true;
+        p.grid[2][0].end = Cell::Dir::UP;
+        p.grid[6][0].end = Cell::Dir::UP;
+        // @Bug: This can still make the puzzle unsolvable, if it leaves the centerline free -- even though two lines can't pass through the centerline.
+        // ^ Try seed = 13710
+        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 4);
+        for (int i=0; i<2; i++) {
+            Pos pos = cutEdges[i];
+            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+        }
+        for (int i=2; i<4; i++) {
+            Pos pos = cutEdges[i];
+            Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+            p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+        }
+
+        _serializer.WritePuzzle(p, 0x87);
     }
 }
 

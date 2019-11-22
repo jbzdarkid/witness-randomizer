@@ -485,7 +485,6 @@ void PuzzleSerializer::WriteSymmetry(const Puzzle& p, int id) {
             reflectionData[location] = symLocation;
             reflectionData[symLocation] = location;
             if (p.grid[x][y].end != Cell::Dir::NONE) {
-                // Rely on symmetry to set the other pair
                 location = extra_xy_to_loc(p, x, y);
                 Pos sym = p.GetSymmetricalPos(x, y);
                 symLocation = extra_xy_to_loc(p, sym.x, sym.y);
@@ -503,11 +502,20 @@ void PuzzleSerializer::WriteSymmetry(const Puzzle& p, int id) {
             int location = extra_xy_to_loc(p, x, y);
             int symLocation = extra_xy_to_loc(p, sym.x, sym.y);
             // Each gap results in two intersections, @Assume they're written consecutively
-            // Rely on symmetry to set the other pairs
-            reflectionData[location] = symLocation;
-            reflectionData[location-1] = symLocation-1;
-            reflectionData[symLocation] = location;
-            reflectionData[symLocation-1] = location-1;
+
+            if ((x%2 != 0 && p.symmetry & Puzzle::Symmetry::X) || 
+                (y%2 != 0 && p.symmetry & Puzzle::Symmetry::Y)) {
+                // Write data inverted, because it's being reflected
+                reflectionData[location] = symLocation-1;
+                reflectionData[location-1] = symLocation;
+                reflectionData[symLocation] = location-1;
+                reflectionData[symLocation-1] = location;
+            } else { // Write data normally
+                reflectionData[location] = symLocation;
+                reflectionData[location-1] = symLocation-1;
+                reflectionData[symLocation] = location;
+                reflectionData[symLocation-1] = location-1;
+            }
         }
     }
 
