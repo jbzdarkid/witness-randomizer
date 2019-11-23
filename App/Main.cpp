@@ -267,12 +267,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     // g_rngDebug = CreateWindow(L"STATIC", L"",
 	//     WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 	//     200, 80, 200, 200, g_hwnd, NULL, g_hInstance, NULL);
-
+#ifndef NDEBUG
     g_panelId = CreateText(200, 100, 100, L"59");
     CreateButton(200, 130, 100, L"Read", TMP1);
     CreateButton(200, 160, 100, L"Write", TMP2);
     CreateButton(200, 190, 100, L"Solve", TMP3);
     CreateButton(200, 220, 100, L"Randomize2", TMP4);
+#endif
 
     g_witnessProc->StartHeartbeat(g_hwnd);
 
