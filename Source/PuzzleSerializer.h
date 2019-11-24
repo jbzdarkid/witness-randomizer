@@ -65,5 +65,6 @@ private:
     // Locations of non-grid points, i.e. dots, gaps, and endpoints
     std::unordered_map<int, int> _extraLocations;
 
-    float MIN, MAX, WIDTH_INTERVAL, HEIGHT_INTERVAL, INTERVAL, GAP_SIZE;
+    float MIN, MAX, INTERVAL;
+    int X_OFF, Y_OFF;
 };

@@ -14,7 +14,7 @@ Puzzle PuzzleSerializer::ReadPuzzle(int id) {
         int height = _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0];
         if (width == 0) width = height;
         if (height == 0) height = width;
-        if (width < 0 || height < 0) return Puzzle(); // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
+        if (width < 0 || height < 0) return p; // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
 
         _numGridLocations = width * height; // Highest location which represents a gridded intersection
         _numIntersections = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
@@ -46,12 +46,16 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
 
         MIN = 0.1f;
         MAX = 0.9f;
-        WIDTH_INTERVAL = (MAX - MIN) / (p.width/2);
-        HEIGHT_INTERVAL = (MAX - MIN) / (p.height/2);
-        GAP_SIZE = min(WIDTH_INTERVAL, HEIGHT_INTERVAL) / 2;
-        // @Improvement: This will make grid cells square... but how do I keep the puzzle centered? Maybe save extra metadata?
-        // INTERVAL = (MAX - MIN) / (max(p.width, p.height) / 2);
-        // GAP_SIZE = INTERVAL / 2;
+
+        if (p.height > p.width) {
+            INTERVAL = (MAX - MIN) / (p.height - (p.height%2));
+            X_OFF = (p.height - p.width) / 2;
+            Y_OFF = 0;
+        } else {
+            INTERVAL = (MAX - MIN) / (p.width - (p.width%2));
+            X_OFF = 0;
+            Y_OFF = (p.width - p.height) / 2;
+        }
     
         WriteIntersections(p);
         WriteEndpoints(p);
@@ -404,22 +408,22 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
                 gap1Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA[connectionLocation] = xy_to_loc(p, x, y-1);
                 _connectionsB[connectionLocation] = gap1Location;
-                AddIntersection(p, x, y, xPos, yPos + GAP_SIZE / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
+                AddIntersection(p, x, y, xPos, yPos + INTERVAL / 4, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
 
                 gap2Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA.push_back(xy_to_loc(p, x, y+1));
                 _connectionsB.push_back(gap2Location);
-                AddIntersection(p, x, y, xPos, yPos - GAP_SIZE / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
+                AddIntersection(p, x, y, xPos, yPos - INTERVAL / 4, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
                 gap1Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA[connectionLocation] = xy_to_loc(p, x-1, y);
                 _connectionsB[connectionLocation] = gap1Location;
-                AddIntersection(p, x, y, xPos - GAP_SIZE / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
+                AddIntersection(p, x, y, xPos - INTERVAL / 4, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
 
                 gap2Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA.push_back(xy_to_loc(p, x+1, y));
                 _connectionsB.push_back(gap2Location);
-                AddIntersection(p, x, y, xPos + GAP_SIZE / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
+                AddIntersection(p, x, y, xPos + INTERVAL / 4, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
             }
             if (p.symmetry != Puzzle::Symmetry::NONE) {
                 if (p.grid[x][y].gap == Cell::Gap::NONE) {
@@ -574,8 +578,8 @@ int PuzzleSerializer::xy_to_dloc(const Puzzle& p, int x, int y) const {
 
 std::tuple<float, float> PuzzleSerializer::xy_to_pos(const Puzzle& p, int x, int y) const {
     return {
-        MIN + (x/2.0f) * WIDTH_INTERVAL,
-        MAX - (y/2.0f) * HEIGHT_INTERVAL
+        MIN + (x + X_OFF) * INTERVAL,
+        MAX - (y + Y_OFF) * INTERVAL
     };
 }
 
