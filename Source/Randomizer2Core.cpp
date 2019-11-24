@@ -24,6 +24,11 @@ std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_
             for (int y=0; y<p.height; y++) {
                 copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
             }
+        } else {
+            // The puzzle has an odd width (e.g. 3x3), but we still need to cut the midline.
+            for (int y=0; y<p.height; y++) {
+                copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
+            }
         }
 
         return CutEdgesInternal(copy, 0, (p.width-1)/2, 0, p.height, numEdges);
