@@ -4,11 +4,12 @@
 #include <thread>
 #include <vector>
 #include <windows.h>
+#include <cassert>
+#include "MemoryException.h"
 
 // #define GLOBALS 0x5B28C0
 #define GLOBALS 0x62D0A0
 
-#define HEARTBEAT 0x401
 enum class ProcStatus {
     NotRunning,
     Running,
@@ -24,7 +25,7 @@ class Memory final : public std::enable_shared_from_this<Memory> {
 public:
     Memory(const std::wstring& processName);
     ~Memory();
-    void StartHeartbeat(HWND window, std::chrono::milliseconds beat = std::chrono::milliseconds(1000));
+    void StartHeartbeat(HWND window, WPARAM wParam, std::chrono::milliseconds beat = std::chrono::milliseconds(1000));
 
     Memory(const Memory& memory) = delete;
     Memory& operator=(const Memory& other) = delete;
@@ -63,40 +64,25 @@ public:
 private:
     template<class T>
     std::vector<T> ReadData(const std::vector<int>& offsets, size_t numItems) {
-        if (numItems == 0) return {};
+        assert(numItems);
         std::vector<T> data;
         data.resize(numItems);
-        void* computedOffset = ComputeOffset(offsets);
-        for (int i=0; i<5; i++) {
-            if (ReadProcessMemory(_handle, computedOffset, &data[0], sizeof(T) * numItems, nullptr)) {
-                if (i != 0) {
-                    int k = 0;
-                }
-                return data;
-            }
+        if (!ReadProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * numItems, nullptr)) {
+            MEMORY_THROW("Failed to read data.", offsets, numItems);
         }
-        ThrowError();
-        return {};
+        return data;
     }
 
     template <class T>
     void WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
-        if (data.empty()) return;
-        void* computedOffset = ComputeOffset(offsets);
-        for (int i=0; i<5; i++) {
-            if (WriteProcessMemory(_handle, computedOffset, &data[0], sizeof(T) * data.size(), nullptr)) {
-                if (i != 0) {
-                    int k = 0;
-                }
-                return;
-            }
+        assert(data.size());
+        if (!WriteProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), nullptr)) {
+            MEMORY_THROW("Failed to write data.", offsets, data.size());
         }
-        ThrowError();
     }
 
-    void Heartbeat(HWND window);
+    void Heartbeat(HWND window, WPARAM wParam);
     bool Initialize();
-    void ThrowError();
     void* ComputeOffset(std::vector<int> offsets);
 
     int _previousFrame = 0;

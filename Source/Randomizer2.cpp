@@ -1,5 +1,5 @@
-#include "Memory.h"
 #include "Randomizer2.h"
+#include "PuzzleSerializer.h"
 #include "Randomizer2Core.h"
 #include "Puzzle.h"
 #include "Random.h"
@@ -10,7 +10,7 @@
 
 #pragma warning (disable: 26451)
 
-Randomizer2::Randomizer2(const std::shared_ptr<Memory>& memory) : _memory(memory), _serializer(PuzzleSerializer(_memory)) {}
+Randomizer2::Randomizer2(const PuzzleSerializer& serializer) : _serializer(serializer) {}
 
 void Randomizer2::Randomize() {
     RandomizeTutorial();
@@ -361,9 +361,9 @@ void Randomizer2::SetGate(int panel, int X, int Y) {
     }
 
     SetPos(panel, x, y, 19.2f);
-    _memory->WriteEntityData<float>(panel, ORIENTATION, {0.0f, 0.0f, z, w});
+    // _memory->WriteEntityData<float>(panel, ORIENTATION, {0.0f, 0.0f, z, w});
 }
 
 void Randomizer2::SetPos(int panel, float x, float y, float z) {
-    _memory->WriteEntityData<float>(panel, POSITION, {x, y, z});
+    // _memory->WriteEntityData<float>(panel, POSITION, {x, y, z});
 }

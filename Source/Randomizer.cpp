@@ -129,28 +129,28 @@ void Randomizer::Randomize() {
     // Sig scans will be run during challenge randomization.
 
     // Seed challenge first for future-proofing
-    RandomizeChallenge();
+    MEMORY_CATCH(RandomizeChallenge());
 
     // Content swaps -- must happen before squarePanels
-    Randomize(upDownPanels, SWAP::LINES | SWAP::COLORS);
-    Randomize(leftForwardRightPanels, SWAP::LINES | SWAP::COLORS);
+    MEMORY_CATCH(Randomize(upDownPanels, SWAP::LINES | SWAP::COLORS));
+    MEMORY_CATCH(Randomize(leftForwardRightPanels, SWAP::LINES | SWAP::COLORS));
 
-    Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
+    MEMORY_CATCH(Randomize(squarePanels, SWAP::LINES | SWAP::COLORS));
 
     // Individual area modifications
-    RandomizeTutorial();
-    RandomizeDesert();
-    RandomizeQuarry();
-    RandomizeTreehouse();
-    RandomizeKeep();
-    RandomizeShadows();
-    RandomizeMonastery();
-    RandomizeBunker();
-    RandomizeJungle();
-    RandomizeSwamp();
-    RandomizeMountain();
-    RandomizeTown();
-    RandomizeSymmetry();
+    MEMORY_CATCH(RandomizeTutorial());
+    MEMORY_CATCH(RandomizeDesert());
+    MEMORY_CATCH(RandomizeQuarry());
+    MEMORY_CATCH(RandomizeTreehouse());
+    MEMORY_CATCH(RandomizeKeep());
+    MEMORY_CATCH(RandomizeShadows());
+    MEMORY_CATCH(RandomizeMonastery());
+    MEMORY_CATCH(RandomizeBunker());
+    MEMORY_CATCH(RandomizeJungle());
+    MEMORY_CATCH(RandomizeSwamp());
+    MEMORY_CATCH(RandomizeMountain());
+    MEMORY_CATCH(RandomizeTown());
+    MEMORY_CATCH(RandomizeSymmetry());
     // RandomizeAudioLogs();
 }
 
@@ -210,6 +210,7 @@ void Randomizer::RandomizeQuarry() {
 
 void Randomizer::RandomizeTreehouse() {
     // Ensure that whatever pivot panels we have are flagged as "pivotable"
+    // @Bug: Can return {}, be careful!
     int panelFlags = _memory->ReadEntityData<int>(0x17DD1, STYLE_FLAGS, 1)[0];
     _memory->WriteEntityData<int>(0x17DD1, STYLE_FLAGS, {panelFlags | 0x8000});
     panelFlags = _memory->ReadEntityData<int>(0x17CE3, STYLE_FLAGS, 1)[0];

@@ -8,73 +8,81 @@
 PuzzleSerializer::PuzzleSerializer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
 Puzzle PuzzleSerializer::ReadPuzzle(int id) {
-    int width = _memory->ReadEntityData<int>(id, GRID_SIZE_X, 1)[0];
-    int height = _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0];
-    if (width == 0) width = height;
-    if (height == 0) height = width;
-    if (width < 0 || height < 0) return Puzzle(); // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
-
-    _numGridLocations = width * height; // Highest location which represents a gridded intersection
-    _numIntersections = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
-    _intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, _numIntersections);
-    int numConnections = _memory->ReadEntityData<int>(id, NUM_CONNECTIONS, 1)[0];
-    _connectionsA = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
-    _connectionsB = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
-    _intersectionLocations = _memory->ReadArray<float>(id, DOT_POSITIONS, _numIntersections*2);
-
     Puzzle p;
-    p.NewGrid(width - 1, height - 1);
-    ReadIntersections(p);
-    ReadExtras(p);
-    ReadDecorations(p, id);
-    ReadSequence(p, id);
-    ReadSymmetry(p, id);
+    try {
+        int width = _memory->ReadEntityData<int>(id, GRID_SIZE_X, 1)[0];
+        int height = _memory->ReadEntityData<int>(id, GRID_SIZE_Y, 1)[0];
+        if (width == 0) width = height;
+        if (height == 0) height = width;
+        if (width < 0 || height < 0) return Puzzle(); // @Error: Grid size should be always positive? Looks like the starting panels break this rule, though.
+
+        _numGridLocations = width * height; // Highest location which represents a gridded intersection
+        _numIntersections = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
+        _intersectionFlags = _memory->ReadArray<int>(id, DOT_FLAGS, _numIntersections);
+        int numConnections = _memory->ReadEntityData<int>(id, NUM_CONNECTIONS, 1)[0];
+        _connectionsA = _memory->ReadArray<int>(id, DOT_CONNECTION_A, numConnections);
+        _connectionsB = _memory->ReadArray<int>(id, DOT_CONNECTION_B, numConnections);
+        _intersectionLocations = _memory->ReadArray<float>(id, DOT_POSITIONS, _numIntersections*2);
+
+        p.NewGrid(width - 1, height - 1);
+        ReadIntersections(p);
+        ReadExtras(p);
+        ReadDecorations(p, id);
+        ReadSequence(p, id);
+        ReadSymmetry(p, id);
+    } catch (MemoryException exc) {
+        MemoryException::HandleException(exc);
+    }
     return p;
 }
 
 void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
-    _intersectionFlags.clear();
-    _connectionsA.clear();
-    _connectionsB.clear();
-    _intersectionLocations.clear();
-    _extraLocations.clear();
+    try {
+        _intersectionFlags.clear();
+        _connectionsA.clear();
+        _connectionsB.clear();
+        _intersectionLocations.clear();
+        _extraLocations.clear();
 
-    MIN = 0.1f;
-    MAX = 0.9f;
-    WIDTH_INTERVAL = (MAX - MIN) / (p.width/2);
-    HEIGHT_INTERVAL = (MAX - MIN) / (p.height/2);
-    GAP_SIZE = min(WIDTH_INTERVAL, HEIGHT_INTERVAL) / 2;
-    // @Improvement: This will make grid cells square... but how do I keep the puzzle centered? Maybe save extra metadata?
-    // INTERVAL = (MAX - MIN) / (max(p.width, p.height) / 2);
-    // GAP_SIZE = INTERVAL / 2;
+        MIN = 0.1f;
+        MAX = 0.9f;
+        WIDTH_INTERVAL = (MAX - MIN) / (p.width/2);
+        HEIGHT_INTERVAL = (MAX - MIN) / (p.height/2);
+        GAP_SIZE = min(WIDTH_INTERVAL, HEIGHT_INTERVAL) / 2;
+        // @Improvement: This will make grid cells square... but how do I keep the puzzle centered? Maybe save extra metadata?
+        // INTERVAL = (MAX - MIN) / (max(p.width, p.height) / 2);
+        // GAP_SIZE = INTERVAL / 2;
     
-    WriteIntersections(p);
-    WriteEndpoints(p);
-    WriteDots(p);
-    WriteGaps(p);
-    WriteDecorations(p, id);
-    WriteSequence(p, id);
-    WriteSymmetry(p, id);
+        WriteIntersections(p);
+        WriteEndpoints(p);
+        WriteDots(p);
+        WriteGaps(p);
+        WriteDecorations(p, id);
+        WriteSequence(p, id);
+        WriteSymmetry(p, id);
 
 #ifndef NDEBUG
-    int maxDots = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
-    assert(_intersectionFlags.size() <= maxDots);
-    assert(_intersectionLocations.size() <= maxDots*2);
+        int maxDots = _memory->ReadEntityData<int>(id, NUM_DOTS, 1)[0];
+        assert(_intersectionFlags.size() <= maxDots);
+        assert(_intersectionLocations.size() <= maxDots*2);
 
-    int maxConnections = _memory->ReadEntityData<int>(id, NUM_CONNECTIONS, 1)[0];
-    assert(_connectionsA.size() <= maxConnections);
-    assert(_connectionsB.size() <= maxConnections);
+        int maxConnections = _memory->ReadEntityData<int>(id, NUM_CONNECTIONS, 1)[0];
+        assert(_connectionsA.size() <= maxConnections);
+        assert(_connectionsB.size() <= maxConnections);
 #endif
 
-    _memory->WriteEntityData<int>(id, GRID_SIZE_X, {(p.width + 1)/2});
-    _memory->WriteEntityData<int>(id, GRID_SIZE_Y, {(p.height + 1)/2});
-    _memory->WriteEntityData<int>(id, NUM_DOTS, {static_cast<int>(_intersectionFlags.size())});
-    _memory->WriteArray<float>(id, DOT_POSITIONS, _intersectionLocations);
-    _memory->WriteArray<int>(id, DOT_FLAGS, _intersectionFlags);
-    _memory->WriteEntityData<int>(id, NUM_CONNECTIONS, {static_cast<int>(_connectionsA.size())});
-    _memory->WriteArray<int>(id, DOT_CONNECTION_A, _connectionsA);
-    _memory->WriteArray<int>(id, DOT_CONNECTION_B, _connectionsB);
-    _memory->WriteEntityData<int>(id, NEEDS_REDRAW, {1});
+        _memory->WriteEntityData<int>(id, GRID_SIZE_X, {(p.width + 1)/2});
+        _memory->WriteEntityData<int>(id, GRID_SIZE_Y, {(p.height + 1)/2});
+        _memory->WriteEntityData<int>(id, NUM_DOTS, {static_cast<int>(_intersectionFlags.size())});
+        _memory->WriteArray<float>(id, DOT_POSITIONS, _intersectionLocations);
+        _memory->WriteArray<int>(id, DOT_FLAGS, _intersectionFlags);
+        _memory->WriteEntityData<int>(id, NUM_CONNECTIONS, {static_cast<int>(_connectionsA.size())});
+        _memory->WriteArray<int>(id, DOT_CONNECTION_A, _connectionsA);
+        _memory->WriteArray<int>(id, DOT_CONNECTION_B, _connectionsB);
+        _memory->WriteEntityData<int>(id, NEEDS_REDRAW, {1});
+    } catch (MemoryException exc) {
+        MemoryException::HandleException(exc);
+    }
 }
 
 void PuzzleSerializer::ReadIntersections(Puzzle& p) {

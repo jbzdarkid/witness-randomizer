@@ -22,22 +22,22 @@ Memory::~Memory() {
     }
 }
 
-void Memory::StartHeartbeat(HWND window, std::chrono::milliseconds beat) {
+void Memory::StartHeartbeat(HWND window, WPARAM wParam, std::chrono::milliseconds beat) {
     if (_threadActive) return;
     _threadActive = true;
-    _thread = std::thread([sharedThis = shared_from_this(), window, beat]{
+    _thread = std::thread([sharedThis = shared_from_this(), window, wParam, beat]{
         while (sharedThis->_threadActive) {
-            sharedThis->Heartbeat(window);
+            sharedThis->Heartbeat(window, wParam);
             std::this_thread::sleep_for(beat);
         }
     });
     _thread.detach();
 }
 
-void Memory::Heartbeat(HWND window) {
+void Memory::Heartbeat(HWND window, WPARAM wParam) {
     if (!_handle && !Initialize()) {
         // Couldn't initialize, definitely not running
-        PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::NotRunning);
+        PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::NotRunning);
         return;
     }
 
@@ -48,7 +48,7 @@ void Memory::Heartbeat(HWND window) {
         // Process has exited, clean up.
         _computedAddresses.clear();
         _handle = NULL;
-        PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::NotRunning);
+        PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::NotRunning);
         return;
     }
 
@@ -62,13 +62,13 @@ void Memory::Heartbeat(HWND window) {
     if (frameDelta < 0 && currentFrame < 250) {
         // Some addresses (e.g. Entity Manager) may get re-allocated on newgame.
         _computedAddresses.clear();
-        PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::NewGame);
+        PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::NewGame);
         return;
     }
 
     // TODO: Some way to return ProcStatus::Randomized vs ProcStatus::NotRandomized vs ProcStatus::DeRandomized;
 
-    PostMessage(window, WM_COMMAND, HEARTBEAT, (LPARAM)ProcStatus::Running);
+    PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::Running);
 }
 
 [[nodiscard]]
@@ -151,16 +151,6 @@ int Memory::ExecuteSigScans()
     return notFound;
 }
 
-void Memory::ThrowError() {
-    std::wstring message(256, '\0');
-    DWORD error = GetLastError();
-    int length = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error, 1024, &message[0], static_cast<DWORD>(message.size()), nullptr);
-    message.resize(length);
-#ifndef NDEBUG
-    MessageBox(NULL, message.c_str(), L"Please tell darkid about this", MB_OK);
-#endif
-}
-
 void* Memory::ComputeOffset(std::vector<int> offsets) {
     // Leave off the last offset, since it will be either read/write, and may not be of type uintptr_t.
     int final_offset = offsets.back();
@@ -177,11 +167,11 @@ void* Memory::ComputeOffset(std::vector<int> offsets) {
 #endif
             // If the address is not yet computed, then compute it.
             uintptr_t computedAddress = 0;
-            if (bool result = !ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
-                ThrowError();
+            if (!ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
+                MEMORY_THROW("Couldn't compute offset.", offsets);
             }
-            if (computedAddress == 0) { // Attempting to dereference a nullptr
-                ThrowError();
+            if (computedAddress == 0) {
+                MEMORY_THROW("Attempted to derefence NULL while computing offsets.", offsets);
             }
             _computedAddresses[cumulativeAddress] = computedAddress;
 #ifdef NDEBUG

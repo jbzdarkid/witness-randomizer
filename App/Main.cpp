@@ -12,7 +12,7 @@
 #include "Randomizer.h"
 #include "Randomizer2.h"
 
-// Heartbeat is defined to 0x401 by Memory.h
+#define HEARTBEAT 0x401
 #define RANDOMIZE_READY 0x402
 #define RANDOMIZING 0403
 #define RANDOMIZE_DONE 0x404
@@ -100,18 +100,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 SetRandomSeed();
                 std::thread([]{
                     if (IsDlgButtonChecked(g_hwnd, DISABLE_SNIPES)) {
-                        g_randomizer->PreventSnipes();
+                        MEMORY_CATCH(g_randomizer->PreventSnipes());
                     }
                     if (IsDlgButtonChecked(g_hwnd, SPEED_UP_AUTOSCROLLERS)) {
-                        g_randomizer->AdjustSpeed();
+                        MEMORY_CATCH(g_randomizer->AdjustSpeed());
                     }
                     if (IsDlgButtonChecked(g_hwnd, CHALLENGE_ONLY)) {
                         SetWindowText(g_randomizerStatus, L"Randomizing Challenge...");
-                        g_randomizer->RandomizeChallenge();
+                        MEMORY_CATCH(g_randomizer->RandomizeChallenge());
                         PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_CHALLENGE_DONE, NULL);
                     } else {
                         SetWindowText(g_randomizerStatus, L"Randomizing...");
-                        g_randomizer->Randomize();
+                        MEMORY_CATCH(g_randomizer->Randomize());
                         PostMessage(g_hwnd, WM_COMMAND, RANDOMIZE_DONE, NULL);
                     }
                 }).detach();
@@ -194,8 +194,13 @@ void SetRandomSeed() {
         Random::SetSeed(_wtoi(text.c_str()));
     } else { // Random seed
         int seed = Random::RandInt(0, 999999);
-        SetWindowText(g_seed, std::to_wstring(seed).c_str());
-        RedrawWindow(g_seed, NULL, NULL, RDW_UPDATENOW);
+
+        text = std::to_wstring(seed);
+        SetWindowText(g_seed, text.c_str());
+        CHARRANGE range = {0, static_cast<long>(text.length())};
+        PostMessage(g_seed, EM_EXSETSEL, NULL, (LPARAM)&range);
+        SetFocus(g_seed);
+
 		Random::SetSeed(seed);
     }
 }
@@ -275,7 +280,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateButton(200, 220, 100, L"Randomize2", TMP4);
 #endif
 
-    g_witnessProc->StartHeartbeat(g_hwnd);
+    g_witnessProc->StartHeartbeat(g_hwnd, HEARTBEAT);
 
 	ShowWindow(g_hwnd, nCmdShow);
 	UpdateWindow(g_hwnd);
