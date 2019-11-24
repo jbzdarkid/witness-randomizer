@@ -7,8 +7,8 @@
 #include <cassert>
 #include "MemoryException.h"
 
-// #define GLOBALS 0x5B28C0
-#define GLOBALS 0x62D0A0
+#define GLOBALS 0x5B28C0
+// #define GLOBALS 0x62D0A0
 
 enum class ProcStatus {
     NotRunning,

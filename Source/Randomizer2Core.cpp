@@ -18,7 +18,9 @@ std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_
     Puzzle copy = p;
     assert(p.symmetry != Puzzle::Symmetry::NONE);
     if (p.symmetry == Puzzle::Symmetry::X) {
-        if (p.width%4 == 1) { // Puzzle is even, so we need to prevent cutting the centerline
+        if (p.width%4 == 1) {
+            // The puzle has an even width (e.g. 4x4), so it has a midline for symmetry.
+            //  Since this midline is unusable, we cut it pre-emptively.
             for (int y=0; y<p.height; y++) {
                 copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
             }
@@ -147,23 +149,19 @@ std::tuple<std::vector<std::vector<int>>, int> Randomizer2Core::CreateColorGrid(
     for (int x=0; x<p.width; x++) {
         colorGrid[x].resize(p.height);
         for (int y=0; y<p.height; y++) {
+            if (x%2 == 1 && y%2 == 1) continue;
             // Mark all unbroken edges and intersections as 'do not color'
-            if (x%2 != y%2) {
-                if (p.grid[x][y].gap == Cell::Gap::NONE) colorGrid[x][y] = 1;
-            } else if (x%2 == 0 && y%2 == 0) {
-                // @Future: What about empty intersections?
-                colorGrid[x][y] = 1; // do not color intersections
-            }
+            if (p.grid[x][y].gap == Cell::Gap::NONE) colorGrid[x][y] = 1;
         }
     }
 
     // @Future: Skip this loop if pillar = true;
-    for (int y=1; y<p.height; y+=2) {
+    for (int y=0; y<p.height; y++) {
         FloodFillOutside(p, colorGrid, 0, y);
         FloodFillOutside(p, colorGrid, p.width - 1, y);
     }
 
-    for (int x=1; x<p.width; x+=2) {
+    for (int x=0; x<p.width; x++) {
         FloodFillOutside(p, colorGrid, x, 0);
         FloodFillOutside(p, colorGrid, x, p.height - 1);
     }

@@ -35,7 +35,6 @@ void Randomizer2::RandomizeTutorial() {
         Puzzle p;
         p.NewGrid(6, 6);
 
-        // @Bug: Mid-segment endpoints are not yet supported.
         int x = Random::RandInt(0, (p.width-1)/2)*2;
         int y = Random::RandInt(0, (p.height-1)/2)*2;
         int rng = Random::RandInt(1, 4);
@@ -94,29 +93,24 @@ void Randomizer2::RandomizeTutorial() {
         bool toTheRight;
         // Start by generating a cut line, to ensure one of the two startpoints is inaccessible
         int x, y;
-        switch (Random::RandInt(1, 4))
-        {
+        switch (Random::RandInt(1, 4)) {
             case 1:
-                x = 1;
-                y = 1;
+                x = 1; y = 1;
                 toTheRight = true;
                 cuts.emplace_back(0, 1);
                 break;
             case 2:
-                x = 1;
-                y = 1;
+                x = 1; y = 1;
                 toTheRight = true;
                 cuts.emplace_back(1, 0);
                 break;
             case 3:
-                x = 11;
-                y = 1;
+                x = 11; y = 1;
                 toTheRight = false;
                 cuts.emplace_back(12, 1);
                 break;
             case 4:
-                x = 11;
-                y = 1;
+                x = 11; y = 1;
                 toTheRight = false;
                 cuts.emplace_back(11, 0);
                 break;
@@ -136,7 +130,7 @@ void Randomizer2::RandomizeTutorial() {
                     }
                     break;
                 case 3: 
-                case 4: // Go down (biased)
+                case 4: // Go down (biased x2)
                     cuts.emplace_back(x, y+1);
                     y += 2;
                     break;
@@ -155,8 +149,7 @@ void Randomizer2::RandomizeTutorial() {
 }
 
 void Randomizer2::RandomizeSymmetry() {
-    // Back wall
-    {
+    { // Back wall 1
         Puzzle p;
         p.NewGrid(3, 3);
         p.symmetry = Puzzle::Symmetry::X;
@@ -173,7 +166,7 @@ void Randomizer2::RandomizeSymmetry() {
         }
         _serializer.WritePuzzle(p, 0x86);
     }
-    {
+    { // Back wall 2
         Puzzle p;
         p.NewGrid(4, 4);
         p.symmetry = Puzzle::Symmetry::X;
@@ -181,17 +174,17 @@ void Randomizer2::RandomizeSymmetry() {
         p.grid[8][8].start = true;
         p.grid[2][0].end = Cell::Dir::UP;
         p.grid[6][0].end = Cell::Dir::UP;
-        // @Bug: This can still make the puzzle unsolvable, if it leaves the centerline free -- even though two lines can't pass through the centerline.
-        // ^ Try seed = 13710
         std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 4);
-        for (int i=0; i<2; i++) {
+        bool alternate = false;
+        for (int i=0; i<cutEdges.size(); i++) {
             Pos pos = cutEdges[i];
-            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
-        }
-        for (int i=2; i<4; i++) {
-            Pos pos = cutEdges[i];
-            Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
-            p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+            if (alternate) {
+                p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            } else {
+                Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+                p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+            }
+            alternate = !alternate;
         }
 
         _serializer.WritePuzzle(p, 0x87);
