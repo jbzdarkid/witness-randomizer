@@ -17,15 +17,28 @@ std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_
         for (int y=0; y<p.height; y++) {
             copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
         }
+        return CutEdgesInternal(copy, 0, (p.width-1)/2, 0, p.height, numEdges);
     } else if (p.symmetry == Puzzle::Symmetry::Y) {
         for (int x=0; x<p.width; x++) {
             copy.grid[x][p.height/2].gap = Cell::Gap::FULL;
         }
+        return CutEdgesInternal(copy, 0, p.width, 0, (p.height-1)/2, numEdges);
     } else {
         assert(p.symmetry == Puzzle::Symmetry::XY);
-        // Pass, I think? Maybe this matters for odd numbers.
+        if (p.width%4 == 1) {
+            assert(p.width == 9);
+            copy.grid[2][3];
+            copy.grid[3][4];
+            copy.grid[3][6];
+            copy.grid[4][3];
+        // For odd grids, cut the center out.
+        // for (int x=0; x<p.width; x++) {
+        //     copy.grid[x][p.height/2].gap = Cell::Gap::FULL;
+        // }
+
+        }
+        return CutEdgesInternal(copy, 0, p.width, 0, p.height, numEdges);
     }
-    return CutEdgesInternal(copy, 0, (p.width-1)/2, 0, p.height, numEdges);
 }
 
 std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, int xMax, int yMin, int yMax, size_t numEdges) {
@@ -36,6 +49,7 @@ std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, in
             if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
             if (p.grid[x][y].start) continue;
             if (p.grid[x][y].end != Cell::Dir::NONE) continue;
+            if (p.symmetry == Puzzle::Symmetry::XY && x > y) continue; // Only allow cuts bottom-left of the diagonal
 
             // If the puzzle already has a sequence, don't cut along it.
             bool inSequence = false;
@@ -51,7 +65,7 @@ std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, in
 
     std::vector<Pos> cutEdges;
     for (int i=0; i<numEdges; i++) {
-        for (int j=0; j<edges.size(); j++) {
+        while (edges.size() > 0) {
             int edge = Random::RandInt(0, static_cast<int>(edges.size() - 1));
             Pos pos = edges[edge];
             edges.erase(edges.begin() + edge);

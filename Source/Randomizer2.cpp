@@ -270,13 +270,65 @@ void Randomizer2::RandomizeSymmetry() {
         p.grid[1][6].gap = Cell::Gap::BREAK;
 
         for (Pos pos : Randomizer2Core::CutSymmetricalEdgePairs(p, 1)) {
-            std::string text = std::to_string(pos.x) + " " + std::to_string(pos.y);
-            OutputDebugStringA(text.c_str());
             p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
             Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
             p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
         }
         _serializer.WritePuzzle(p, 0x8D);
+    }
+    { // Rotational 2
+        Puzzle p;
+        p.NewGrid(3, 3);
+        p.symmetry = Puzzle::Symmetry::XY;
+        p.grid[6][0].start = true;
+        p.grid[0][6].start = true;
+        p.grid[4][0].end = Cell::Dir::UP;
+        p.grid[2][6].end = Cell::Dir::DOWN;
+
+        p.grid[5][0].gap = Cell::Gap::BREAK;
+        p.grid[1][6].gap = Cell::Gap::BREAK;
+
+        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 3);
+        for (int i=0; i<cutEdges.size(); i++) {
+            Pos pos = cutEdges[i];
+            if (i%2 == 0) {
+                p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            } else {
+                Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+                p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+            }
+        }
+
+        p.grid[1][6].gap = Cell::Gap::NONE;
+
+        _serializer.WritePuzzle(p, 0x81);
+    }
+    { // Rotational 3
+        Puzzle p;
+        p.NewGrid(4, 4);
+        p.symmetry = Puzzle::Symmetry::XY;
+        p.grid[6][0].start = true;
+        p.grid[0][6].start = true;
+        p.grid[4][0].end = Cell::Dir::UP;
+        p.grid[2][6].end = Cell::Dir::DOWN;
+
+        p.grid[5][0].gap = Cell::Gap::BREAK;
+        p.grid[1][6].gap = Cell::Gap::BREAK;
+
+        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 3);
+        for (int i=0; i<cutEdges.size(); i++) {
+            Pos pos = cutEdges[i];
+            if (i%2 == 0) {
+                p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            } else {
+                Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+                p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+            }
+        }
+
+        p.grid[1][6].gap = Cell::Gap::NONE;
+
+        _serializer.WritePuzzle(p, 0x81);
     }
 }
 
