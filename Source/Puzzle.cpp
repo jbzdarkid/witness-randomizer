@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Puzzle.h"
-#include "Memory.h"
 
 Cell Puzzle::GetCell(int x, int y) const {
     x = Mod(x);

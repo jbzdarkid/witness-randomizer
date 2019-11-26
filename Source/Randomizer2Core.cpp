@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Randomizer2Core.h"
-#include "Puzzle.h"
 #include "Random.h"
 
 std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges) {

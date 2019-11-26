@@ -20,6 +20,7 @@
 #include <vector>
 
 #pragma warning (disable: 26451) // Potential arithmetic overflow
+#pragma warning (disable: 26812) // Unscoped enum type
 
 #include "MemoryException.h"
 #include "Memory.h"

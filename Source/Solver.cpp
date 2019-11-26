@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Solver.h"
-#include "Puzzle.h"
 #include "Validator.h"
 
 int Solver::MAX_SOLUTIONS = 10000;

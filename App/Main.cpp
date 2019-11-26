@@ -17,7 +17,6 @@
 #define SPEED_UP_AUTOSCROLLERS 0x408
 
 /* ------- Temp ------- */
-#include "Puzzle.h"
 #include "Solver.h"
 #include "PuzzleSerializer.h"
 #include <sstream>

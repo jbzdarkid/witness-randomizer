@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Validator.h"
-#include "Puzzle.h"
 
 void Validator::Validate(Puzzle& p) {
     // console.log('Validating', puzzle);

@@ -2,7 +2,6 @@
 #include "Randomizer2.h"
 #include "PuzzleSerializer.h"
 #include "Randomizer2Core.h"
-#include "Puzzle.h"
 #include "Random.h"
 #include "Solver.h"
 #include "Windows.h"

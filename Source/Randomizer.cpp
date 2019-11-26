@@ -92,7 +92,6 @@ Things to do for V2:
  * Random *rotation* of desert laser redirect?
 */
 #include "pch.h"
-#include "Memory.h"
 #include "Randomizer.h"
 #include "ChallengeRandomizer.h"
 #include "Panels.h"

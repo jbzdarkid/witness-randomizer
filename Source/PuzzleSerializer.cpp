@@ -1,9 +1,5 @@
 #include "pch.h"
 #include "PuzzleSerializer.h"
-#include "Memory.h"
-
-#pragma warning (disable:26451)
-#pragma warning (disable:26812)
 
 PuzzleSerializer::PuzzleSerializer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
