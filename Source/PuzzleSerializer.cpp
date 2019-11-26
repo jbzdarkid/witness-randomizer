@@ -49,12 +49,10 @@ void PuzzleSerializer::WritePuzzle(const Puzzle& p, int id) {
 
         if (p.height > p.width) {
             INTERVAL = (MAX - MIN) / (p.height - (p.height%2));
-            GAP_SIZE = (MAX - MIN) / (2 * p.width);
             X_OFF = (p.height - p.width) / 2;
             Y_OFF = 0;
         } else {
             INTERVAL = (MAX - MIN) / (p.width - (p.width%2));
-            GAP_SIZE = (MAX - MIN) / (2 * p.height);
             X_OFF = 0;
             Y_OFF = (p.width - p.height) / 2;
         }
@@ -413,22 +411,22 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
                 gap1Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA[connectionLocation] = xy_to_loc(p, x, y-1);
                 _connectionsB[connectionLocation] = gap1Location;
-                AddIntersection(p, x, y, xPos, yPos + GAP_SIZE, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
+                AddIntersection(p, x, y, xPos, yPos + INTERVAL / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
 
                 gap2Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA.push_back(xy_to_loc(p, x, y+1));
                 _connectionsB.push_back(gap2Location);
-                AddIntersection(p, x, y, xPos, yPos - GAP_SIZE, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
+                AddIntersection(p, x, y, xPos, yPos - INTERVAL / 2, Flags::HAS_ONE_CONN | Flags::HAS_VERTI_CONN);
             } else if (y%2 == 0) { // Horizontal gap
                 gap1Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA[connectionLocation] = xy_to_loc(p, x-1, y);
                 _connectionsB[connectionLocation] = gap1Location;
-                AddIntersection(p, x, y, xPos - GAP_SIZE, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
+                AddIntersection(p, x, y, xPos - INTERVAL / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
 
                 gap2Location = static_cast<int>(_intersectionFlags.size());
                 _connectionsA.push_back(xy_to_loc(p, x+1, y));
                 _connectionsB.push_back(gap2Location);
-                AddIntersection(p, x, y, xPos + GAP_SIZE, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
+                AddIntersection(p, x, y, xPos + INTERVAL / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
             }
             if (p.symmetry != Puzzle::Symmetry::NONE) {
                 if (p.grid[x][y].gap == Cell::Gap::NONE) {
