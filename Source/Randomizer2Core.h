@@ -1,8 +1,4 @@
 #pragma once
-#include <vector>
-
-struct Pos;
-class Puzzle;
 
 class Randomizer2Core {
 public:

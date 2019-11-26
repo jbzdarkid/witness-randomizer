@@ -91,14 +91,12 @@ Things to do for V2:
  * 20 challenges with 20 consecutive seeds
  * Random *rotation* of desert laser redirect?
 */
+#include "pch.h"
 #include "Memory.h"
 #include "Randomizer.h"
 #include "ChallengeRandomizer.h"
 #include "Panels.h"
 #include "Random.h"
-#include <string>
-#include <iostream>
-#include <numeric>
 
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
@@ -250,8 +248,8 @@ void Randomizer::RandomizeTown() {
     // Ensure that we open the gate before the final puzzle (by swapping)
     int panel3Index = find(randomOrder, 3);
     int panel4Index = find(randomOrder, 4);
-    randomOrder[min(panel3Index, panel4Index)] = 3;
-    randomOrder[max(panel3Index, panel4Index)] = 4;
+    randomOrder[std::min(panel3Index, panel4Index)] = 3;
+    randomOrder[std::max(panel3Index, panel4Index)] = 4;
     ReassignTargets(orchard, randomOrder);
 }
 

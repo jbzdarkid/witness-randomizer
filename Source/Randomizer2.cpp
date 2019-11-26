@@ -1,14 +1,11 @@
+#include "pch.h"
 #include "Randomizer2.h"
 #include "PuzzleSerializer.h"
 #include "Randomizer2Core.h"
 #include "Puzzle.h"
 #include "Random.h"
 #include "Solver.h"
-
-#include <cassert>
-#include <string>
-
-#pragma warning (disable: 26451)
+#include "Windows.h"
 
 Randomizer2::Randomizer2(const PuzzleSerializer& serializer) : _serializer(serializer) {}
 
@@ -229,6 +226,7 @@ void Randomizer2::RandomizeSymmetry() {
 
         _serializer.WritePuzzle(p, 0x62);
     }
+    // TODO: Positioning is off, slightly -- which means you can start from the bottom left, if you peek around.
     { // Back wall 5
         Puzzle p;
         p.NewGrid(11, 8);
@@ -258,6 +256,28 @@ void Randomizer2::RandomizeSymmetry() {
         }
 
         _serializer.WritePuzzle(p, 0x5C);
+    }
+
+    { // Rotational 1
+        Puzzle p;
+        p.NewGrid(3, 3);
+        p.symmetry = Puzzle::Symmetry::XY;
+        p.grid[6][0].start = true;
+        p.grid[0][6].start = true;
+        p.grid[4][0].end = Cell::Dir::UP;
+        p.grid[2][6].end = Cell::Dir::DOWN;
+
+        p.grid[5][0].gap = Cell::Gap::BREAK;
+        p.grid[1][6].gap = Cell::Gap::BREAK;
+
+        for (Pos pos : Randomizer2Core::CutSymmetricalEdgePairs(p, 1)) {
+            std::string text = std::to_string(pos.x) + " " + std::to_string(pos.y);
+            OutputDebugStringA(text.c_str());
+            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+            p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+        }
+        _serializer.WritePuzzle(p, 0x8D);
     }
 }
 

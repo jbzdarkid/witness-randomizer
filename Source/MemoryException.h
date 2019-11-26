@@ -1,7 +1,4 @@
 #pragma once
-#include <exception>
-#include <string>
-#include <vector>
 
 #define MEMORY_CATCH(expr)                 \
 try {                                      \

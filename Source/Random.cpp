@@ -1,4 +1,4 @@
-#include <chrono>
+#include "pch.h"
 #include "Random.h"
 
 uint32_t Random::s_seed = static_cast<int>(time(nullptr)); // Seed from the time in milliseconds

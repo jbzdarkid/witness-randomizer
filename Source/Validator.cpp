@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Validator.h"
 #include "Puzzle.h"
 
@@ -10,7 +11,7 @@ void Validator::Validate(Puzzle& p) {
     bool puzzleHasSymbols = false;
     bool puzzleHasStart = false;
     bool puzzleHasEnd = false;
-  // Validate gap failures as an early exit.
+    // Validate gap failures as an early exit.
     for (int x = 0; x < p.width; x++) {
         for (int y = 0; y < p.height; y++) {
             Cell cell = p.grid[x][y];

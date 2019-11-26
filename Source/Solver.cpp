@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Solver.h"
 #include "Puzzle.h"
 #include "Validator.h"

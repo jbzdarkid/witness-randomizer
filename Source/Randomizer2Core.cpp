@@ -1,10 +1,7 @@
+#include "pch.h"
 #include "Randomizer2Core.h"
 #include "Puzzle.h"
 #include "Random.h"
-
-#include <string>
-#include <iostream>
-#include <cassert>
 
 std::vector<Pos> Randomizer2Core::CutEdges(const Puzzle& p, size_t numEdges) {
     return CutEdgesInternal(p, 0, p.width, 0, p.height, numEdges);
@@ -16,17 +13,20 @@ std::vector<Pos> Randomizer2Core::CutInsideEdges(const Puzzle& p, size_t numEdge
 
 std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_t numEdges) {
     Puzzle copy = p;
-    assert(p.symmetry != Puzzle::Symmetry::NONE);
+    // Prevent cuts from landing on the midline
     if (p.symmetry == Puzzle::Symmetry::X) {
-        // Prevent cuts from landing on the midline
         for (int y=0; y<p.height; y++) {
             copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
         }
-
-        return CutEdgesInternal(copy, 0, (p.width-1)/2, 0, p.height, numEdges);
+    } else if (p.symmetry == Puzzle::Symmetry::Y) {
+        for (int x=0; x<p.width; x++) {
+            copy.grid[x][p.height/2].gap = Cell::Gap::FULL;
+        }
+    } else {
+        assert(p.symmetry == Puzzle::Symmetry::XY);
+        // Pass, I think? Maybe this matters for odd numbers.
     }
-    assert(false);
-    return {};
+    return CutEdgesInternal(copy, 0, (p.width-1)/2, 0, p.height, numEdges);
 }
 
 std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, int xMax, int yMin, int yMax, size_t numEdges) {

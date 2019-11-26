@@ -1,7 +1,6 @@
 #pragma once
 #include "PuzzleSerializer.h"
 
-class Puzzle;
 class Randomizer2 {
 public:
     Randomizer2(const PuzzleSerializer& serializer);

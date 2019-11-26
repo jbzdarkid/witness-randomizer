@@ -1,11 +1,6 @@
-#include "Windows.h"
+#include "pch.h"
 #include "Richedit.h"
 #include "Version.h"
-
-#include <cassert>
-#include <iostream>
-#include <string>
-#include <thread>
 
 #include "Memory.h"
 #include "Random.h"

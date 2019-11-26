@@ -1,11 +1,4 @@
 #pragma once
-#include <functional>
-#include <map>
-#include <thread>
-#include <vector>
-#include <windows.h>
-#include <cassert>
-#include "MemoryException.h"
 
 #define GLOBALS 0x5B28C0
 // #define GLOBALS 0x62D0A0
@@ -15,6 +8,8 @@ enum class ProcStatus {
     Running,
     NewGame
 };
+
+using byte = unsigned char;
 
 // https://github.com/erayarslan/WriteProcessMemory-Example
 // http://stackoverflow.com/q/32798185

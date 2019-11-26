@@ -1,8 +1,4 @@
 #pragma once
-#include <memory>
-#include <vector>
-
-class Memory;
 
 enum Type {
     Stone =      0x100,

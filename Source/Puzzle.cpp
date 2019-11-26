@@ -1,6 +1,6 @@
+#include "pch.h"
 #include "Puzzle.h"
 #include "Memory.h"
-#include <cassert>
 
 Cell Puzzle::GetCell(int x, int y) const {
     x = Mod(x);

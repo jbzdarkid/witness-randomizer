@@ -1,9 +1,7 @@
+#include "pch.h"
 #include "Memory.h"
 #include <psapi.h>
 #include <tlhelp32.h>
-#include <iostream>
-#include <string>
-#include <cassert>
 
 #undef PROCESSENTRY32
 #undef Process32Next

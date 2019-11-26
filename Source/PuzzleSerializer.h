@@ -1,10 +1,5 @@
 #pragma once
-#include <memory>
-#include <unordered_map>
-
 #include "Puzzle.h"
-
-class Memory;
 
 class PuzzleSerializer {
 public:
