@@ -208,6 +208,53 @@ void Randomizer2::RandomizeSymmetry() {
 
         _serializer.WritePuzzle(p, 0x59);
     }
+    { // Back wall 4
+        Puzzle p;
+        p.NewGrid(5, 8);
+        p.symmetry = Puzzle::Symmetry::X;
+        p.grid[2][16].start = true;
+        p.grid[8][16].start = true;
+        p.grid[4][0].end = Cell::Dir::UP;
+        p.grid[6][0].end = Cell::Dir::UP;
+        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 15);
+        for (int i=0; i<cutEdges.size(); i++) {
+            Pos pos = cutEdges[i];
+            if (i%2 == 0) {
+                p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            } else {
+                Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+                p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+            }
+        }
+
+        _serializer.WritePuzzle(p, 0x62);
+    }
+    { // Back wall 5
+        Puzzle p;
+        p.NewGrid(11, 8);
+        p.symmetry = Puzzle::Symmetry::X;
+        p.grid[0][16].start = true;
+        p.grid[10][16].start = true;
+        p.grid[12][16].start = true;
+        p.grid[22][16].start = true;
+        p.grid[2][0].end = Cell::Dir::UP;
+        p.grid[8][0].end = Cell::Dir::UP;
+        p.grid[14][0].end = Cell::Dir::UP;
+        p.grid[20][0].end = Cell::Dir::UP;
+
+        Puzzle q;
+        q.NewGrid(5, 8);
+        q.symmetry = Puzzle::Symmetry::X;
+
+        for (Pos pos : Randomizer2Core::CutSymmetricalEdgePairs(q, 16)) {
+            p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+        }
+        for (Pos pos : Randomizer2Core::CutSymmetricalEdgePairs(q, 16)) {
+            p.grid[pos.x + 12][pos.y].gap = Cell::Gap::BREAK;
+        }
+
+        _serializer.WritePuzzle(p, 0x5C);
+    }
 }
 
 void Randomizer2::RandomizeKeep() {

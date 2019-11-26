@@ -18,17 +18,9 @@ std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_
     Puzzle copy = p;
     assert(p.symmetry != Puzzle::Symmetry::NONE);
     if (p.symmetry == Puzzle::Symmetry::X) {
-        if (p.width%4 == 1) {
-            // The puzle has an even width (e.g. 4x4), so it has a midline for symmetry.
-            //  Since this midline is unusable, we cut it pre-emptively.
-            for (int y=0; y<p.height; y++) {
-                copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
-            }
-        } else {
-            // The puzzle has an odd width (e.g. 3x3), but we still need to cut the midline.
-            for (int y=0; y<p.height; y++) {
-                copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
-            }
+        // Prevent cuts from landing on the midline
+        for (int y=0; y<p.height; y++) {
+            copy.grid[p.width/2][y].gap = Cell::Gap::FULL;
         }
 
         return CutEdgesInternal(copy, 0, (p.width-1)/2, 0, p.height, numEdges);

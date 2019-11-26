@@ -157,17 +157,20 @@ void PuzzleSerializer::ReadExtras(Puzzle& p) {
             // Note that Y coordinates are reversed: 0.0 (bottom) 1.0 (top)
             else if (y1 < y2) p.grid[x][y].end = Cell::Dir::DOWN;
             else if (y1 > y2) p.grid[x][y].end = Cell::Dir::UP;
+            else assert(false);
         } else if (_intersectionFlags[i] & Flags::HAS_DOT) {
                  if (x1 < x2) x--;
             else if (x1 > x2) x++;
             else if (y1 < y2) y++;
             else if (y1 > y2) y--;
+            else assert(false);
             p.grid[x][y].dot = FlagsToDot(_intersectionFlags[i]);
         } else if (_intersectionFlags[i] & Flags::HAS_ONE_CONN) {
                  if (x1 < x2) x--;
             else if (x1 > x2) x++;
             else if (y1 < y2) y++;
             else if (y1 > y2) y--;
+            else assert(false);
             p.grid[x][y].gap = Cell::Gap::BREAK;
             gapLocations[i] = Pos{x, y};
         }
