@@ -253,6 +253,10 @@ void Randomizer2::RandomizeSymmetry() {
             p.grid[pos.x + 12][pos.y].gap = Cell::Gap::BREAK;
         }
 
+        for (int y=0; y<p.height; y+=2) {
+            p.grid[5][y].gap = Cell::Gap::BREAK;
+        }
+
         _serializer.WritePuzzle(p, 0x5C);
     }
 }
