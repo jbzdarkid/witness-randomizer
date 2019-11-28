@@ -157,9 +157,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			randomizer->AdjustSpeed();
 
-			// Cleanup, and set timer for "randomization done"
-			SetWindowText(hwndRandomize, L"Randomized!");
-			ShowWindow(hwndMessage, SW_SHOW);
+			if (randomizer->success) {
+				SetWindowText(hwndRandomize, L"Randomized!");
+				ShowWindow(hwndMessage, SW_SHOW);
+			}
+			else {
+				SetWindowText(hwndRandomize, L"Randomize");
+			}
 			break;
 		}
 

@@ -25,6 +25,7 @@ public:
 
 	int seed;
 	bool seedIsRNG;
+	bool success;
 
 private:
 	int _lastRandomizedFrame = 1 << 30;
