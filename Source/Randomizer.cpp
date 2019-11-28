@@ -42,9 +42,10 @@ void Randomizer::GenerateNormal(HWND loadingHandle) { //TODO: Auto activate lase
 	int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
 	if (lastSeed > 0) {
 		int difficulty = Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12);
-		Panel::LoadPanels(lastSeed, difficulty - 1);
-		success = true;
-		return;
+		if (Panel::LoadPanels(lastSeed, difficulty - 1)) {
+			success = true;
+			return;
+		}
 	}
 	if (Special::ReadPanelData<int>(0x00064, TRACED_EDGES) > 0 || Special::ReadPanelData<float>(0x00295, POWER) > 0) {
 		MessageBox(loadingHandle, L"You must start a new game to be able to randomize.", NULL, MB_OK);
@@ -78,11 +79,14 @@ void Randomizer::GenerateHard(HWND loadingHandle) { //TODO: Auto activate lasers
 	int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
 	if (lastSeed > 0) {
 		int difficulty = Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12);
-		Panel::LoadPanels(lastSeed, difficulty - 1);
-		return;
+		if (Panel::LoadPanels(lastSeed, difficulty - 1)) {
+			success = true;
+			return;
+		}
 	}
 	if (Special::ReadPanelData<int>(0x00064, TRACED_EDGES) > 0 || Special::ReadPanelData<float>(0x00295, POWER) > 0) {
-		MessageBox(loadingHandle, L"You must start a new game before randomizing.", NULL, MB_OK);
+		MessageBox(loadingHandle, L"You must start a new game to be able to randomize.", NULL, MB_OK);
+		success = false;
 		return;
 	}
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
@@ -105,6 +109,7 @@ void Randomizer::GenerateHard(HWND loadingHandle) { //TODO: Auto activate lasers
 	//puzzles->GenerateKeepH();
 	//puzzles->GenerateJungleH();
 	Panel::SavePanels(seed, true);
+	success = true;
 }
 
 template <class T>

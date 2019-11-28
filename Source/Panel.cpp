@@ -239,10 +239,13 @@ void Panel::SavePanels(int seed, bool hard)
 	Special::WritePanelData(0x00182, BACKGROUND_REGION_COLOR + 12, hard ? 2 : 1);
 }
 
-void Panel::LoadPanels(int seed, bool hard)
+bool Panel::LoadPanels(int seed, bool hard)
 {
 	std::string difficulty = hard ? "E" : "N";
 	std::ifstream file("puzzledata" + difficulty + std::to_string(seed) + ".dat");
+	if (!file.is_open()) {
+		return false;
+	}
 	int size; file >> size;
 	while (size-- > 0) {
 		int id;
@@ -346,6 +349,7 @@ void Panel::LoadPanels(int seed, bool hard)
 	}
 	Special::drawSeedAndDifficulty(0x00064, seed, hard);
 	Special::drawGoodLuckPanel(0x00182);
+	return true;
 }
 
 //Only for testing
