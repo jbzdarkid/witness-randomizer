@@ -115,6 +115,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case IDC_RANDOMIZE:
 		{
+			if (Special::ReadPanelData<int>(0x00064, NUM_DOTS) > 5) {
+				MessageBox(hwnd, L"Game is already randomized.", NULL, MB_OK);
+				break;
+			}
+
 			std::wstring text;
 			text.reserve(100);
 			GetWindowText(hwndSeed, &text[0], 100);
@@ -147,23 +152,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// Randomize, then apply settings
 			//randomizer->Randomize();
-			if (hard) randomizer->GenerateHard(hwndLoadingText);
-			else randomizer->GenerateNormal(hwndLoadingText);
-			/*
-			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED)) randomizer->AdjustSpeed();
-			if (IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS)) randomizer->RandomizeLasers();
-			if (IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES)) randomizer->PreventSnipes();
-			*/
 
 			randomizer->AdjustSpeed();
 
-			if (randomizer->success) {
+			int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
+			if (lastSeed > 0) {
+				int difficulty = Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12);
+				if (Panel::LoadPanels(lastSeed, difficulty - 1)) {
+					SetWindowText(hwndRandomize, L"Randomized!");
+					ShowWindow(hwndMessage, SW_SHOW);
+					break;
+				}
+				randomizer->seed = lastSeed;
+				randomizer->seedIsRNG = false;
+				hard = (difficulty > 1);
+			}
+			else if (Special::ReadPanelData<int>(0x00064, TRACED_EDGES) > 0 || Special::ReadPanelData<float>(0x00295, POWER) > 0) {
+				MessageBox(hwnd, L"You must start a new game to be able to randomize.", NULL, MB_OK);
+				SetWindowText(hwndRandomize, L"Randomize");
+				break;
+			}
+
+			if (Panel::LoadPanels(seed, hard)) {
+				Special::WritePanelData(0x00064, BACKGROUND_REGION_COLOR + 12, seed);
+				Special::WritePanelData(0x00182, BACKGROUND_REGION_COLOR + 12, hard ? 2 : 1);
 				SetWindowText(hwndRandomize, L"Randomized!");
 				ShowWindow(hwndMessage, SW_SHOW);
+				break;
 			}
-			else {
-				SetWindowText(hwndRandomize, L"Randomize");
-			}
+
+			if (hard) randomizer->GenerateHard(hwndLoadingText);
+			else randomizer->GenerateNormal(hwndLoadingText);
+
+			SetWindowText(hwndRandomize, L"Randomized!");
+			ShowWindow(hwndMessage, SW_SHOW);
 			break;
 		}
 

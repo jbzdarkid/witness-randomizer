@@ -281,7 +281,7 @@ bool Panel::LoadPanels(int seed, bool hard)
 		panel.symmetry = static_cast<Panel::Symmetry>(symmetry);
 		std::string skip; std::getline(file, skip); //Go to the next line
 		if (file.fail()) {
-			if (file.eof()) return;
+			if (file.eof()) return false;
 			file.clear();
 		}
 		else panel.Write();
