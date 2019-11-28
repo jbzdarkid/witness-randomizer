@@ -245,12 +245,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case IDC_TEST:
 			generator->seed(static_cast<unsigned int>(time(NULL)));
-			//generator->seed(ctr++);
+			generator->seed(ctr++);
 			//generator->seed(0);
 			generator->resetConfig();
 			//specialCase->testPanel(0x0A3CB);
 
-			Panel::LoadPanels(17144, true);
+			//Panel::LoadPanels(17144, true);
 			
 			break;
 

@@ -915,6 +915,8 @@ bool Generate::can_place_gap(Point pos) {
 	if (pos.first == 0 || pos.second == 0) {
 		if (hasFlag(Config::FullGaps)) return false;
 	}
+	if (_starts.count(pos) || _exits.count(pos))
+		return false;
 	if (_panel->symmetry && (get_sym_point(pos) == pos) || (get(get_sym_point(pos)) & Decoration::Gap)) return false;
 	if ((_panel->symmetry == Panel::Symmetry::ParallelH || _panel->symmetry == Panel::Symmetry::ParallelHFlip) && pos.second == _panel->_height / 2) return false;
 	if ((_panel->symmetry == Panel::Symmetry::ParallelV || _panel->symmetry == Panel::Symmetry::ParallelVFlip) && pos.first == _panel->_width / 2) return false;
