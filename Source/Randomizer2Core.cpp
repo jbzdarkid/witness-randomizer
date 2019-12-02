@@ -25,17 +25,17 @@ std::vector<Pos> Randomizer2Core::CutSymmetricalEdgePairs(const Puzzle& p, size_
         return CutEdgesInternal(copy, 0, p.width, 0, (p.height-1)/2, numEdges);
     } else {
         assert(p.symmetry == Puzzle::Symmetry::XY);
-        if (p.width%4 == 1) {
-            assert(p.width == 9);
-            copy.grid[2][3];
-            copy.grid[3][4];
-            copy.grid[3][6];
-            copy.grid[4][3];
-        // For odd grids, cut the center out.
-        // for (int x=0; x<p.width; x++) {
-        //     copy.grid[x][p.height/2].gap = Cell::Gap::FULL;
-        // }
-
+        int midX = p.width/2;
+        int midY = p.height/2;
+        if (p.width%4 == 1 && p.height%4 == 1) { // For double-even grids, cut around the center
+            copy.grid[midX-1][midY].gap = Cell::Gap::FULL;
+            copy.grid[midX][midY-1].gap = Cell::Gap::FULL;
+            copy.grid[midX][midY+1].gap = Cell::Gap::FULL;
+            copy.grid[midX+1][midY].gap = Cell::Gap::FULL;
+        } else if (p.width%4 == 1 && p.height%4 == 3) { // For half-even grids, there's only one line to cut
+            copy.grid[midX][midY].gap = Cell::Gap::FULL;
+        } else if (p.width%4 == 3 && p.height%4 == 1) { // For half-even grids, there's only one line to cut
+            copy.grid[midX][midY].gap = Cell::Gap::FULL;
         }
         return CutEdgesInternal(copy, 0, p.width, 0, p.height, numEdges);
     }
@@ -49,7 +49,11 @@ std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, in
             if (p.grid[x][y].gap != Cell::Gap::NONE) continue;
             if (p.grid[x][y].start) continue;
             if (p.grid[x][y].end != Cell::Dir::NONE) continue;
-            if (p.symmetry == Puzzle::Symmetry::XY && x > y) continue; // Only allow cuts bottom-left of the diagonal
+
+            if (p.symmetry == Puzzle::Symmetry::XY) {
+                assert(p.width == p.height); // TODO: This solution only supports square rotational symmetry.
+                if (x > y) continue; // Only allow cuts bottom-left of the diagonal
+            }
 
             // If the puzzle already has a sequence, don't cut along it.
             bool inSequence = false;
@@ -62,6 +66,16 @@ std::vector<Pos> Randomizer2Core::CutEdgesInternal(const Puzzle& p, int xMin, in
 
     auto [colorGrid, numColors] = CreateColorGrid(p);
     assert(numEdges <= numColors);
+
+    // @Hack... sort of. I couldn't think of a better way to do this.
+    if (p.symmetry == Puzzle::Symmetry::XY) {
+        // Recolor the diagonal so that opposite cells share a color. This is because we're only cutting along half their edges,
+        // so they are in fact two sides of the same cell.
+        for (int x=1; x<p.width/2; x+=2) {
+            assert(p.width == p.height); // TODO: This solution only supports square rotational symmetry.
+            colorGrid[x][x] = colorGrid[p.width-x-1][p.width-x-1];
+        }
+    }
 
     std::vector<Pos> cutEdges;
     for (int i=0; i<numEdges; i++) {

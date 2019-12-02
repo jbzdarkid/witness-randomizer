@@ -307,15 +307,12 @@ void Randomizer2::RandomizeSymmetry() {
         Puzzle p;
         p.NewGrid(4, 4);
         p.symmetry = Puzzle::Symmetry::XY;
-        p.grid[6][0].start = true;
-        p.grid[0][6].start = true;
-        p.grid[4][0].end = Cell::Dir::UP;
-        p.grid[2][6].end = Cell::Dir::DOWN;
+        p.grid[8][0].start = true;
+        p.grid[0][8].start = true;
+        p.grid[0][0].end = Cell::Dir::LEFT;
+        p.grid[8][8].end = Cell::Dir::RIGHT;
 
-        p.grid[5][0].gap = Cell::Gap::BREAK;
-        p.grid[1][6].gap = Cell::Gap::BREAK;
-
-        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 3);
+        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 7);
         for (int i=0; i<cutEdges.size(); i++) {
             Pos pos = cutEdges[i];
             if (i%2 == 0) {
@@ -326,9 +323,39 @@ void Randomizer2::RandomizeSymmetry() {
             }
         }
 
-        p.grid[1][6].gap = Cell::Gap::NONE;
+        _serializer.WritePuzzle(p, 0x83);
+    }
+    { // Melting
+        Puzzle p;
+        p.NewGrid(6, 6);
+        p.symmetry = Puzzle::Symmetry::XY;
+        p.grid[12][0].start = true;
+        p.grid[0][12].start = true;
+        p.grid[0][0].end = Cell::Dir::LEFT;
+        p.grid[12][12].end = Cell::Dir::RIGHT;
+        Puzzle q = p;
 
-        _serializer.WritePuzzle(p, 0x81);
+        std::vector<Pos> cutEdges = Randomizer2Core::CutSymmetricalEdgePairs(p, 15);
+        for (int i=0; i<cutEdges.size(); i++) {
+            Pos pos = cutEdges[i];
+            Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+
+            if (i%2 == 0) {
+                p.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            } else {
+                p.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+            }
+
+            if (pos.x < sym.x) {
+                q.grid[pos.x][pos.y].gap = Cell::Gap::BREAK;
+            } else {
+                q.grid[sym.x][sym.y].gap = Cell::Gap::BREAK;
+            }
+        }
+
+        _serializer.WritePuzzle(p, 0x84); // Melting 1
+        _serializer.WritePuzzle(q, 0x82); // Melting 2
+        _serializer.WritePuzzle(q, 0x343A); // Melting 3
     }
 }
 
