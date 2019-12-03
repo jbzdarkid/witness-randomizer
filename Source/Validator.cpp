@@ -13,8 +13,8 @@ void Validator::Validate(Puzzle& p) {
     // Validate gap failures as an early exit.
     for (int x = 0; x < p.width; x++) {
         for (int y = 0; y < p.height; y++) {
-            Cell cell = p.grid[x][y];
-            auto decoration = cell.decoration;
+            const Cell& cell = p.grid[x][y];
+            const auto& decoration = cell.decoration;
             if (decoration) {
                 if (decoration->type == Type::Stone ||
                     decoration->type == Type::Star ||

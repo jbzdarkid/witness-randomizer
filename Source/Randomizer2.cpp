@@ -6,11 +6,13 @@
 #include "Solver.h"
 #include "Windows.h"
 
-Randomizer2::Randomizer2(const PuzzleSerializer& serializer) : _serializer(serializer) {}
+Randomizer2::Randomizer2(const PuzzleSerializer& serializer) : _serializer(serializer) {
+}
 
 void Randomizer2::Randomize() {
-    RandomizeTutorial();
-    RandomizeSymmetry();
+    // RandomizeTutorial();
+    // RandomizeGlassFactory();
+    RandomizeSymmetryIsland();
     // RandomizeKeep();
 }
 
@@ -144,7 +146,7 @@ void Randomizer2::RandomizeTutorial() {
     }
 }
 
-void Randomizer2::RandomizeSymmetry() {
+void Randomizer2::RandomizeGlassFactory() {
     { // Back wall 1
         Puzzle p;
         p.NewGrid(3, 3);
@@ -356,6 +358,55 @@ void Randomizer2::RandomizeSymmetry() {
         _serializer.WritePuzzle(p, 0x84); // Melting 1
         _serializer.WritePuzzle(q, 0x82); // Melting 2
         _serializer.WritePuzzle(q, 0x343A); // Melting 3
+    }
+}
+
+void Randomizer2::RandomizeSymmetryIsland() {
+    { // Entry door
+        Puzzle p;
+        p.NewGrid(4, 3);
+        p.grid[0][6].start = true;
+        p.grid[8][0].end = Cell::Dir::RIGHT;
+        p.grid[4][3].gap = Cell::Gap::FULL;
+
+        std::vector<Pos> corners;
+        std::vector<Pos> cells;
+        std::vector<Pos> edges;
+        for (int x=0; x<p.width; x++) {
+            for (int y=0; y<p.height; y++) {
+                if (x%2 == 0 && y%2 == 0) corners.emplace_back(Pos{x, y});
+                else if (x%2 == 1 && y%2 == 1) cells.emplace_back(Pos{x, y});
+                else edges.emplace_back(Pos{x, y});
+            }
+        }
+
+        for (int j=0;; j++) {
+            auto edgesCopy = edges;
+
+            std::vector<Pos> dots;
+            for (int i=0; i<4; i++) {
+                int edge = Random::RandInt(0, static_cast<int>(edgesCopy.size() - 1));
+                dots.emplace_back(edgesCopy[edge]);
+                edgesCopy.erase(edgesCopy.begin() + edge);
+            }
+
+            for (Pos pos : dots) {
+                p.grid[pos.x][pos.y].dot = Cell::Dot::BLACK;
+            }
+
+            auto solutions = Solver::Solve(p);
+            if (solutions.size() > 0 && solutions.size() < 10) {
+                std::string text = std::to_string(solutions.size()) + "\n";
+                OutputDebugStringA(text.c_str());
+                break;
+            }
+
+            for (Pos pos : dots) {
+                p.grid[pos.x][pos.y].dot = Cell::Dot::NONE;
+            }
+        }
+
+        _serializer.WritePuzzle(p, 0xB0);
     }
 }
 

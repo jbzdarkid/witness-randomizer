@@ -6,7 +6,8 @@ public:
     Randomizer2(const PuzzleSerializer& serializer);
     void Randomize();
     void RandomizeTutorial();
-    void RandomizeSymmetry();
+    void RandomizeGlassFactory();
+    void RandomizeSymmetryIsland();
     void RandomizeKeep();
     
 private:
