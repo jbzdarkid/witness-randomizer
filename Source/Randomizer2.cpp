@@ -381,32 +381,57 @@ void Randomizer2::RandomizeSymmetryIsland() {
         }
 
         for (int j=0;; j++) {
-            auto edgesCopy = edges;
-
-            std::vector<Pos> dots;
-            for (int i=0; i<4; i++) {
-                int edge = Random::RandInt(0, static_cast<int>(edgesCopy.size() - 1));
-                dots.emplace_back(edgesCopy[edge]);
-                edgesCopy.erase(edgesCopy.begin() + edge);
-            }
-
-            for (Pos pos : dots) {
-                p.grid[pos.x][pos.y].dot = Cell::Dot::BLACK;
-            }
+            std::vector<Pos> dots = Random::SelectFromSet(edges, 4);
+            for (Pos pos : dots) p.grid[pos.x][pos.y].dot = Cell::Dot::BLACK;
 
             auto solutions = Solver::Solve(p);
-            if (solutions.size() > 0 && solutions.size() < 10) {
-                std::string text = std::to_string(solutions.size()) + "\n";
-                OutputDebugStringA(text.c_str());
-                break;
-            }
+            if (solutions.size() > 0 && solutions.size() < 10) break;
 
-            for (Pos pos : dots) {
-                p.grid[pos.x][pos.y].dot = Cell::Dot::NONE;
-            }
+            for (Pos pos : dots) p.grid[pos.x][pos.y].dot = Cell::Dot::NONE;
         }
 
         _serializer.WritePuzzle(p, 0xB0);
+    }
+
+    { // Dots 1
+        Puzzle p;
+        p.NewGrid(3, 3);
+        p.symmetry = Puzzle::Symmetry::Y;
+        p.grid[0][2].start = true;
+        p.grid[0][4].start = true;
+        p.grid[6][2].end = Cell::Dir::RIGHT;
+        p.grid[6][4].end = Cell::Dir::RIGHT;
+
+        std::vector<Pos> corners;
+        std::vector<Pos> cells;
+        std::vector<Pos> edges;
+        for (int x=0; x<p.width; x++) {
+            for (int y=0; y<p.height/2; y++) {
+                if (x%2 == 0 && y%2 == 0) corners.emplace_back(Pos{x, y});
+                else if (x%2 == 1 && y%2 == 1) cells.emplace_back(Pos{x, y});
+                else edges.emplace_back(Pos{x, y});
+            }
+        }
+
+        for (int j=0;; j++) {
+            std::vector<Pos> dots = Random::SelectFromSet(edges, 1);
+            std::vector<Pos> dots2 = Random::SelectFromSet(corners, 2);
+            dots.insert(dots.end(), dots2.begin(), dots2.end());
+            for (Pos pos : dots) p.grid[pos.x][pos.y].dot = Cell::Dot::BLACK;
+
+            auto solutions = Solver::Solve(p);
+            if (solutions.size() == 2) {
+                for (Pos pos : dots) {
+                    Pos sym = p.GetSymmetricalPos(pos.x, pos.y);
+                    p.grid[sym.x][sym.y].dot = Cell::Dot::BLACK;
+                }
+                break;
+            }
+
+            for (Pos pos : dots) p.grid[pos.x][pos.y].dot = Cell::Dot::NONE;
+        }
+
+        _serializer.WritePuzzle(p, 0x22);
     }
 }
 

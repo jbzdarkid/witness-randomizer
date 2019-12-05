@@ -493,25 +493,31 @@ void PuzzleSerializer::WriteSymmetry(const Puzzle& p, int id) {
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (x%2 == y%2) continue;
-            if (p.grid[x][y].gap != Cell::Gap::BREAK) continue;
+            if (p.grid[x][y].gap == Cell::Gap::BREAK) {
+                Pos sym = p.GetSymmetricalPos(x, y);
+                int location = extra_xy_to_loc(p, x, y);
+                int symLocation = extra_xy_to_loc(p, sym.x, sym.y);
+                // Each gap results in two intersections, @Assume they're written consecutively
 
-            Pos sym = p.GetSymmetricalPos(x, y);
-            int location = extra_xy_to_loc(p, x, y);
-            int symLocation = extra_xy_to_loc(p, sym.x, sym.y);
-            // Each gap results in two intersections, @Assume they're written consecutively
-
-            if ((x%2 != 0 && p.symmetry & Puzzle::Symmetry::X) || 
-                (y%2 != 0 && p.symmetry & Puzzle::Symmetry::Y)) {
-                // Write data inverted, because it's being reflected
-                reflectionData[location] = symLocation-1;
-                reflectionData[location-1] = symLocation;
-                reflectionData[symLocation] = location-1;
-                reflectionData[symLocation-1] = location;
-            } else { // Write data normally
+                if ((x%2 != 0 && p.symmetry & Puzzle::Symmetry::X) || 
+                    (y%2 != 0 && p.symmetry & Puzzle::Symmetry::Y)) {
+                    // Write data inverted, because it's being reflected
+                    reflectionData[location] = symLocation-1;
+                    reflectionData[location-1] = symLocation;
+                    reflectionData[symLocation] = location-1;
+                    reflectionData[symLocation-1] = location;
+                } else { // Write data normally
+                    reflectionData[location] = symLocation;
+                    reflectionData[location-1] = symLocation-1;
+                    reflectionData[symLocation] = location;
+                    reflectionData[symLocation-1] = location-1;
+                }
+            } else if (p.grid[x][y].dot == Cell::Dot::BLACK) {
+                Pos sym = p.GetSymmetricalPos(x, y);
+                int location = extra_xy_to_loc(p, x, y);
+                int symLocation = extra_xy_to_loc(p, sym.x, sym.y);
                 reflectionData[location] = symLocation;
-                reflectionData[location-1] = symLocation-1;
                 reflectionData[symLocation] = location;
-                reflectionData[symLocation-1] = location-1;
             }
         }
     }
