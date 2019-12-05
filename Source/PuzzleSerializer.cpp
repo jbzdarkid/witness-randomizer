@@ -318,7 +318,18 @@ void PuzzleSerializer::WriteDots(const Puzzle& p) {
     for (int x=0; x<p.width; x++) {
         for (int y=0; y<p.height; y++) {
             if (x%2 == y%2) continue; // Cells are invalid, intersections are already handled.
-            if (p.grid[x][y].dot == Cell::Dot::NONE) continue;
+
+            bool shouldWriteDot = false;
+            if (p.grid[x][y].dot != Cell::Dot::NONE) {
+                shouldWriteDot = true;
+            } else if (p.symmetry != Puzzle::Symmetry::NONE) {
+                Pos sym = p.GetSymmetricalPos(x, y);
+                // Write symmetrical dots, but don't actually set the flag for them. They're only there for symmetrical tracing.
+                if (p.grid[sym.x][sym.y].dot != Cell::Dot::NONE) {
+                    shouldWriteDot = true;
+                }
+            }
+            if (!shouldWriteDot) continue;
 
             // We need to introduce a new segment which contains this dot. Break the existing segment, and add one.
             int connectionLocation = -1;
@@ -339,19 +350,24 @@ void PuzzleSerializer::WriteDots(const Puzzle& p) {
             _connectionsA.push_back(other_connection);
             _connectionsB.push_back(static_cast<int>(_intersectionFlags.size()));
 
-            int flags = Flags::HAS_DOT;
-            switch (p.grid[x][y].dot) {
-                case Cell::Dot::BLACK:
-                    break;
-                case Cell::Dot::BLUE:
-                    flags |= DOT_IS_BLUE;
-                    break;
-                case Cell::Dot::YELLOW:
-                    flags |= DOT_IS_ORANGE;
-                    break;
-                case Cell::Dot::INVISIBLE:
-                    flags |= DOT_IS_INVISIBLE;
-                    break;
+            int flags = 0;
+            if (p.symmetry != Puzzle::Symmetry::NONE && p.grid[x][y].dot == Cell::Dot::NONE) {
+                // A dot was asked to be introduced strictly for tracing reasons, don't set any flags.
+            } else {
+                flags |= Flags::HAS_DOT;
+                switch (p.grid[x][y].dot) {
+                    case Cell::Dot::BLACK:
+                        break;
+                    case Cell::Dot::BLUE:
+                        flags |= DOT_IS_BLUE;
+                        break;
+                    case Cell::Dot::YELLOW:
+                        flags |= DOT_IS_ORANGE;
+                        break;
+                    case Cell::Dot::INVISIBLE:
+                        flags |= DOT_IS_INVISIBLE;
+                        break;
+                }
             }
 
             auto [xPos, yPos] = xy_to_pos(p, x, y);
@@ -414,13 +430,11 @@ void PuzzleSerializer::WriteGaps(const Puzzle& p) {
                 _connectionsB.push_back(gap2Location);
                 AddIntersection(p, x, y, xPos + INTERVAL / 2, yPos, Flags::HAS_ONE_CONN | Flags::HAS_HORIZ_CONN);
             }
-            if (p.symmetry != Puzzle::Symmetry::NONE) {
-                if (p.grid[x][y].gap == Cell::Gap::NONE) {
-                    // A gap was asked to be introduced strictly for interaction reasons, but it shouldn't look like a gap.
-                    // Add a connection between two halves of the gap to cover it graphically.
-                    _connectionsA.push_back(gap1Location);
-                    _connectionsB.push_back(gap2Location);
-                }
+            if (p.symmetry != Puzzle::Symmetry::NONE && p.grid[x][y].gap == Cell::Gap::NONE) {
+                // A gap was asked to be introduced strictly for tracing reasons, but it shouldn't look like a gap.
+                // Add a connection between two halves of the gap to cover it graphically.
+                _connectionsA.push_back(gap1Location);
+                _connectionsB.push_back(gap2Location);
             }
         }
     }
@@ -546,7 +560,10 @@ int PuzzleSerializer::xy_to_loc(const Puzzle& p, int x, int y) const {
 
 int PuzzleSerializer::extra_xy_to_loc(const Puzzle& p, int x, int y) const {
     auto search = _extraLocations.find(x * p.height + y);
-    if (search == _extraLocations.end()) return -1; // @Error
+    if (search == _extraLocations.end()) {
+        assert(false);
+        return -1; // @Error
+    }
     return search->second;
 }
 

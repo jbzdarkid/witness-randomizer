@@ -25,3 +25,5 @@
 #include "MemoryException.h"
 #include "Memory.h"
 #include "Puzzle.h"
+
+void DebugPrint(std::string text);
