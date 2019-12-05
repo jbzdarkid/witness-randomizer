@@ -21,7 +21,7 @@ std::vector<Puzzle> Solver::Solve(Puzzle& p) {
 }
 
 void Solver::SolveLoop(Puzzle& p, int x, int y, std::vector<Puzzle>& solutions) {
- // Stop trying to solve once we reach our goal
+    // Stop trying to solve once we reach our goal
     if (solutions.size() >= MAX_SOLUTIONS) return;
     Cell cell = p.GetCell(x, y);
     if (cell.undefined) return;
@@ -30,7 +30,6 @@ void Solver::SolveLoop(Puzzle& p, int x, int y, std::vector<Puzzle>& solutions) 
     if (p.symmetry == Puzzle::Symmetry::NONE) {
         if (cell.color != Cell::Color::NONE) return; // Collided with ourselves
         p.grid[x][y].color = Cell::Color::BLACK; // Otherwise, mark this cell as visited
-        p.sequence.emplace_back(x, y);
     } else {
         // Get the symmetrical position, and try coloring it
         auto sym = p.GetSymmetricalPos(x, y);
@@ -44,6 +43,7 @@ void Solver::SolveLoop(Puzzle& p, int x, int y, std::vector<Puzzle>& solutions) 
         }
         p.grid[x][y].color = Cell::Color::BLUE; // Otherwise, mark this cell as visited
     }
+    p.sequence.emplace_back(x, y);
 
     if (cell.end != Cell::Dir::NONE) {
         // Reached an endpoint, validate solution and keep going -- there may be other endpoints
