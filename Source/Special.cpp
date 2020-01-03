@@ -257,12 +257,12 @@ void Special::generateSoundDotReflectionPuzzle(int id, Point size, std::vector<i
 		}
 	}
 	if (id == 0x014B2) {
-		generator->set(p1, dotSequence1[seqPos] | Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_BLUE);
+		generator->set(p1, dotSequence1[seqPos] | Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_ORANGE);
 		numColored++;
 	}
 	seqPos = 0;
 	if (id == 0x00C3F || id == 0x00C41 || id == 0x014B2) {
-		generator->set(p2, Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_ORANGE);
+		generator->set(p2, Decoration::Dot_Intersection | IntersectionFlags::DOT_IS_BLUE);
 		generator->setFlagOnce(Generate::Config::Write2Color);
 		numColored++;
 	}
@@ -518,7 +518,6 @@ void Special::generateJungleVault(int id)
 		{ 0, 5, 10, 15, 20, 21, 16, 11, 6, 7, 8, 3, 4, 9, 14, 13, 18, 17, 22, 23, 24, 25 },
 		{ 0, 5, 10, 15, 20, 21, 22, 17, 12, 11, 6, 7, 2, 3, 8, 13, 18, 19, 24, 25 },
 		{ 0, 1, 2, 7, 8, 13, 14, 19, 24, 25 } };
-	//std::vector<int> invalidSol = { 0, 5, 10, 15, 16, 11, 12, 13, 8, 3, 4, 9, 14, 19, 18, 23, 24, 25 };
 	std::vector<std::vector<int>> dotPoints1 = { { 4, 9, 16, 23 }, { 2, 19 }, { 2, 19 } };
 	std::vector<std::vector<int>> dotPoints2 = { { 7, 8, 13 }, { 3, 5, 6, 10, 11, 15, 17, 18, 20, 21, 22 }, { 14, 1 } };
 	generator->initPanel(id);
@@ -535,7 +534,7 @@ void Special::generateJungleVault(int id)
 
 void Special::generateApplePuzzle(int id, bool changeExit, bool flip)
 {
-	//Is there a way to move the apples? Might be impossible without OpenGL stuff.
+	//Is there a way to move the apples? Might be impossible without changing the game files.
 	int numIntersections = ReadPanelData<int>(id, NUM_DOTS);
 	std::vector<int> intersectionFlags = ReadArray<int>(id, DOT_FLAGS, numIntersections);
 	std::vector<int> sequence = ReadArray<int>(id, SEQUENCE, 6);
@@ -633,7 +632,7 @@ void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Po
 	}
 	
 	generator->write(id);
-	(new KeepWatchdog())->start();
+	if (psymbols.getNum(Decoration::Triangle) > 0) (new KeepWatchdog())->start();
 }
 
 void Special::generateMountaintop(int id, std::vector<std::pair<int, int>> symbolVec)
@@ -689,7 +688,7 @@ void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<
 	for (int i = 0; i < ids.size(); i++) {
 		gens[i].setFlag(Generate::Config::DisableWrite);
 		gens[i].setFlag(Generate::WriteColors);
-		if (symbols[i].getNum(Decoration::Poly) > 1) gens[i].setFlag(Generate::RequireCombineShapes);
+		if (symbols[i].getNum(Decoration::Poly)  - symbols[i].getNum(Decoration::Eraser) > 1) gens[i].setFlag(Generate::RequireCombineShapes);
 	}
 	while (!generateMultiPuzzle(ids, gens, symbols, generator->_path)) {
 		generator->generate(ids[0]);
@@ -1108,13 +1107,11 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 		gen.setFlag(Generate::Config::DecorationsOnly);
 		gen.setFlag(Generate::Config::DisableWrite);
 		gen.setFlag(Generate::Config::MountainFloorH);
-		PuzzleSymbols symbols({ { Decoration::Poly, 1 },{ Decoration::Poly | Decoration::Can_Rotate, 1 },
-			{ Decoration::Eraser | Decoration::Color::Green, 1 } });
+		gen.setFlag(Generate::Config::DisableCancelShapes);
+		PuzzleSymbols symbols({ { Decoration::Poly, 2 },{ Decoration::Eraser | Decoration::Color::Green, 1 } });
 		if (newShape.size() > 5) {
-			if (combine == 0) symbols = PuzzleSymbols({ { Decoration::Poly, 2 },{ Decoration::Poly | Decoration::Can_Rotate, 1 },
-				{ Decoration::Eraser | Decoration::Color::Green, 1 } });
-			if (combine == 1) symbols = PuzzleSymbols({ { Decoration::Poly, 3},{ Decoration::Poly | Decoration::Negative | Decoration::Color::Cyan, 1 },
-				{ Decoration::Eraser | Decoration::Color::Green, 1 } });
+			if (combine == 0) symbols = PuzzleSymbols({ { Decoration::Poly, 3 },{ Decoration::Eraser | Decoration::Color::Green, 1 } });
+			if (combine == 1) symbols = PuzzleSymbols({ { Decoration::Poly, 3 },{ Decoration::Poly | Decoration::Negative | Decoration::Color::Cyan, 1 } });
 			combine++;
 		}
 		fails = 0;
@@ -1124,13 +1121,23 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 				return;
 			}
 		}
-
+		//Check that the symbols made it into the shape
 		int count = 0;
 		for (Point p : newShape) {
 			if (gen.get_symbol_type(gen.get(p)) == Decoration::Poly) count++;
 			if (gen.get_symbol_type(gen.get(p)) == Decoration::Eraser) count--;
 		}
-		if (count != (newShape.size() > 5 ? combine == 2 ? 3 : 2 : 1)) {
+		if (count != (newShape.size() > 5 ? combine == 2 ? 4 : 2 : 1)) {
+			i--;
+			if (newShape.size() > 5) combine--;
+			continue;
+		}
+		//Check that the symbols aren't the same
+		std::set<int> symbolSet;
+		for (Point p : gen._gridpos) {
+			if (gen.get_symbol_type(gen.get(p)) == Decoration::Poly) symbolSet.insert(gen.get(p));
+		}
+		if (symbolSet.size() <= 1) {
 			i--;
 			if (newShape.size() > 5) combine--;
 			continue;
@@ -1141,11 +1148,8 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 		generateMountainFloorH(ids, idfloor);
 		return;
 	}
-	generator->clear();
-	generator->_panel->WriteIntersections();
-	WritePanelData(idfloor, NEEDS_REDRAW, 1);
-	generator->incrementProgress();
-	generator->resetVars();
+	for (Point p : floorPos) generator->set(p, Decoration::Poly);
+	generator->write(idfloor);
 	generator->resetConfig();
 }
 
@@ -1379,7 +1383,9 @@ void Special::createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::v
 
 void Special::createArrowSecretDoor(int id)
 {
-	generator->backgroundColor = { 0.5f, 0.5f, 0.5f, 1 };
+	generator->backgroundColor = { 0, 0, 0, 1 };
+	generator->arrowColor = { 1, 0.6f, 0, 1 };
+	generator->successColor = { 1, 0.6f, 0, 1 };
 	generator->initPanel(id);
 	generator->clear();
 	generator->set(1, 1, Decoration::Arrow | (3 << 12) | (4 << 16));
@@ -1526,7 +1532,7 @@ void Special::drawGoodLuckPanel(int id)
 	panel._memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
 }
 
-
+//For testing/debugging purposes only
 void Special::test() {
 
 }

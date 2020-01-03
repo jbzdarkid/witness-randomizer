@@ -69,10 +69,6 @@ bool MultiGenerate::place_all_symbols(PuzzleSymbols symbols)
 		return false;
 	for (std::pair<int, int> s : symbols[Decoration::Star]) if (!place_stars(s.first & 0xf, s.second))
 		return false;
-	for (std::pair<int, int> s : symbols[Decoration::Dot]) if (!place_dots(s.second, s.first == Decoration::Dot_Intersection))
-		return false;
-	for (std::pair<int, int> s : symbols[Decoration::Gap]) if (!place_gaps(s.second))
-		return false;
 	return true;
 }
 
@@ -81,72 +77,6 @@ bool MultiGenerate::can_place_gap(Point pos)
 	for (std::shared_ptr<Generate> g : generators) {
 		if (g->get(pos) != 0)
 			return false;
-	}
-	return true;
-}
-
-bool MultiGenerate::place_gaps(int amount)
-{
-	std::set<Point> open;
-	for (int y = 0; y < generators[0]->_panel->_height; y++) {
-		for (int x = (y + 1) % 2; x < generators[0]->_panel->_width; x += 2) {
-			if (can_place_gap(Point(x, y))) {
-				open.insert(Point(x, y));
-			}
-		}
-	}
-
-	while (amount > 0) {
-		if (open.size() < amount)
-			return false;
-		Point pos = pick_random(open);
-		for (std::shared_ptr<Generate> g : generators) {
-			g->set(pos, pos.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
-		}
-		amount--;
-		open.erase(pos);
-	}
-	return true;
-}
-
-bool MultiGenerate::place_dots(int amount, bool intersectionOnly)
-{
-	std::set<Point> open = generators[0]->_path;
-	for (std::shared_ptr<Generate> g : generators) {
-		for (Point p : g->_starts) open.erase(p);
-		for (Point p : g->_exits) open.erase(p);
-		std::set<Point> intersection;
-		for (Point p : g->_path) {
-			if (open.count(p))
-				intersection.insert(p);
-		}
-		open = intersection;
-	}
-	
-	if (intersectionOnly) {
-		std::set<Point> intersections;
-		for (Point p : open) {
-			if (p.first % 2 == 0 && p.second % 2 == 0)
-				intersections.insert(p);
-		}
-		open = intersections;
-	}
-
-	while (amount > 0) {
-		if (open.size() < amount)
-			return false;
-		Point pos = pick_random(open);
-		open.erase(pos);
-		if (!generators[0]->can_place_dot(pos)) continue;
-		int symbol = (pos.first & 1) == 1 ? Decoration::Dot_Row : (pos.second & 1) == 1 ? Decoration::Dot_Column : Decoration::Dot_Intersection;
-		for (std::shared_ptr<Generate> g : generators) {
-			g->set(pos, symbol);
-			g->_openpos.erase(pos);
-		}
-		for (Point dir : Generate::_DIRECTIONS1) {
-			open.erase(pos + dir);
-		}
-		amount--;
 	}
 	return true;
 }
@@ -244,7 +174,7 @@ bool MultiGenerate::place_triangles(int color, int amount)
 	for (Point p : generators[0]->_openpos) {
 		if (can_place_triangle(p)) open.insert(p);
 	}
-	if (generators[0]->get(1, 1) == 0xA05) { //Perspective puzzle
+	if (generators[0]->get(1, 1) == 0xA05) { //Mountain Hatch Perspective puzzle
 		open.erase({ 1, 5 }); open.erase({ 9, 5 });
 	}
 	while (amount > 0) {

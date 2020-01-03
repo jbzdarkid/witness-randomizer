@@ -1,6 +1,7 @@
 #pragma once
 #include "Generate.h"
 
+//Class for generating puzzles with multiple solutions.
 class MultiGenerate
 {
 public:
@@ -19,8 +20,6 @@ private:
 	bool generate(int id, PuzzleSymbols symbols);
 	bool place_all_symbols(PuzzleSymbols symbols);
 	bool can_place_gap(Point pos);
-	bool place_gaps(int amount);
-	bool place_dots(int amount, bool intersectionOnly);
 	bool place_stones(int color, int amount);
 	bool place_stars(int color, int amount);
 	bool can_place_triangle(Point pos);

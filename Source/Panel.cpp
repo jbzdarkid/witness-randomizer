@@ -1,6 +1,5 @@
 #include "Panel.h"
 #include "Special.h"
-#include "Random.h"
 #include "Memory.h"
 #include "Randomizer.h"
 #include "Watchdog.h"
@@ -35,7 +34,7 @@ void Panel::Read() {
 	}
 	else Point::pillarWidth = 0;
 	_height = 2 * _memory->ReadPanelData<int>(id, GRID_SIZE_Y) - 1;
-	if (_width <= 0 || _height <= 0) {
+	if (_width <= 0 || _height <= 0 || _width > 30 || _height > 30) {
 		int numIntersections = _memory->ReadPanelData<int>(id, NUM_DOTS);
 		_width = _height = static_cast<int>(std::round(sqrt(numIntersections))) * 2 - 1;
 	}
@@ -64,7 +63,7 @@ void Panel::Write() {
 	_memory->WritePanelData<int>(id, GRID_SIZE_X, { (_width + 1) / 2 });
 	_memory->WritePanelData<int>(id, GRID_SIZE_Y, { (_height + 1) / 2 });
 	if (_resized && _memory->ReadPanelData<int>(id, NUM_COLORED_REGIONS) > 0) {
-		//Make two triangles that cover the whole panel TODO: Get this to work for the pillars too
+		//Make two triangles that cover the whole panel
 		std::vector<int> newRegions = { 0, xy_to_loc(_width - 1, 0), xy_to_loc(0, 0), 0, xy_to_loc(_width - 1, _height - 1), xy_to_loc(_width - 1, 0), 0, 0 };
 		_memory->WritePanelData<int>(id, NUM_COLORED_REGIONS, { static_cast<int>(newRegions.size()) / 4 });
 		_memory->WriteArray(id, COLORED_REGIONS, newRegions);
@@ -286,7 +285,8 @@ bool Panel::LoadPanels(int seed, bool hard)
 		}
 		else panel.Write();
 	}
-	Random::SetSeed(seed);
+	srand(seed);
+	//Random::SetSeed(seed);
 	Randomizer().RandomizeDesert();
 	file >> size;
 	while (size-- > 0) {
@@ -352,7 +352,6 @@ bool Panel::LoadPanels(int seed, bool hard)
 	return true;
 }
 
-//Only for testing
 void Panel::ReadAllData() {
 	Color pathColor = _memory->ReadPanelData<Color>(id, PATH_COLOR);
 	Color rpathColor = _memory->ReadPanelData<Color>(id, REFLECTION_PATH_COLOR);

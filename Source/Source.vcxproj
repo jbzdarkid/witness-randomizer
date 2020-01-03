@@ -158,31 +158,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ChallengeRandomizer.h" />
     <ClInclude Include="Generate.h" />
-    <ClInclude Include="json.hpp" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="MultiGenerate.h" />
     <ClInclude Include="Panel.h" />
     <ClInclude Include="Panels.h" />
     <ClInclude Include="PuzzleList.h" />
     <ClInclude Include="PuzzleSymbols.h" />
-    <ClInclude Include="Random.h" />
     <ClInclude Include="Randomizer.h" />
     <ClInclude Include="Special.h" />
     <ClInclude Include="Watchdog.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ChallengeRandomizer.cpp" />
     <ClCompile Include="Generate.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="MultiGenerate.cpp" />
     <ClCompile Include="Panel.cpp" />
     <ClCompile Include="PuzzleList.cpp" />
-    <ClCompile Include="Random.cpp" />
     <ClCompile Include="Randomizer.cpp" />
     <ClCompile Include="Special.cpp" />
     <ClCompile Include="Watchdog.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="configinfo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

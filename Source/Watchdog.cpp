@@ -10,66 +10,60 @@ void Watchdog::run()
 {
 	while (!terminate) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(sleepTime * 1000)));
-		action(condition());
+		action();
 	}
 }
 
 //Keep Watchdog - Keep the big panel off until all panels are solved
-//The condition is not entirely correct, need to figure out how to check for sure if the puzzle is solved
+//The condition is not entirely correct, need to figure out how to check for sure if the puzzle is solved. Until then, the purple pressure plate panel (0x01BE9) is unskippable
 
-bool KeepWatchdog::condition() {
+void KeepWatchdog::action() {
 	if (!ready) {
 		float power = ReadPanelData<float>(0x03317, POWER);
-		if (!power) return false;
+		if (!power) return;
 		ready = true;
 	}
 	int numTraced = ReadPanelData<int>(0x01BE9, TRACED_EDGES);
 	int tracedptr = ReadPanelData<int>(0x01BE9, TRACED_EDGE_DATA);
 	std::vector<SolutionPoint> traced; if (tracedptr) traced = ReadArray<SolutionPoint>(0x01BE9, TRACED_EDGE_DATA, numTraced);
-	if (traced.size() < 12 || traced.size() > 26 || traced[traced.size() - 1].pointB != 25) return false;
+	if (traced.size() < 12 || traced.size() > 26 || traced[traced.size() - 1].pointB != 25) {
+		WritePanelData<float>(0x03317, POWER, { 0, 0 });
+		return;
+	}
 	for (SolutionPoint p : traced) {
 		if (p.pointA == 16 && p.pointB == 17 || p.pointB == 16 && p.pointA == 17) {
-			return true;
+			WritePanelData<float>(0x03317, POWER, { 1, 1 });
+			return;
 		}
 	}
-	return false;
-}
-
-void KeepWatchdog::action(bool status) {
-	if (status) {
-		WritePanelData<float>(0x03317, POWER, { 1, 1 });
-	}
-	else {
-		WritePanelData<float>(0x03317, POWER, { 0, 0 });
-	}
+	WritePanelData<float>(0x03317, POWER, { 0, 0 });
 }
 
 //Arrow Watchdog - To run the arrow puzzles
 
-bool ArrowWatchdog::condition() {
+void ArrowWatchdog::action() {
 	int length = ReadPanelData<int>(id, TRACED_EDGES);
-	return length != 0 && length != solLength;
-}
-
-void ArrowWatchdog::action(bool status) {
-	if (!status) {
-		sleepTime = 0.2f;
+	if (length != tracedLength) {
+		complete = false;
+	}
+	if (length == 0 || complete) {
+		sleepTime = 0.1f;
 		return;
 	}
 	sleepTime = 0.01f;
-	solLength = 0;
-	int length = ReadPanelData<int>(id, TRACED_EDGES);
 	if (length == tracedLength) return;
 	initPath();
-	if (tracedLength == solLength || tracedLength == solLength - 1) {
+	if (complete) {
 		for (int x = 1; x < width; x++) {
 			for (int y = 1; y < height; y++) {
 				if (!checkArrow(x, y)) {
+					//OutputDebugStringW(L"No");
 					WritePanelData<int>(id, STYLE_FLAGS, { style | Panel::Style::HAS_TRIANGLES });
 					return;
 				}
 			}
 		}
+		//OutputDebugStringW(L"Yes");
 		WritePanelData<int>(id, STYLE_FLAGS, { style & ~Panel::Style::HAS_TRIANGLES });
 	}
 }
@@ -83,25 +77,27 @@ void ArrowWatchdog::initPath()
 	if (style & Panel::Style::SYMMETRICAL) {
 		for (int i = 0; i < numTraced; i++) {
 			SolutionPoint sp;
-			sp.pointA = (width / 2 + 1) * (height / 2 + 1) - 1 - traced[i].pointA;
-			sp.pointB = (width / 2 + 1) * (height / 2 + 1) - 1 - traced[i].pointB;
+			if (traced[i].pointA >= exitPoint || traced[i].pointB >= exitPoint) {
+				sp.pointA = sp.pointB = exitPoint;
+			}
+			else {
+				sp.pointA = (width / 2 + 1) * (height / 2 + 1) - 1 - traced[i].pointA;
+				sp.pointB = (width / 2 + 1) * (height / 2 + 1) - 1 - traced[i].pointB;
+			}
 			traced.push_back(sp);
 		}
 	}
 	grid = backupGrid;
 	tracedLength = numTraced;
+	complete = false;
 	if (traced.size() == 0) return;
-	int exitPos = pillarWidth > 0 ? (width / 2) * (height / 2 + 1) : (width / 2 + 1) * (height / 2 + 1);
 	for (SolutionPoint p : traced) {
 		int p1 = p.pointA, p2 = p.pointB;
-		if (p1 == this->exitPos || p2 == this->exitPos) {
-			solLength = numTraced + 1;
-		}
-		if (p1 == exitPos || p2 == exitPos) {
-			solLength = numTraced;
+		if (p1 == exitPoint || p2 == exitPoint) {
+			complete = true;
 			continue;
 		}
-		else if (p1 > exitPos || p2 > exitPos) continue;
+		else if (p1 > exitPoint || p2 > exitPoint) continue;
 		if (p1 == 0 && p2 == 0 || p1 < 0 || p2 < 0) {
 			return;
 		}
@@ -120,6 +116,10 @@ void ArrowWatchdog::initPath()
 			grid[x2][y2] = PATH;
 			grid[(x1 + x2) / 2][(y1 + y2) / 2] = PATH;
 		}
+		if (p1 == exitPos || p2 == exitPos || (style & Panel::Style::SYMMETRICAL) && (p1 == exitPosSym || p2 == exitPosSym)) {
+			complete = !complete;
+		}
+		else complete = false;
 	}
 }
 
@@ -143,7 +143,8 @@ bool ArrowWatchdog::checkArrow(int x, int y)
 	int count = 0;
 	while (x >= 0 && x < width && y >= 0 && y < height) {
 		if (grid[x][y] == PATH) {
-			if (++count > targetCount) return false;
+			if (++count > targetCount)
+				return false;
 		}
 		x += dir.first; y += dir.second;
 	}
@@ -176,12 +177,7 @@ bool ArrowWatchdog::checkArrowPillar(int x, int y)
 	return count == targetCount;
 }
 
-bool BridgeWatchdog::condition()
-{
-	return true;
-}
-
-void BridgeWatchdog::action(bool status)
+void BridgeWatchdog::action()
 {
 	int length1 = _memory->ReadPanelData<int>(id1, TRACED_EDGES);
 	int length2 = _memory->ReadPanelData<int>(id2, TRACED_EDGES);
@@ -212,55 +208,9 @@ bool BridgeWatchdog::checkTouch(int id)
 	return false;
 }
 
-bool PowerWatchdog::condition()
+void TreehouseWatchdog::action()
 {
-	float power = ReadPanelData<float>(id, POWER);
-	return power != 1;
-}
-
-void PowerWatchdog::action(bool status)
-{
-	WritePanelData<float>(id, POWER, { 1, 1 });
-}
-
-ChallengeWatchdog::ChallengeWatchdog(int id, Point size, std::vector<std::pair<int, int>> symbolVec) : Watchdog(0.1f)
-{
-	this->id = id;
-	this->symbolVec = symbolVec;
-	gen.setFlag(Generate::Config::DisableWrite);
-	gen.setGridSize(size.first, size.second);
-	ready = false;
-	_memory->WritePanelData<int>(id, POWER_OFF_ON_FAIL, { 0 });
-}
-
-bool ChallengeWatchdog::condition()
-{
-	return _memory->ReadPanelData<float>(id, POWER) > 0;
-}
-
-void ChallengeWatchdog::action(bool status)
-{
-	if (status) {
-		if (ready) {
-			gen.write(id);
-			ready = false;
-		}
-		return;
-	}
-	if (!ready) {
-		gen.generate(0x0A16E, symbolVec);
-		ready = true;
-	}
-}
-
-bool TreehouseWatchdog::condition()
-{
-	return _memory->ReadPanelData<int>(0x03613, TRACED_EDGES) > 0;
-}
-
-void TreehouseWatchdog::action(bool status)
-{
-	if (status) {
+	if (_memory->ReadPanelData<int>(0x03613, TRACED_EDGES) > 0) {
 		_memory->WritePanelData<float>(0x17DAE, POWER, { 1.0f, 1.0f });
 		_memory->WritePanelData<int>(0x17DAE, NEEDS_REDRAW, { 1 });
 		terminate = true;

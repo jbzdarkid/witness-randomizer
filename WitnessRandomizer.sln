@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.28010.2048
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App", "App\App.vcxproj", "{235D27F1-9907-489B-8D58-636A0C5CD079}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -11,8 +11,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Source", "Source\Source.vcxproj", "{6B5DF051-A51A-48CB-8ACD-C6FAD726019F}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer", "Installer\Installer.vdproj", "{78DEDBBE-AC84-496D-8907-40089B464A5B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{128784C2-9157-4291-8FD6-44637BE162FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,14 +44,6 @@ Global
 		{78DEDBBE-AC84-496D-8907-40089B464A5B}.Release|x64.Build.0 = Release
 		{78DEDBBE-AC84-496D-8907-40089B464A5B}.Release|x86.ActiveCfg = Debug
 		{78DEDBBE-AC84-496D-8907-40089B464A5B}.Release|x86.Build.0 = Debug
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Debug|x64.ActiveCfg = Debug|x64
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Debug|x64.Build.0 = Debug|x64
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Debug|x86.ActiveCfg = Debug|x64
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Debug|x86.Build.0 = Debug|x64
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Release|x64.ActiveCfg = Release|x64
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Release|x64.Build.0 = Release|x64
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Release|x86.ActiveCfg = Debug|x64
-		{128784C2-9157-4291-8FD6-44637BE162FB}.Release|x86.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

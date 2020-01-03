@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include "Version.h"
-#include "Random.h"
 #include "Randomizer.h"
 #include "Panel.h"
 #include "Generate.h"
@@ -64,7 +63,8 @@
 
 #define DEBUG false
 
-int panel = 0x00FF8; //Panel to edit //Lower right
+//Panel to edit
+int panel = 0x00FF8; //Lower right
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText, hwndNormal, hwndMessage;
 std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
@@ -84,8 +84,9 @@ int currentDir;
 bool hard = false;
 std::vector<long long> shapePos = { SHAPE_11, SHAPE_12, SHAPE_13, SHAPE_14, SHAPE_21, SHAPE_22, SHAPE_23, SHAPE_24,
 							  SHAPE_31, SHAPE_32, SHAPE_33, SHAPE_34, SHAPE_41, SHAPE_42, SHAPE_43, SHAPE_44 };
-std::vector<long long> defaultShape = { SHAPE_21, SHAPE_31, SHAPE_32, SHAPE_33 };
-std::vector<long long> directions = { ARROW_UP_RIGHT, ARROW_UP, ARROW_UP_LEFT, ARROW_LEFT, 0, ARROW_RIGHT, ARROW_DOWN_LEFT, ARROW_DOWN, ARROW_DOWN_RIGHT };
+std::vector<long long> defaultShape = { SHAPE_21, SHAPE_31, SHAPE_32, SHAPE_33 }; //L-shape
+std::vector<long long> directions = { ARROW_UP_RIGHT, ARROW_UP, ARROW_UP_LEFT, ARROW_LEFT, 0, ARROW_RIGHT, ARROW_DOWN_LEFT, ARROW_DOWN, ARROW_DOWN_RIGHT }; //Order of directional check boxes
+float target;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -100,19 +101,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				seedIsRNG = false;
 		}
 		switch (LOWORD(wParam)) {
-			// Checkboxes
-		case IDC_TOGGLESPEED:
-			CheckDlgButton(hwnd, IDC_TOGGLESPEED, !IsDlgButtonChecked(hwnd, IDC_TOGGLESPEED));
-			break;
-		case IDC_TOGGLELASERS:
-			CheckDlgButton(hwnd, IDC_TOGGLELASERS, !IsDlgButtonChecked(hwnd, IDC_TOGGLELASERS));
-			break;
-		case IDC_TOGGLESNIPES:
-			CheckDlgButton(hwnd, IDC_TOGGLESNIPES, !IsDlgButtonChecked(hwnd, IDC_TOGGLESNIPES));
+
+		//************************* Test button  - general testing (debug mode only) ***************************************
+		case IDC_TEST:
+			generator->resetConfig();
+			generator->seed(static_cast<unsigned int>(time(NULL)));
+			generator->seed(ctr++);
+			//generator->seed(2);
+
+			//specialCase->testPanel(0x09FDA);
+			//target = specialCase->ReadPanelData<float>(0x181F5, OPEN_RATE);
+			//specialCase->test();
+			specialCase->generateMountainFloorH({ 0x09EFF, 0x09F01, 0x09FC1, 0x09F8E }, 0x09FDA);
+
 			break;
 
-			// Randomize button
+		//Difficulty selection
+		case IDC_DIFFICULTY_NORMAL:
+			hard = false;
+			break;
+		case IDC_DIFFICULTY_EXPERT:
+			hard = true;
+			break;
 
+		//Randomize button
 		case IDC_RANDOMIZE:
 		{
 			if (Special::ReadPanelData<int>(0x00064, NUM_DOTS) > 5) {
@@ -120,29 +132,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
+			//Read seed from text box
 			std::wstring text;
 			text.reserve(100);
 			GetWindowText(hwndSeed, &text[0], 100);
 			int seed = _wtoi(text.c_str());
-
-			// TODO: text needs to be resized!
-			if (seedIsRNG || wcslen(text.c_str()) == 0) {
-				seed = Random::RandInt(1, 999999);
-				seedIsRNG = true;
+			if (wcslen(text.c_str()) == 0) {
+				//If no seed is entered, pick random seed
+				srand(static_cast<int>(time(NULL)));
+				//Random::SetSeed(rand());
+				seed = rand() % 999999 + 1;
+				srand(seed);
 				randomizer->seedIsRNG = true;
 			}
 			else randomizer->seedIsRNG = false;
 
-			randomizer->seed = seed;
 			randomizer->ClearOffsets();
-			/* TODO:
-			if (!randomizer->GameIsRunning()) {
-				randomizer->StartGame(); // Try: CreateProcess(L"/path/to/TW.exe", ...);
-			}
-			*/
-			//if (randomizer->GameIsRandomized()) break;
-			//Random::SetSeed(seed);
-			//srand(seed);
 
 			// Show seed and force redraw
 			std::wstring seedString = std::to_wstring(seed);
@@ -150,29 +155,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			ShowWindow(hwndLoadingText, SW_SHOW);
 			RedrawWindow(hwnd, NULL, NULL, RDW_UPDATENOW);
 
-			// Randomize, then apply settings
-			//randomizer->Randomize();
+			randomizer->AdjustSpeed(); //Makes certain moving objects move faster
 
-			randomizer->AdjustSpeed();
-
+			//Get the seed and difficulty previously used for this save file (if applicable)
 			int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
 			if (lastSeed > 0) {
-				int difficulty = Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12);
-				if (Panel::LoadPanels(lastSeed, difficulty - 1)) {
-					SetWindowText(hwndRandomize, L"Randomized!");
-					ShowWindow(hwndMessage, SW_SHOW);
-					break;
-				}
-				randomizer->seed = lastSeed;
+				seed = lastSeed;
 				randomizer->seedIsRNG = false;
-				hard = (difficulty > 1);
+				hard = (Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12) > 1);
 			}
+			//If the save hasn't been randomized before, make sure it is a fresh, unplayed save file
 			else if (Special::ReadPanelData<int>(0x00064, TRACED_EDGES) > 0 || Special::ReadPanelData<float>(0x00295, POWER) > 0) {
 				MessageBox(hwnd, L"You must start a new game to be able to randomize.", NULL, MB_OK);
 				SetWindowText(hwndRandomize, L"Randomize");
 				break;
 			}
 
+			//If a file already exists for the seed and difficulty, load it
 			if (Panel::LoadPanels(seed, hard)) {
 				Special::WritePanelData(0x00064, BACKGROUND_REGION_COLOR + 12, seed);
 				Special::WritePanelData(0x00182, BACKGROUND_REGION_COLOR + 12, hard ? 2 : 1);
@@ -181,19 +180,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
+			//Otherwise, run the randomizer
+			randomizer->seed = seed;
 			if (hard) randomizer->GenerateHard(hwndLoadingText);
 			else randomizer->GenerateNormal(hwndLoadingText);
 
 			SetWindowText(hwndRandomize, L"Randomized!");
-			ShowWindow(hwndMessage, SW_SHOW);
+			ShowWindow(hwndMessage, SW_SHOW); //Show the info about leaving the randomizer open
 			break;
 		}
 
-		case IDT_RANDOMIZED:
-			SetWindowText(hwndRandomize, L"Randomize");
-			randomizer->GameIsRandomized(); // "Check" if the game is randomized to update the last known safe frame.
-			break;
-
+		//Add a symbol to the puzzle (debug mode only)
 		case IDC_ADD:
 			memset(&text, 0, sizeof(text));
 			GetWindowText(hwndElem, text, 30);
@@ -243,6 +240,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			_panel->Write(panel);
 			break;
 
+		//Remove a symbol from the puzzle (debug mode only)
 		case IDC_REMOVE:
 			GetWindowText(hwndCol, &str[0], 30);
 			x = _wtoi(str.c_str());
@@ -265,23 +263,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			_panel->Write(panel);
 			break;
 
-		case IDC_TEST:
-			generator->seed(static_cast<unsigned int>(time(NULL)));
-			generator->seed(ctr++);
-			//generator->seed(0);
-			generator->resetConfig();
-			//specialCase->testPanel(0x0A3CB);
-
-			//Panel::LoadPanels(17144, true);
-			
-			break;
-
-		case IDC_DIFFICULTY_NORMAL:
-			hard = false;
-			break;
-		case IDC_DIFFICULTY_EXPERT:
-			hard = true;
-			break;
+		//Debug mode checkboxes
 		case IDC_ROTATED:
 			CheckDlgButton(hwnd, IDC_ROTATED, !IsDlgButtonChecked(hwnd, IDC_ROTATED));
 			break;
@@ -313,7 +295,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			else _panel->symmetry = Panel::Symmetry::None;
 			_panel->Write(panel);
 			break;
-
+		//Tetris shape editing
 		case SHAPE_11: CheckDlgButton(hwnd, SHAPE_11, !IsDlgButtonChecked(hwnd, SHAPE_11)); currentShape ^= SHAPE_11; break;
 		case SHAPE_12: CheckDlgButton(hwnd, SHAPE_12, !IsDlgButtonChecked(hwnd, SHAPE_12)); currentShape ^= SHAPE_12; break;
 		case SHAPE_13: CheckDlgButton(hwnd, SHAPE_13, !IsDlgButtonChecked(hwnd, SHAPE_13)); currentShape ^= SHAPE_13; break;
@@ -330,7 +312,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case SHAPE_42: CheckDlgButton(hwnd, SHAPE_42, !IsDlgButtonChecked(hwnd, SHAPE_42)); currentShape ^= SHAPE_42; break;
 		case SHAPE_43: CheckDlgButton(hwnd, SHAPE_43, !IsDlgButtonChecked(hwnd, SHAPE_43)); currentShape ^= SHAPE_43; break;
 		case SHAPE_44: CheckDlgButton(hwnd, SHAPE_44, !IsDlgButtonChecked(hwnd, SHAPE_44)); currentShape ^= SHAPE_44; break;
-
+		//Arrow direction selection
 		case ARROW_UP_LEFT: CheckDlgButton(hwnd, ARROW_UP_LEFT, !IsDlgButtonChecked(hwnd, ARROW_UP_LEFT)); if (IsDlgButtonChecked(hwnd, ARROW_UP_LEFT)) currentDir = ARROW_UP_LEFT; break;
 		case ARROW_UP: CheckDlgButton(hwnd, ARROW_UP, !IsDlgButtonChecked(hwnd, ARROW_UP)); if (IsDlgButtonChecked(hwnd, ARROW_UP)) currentDir = ARROW_UP; break;
 		case ARROW_UP_RIGHT: CheckDlgButton(hwnd, ARROW_UP_RIGHT, !IsDlgButtonChecked(hwnd, ARROW_UP_RIGHT)); if (IsDlgButtonChecked(hwnd, ARROW_UP_RIGHT)) currentDir = ARROW_UP_RIGHT; break;
@@ -366,6 +348,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     GetClientRect(GetDesktopWindow(), &rect);
 	HWND hwnd = CreateWindow(WINDOW_CLASS, PRODUCT_NAME, WS_OVERLAPPEDWINDOW,
       rect.right - 650, 200, 600, DEBUG ? 700 : 280, nullptr, nullptr, hInstance, nullptr);
+
+	//-------------------------Basic window controls---------------------------
 
 	CreateWindow(L"STATIC", L"Version: " VERSION_STR,
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
@@ -403,6 +387,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_CENTER | BS_MULTILINE,
 		10, 160, 580, 80, hwnd, NULL, hInstance, NULL);
 	ShowWindow(hwndMessage, SW_HIDE);
+
+	//---------------------Debug/editing controls (debug mode only)---------------------
 
 	if (DEBUG) {
 		CreateWindow(L"STATIC", L"Col/Row:",

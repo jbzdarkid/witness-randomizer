@@ -240,7 +240,7 @@ private:
 		case Decoration::Color::Yellow: return { 1, 1, 0, 1 };
 		case Decoration::Color::Orange: return { 1, 0.5, 0, 1 };
 		case Decoration::Color::Purple: return { 0.5, 0, 1, 1 };
-		case Decoration::Color::X: //return { 0.7f, 0.5f, 0, 1 };
+		case Decoration::Color::X: //Copy background color
 			xcolor = _memory->ReadPanelData<Color>(0x0008F, BACKGROUND_REGION_COLOR);
 			xcolor.a = 1;
 			return xcolor;
@@ -360,8 +360,8 @@ private:
 			positions[i + 1] -= 0.5f;
 			if (ticks == 3 && dir > 3) positions[i] += 0.1f;
 			//Scale
-			positions[i] *= unitWidth * 1.5f;
-			positions[i + 1] *= unitWidth * 1.5f;
+			positions[i] *= unitHeight * 1.5f;
+			positions[i + 1] *= unitHeight * 1.5f;
 			//Rotate
 			float newx = positions[i] * cos(angle) - positions[i + 1] * sin(angle);
 			float newy = positions[i] * sin(angle) + positions[i + 1] * cos(angle);

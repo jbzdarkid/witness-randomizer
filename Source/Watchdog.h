@@ -14,8 +14,7 @@ public:
 	};
 	void start();
 	void run();
-	virtual bool condition() = 0;
-	virtual void action(bool status) = 0;
+	virtual void action() = 0;
 	float sleepTime;
 	bool terminate;
 protected:
@@ -43,30 +42,31 @@ protected:
 class KeepWatchdog : public Watchdog {
 public:
 	KeepWatchdog() : Watchdog(10) { ready = false; }
-	virtual bool condition();
-	virtual void action(bool status);
+	virtual void action();
 	bool ready;
 };
 
 class ArrowWatchdog : public Watchdog {
 public:
-	ArrowWatchdog(int id) : Watchdog(0.2f) {
+	ArrowWatchdog(int id) : Watchdog(0.1f) {
 		Panel panel(id);
 		this->id = id;
 		grid = backupGrid = panel._grid;
 		width = static_cast<int>(grid.size());
 		height = static_cast<int>(grid[0].size());
 		pillarWidth = 0;
-		solLength = 0, tracedLength;
+		complete = false, tracedLength;
 		style = ReadPanelData<int>(id, STYLE_FLAGS);
 		DIRECTIONS = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0), Point(2, 2), Point(2, -2), Point(-2, -2), Point(-2, 2) };
 		exitPos = panel.xy_to_loc(panel._endpoints[0].GetX(), panel._endpoints[0].GetY());
+		exitPosSym = (width / 2 + 1) * (height / 2 + 1) - 1 - exitPos;
+		exitPoint = (width / 2 + 1) * (height / 2 + 1);
 	}
 	ArrowWatchdog(int id, int pillarWidth) : ArrowWatchdog(id) {
 		this->pillarWidth = pillarWidth;
+		if (pillarWidth > 0) exitPoint = (width / 2) * (height / 2 + 1);
 	}
-	virtual bool condition();
-	virtual void action(bool status);
+	virtual void action();
 	void initPath();
 	bool checkArrow(int x, int y);
 	bool checkArrowPillar(int x, int y);
@@ -75,9 +75,10 @@ public:
 	std::vector<std::vector<int>> backupGrid;
 	std::vector<std::vector<int>> grid;
 	int width, height, pillarWidth;
-	int solLength, tracedLength;
+	int tracedLength;
+	bool complete;
 	int style;
-	int exitPos;
+	int exitPos, exitPosSym, exitPoint;
 	std::vector<Point> DIRECTIONS;
 };
 
@@ -88,8 +89,7 @@ public:
 		solLength2 = false;
 		this->id1 = id1; this->id2 = id2;
 	}
-	virtual bool condition();
-	virtual void action(bool status);
+	virtual void action();
 	bool checkTouch(int id);
 	int id1, id2, solLength1, solLength2;
 };
@@ -99,28 +99,6 @@ public:
 	TreehouseWatchdog(int id) : Watchdog(2) {
 		this->id = id;
 	}
-	virtual bool condition();
-	virtual void action(bool status);
+	virtual void action();
 	int id;
-};
-
-class PowerWatchdog : public Watchdog {
-public:
-	PowerWatchdog(int id) : Watchdog(0.1f) { this->id = id; }
-	virtual bool condition();
-	virtual void action(bool status);
-
-	int id;
-};
-
-class ChallengeWatchdog : public Watchdog { //Not working, causes the game to crash
-public:
-	ChallengeWatchdog(int id, Point size, std::vector<std::pair<int, int>> symbolVec);
-	virtual bool condition();
-	virtual void action(bool status);
-
-	int id;
-	bool ready;
-	std::vector<std::pair<int, int>> symbolVec;
-	Generate gen;
 };

@@ -46,7 +46,7 @@ public:
 	bool generate2BridgeH(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
 	void generateMountainFloor(std::vector<int> ids, int idfloor);
 	void generateMountainFloorH(std::vector<int> ids, int idfloor);
-	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now
+	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now, only used a couple times in hard mode
 	void modifyGate(int id);
 	void addDecoyExits(std::shared_ptr<Generate> gen, int amount);
 	void initSSGrid(std::shared_ptr<Generate> gen);
@@ -60,7 +60,7 @@ public:
 	static void drawSeedAndDifficulty(int id, int seed, bool hard);
 	static void drawGoodLuckPanel(int id);
 
-	void test();
+	void test(); //For testing/debugging purposes only
 
 	static void setTarget(int puzzle, int target)
 	{
@@ -102,7 +102,7 @@ public:
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WritePanelData<int>(panel, offset, { data });
 	}
 	static void WritePanelData(int panel, int offset, float data) {
-		writeFloat.push_back(MemoryWrite<float>(panel, offset, { data }));
+		if (offset != POWER) writeFloat.push_back(MemoryWrite<float>(panel, offset, { data }));
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WritePanelData<float>(panel, offset, { data });
 	}
 	static void WritePanelData(int panel, int offset, Color data) {
