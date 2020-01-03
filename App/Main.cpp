@@ -92,7 +92,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static bool seedIsRNG = false;
 
-	if (message == WM_DESTROY) {
+	if (message == WM_CLOSE) {
+		if (MessageBox(hwnd, L"Warning: Some puzzles may be unsolvable if you close the randomizer while the game is running.\r\n\r\nExit anyway?", L"", MB_OKCANCEL) == IDOK)
+			DestroyWindow(hwnd);
+		return 0;
+	}
+	else if (message == WM_DESTROY) {
 		PostQuitMessage(0);
 	} else if (message == WM_COMMAND || message == WM_TIMER) {
 		switch (HIWORD(wParam)) {
