@@ -693,7 +693,7 @@ void PuzzleList::GenerateMountainN()
 		{ { Decoration::Dot_Intersection, 3 } },
 		{ { Decoration::Stone | Decoration::Color::Black, 2 },{ Decoration::Stone | Decoration::Color::White, 2 } },
 		{ { Decoration::Star | Decoration::Color::Magenta, 2 },{ Decoration::Star | Decoration::Color::Green, 2 } },
-		{ { Decoration::Poly | Decoration::Can_Rotate, 1 } },
+		{ { Decoration::Poly | Decoration::Can_Rotate, 2 } },
 		{ { Decoration::Stone | Decoration::Color::Cyan, 1 },{ Decoration::Stone | Decoration::Color::Yellow, 1 },{ Decoration::Star | Decoration::Color::Cyan, 1 },{ Decoration::Star | Decoration::Color::Yellow, 1 } },
 		{ { Decoration::Poly, 1 } } }, false);
 

@@ -3,6 +3,7 @@
 #include "Randomizer.h"
 #include "PuzzleSymbols.h"
 #include <stdlib.h>
+#include <string>
 #include <time.h>
 #include <set>
 #include <algorithm>
