@@ -342,8 +342,8 @@ bool Panel::LoadPanels(int seed, bool hard)
 		}
 		Special::WriteArray(id, offset, data);
 	}
-	(new KeepWatchdog())->start();
 	if (hard) {
+		(new KeepWatchdog())->start();
 		(new BridgeWatchdog(0x09E86, 0x09ED8))->start();
 		(new TreehouseWatchdog(0x17DAE))->start();
 	}
