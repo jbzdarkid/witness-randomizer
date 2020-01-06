@@ -19,7 +19,6 @@ Memory::Memory(const std::string& processName) {
 		}
 	}
 	if (!_handle) {
-		std::cerr << "Couldn't find " << processName.c_str() << ", is it open?" << std::endl;
 		MessageBox(GetActiveWindow(), L"Process not found in RAM. Please open The Witness and then try again.", NULL, MB_OK);
 		throw std::exception("Unable to find process!");
 	}
