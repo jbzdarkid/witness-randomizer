@@ -1097,7 +1097,7 @@ void PuzzleList::GenerateSymmetryH()
 	std::vector<Panel::Symmetry> sym2 = { Panel::Symmetry::ParallelHFlip, Panel::Symmetry::ParallelVFlip, rand() % 2 == 0 ? Panel::Symmetry::ParallelV : Panel::Symmetry::ParallelH };
 	Panel::Symmetry lastChoice = Panel::Symmetry::None;
 	for (int i = 0; i < ids.size(); i++) {
-		Panel::Symmetry choice = (i < 4 ? pick_random(sym1) : pick_random(sym2));
+		Panel::Symmetry choice = (i < 4 ? pop_random(sym1) : pop_random(sym2));
 		if (choice == lastChoice) { i--; continue; }
 		lastChoice = choice;
 		specialCase->initSSGrid(generator);
