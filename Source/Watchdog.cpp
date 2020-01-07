@@ -18,11 +18,6 @@ void Watchdog::run()
 //The condition is not entirely correct, need to figure out how to check for sure if the puzzle is solved. Until then, the purple pressure plate panel (0x01BE9) is unskippable
 
 void KeepWatchdog::action() {
-	if (!ready) {
-		float power = ReadPanelData<float>(0x03317, POWER);
-		if (!power) return;
-		ready = true;
-	}
 	int numTraced = ReadPanelData<int>(0x01BE9, TRACED_EDGES);
 	int tracedptr = ReadPanelData<int>(0x01BE9, TRACED_EDGE_DATA);
 	std::vector<SolutionPoint> traced; if (tracedptr) traced = ReadArray<SolutionPoint>(0x01BE9, TRACED_EDGE_DATA, numTraced);
