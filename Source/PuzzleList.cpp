@@ -373,6 +373,7 @@ void PuzzleList::GenerateSwampN()
 	//Optional Tetris
 	generator->resetConfig();
 	generator->generate(0x009A6, Decoration::Poly, 6);
+	Special::setPower(0x009A6, true);
 	//Negative Shapes 1
 	generator->resetConfig();
 	generator->setFlag(Generate::Config::DisableCancelShapes);
@@ -1386,6 +1387,7 @@ void PuzzleList::GenerateSwampH()
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::WriteDotColor);
 	generator->generate(0x009A6, Decoration::Dot_Intersection, 42, Decoration::Poly, 4);
+	Special::setPower(0x009A6, true);
 	//Negative Shapes 1
 	generator->resetConfig();
 	generator->setGridSize(4, 4);
