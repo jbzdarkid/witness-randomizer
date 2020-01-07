@@ -1687,8 +1687,8 @@ void PuzzleList::GenerateTownH()
 	specialCase->generateRGBDotPuzzleH(0x03C08);
 	//Orange Crate
 	generator->setGridSize(5, 5);
-	generator->generate(0x0A0C8, Decoration::Poly | Decoration::Color::Yellow | Decoration::Can_Rotate, 4, Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Black, 3,
-		Decoration::Triangle | Decoration::Color::Orange, 3);
+	generator->generate(0x0A0C8, Decoration::Poly | Decoration::Color::Yellow | Decoration::Can_Rotate, 6, Decoration::Stone | Decoration::Color::White, 3, Decoration::Stone | Decoration::Color::Black, 4,
+		Decoration::Triangle | Decoration::Color::Orange, 7);
 	//Windmill Puzzles
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::PreserveStructure);
