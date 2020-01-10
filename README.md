@@ -1,3 +1,5 @@
+![](https://github.com/sigma144/witness-randomizer/blob/master/example.png)
+
 # Witness Random Puzzle Generator (WitnessRPG)
 The WitnessRPG takes many of the puzzles in Jonathan Blow's "The Witness" and makes them into new, randomly generated puzzles. The mod requires the game in order to function. No game files will be altered, as the randomizer works enterly in RAM. This mod uses WinAPI, so it is only compatible with Microsoft Windows.
 
