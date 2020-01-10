@@ -26,3 +26,4 @@ This project is a fork of jbzdarkid's puzzle randomizer at https://github.com/jb
 Please report any issues (such as unsolvable/broken puzzles) on the issues page. **However, please read the "Known Issues" section in the wiki first, as your issue may be addressed there.**
 
 Thanks for playing this mod, and good luck!
+(The mod can be downloaded from the "Releases" tab.)
