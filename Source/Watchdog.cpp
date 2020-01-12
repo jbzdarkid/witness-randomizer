@@ -21,7 +21,7 @@ void KeepWatchdog::action() {
 	int numTraced = ReadPanelData<int>(0x01BE9, TRACED_EDGES);
 	int tracedptr = ReadPanelData<int>(0x01BE9, TRACED_EDGE_DATA);
 	std::vector<SolutionPoint> traced; if (tracedptr) traced = ReadArray<SolutionPoint>(0x01BE9, TRACED_EDGE_DATA, numTraced);
-	if (traced.size() < 12 || traced.size() > 26 || traced[traced.size() - 1].pointB != 25) {
+	if (traced.size() < 12 || traced.size() > 26 || traced[traced.size() - 1].pointB != 25 && traced[traced.size() - 1].pointA != 16 && traced[traced.size() - 1].pointB != 16) {
 		WritePanelData<float>(0x03317, POWER, { 0, 0 });
 		return;
 	}
