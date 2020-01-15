@@ -20,6 +20,7 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 	puzzles->setSeed(seed, seedIsRNG);
 	puzzles->GenerateAllH();
 	Panel::SavePanels(seed, true);
+	MessageBox(GetActiveWindow(), L"Hi there! Thanks for trying out Expert Mode. It will be tough, but I hope you have fun!\r\n\r\nJust a quick heads-up: Your first big challenge will involve getting out of the tutorial area. A certain puzzle that you normally need to solve will be unsolvable. You'll have to find a new way to escape. Good luck!\r\n\r\nAlso, If you post a video of yourself beating Expert mode, let me know and I will link to your video from Github so that others can see your accomplishment!", L"Welcome", MB_OK);
 }
 
 template <class T>
