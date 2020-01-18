@@ -20,18 +20,29 @@ void Watchdog::run()
 void KeepWatchdog::action() {
 	int numTraced = ReadPanelData<int>(0x01BE9, TRACED_EDGES);
 	int tracedptr = ReadPanelData<int>(0x01BE9, TRACED_EDGE_DATA);
+	std::vector<int> counts(26); std::fill(counts.begin(), counts.end(), 0);
 	std::vector<SolutionPoint> traced; if (tracedptr) traced = ReadArray<SolutionPoint>(0x01BE9, TRACED_EDGE_DATA, numTraced);
-	if (traced.size() < 12 || traced.size() > 26 || traced[traced.size() - 1].pointB != 25 && traced[traced.size() - 1].pointA != 16 && traced[traced.size() - 1].pointB != 16) {
+	if (traced.size() < 12 || traced.size() > 26) {
 		WritePanelData<float>(0x03317, POWER, { 0, 0 });
 		return;
 	}
 	for (SolutionPoint p : traced) {
-		if (p.pointA == 16 && p.pointB == 17 || p.pointB == 16 && p.pointA == 17) {
-			WritePanelData<float>(0x03317, POWER, { 1, 1 });
+		counts[p.pointA]++;
+		counts[p.pointB]++;
+	}
+	for (int i = 0; i < 26; i++) {
+		if (i == 4 || i == 25) {
+			if (counts[i] != 1) {
+				WritePanelData<float>(0x03317, POWER, { 0, 0 });
+				return;
+			}
+		}
+		else if (counts[i] != 0 && counts[i] != 2) {
+			WritePanelData<float>(0x03317, POWER, { 0, 0 });
 			return;
 		}
 	}
-	WritePanelData<float>(0x03317, POWER, { 0, 0 });
+	WritePanelData<float>(0x03317, POWER, { 1, 1 });
 }
 
 //Arrow Watchdog - To run the arrow puzzles
