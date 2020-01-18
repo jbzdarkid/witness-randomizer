@@ -22,11 +22,13 @@ void KeepWatchdog::action() {
 	int tracedptr = ReadPanelData<int>(0x01BE9, TRACED_EDGE_DATA);
 	std::vector<int> counts(26); std::fill(counts.begin(), counts.end(), 0);
 	std::vector<SolutionPoint> traced; if (tracedptr) traced = ReadArray<SolutionPoint>(0x01BE9, TRACED_EDGE_DATA, numTraced);
-	if (traced.size() < 12 || traced.size() > 26) {
+	if (traced.size() < 12) {
 		WritePanelData<float>(0x03317, POWER, { 0, 0 });
 		return;
 	}
 	for (SolutionPoint p : traced) {
+		if (p.pointA == p.pointB) continue;
+		if (p.pointA > 25 || p.pointB > 25) continue;
 		counts[p.pointA]++;
 		counts[p.pointB]++;
 	}
@@ -43,6 +45,7 @@ void KeepWatchdog::action() {
 		}
 	}
 	WritePanelData<float>(0x03317, POWER, { 1, 1 });
+	WritePanelData<int>(0x03317, NEEDS_REDRAW, { 1 });
 }
 
 //Arrow Watchdog - To run the arrow puzzles
