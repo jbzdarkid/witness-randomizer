@@ -75,13 +75,14 @@ int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t 
 }
 
 void Memory::ThrowError(std::string message) {
-	std::ofstream file("errorlog.txt", std::ofstream::app);
-	file << message << std::endl;
 	DWORD exitCode;
 	GetExitCodeProcess(_handle, &exitCode);
 	if (exitCode != STILL_ACTIVE) throw std::exception(message.c_str());
-	message += "\nPlease close the randomizer and The Witness and try again. If the error persists, please report the issue on the Github Issues page.";
+	std::ofstream file("errorlog.txt", std::ofstream::app);
+	file << message << std::endl;
+	message += "\nPlease close The Witness and try again. If the error persists, please report the issue on the Github Issues page.";
 	MessageBox(GetActiveWindow(), std::wstring(message.begin(), message.end()).c_str(), NULL, MB_OK);
+	throw std::exception(message.c_str());
 }
 
 void Memory::ThrowError(const std::vector<int>& offsets, bool rw_flag) {
@@ -124,7 +125,7 @@ void* Memory::ComputeOffset(std::vector<int> offsets)
 		if (search == std::end(_computedAddresses)) {
 			// If the address is not yet computed, then compute it.
 			uintptr_t computedAddress = 0;
-			if (!ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
+			if (!Read(reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t))) {
 				ThrowError(offsets, false);
 			}
 			_computedAddresses[cumulativeAddress] = computedAddress;

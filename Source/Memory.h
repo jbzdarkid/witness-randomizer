@@ -36,6 +36,24 @@ public:
 		return AllocArray<T>(id, static_cast<int>(numItems));
 	}
 
+	bool Read(LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize) {
+		for (int i = 0; i < 1000; i++) {
+			if (ReadProcessMemory(_handle, lpBaseAddress, lpBuffer, nSize, nullptr)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool Write(LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize) {
+		for (int i = 0; i < 1000; i++) {
+			if (WriteProcessMemory(_handle, lpBaseAddress, lpBuffer, nSize, nullptr)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	template <class T>
 	std::vector<T> ReadArray(int panel, int offset, int size) {
 		if (size == 0) return std::vector<T>();
@@ -89,11 +107,8 @@ private:
 	std::vector<T> ReadData(const std::vector<int>& offsets, size_t numItems) {
 		std::vector<T> data;
 		data.resize(numItems);
-		for (int i=0; i<5; i++) {
-			if (ReadProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * numItems, nullptr))
-			{
-				return data;
-			}
+		if (Read(ComputeOffset(offsets), &data[0], sizeof(T) * numItems)) {
+			return data;
 		}
 		ThrowError(offsets, false);
 		return {};
@@ -101,10 +116,8 @@ private:
 
 	template <class T>
 	void WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
-		for (int i=0; i<5; i++) {
-			if (WriteProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), nullptr)) {
-				return;
-			}
+		if (Write(ComputeOffset(offsets), &data[0], sizeof(T) * data.size())) {
+			return;
 		}
 		ThrowError(offsets, true);
 	}
