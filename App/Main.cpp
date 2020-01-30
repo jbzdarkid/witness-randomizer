@@ -52,14 +52,14 @@
 #define SHAPE_43 0x0004
 #define SHAPE_44 0x0008
 
-#define ARROW_DOWN 0x00000
-#define ARROW_UP 0x10000
-#define ARROW_RIGHT 0x20000
-#define ARROW_LEFT 0x30000
-#define ARROW_DOWN_RIGHT 0x40000
-#define ARROW_UP_RIGHT 0x50000
-#define ARROW_UP_LEFT 0x60000
-#define ARROW_DOWN_LEFT 0x70000
+#define ARROW_DOWN 0x700
+#define ARROW_UP 0x701
+#define ARROW_RIGHT 0x702
+#define ARROW_LEFT 0x703
+#define ARROW_DOWN_RIGHT 0x704
+#define ARROW_UP_RIGHT 0x705
+#define ARROW_UP_LEFT 0x706
+#define ARROW_DOWN_LEFT 0x707
 
 #define DEBUG false
 
@@ -216,6 +216,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				Special::WritePanelData(0x00182, BACKGROUND_REGION_COLOR + 12, hard ? 2 : 1);
 			} 
 			else { //Otherwise, run the randomizer
+				std::ofstream file("errorlog.txt", std::ofstream::app);
+				file << "GENERATING SEED " << seed << " " << (hard ? "EXPERT" : "NORMAL") << std::endl;
 				randomizer->seed = seed;
 				if (hard) randomizer->GenerateHard(hwndLoadingText);
 				else randomizer->GenerateNormal(hwndLoadingText);
@@ -363,7 +365,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
-int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
 	LoadLibrary(L"Msftedit.dll");
 

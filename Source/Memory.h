@@ -2,6 +2,9 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
 #include <windows.h>
 
 //#define GLOBALS 0x5B28C0
@@ -79,9 +82,6 @@ public:
 		WriteData<T>({ GLOBALS, 0x18, panel * 8, offset }, data);
 	}
 
-	void AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc);
-	int ExecuteSigScans();
-
 	void ClearOffsets() { _computedAddresses = std::map<uintptr_t, uintptr_t>(); }
 
 private:
@@ -95,7 +95,7 @@ private:
 				return data;
 			}
 		}
-		ThrowError();
+		ThrowError(offsets, false);
 		return {};
 	}
 
@@ -106,9 +106,10 @@ private:
 				return;
 			}
 		}
-		ThrowError();
+		ThrowError(offsets, true);
 	}
-
+	void ThrowError(std::string message);
+	void ThrowError(const std::vector<int>& offsets, bool rw_flag);
 	void ThrowError();
 
 	void* ComputeOffset(std::vector<int> offsets);
@@ -123,8 +124,6 @@ private:
 	};
 	std::map<std::vector<byte>, SigScan> _sigScans;
 
-	friend class Temp;
-	friend class ChallengeRandomizer;
 	friend class Randomizer;
 	friend class Special;
 };

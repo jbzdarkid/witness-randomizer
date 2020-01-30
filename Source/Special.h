@@ -131,16 +131,6 @@ public:
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WriteArray<Color>(panel, offset, data, force);
 	}
 
-	static int testFind(std::vector<byte> bytes) {
-		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
-		int index = 0;
-		panel->_memory->AddSigScan(bytes, [&](int i) {
-			index = i;
-		});
-		panel->_memory->ExecuteSigScans();
-		return index;
-	}
-
 	static void testSwap(int id1, int id2) {
 		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
 		std::vector<byte> bytes1 = panel->_memory->ReadPanelData<byte>(id1, 0, 0x600);

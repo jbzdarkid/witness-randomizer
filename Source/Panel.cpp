@@ -54,7 +54,6 @@ void Panel::Read() {
 	ReadDecorations();
 	pathWidth = 1;
 	_resized = false;
-	//writeColors = false;
 	colorMode = -1;
 	decorationsOnly = false;
 }

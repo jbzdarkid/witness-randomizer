@@ -369,7 +369,7 @@ private:
 			positions[i] += intersections[xy_to_loc(x, y) * 2] + unitWidth;
 			positions[i + 1] += intersections[xy_to_loc(x, y) * 2 + 1] - unitWidth;
 		}
-		int posIndex, polyIndex;
+		int posIndex = 0, polyIndex = 0;
 		if (ticks == 1) {
 			posIndex = 20; polyIndex = 24;
 		}

@@ -59,11 +59,6 @@ int Memory::GetCurrentFrame()
 	return ReadData<int>({SCRIPT_FRAMES}, 1)[0];
 }
 
-void Memory::AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc)
-{
-	_sigScans[scanBytes] = {scanFunc, false};
-}
-
 int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t startIndex = 0) {
 	for (size_t i=startIndex; i<data.size() - search.size(); i++) {
 		bool match = true;
@@ -79,32 +74,40 @@ int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t 
 	return -1;
 }
 
-int Memory::ExecuteSigScans()
-{
-	for (int i = 0; i<0x2000000; i += 0x1000) {
-		std::vector<byte> data = ReadData<byte>({i}, 0x1100);
-		
-		for (auto& [scanBytes, sigScan] : _sigScans) {
-			if (sigScan.found) continue;
-			int index = find(data, scanBytes);
-			if (index == -1) continue;
-			sigScan.scanFunc(i + index);
-			sigScan.found = true;
-		}
-	}
+void Memory::ThrowError(std::string message) {
+	std::ofstream file("errorlog.txt", std::ofstream::app);
+	file << message << std::endl;
+	DWORD exitCode;
+	GetExitCodeProcess(_handle, &exitCode);
+	if (exitCode != STILL_ACTIVE) throw std::exception(message.c_str());
+	message += "\nPlease close the randomizer and The Witness and try again. If the error persists, please report the issue on the Github Issues page.";
+	MessageBox(GetActiveWindow(), std::wstring(message.begin(), message.end()).c_str(), NULL, MB_OK);
+}
 
-	int notFound = 0;
-	for (auto it : _sigScans) {
-		if (it.second.found == false) notFound++;
+void Memory::ThrowError(const std::vector<int>& offsets, bool rw_flag) {
+	std::stringstream ss; ss << std::hex;
+	if (offsets.size() == 4) {
+		ss << "Error " << (rw_flag ? "writing" : "reading") << " 0x" << offsets[3] << " in panel 0x" << offsets[2] / 8;
+		ThrowError(ss.str());
 	}
-	return notFound;
+	else if (offsets.size() == 3) {
+		std::ofstream file("errorlog.txt", std::ofstream::app);
+		file << "Error calculating offsets: ";
+		for (int i : offsets) file << i << " ";
+		file << std::endl;
+		//Don't bother throwing an error since it will be thrown anyway by the caller of ComputeOffsets.
+	}
+	else {
+		for (int i : offsets) ss << "0x" << i << " ";
+		ThrowError("Unknown error: " + ss.str());
+	}
 }
 
 void Memory::ThrowError() {
 	std::string message(256, '\0');
 	int length = FormatMessageA(4096, nullptr, GetLastError(), 1024, &message[0], static_cast<DWORD>(message.size()), nullptr);
 	message.resize(length);
-	throw std::exception(message.c_str());
+	ThrowError(message);
 }
 
 void* Memory::ComputeOffset(std::vector<int> offsets)
@@ -122,7 +125,7 @@ void* Memory::ComputeOffset(std::vector<int> offsets)
 			// If the address is not yet computed, then compute it.
 			uintptr_t computedAddress = 0;
 			if (!ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
-				ThrowError();
+				ThrowError(offsets, false);
 			}
 			_computedAddresses[cumulativeAddress] = computedAddress;
 		}
