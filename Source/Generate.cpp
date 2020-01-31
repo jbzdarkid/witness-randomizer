@@ -571,7 +571,7 @@ bool Generate::place_all_symbols(PuzzleSymbols & symbols)
 			}
 		}
 	}
-	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative))
+	if (numShapes > 0 && !place_shapes(colors, negativeColors, numShapes, numRotate, numNegative) || numShapes == 0 && numNegative > 0)
 		return false;
 
 	_stoneTypes = static_cast<int>(symbols[Decoration::Stone].size());

@@ -114,12 +114,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			generator->resetConfig();
 			generator->seed(static_cast<unsigned int>(time(NULL)));
 			generator->seed(ctr++);
-			//generator->seed(2);
-
-			//specialCase->testPanel(0x09FDA);
-			//target = specialCase->ReadPanelData<float>(0x181F5, OPEN_RATE);
-			//specialCase->test();
-			specialCase->generateMountainFloorH({ 0x09EFF, 0x09F01, 0x09FC1, 0x09F8E }, 0x09FDA);
+			//generator->seed(1);
 
 			break;
 
