@@ -142,14 +142,54 @@ public:
 	}
 
 	template <class T> static std::vector<T> testRead(int address, int numItems) {
-		std::shared_ptr<Panel> panel = std::make_shared<Panel>();
+		Memory memory("witness64_d3d11.exe");
 		std::vector<int> offsets = { address };
-		return panel->_memory->ReadData<T>(offsets, numItems);
+		return memory.ReadData<T>(offsets, numItems);
 	}
 
 	static void testPanel(int id) {
 		std::shared_ptr<Panel> panel = std::make_shared<Panel>(id);
 		panel->Write();
+	}
+
+	template <class T> static uintptr_t testFind(uintptr_t startAddress, int length, T item) {
+		Memory memory("witness64_d3d11.exe");
+		uintptr_t address;
+		std::vector<byte> bytes;
+		bytes.resize(1024, 0);
+		std::vector<byte> itemb;
+		itemb.resize(sizeof(T));
+		std::memcpy(&itemb[0], &item, sizeof(T));
+		for (address = startAddress; address < startAddress + length; address += 1024) {
+			if (!memory.Read(reinterpret_cast<LPCVOID>(address), &bytes[0], 1024))
+				continue;
+			for (int i = 0; i < bytes.size() - itemb.size(); i++) {
+				if (std::equal(bytes.begin() + i, bytes.begin() + i + sizeof(T), itemb.begin()))
+					return address + i;
+			}
+		}
+		return -1;
+	}
+
+	static uintptr_t findGlobals() {
+		//Find pointer to panel data
+		//uintptr_t ptr = testFind<int>(0x35613E48, 0x10000000, 0x1);
+		uintptr_t ptr = testFind<int>(0x30000000, 0x10000000, Panel::Style::HAS_SHAPERS | Panel::Style::HAS_STARS | Panel::Style::IS_PIVOTABLE);
+		if (ptr == -1)
+			return -1;
+		ptr -= STYLE_FLAGS;
+		ptr = testFind<uintptr_t>(0x00000000, 0x30000000, ptr);
+		if (ptr == -1)
+			return -1;
+		ptr -= 0x17E52 * 8;
+		ptr = testFind<uintptr_t>(0x00000000, 0x30000000, ptr);
+		if (ptr == -1)
+			return -1;
+		ptr -= 0x18;
+		Memory memory("witness64_d3d11.exe");
+		ptr = testFind<uintptr_t>(memory._baseAddress, 0x30000000, ptr);
+		ptr -= memory._baseAddress;
+		return ptr;
 	}
 
 	static std::vector<MemoryWrite<int>> writeInt;

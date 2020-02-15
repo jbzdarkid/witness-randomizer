@@ -626,7 +626,7 @@ void PuzzleList::GenerateMountainN()
 	generator->setFlagOnce(Generate::Config::DecorationsOnly);
 	std::set<Point> bpoints1 = { { 6, 3 },{ 5, 4 },{ 7, 4 } };
 	std::set<Point> bpoints2 = { { 6, 5 },{ 5, 6 },{ 6, 7 },{ 7, 6 } };
-	std::set<Point> bpoints3 = { { 3, 6 },{ 4, 5 },{ 4, 7 } };
+	std::set<Point> bpoints3 = { { 3, 6 },{ 4, 7 } };
 	if (rand() % 2 == 0) generator->hitPoints = { generator->pick_random(bpoints1), generator->pick_random(bpoints2), generator->pick_random(bpoints3) };
 	else generator->hitPoints = { generator->pick_random(bpoints3), generator->pick_random(bpoints2), generator->pick_random(bpoints1) };
 	generator->setObstructions({ { 4, 1 },{ 6, 1 },{ 8, 1 } });
@@ -1781,7 +1781,7 @@ void PuzzleList::GenerateMountainH()
 	generator->setFlagOnce(Generate::Config::DecorationsOnly);
 	std::set<Point> bpoints1 = { { 6, 3 },{ 5, 4 },{ 7, 4 } };
 	std::set<Point> bpoints2 = { { 6, 5 },{ 5, 6 },{ 6, 7 },{ 7, 6 } };
-	std::set<Point> bpoints3 = { { 3, 6 },{ 4, 5 },{ 4, 7 } };
+	std::set<Point> bpoints3 = { { 3, 6 },{ 4, 7 } };
 	if (rand() % 2 == 0) generator->hitPoints = { generator->pick_random(bpoints1), generator->pick_random(bpoints2), generator->pick_random(bpoints3) };
 	else generator->hitPoints = { generator->pick_random(bpoints3), generator->pick_random(bpoints2), generator->pick_random(bpoints1) };
 	generator->setObstructions({ { 4, 1 },{ 6, 1 },{ 8, 1 } });

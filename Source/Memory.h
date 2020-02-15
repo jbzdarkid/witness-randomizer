@@ -131,11 +131,6 @@ private:
 	std::map<std::pair<int, int>, int> _arraySizes;
 	uintptr_t _baseAddress = 0;
 	HANDLE _handle = nullptr;
-	struct SigScan {
-		std::function<void(int)> scanFunc;
-		bool found;
-	};
-	std::map<std::vector<byte>, SigScan> _sigScans;
 
 	friend class Randomizer;
 	friend class Special;
