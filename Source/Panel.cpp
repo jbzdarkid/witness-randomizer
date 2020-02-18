@@ -428,6 +428,15 @@ void Panel::WriteDecorations() {
 	_style &= ~0x3fc0; //Remove all element flags
 	for (int y=_height-2; y>0; y-=2) {
 		for (int x=1; x<_width; x+=2) {
+			if (colorMode == 3 && (_grid[x][y] & 0xf) == Decoration::Color::Green) {
+				_grid[x][y] &= ~0xf; _grid[x][y] |= 6;
+			}
+			if (colorMode == 3 && (_grid[x][y] & 0xf) == Decoration::Color::Orange) {
+				_grid[x][y] &= ~0xf; _grid[x][y] |= 5;
+			}
+			if (colorMode == 3 && (_grid[x][y] & 0xf) == Decoration::Color::Magenta) {
+				_grid[x][y] &= ~0xf; _grid[x][y] |= 4;
+			}
 			decorations.push_back(_grid[x][y]);
 			decorationColors.push_back(get_color_rgb(_grid[x][y] & 0xf));
 			if (_grid[x][y])
@@ -454,11 +463,20 @@ void Panel::WriteDecorations() {
 	}
 	else {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-		if (colorMode == 2)
-			_memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
-		else if (colorMode >= 0) {
+		if (colorMode <= 1) {
 			_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
 			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { colorMode });
+		}
+		else if (colorMode == 2)
+			_memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
+		else if (colorMode == 3) {
+			_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
+			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
+			_memory->WritePanelData<Color>(id, SYMBOL_A, { { 0, 0, 0, 1 } }); //Black
+			_memory->WritePanelData<Color>(id, SYMBOL_B, { { 1, 1, 1, 1 } }); //White
+			_memory->WritePanelData<Color>(id, SYMBOL_C, { { 1, 0.46f, 0, 1 } }); //Orange
+			_memory->WritePanelData<Color>(id, SYMBOL_D, { { 1, 0, 1, 1 } }); //Magenta
+			_memory->WritePanelData<Color>(id, SYMBOL_E, { { 0, 1, 0, 1 } }); //Green
 		}
 	}
 	if (any || _memory->ReadPanelData<int>(id, DECORATIONS)) {

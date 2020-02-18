@@ -12,7 +12,7 @@ BigShapes: Bigger tetris shapes than normal, with an average size of about 5-6 b
 SplitShapes: Don't make solutions where tetris shapes combine
 RequireCombineShapes: Make only solutions where tetris shapes combine
 TreehouseLayout: Position starts and exits in the middle, like in the Treehouse
-DisableReset: Write the puzzle out, but don't flush the puzzle data. Allows for reusing data for the next puzzle
+TreehouseColors: Use a color scheme that gives a proper looking orange and green for triangles.
 AlternateColors: Use an alternate symbol color scheme. The colors used vary by puzzle
 WriteColors: Write out exact colors from each symbol. Sometimes needed to get a proper red, orange, or green. Unfortunately it doesn't apply to triangles
 Write2Color: Write out line and dot colors for a blue/yellow symmetry puzzle
@@ -28,5 +28,5 @@ WriteDotColor: Make dots a dark grey color
 WriteDotColor2: Make dots the same color as the line
 LongestPath: Make the longest path possible, covering every point. For full dot puzzles
 WriteInvisible: Make the symmetry path invisible
-ArrowRecolor: Recolor the puzzle background for arrow puzzles. Need to have values for backgroundColor, arrowColor, and successColor
+DisableReset: Write the puzzle out, but don't flush the puzzle data. Allows for reusing data for the next puzzle
 MountainFloorH: Only for the mountain floor puzzles on hard mode

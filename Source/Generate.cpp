@@ -229,6 +229,9 @@ void Generate::write(int id)
 	else if (hasFlag(Config::WriteColors)) {
 		_panel->colorMode = 2;
 	}
+	else if (hasFlag(Config::TreehouseColors)) {
+		_panel->colorMode = 3;
+	}
 	if (hasFlag(Config::Write2Color)) {
 		Special::WritePanelData(id, PATTERN_POINT_COLOR_A, _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A));
 		Special::WritePanelData(id, PATTERN_POINT_COLOR_B, _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_B));
@@ -244,7 +247,7 @@ void Generate::write(int id)
 		Color color = _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A);
 		Special::WritePanelData(id, PATTERN_POINT_COLOR, color);
 	}
-	if (hasFlag(Config::ArrowRecolor)) {
+	if (arrowColor.a > 0 || backgroundColor.a > 0 || successColor.a > 0) {
 		Special::WritePanelData(id, OUTER_BACKGROUND, { backgroundColor });
 		if (arrowColor.a == 0)
 			Special::WritePanelData(id, BACKGROUND_REGION_COLOR, { _panel->_memory->ReadPanelData<Color>(id, SUCCESS_COLOR_A) });
@@ -289,6 +292,7 @@ void Generate::resetConfig()
 	_config = 0;
 	_oneTimeAdd = Config::None;
 	_oneTimeRemove = Config::None;
+	arrowColor = backgroundColor = successColor = { 0, 0, 0, 0 };
 }
 
 //Increment the counter on the progress indicator. This is called each time a puzzle is written, but may be called manually in other situations
