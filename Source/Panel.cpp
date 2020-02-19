@@ -54,7 +54,7 @@ void Panel::Read() {
 	ReadDecorations();
 	pathWidth = 1;
 	_resized = false;
-	colorMode = -1;
+	colorMode = ColorMode::Default;
 	decorationsOnly = false;
 }
 
@@ -274,9 +274,12 @@ bool Panel::LoadPanels(int seed, bool hard)
 			panel._endpoints.push_back(Endpoint(x, y, static_cast<Endpoint::Direction>(dir), flags));
 		}
 		file >> panel.minx >> panel.miny >> panel.maxx >> panel.maxy >> panel.unitWidth >> panel.unitHeight;
-		int symmetry;
-		file >> panel._style >> panel._resized >> symmetry >> panel.pathWidth >> panel.colorMode >> panel.decorationsOnly;
+		int symmetry, colorMode;
+		file >> panel._style >> panel._resized >> symmetry >> panel.pathWidth >> colorMode >> panel.decorationsOnly;
 		panel.symmetry = static_cast<Panel::Symmetry>(symmetry);
+		panel.colorMode = static_cast<Panel::ColorMode>(colorMode);
+		if (panel.colorMode == Panel::ColorMode::Treehouse)
+			panel.colorMode = Panel::ColorMode::TreehouseLoad; //Colors have already been corrected - don't do it again
 		std::string skip; std::getline(file, skip); //Go to the next line
 		if (file.fail()) {
 			if (file.eof()) return false;
@@ -428,13 +431,13 @@ void Panel::WriteDecorations() {
 	_style &= ~0x3fc0; //Remove all element flags
 	for (int y=_height-2; y>0; y-=2) {
 		for (int x=1; x<_width; x+=2) {
-			if (colorMode == 3 && (_grid[x][y] & 0xf) == Decoration::Color::Green) {
+			if (colorMode == ColorMode::Treehouse && (_grid[x][y] & 0xf) == Decoration::Color::Green) {
 				_grid[x][y] &= ~0xf; _grid[x][y] |= 6;
 			}
-			if (colorMode == 3 && (_grid[x][y] & 0xf) == Decoration::Color::Orange) {
+			if (colorMode == ColorMode::Treehouse && (_grid[x][y] & 0xf) == Decoration::Color::Orange) {
 				_grid[x][y] &= ~0xf; _grid[x][y] |= 5;
 			}
-			if (colorMode == 3 && (_grid[x][y] & 0xf) == Decoration::Color::Magenta) {
+			if (colorMode == ColorMode::Treehouse && (_grid[x][y] & 0xf) == Decoration::Color::Magenta) {
 				_grid[x][y] &= ~0xf; _grid[x][y] |= 4;
 			}
 			decorations.push_back(_grid[x][y]);
@@ -463,13 +466,13 @@ void Panel::WriteDecorations() {
 	}
 	else {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-		if (colorMode <= 1) {
+		if (colorMode == ColorMode::Reset || colorMode == ColorMode::Alternate) {
 			_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
-			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { colorMode });
+			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { colorMode == ColorMode::Reset ? 0 : 1 });
 		}
-		else if (colorMode == 2)
+		else if (colorMode == ColorMode::WriteColors)
 			_memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
-		else if (colorMode == 3) {
+		else if (colorMode == ColorMode::Treehouse || colorMode == ColorMode::TreehouseLoad) {
 			_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
 			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
 			_memory->WritePanelData<Color>(id, SYMBOL_A, { { 0, 0, 0, 1 } }); //Black

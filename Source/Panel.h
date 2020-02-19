@@ -168,7 +168,8 @@ public:
 	Symmetry symmetry;
 
 	float pathWidth;
-	int colorMode;
+	enum ColorMode { Default, Reset, Alternate, WriteColors, Treehouse, TreehouseLoad };
+	ColorMode colorMode;
 	bool decorationsOnly;
 
 private:

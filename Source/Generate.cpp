@@ -221,16 +221,16 @@ void Generate::write(int id)
 	incrementProgress();
 
 	if (hasFlag(Config::ResetColors)) {
-		_panel->colorMode = 0;
+		_panel->colorMode = Panel::ColorMode::Reset;
 	}
 	else if (hasFlag(Config::AlternateColors)) {
-		_panel->colorMode = 1;
+		_panel->colorMode = Panel::ColorMode::Alternate;
 	}
 	else if (hasFlag(Config::WriteColors)) {
-		_panel->colorMode = 2;
+		_panel->colorMode = Panel::ColorMode::WriteColors;
 	}
 	else if (hasFlag(Config::TreehouseColors)) {
-		_panel->colorMode = 3;
+		_panel->colorMode = Panel::ColorMode::Treehouse;
 	}
 	if (hasFlag(Config::Write2Color)) {
 		Special::WritePanelData(id, PATTERN_POINT_COLOR_A, _panel->_memory->ReadPanelData<Color>(0x0007C, PATTERN_POINT_COLOR_A));
@@ -1729,7 +1729,10 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		//Place the eraser at a random open point
 		if (_splitPoints.size() == 0) pos = pick_random(open2);
 		else for (Point p : _splitPoints) if (region.count(p)) { pos = p; break; }
-		if (_panel->id == 0x288FC && hasFlag(Generate::Config::DisableWrite)) pos = { 5, 5 }; //For the puzzle in the cave with a pillar in middle
+		if (_panel->id == 0x288FC && hasFlag(Generate::Config::DisableWrite)) {
+			if (get(5, 5) != 0) return false;
+			pos = { 5, 5 }; //For the puzzle in the cave with a pillar in middle
+		}
 		set(pos, Decoration::Eraser | color);
 		_openpos.erase(pos);
 		amount--;
