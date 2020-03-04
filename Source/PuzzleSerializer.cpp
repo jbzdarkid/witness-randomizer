@@ -179,6 +179,7 @@ void PuzzleSerializer::ReadExtras(Puzzle& p) {
 
 void PuzzleSerializer::ReadDecorations(Puzzle& p, int id) {
     int numDecorations = _memory->ReadEntityData<int>(id, NUM_DECORATIONS, 1)[0];
+    if (numDecorations == 0) return;
     std::vector<int> decorations = _memory->ReadArray<int>(id, DECORATIONS, numDecorations);
     if (numDecorations > 0) p.hasDecorations = true;
 
@@ -203,6 +204,7 @@ void PuzzleSerializer::ReadDecorations(Puzzle& p, int id) {
 
 void PuzzleSerializer::ReadSequence(Puzzle& p, int id) {
     int sequenceLength = _memory->ReadEntityData<int>(id, SEQUENCE_LEN, 1)[0];
+    if (sequenceLength == 0) return;
     std::vector<int> sequence = _memory->ReadArray<int>(id, SEQUENCE, sequenceLength);
 
     for (int location : sequence) {
@@ -545,6 +547,8 @@ std::tuple<int, int> PuzzleSerializer::loc_to_xy(const Puzzle& p, int location) 
 
     int x = 2 * (location % width2);
     int y = 2 * (height2 - location / width2);
+    assert(x >= 0 && x < p.width);
+    assert(y >= 0 && y < p.height);
     return {x, y};
 }
 

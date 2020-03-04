@@ -45,6 +45,7 @@ struct Cell {
     std::shared_ptr<Decoration> decoration = nullptr;
 
     bool start = false;
+    // TODO: Top/bottom
     enum class Dir {NONE, LEFT, RIGHT, UP, DOWN};
     Dir end = Dir::NONE;
 
@@ -91,6 +92,8 @@ public:
     Cell::Color GetLine(int x, int y) const;
     void NewGrid(int newWidth, int newHeight);
     Pos GetSymmetricalPos(int x, int y) const;
+
+    std::string Serialize();
 
 // private:
     std::vector<std::vector<Cell>> grid;

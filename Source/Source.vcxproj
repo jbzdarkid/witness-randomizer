@@ -162,6 +162,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ChallengeRandomizer.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="MemoryException.h" />
     <ClInclude Include="pch.h" />

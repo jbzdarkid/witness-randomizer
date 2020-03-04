@@ -17,6 +17,7 @@ public:
             set[index] = set[setSize-1];
             setSize--;
         }
+        assert(selection.size() == count);
         return selection;
     }
 
