@@ -165,6 +165,7 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="MemoryException.h" />
+    <ClInclude Include="Panels_.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Puzzle.h" />
     <ClInclude Include="Panels.h" />

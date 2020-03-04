@@ -6,6 +6,7 @@
 #include "Random.h"
 #include "Randomizer.h"
 #include "Randomizer2.h"
+#include "Panels_.h"
 
 #define HEARTBEAT 0x401
 #define RANDOMIZE_READY 0x402
@@ -20,6 +21,7 @@
 #include "Solver.h"
 #include "PuzzleSerializer.h"
 #include <sstream>
+#include <iomanip>
 
 #define TMP1 0x501
 #define TMP2 0x502
@@ -160,7 +162,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 }
                 break;
             case TMP3:
-                Solver::Solve(g_puzzle);
+                {
+                    for (auto [key, value] : PANELS) {
+                        std::stringstream out;
+                        std::string name(value);
+                        out << "  {'id': 0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(5) << key << ", 'area':'";
+                        int k;  
+                        for (k=0; name[k] != ' '; k++) out << name[k];
+                        if (name[k+2] == ' ') {
+                            out << name[k] << name[k+1];
+                            k += 2;
+                        }
+                        out << "', 'name':'";
+                        k++;
+                        for (k; k < name.size(); k++) out << name[k];
+                        out << "', 'data':'";
+                        auto puzzle = PuzzleSerializer(g_witnessProc).ReadPuzzle(key);
+                        out << puzzle.Serialize();
+                        out << "'},\r\n";
+                        DebugPrint(out.str());
+                    }
+                }
+
+                // Solver::Solve(g_puzzle);
                 break;
             case TMP4:
                 SetRandomSeed();
