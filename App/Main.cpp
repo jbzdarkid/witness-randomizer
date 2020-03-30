@@ -172,7 +172,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			//If the save was previously randomized, check that seed and difficulty match with the save file
 			int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
-			if (lastSeed > 0) {
+			if (lastSeed > 0 && !DEBUG) {
 				if (seed != lastSeed && !randomizer->seedIsRNG) {
 					MessageBox(hwnd, (L"This save file was previously randomized with seed " + std::to_wstring(lastSeed) + L". To use a different seed, you must start a new save file.").c_str(), NULL, MB_OK);
 					SetWindowText(hwndSeed, std::to_wstring(lastSeed).c_str());
@@ -198,7 +198,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 
 			//If the save hasn't been randomized before, make sure it is a fresh, unplayed save file
-			else if (Special::ReadPanelData<int>(0x00064, TRACED_EDGES) > 0 || Special::ReadPanelData<float>(0x00295, POWER) > 0) {
+			else if ((Special::ReadPanelData<int>(0x00064, TRACED_EDGES) > 0 || Special::ReadPanelData<float>(0x00295, POWER) > 0) && !DEBUG) {
 				MessageBox(hwnd, L"You must start a new game to be able to randomize.", NULL, MB_OK);
 				break;
 			}

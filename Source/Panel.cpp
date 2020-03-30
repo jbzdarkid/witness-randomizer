@@ -488,7 +488,9 @@ void Panel::WriteDecorations() {
 		_memory->WriteArray<int>(id, DECORATION_FLAGS, decorations);
 	}
 	if (arrows) {
-		(new ArrowWatchdog(id, Point::pillarWidth))->start();
+		ArrowWatchdog* watchdog = new ArrowWatchdog(id, Point::pillarWidth);
+		watchdog->style = _style;
+		watchdog->start();
 	}
 }
 
