@@ -532,7 +532,7 @@ void PuzzleList::GenerateTownN()
 	generator->generate(0x28A33, Decoration::Dot_Intersection, 25, Decoration::Poly, 2);
 	generator->generate(0x28ABF, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 1, Decoration::Poly, 1);
 	generator->generate(0x28AC0, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 2);
-	generator->generate(0x28AC1, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 3);
+	generator->generate(0x28AC1, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 2);
 	generator->generate(0x28AD9, Decoration::Dot_Intersection, 25, Decoration::Poly | Decoration::Can_Rotate, 2, Decoration::Eraser | Decoration::Color::White, 1);
 	//Blue Symmetry
 	generator->setSymmetry(Panel::Symmetry::Rotational);
@@ -2026,9 +2026,9 @@ void PuzzleList::GenerateCavesH()
 	generator->generate(0x0A2D7, Decoration::Dot_Intersection, 36, Decoration::Arrow, 4, Decoration::Start, 1);
 	generator->generate(0x0A2DD, Decoration::Dot_Intersection, 36, Decoration::Arrow, 6, Decoration::Start, 1);
 	generator->generate(0x0A2EA, Decoration::Dot_Intersection, 36, Decoration::Arrow, 8, Decoration::Start, 1);
-	generator->setGridSize(4, 4);
-	generator->generate(0x17FB9, Decoration::Dot_Intersection, 25, Decoration::Arrow, 2, Decoration::Start, 1,
-		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1);
+	generator->pathWidth = 0.7f;
+	generator->generate(0x17FB9, Decoration::Dot_Intersection, 36, Decoration::Arrow, 4, Decoration::Start, 1,
+		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 3);
 
 	//Invisible Symbols
 	generator->resetConfig();

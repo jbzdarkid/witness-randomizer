@@ -1591,7 +1591,7 @@ bool Generate::place_arrows(int color, int amount, int targetCount)
 			continue; //Because of a glitch where arrows in the center column won't draw right
 		int fails = 0;
 		while (fails++ < 20) { //Keep picking random directions until one works
-			int choice = rand() % 8;
+			int choice = (_parity == -1 ? rand() % 8 : rand() % 4);
 			Point dir = _8DIRECTIONS2[choice];
 			if (Point::pillarWidth > 0 && dir.second == 0) continue; //Sideways arrows on a pillar would wrap forever
 			int count = count_crossings(pos, dir);
