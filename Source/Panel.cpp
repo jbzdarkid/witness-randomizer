@@ -477,7 +477,7 @@ void Panel::WriteDecorations() {
 			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
 			_memory->WritePanelData<Color>(id, SYMBOL_A, { { 0, 0, 0, 1 } }); //Black
 			_memory->WritePanelData<Color>(id, SYMBOL_B, { { 1, 1, 1, 1 } }); //White
-			_memory->WritePanelData<Color>(id, SYMBOL_C, { { 1, 0.46f, 0, 1 } }); //Orange
+			_memory->WritePanelData<Color>(id, SYMBOL_C, { { 1, 0.5, 0, 1 } }); //Orange
 			_memory->WritePanelData<Color>(id, SYMBOL_D, { { 1, 0, 1, 1 } }); //Magenta
 			_memory->WritePanelData<Color>(id, SYMBOL_E, { { 0, 1, 0, 1 } }); //Green
 		}

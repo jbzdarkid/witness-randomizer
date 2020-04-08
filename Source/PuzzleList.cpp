@@ -1453,11 +1453,11 @@ void PuzzleList::GenerateTreehouseH()
 	generator->setFlag(Generate::Config::TreehouseLayout);
 	//Yellow Bridge
 	generator->setGridSize(4, 4);
-	generator->generate(0x17D72, Decoration::Star | Decoration::Color::Orange, 7, Decoration::Triangle | Decoration::Color::Orange, 1);
-	generator->generate(0x17D8F, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 2);
-	generator->generate(0x17D74, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Triangle | Decoration::Color::Orange, 2);
-	generator->generate(0x17DAC, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 3);
-	generator->generate(0x17D9E, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 3);
+	generator->generate(0x17D72, Decoration::Star | Decoration::Color::Orange, 1, Decoration::Triangle | Decoration::Color::Orange, 7);
+	generator->generate(0x17D8F, Decoration::Star | Decoration::Color::Orange, 2, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17D74, Decoration::Star | Decoration::Color::Orange, 2, Decoration::Triangle | Decoration::Color::Orange, 6);
+	generator->generate(0x17DAC, Decoration::Star | Decoration::Color::Orange, 3, Decoration::Triangle | Decoration::Color::Orange, 5);
+	generator->generate(0x17D9E, Decoration::Star | Decoration::Color::Orange, 3, Decoration::Triangle | Decoration::Color::Orange, 5);
 	generator->generate(0x17DB9, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Triangle | Decoration::Color::Orange, 4);
 	generator->setGridSize(5, 5);
 	generator->generate(0x17D9C, Decoration::Star | Decoration::Color::Orange, 5, Decoration::Triangle | Decoration::Color::Orange, 6);
@@ -1470,10 +1470,10 @@ void PuzzleList::GenerateTreehouseH()
 	generator->generate(0x17DC8, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Dot_Intersection, 25);
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.9f;
-	generator->generate(0x17DC7, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Dot_Intersection, 36);
+	generator->generate(0x17DC7, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Dot_Intersection, 36);
 	generator->generate(0x17CE4, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Dot_Intersection, 36);
-	generator->generate(0x17D2D, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Dot_Intersection, 36);
-	generator->generate(0x17D6C, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Dot_Intersection, 36);
+	generator->generate(0x17D2D, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Dot_Intersection, 36);
+	generator->generate(0x17D6C, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Dot_Intersection, 36);
 	//Pink Bridge 2
 	generator->removeFlag(Generate::Config::TreehouseColors);
 	generator->setFlag(Generate::Config::ResetColors);
