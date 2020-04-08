@@ -627,7 +627,7 @@ void PuzzleList::GenerateMountainN()
 	std::set<Point> bpoints1 = { { 6, 3 },{ 5, 4 },{ 7, 4 } };
 	std::set<Point> bpoints2 = { { 6, 5 },{ 5, 6 },{ 6, 7 },{ 7, 6 } };
 	std::set<Point> bpoints3 = { { 3, 6 },{ 4, 7 } };
-	if (rand() % 2 == 0) generator->hitPoints = { generator->pick_random(bpoints1), generator->pick_random(bpoints2), generator->pick_random(bpoints3) };
+	if (Random::rand() % 2 == 0) generator->hitPoints = { generator->pick_random(bpoints1), generator->pick_random(bpoints2), generator->pick_random(bpoints3) };
 	else generator->hitPoints = { generator->pick_random(bpoints3), generator->pick_random(bpoints2), generator->pick_random(bpoints1) };
 	generator->setObstructions({ { 4, 1 },{ 6, 1 },{ 8, 1 } });
 	generator->blockPos = { { 1, 1 },{ 11, 1 },{ 1, 11 },{ 11, 11 } };
@@ -661,7 +661,7 @@ void PuzzleList::GenerateMountainN()
 	//Blue Row
 	generator->setObstructions({ { 4, 3 },{ 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 6, 9 },{ 7, 10 } });
 	generator->generate(0x33AF5, Decoration::Dot, 3, Decoration::Stone | Decoration::Color::Black, 5, Decoration::Stone | Decoration::Color::White, 5);
-	if (rand() % 2 == 0) generator->setObstructions({ { 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 7, 0 },{ 7, 2 } });
+	if (Random::rand() % 2 == 0) generator->setObstructions({ { 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 7, 0 },{ 7, 2 } });
 	else generator->setObstructions({ { 3, 4 },{ 3, 6 },{ 3, 8 },{ 3, 10 },{ 7, 4 },{ 7, 6 },{ 7, 8 },{ 7, 10 },{ 5, 0 },{ 5, 2 },{ 9, 0 },{ 9, 2 } });
 	generator->generate(0x33AF7, Decoration::Stone | Decoration::Color::Black, 7, Decoration::Stone | Decoration::Color::White, 5, Decoration::Star | Decoration::Color::Orange, 4);
 	generator->setObstructions({ { 0, 1 },{ 0, 3 },{ 0, 5 },{ 0, 7 },{ 9, 4 },{ 1, 4 },{ 1, 6 },{ 1, 8 },{ 2, 7 },{ 2, 9 },{ 3, 8 },{ 3, 10 },{ 4, 9 },{ 5, 8 },{ 5, 10 },
@@ -890,7 +890,7 @@ void PuzzleList::GenerateKeepN()
 		{ { 5, 8 },{ 3, 6 },{ 7, 2 },{ 3, 4 } },{ { 5, 8 },{ 1, 6 },{ 7, 2 },{ 1, 4 } },{ { 5, 8 },{ 4, 3 },{ 7, 2 },{ 2, 3 } },
 		{ { 5, 8 },{ 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 5, 8 },{ 1, 4 },{ 7, 2 },{ 1, 2 } },{ { 5, 8 },{ 3, 2 },{ 7, 2 },{ 3, 0 } },
 		{ { 5, 8 },{ 1, 2 },{ 7, 2 },{ 1, 0 } } };
-	generator->hitPoints = validHitPoints[rand() % validHitPoints.size()];
+	generator->hitPoints = validHitPoints[Random::rand() % validHitPoints.size()];
 	generator->setFlagOnce(Generate::Config::SplitShapes);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->generate(0x01CD3, Decoration::Poly, 2, Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1,
@@ -929,11 +929,11 @@ void PuzzleList::GenerateJungleN()
 	generator->resetConfig();
 
 	specialCase->generateSoundDotPuzzle(0x0026F, { 4, 4 }, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, false);
-	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C3F, { 4, 4 }, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
+	if (Random::rand() % 2) specialCase->generateSoundDotPuzzle(0x00C3F, { 4, 4 }, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
 	else specialCase->generateSoundDotPuzzle(0x00C3F, { 4, 4 }, { DOT_LARGE, DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, true);
-	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x00C41, { 4, 4 }, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, true);
+	if (Random::rand() % 2) specialCase->generateSoundDotPuzzle(0x00C41, { 4, 4 }, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, true);
 	else specialCase->generateSoundDotPuzzle(0x00C41, { 4, 4 }, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, true);
-	if (rand() % 2) specialCase->generateSoundDotPuzzle(0x014B2, { 4, 4 }, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, true);
+	if (Random::rand() % 2) specialCase->generateSoundDotPuzzle(0x014B2, { 4, 4 }, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, true);
 	else specialCase->generateSoundDotPuzzle(0x014B2, { 4, 4 }, { DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL }, true);
 }
 
@@ -1095,7 +1095,7 @@ void PuzzleList::GenerateSymmetryH()
 	generator->setFlag(Generate::Config::DisableDotIntersection);
 	std::vector<int> ids = { 0x00065, 0x0006D, 0x00072, 0x0006F, 0x00070, 0x00071 };
 	std::vector<Panel::Symmetry> sym1 = { Panel::Symmetry::Vertical, Panel::Symmetry::Horizontal, Panel::Symmetry::Rotational, Panel::Symmetry::ParallelH, Panel::Symmetry::ParallelV };
-	std::vector<Panel::Symmetry> sym2 = { Panel::Symmetry::ParallelHFlip, Panel::Symmetry::ParallelVFlip, rand() % 2 == 0 ? Panel::Symmetry::ParallelV : Panel::Symmetry::ParallelH };
+	std::vector<Panel::Symmetry> sym2 = { Panel::Symmetry::ParallelHFlip, Panel::Symmetry::ParallelVFlip, Random::rand() % 2 == 0 ? Panel::Symmetry::ParallelV : Panel::Symmetry::ParallelH };
 	Panel::Symmetry lastChoice = Panel::Symmetry::None;
 	for (int i = 0; i < ids.size(); i++) {
 		Panel::Symmetry choice = (i < 4 ? pop_random(sym1) : pop_random(sym2));
@@ -1779,7 +1779,7 @@ void PuzzleList::GenerateMountainH()
 	std::set<Point> bpoints1 = { { 6, 3 },{ 5, 4 },{ 7, 4 } };
 	std::set<Point> bpoints2 = { { 6, 5 },{ 5, 6 },{ 6, 7 },{ 7, 6 } };
 	std::set<Point> bpoints3 = { { 3, 6 },{ 4, 7 } };
-	if (rand() % 2 == 0) generator->hitPoints = { generator->pick_random(bpoints1), generator->pick_random(bpoints2), generator->pick_random(bpoints3) };
+	if (Random::rand() % 2 == 0) generator->hitPoints = { generator->pick_random(bpoints1), generator->pick_random(bpoints2), generator->pick_random(bpoints3) };
 	else generator->hitPoints = { generator->pick_random(bpoints3), generator->pick_random(bpoints2), generator->pick_random(bpoints1) };
 	generator->setObstructions({ { 4, 1 },{ 6, 1 },{ 8, 1 } });
 	generator->blockPos = { { 3, 1 },{ 5, 1 },{ 7, 1 },{ 9, 1 },{ 1, 1 },{ 11, 1 },{ 1, 11 },{ 11, 11 } };
@@ -1840,7 +1840,7 @@ void PuzzleList::GenerateMountainH()
 	generator->setObstructions({ { 4, 3 },{ 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 6, 9 },{ 7, 10 } });
 	specialCase->initRotateGrid(generator);
 	generator->generate(0x33AF5, Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
-	if (rand() % 2 == 0) generator->setObstructions({ { 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 7, 0 },{ 7, 2 } });
+	if (Random::rand() % 2 == 0) generator->setObstructions({ { 5, 4 },{ 5, 6 },{ 5, 8 },{ 5, 10 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 7, 0 },{ 7, 2 } });
 	else generator->setObstructions({ { 3, 4 },{ 3, 6 },{ 3, 8 },{ 3, 10 },{ 7, 4 },{ 7, 6 },{ 7, 8 },{ 7, 10 },{ 5, 0 },{ 5, 2 },{ 9, 0 },{ 9, 2 } });
 	specialCase->initRotateGrid(generator);
 	generator->generate(0x33AF7, Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Star | Decoration::Color::Orange, 5);
@@ -1918,7 +1918,7 @@ void PuzzleList::GenerateMountainH()
 		Decoration::Poly | Decoration::Negative | Decoration::Color::Blue, 4);
 	generator->setFlag(Generate::Config::Write2Color);
 	generator->setFlag(Generate::Config::WriteInvisible);
-	int type = rand() % 2;
+	int type = Random::rand() % 2;
 	specialCase->initPillarSymmetry(generator, 0x339BB, type ? Panel::Symmetry::PillarHorizontal : Panel::Symmetry::PillarParallel);
 	generator->generate(0x339BB, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 1,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
@@ -2093,10 +2093,10 @@ void PuzzleList::GenerateCavesH()
 
 void PuzzleList::GenerateOrchardH()
 {
-	specialCase->generateApplePuzzle(0x00143, false, rand() % 2);
-	specialCase->generateApplePuzzle(0x0003B, false, rand() % 2);
-	specialCase->generateApplePuzzle(0x00055, false, rand() % 2);
-	specialCase->generateApplePuzzle(0x032F7, false, rand() % 2);
+	specialCase->generateApplePuzzle(0x00143, false, Random::rand() % 2);
+	specialCase->generateApplePuzzle(0x0003B, false, Random::rand() % 2);
+	specialCase->generateApplePuzzle(0x00055, false, Random::rand() % 2);
+	specialCase->generateApplePuzzle(0x032F7, false, Random::rand() % 2);
 	specialCase->generateApplePuzzle(0x032FF, true, true);
 }
 
@@ -2137,7 +2137,7 @@ void PuzzleList::GenerateKeepH()
 	std::vector<std::vector<Point>> validHitPoints = {
 		{ { 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 4, 5 },{ 7, 2 },{ 2, 5 } },{ { 4, 3 },{ 7, 2 },{ 2, 3 } },
 	{ { 3, 4 },{ 7, 2 },{ 3, 2 } },{ { 1, 4 },{ 7, 2 },{ 1, 2 } },{ { 3, 2 },{ 7, 2 },{ 3, 0 } },{ { 1, 2 },{ 7, 2 },{ 1, 0 } } };
-	generator->hitPoints = validHitPoints[rand() % validHitPoints.size()];
+	generator->hitPoints = validHitPoints[Random::rand() % validHitPoints.size()];
 	generator->setObstructions({ { 5, 8 } });
 	generator->setFlagOnce(Generate::Config::SplitShapes);
 	generator->setFlagOnce(Generate::Config::DisableWrite);
@@ -2187,11 +2187,11 @@ void PuzzleList::GenerateJungleH()
 		{ DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, 0, true);
 	specialCase->generateSoundDotReflectionPuzzle(0x00C3F, { 7, 7 }, { DOT_SMALL, DOT_MEDIUM, DOT_SMALL, DOT_LARGE },
 		{ DOT_LARGE, DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_LARGE }, 0, true);
-	if (rand() % 2) specialCase->generateSoundDotReflectionPuzzle(0x00C41, { 7, 7 }, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE },
+	if (Random::rand() % 2) specialCase->generateSoundDotReflectionPuzzle(0x00C41, { 7, 7 }, { DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE },
 		{ DOT_SMALL, DOT_SMALL, DOT_LARGE, DOT_MEDIUM, DOT_LARGE }, 0, true);
 	else specialCase->generateSoundDotReflectionPuzzle(0x00C41, { 7, 7 }, { DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE },
 		{ DOT_MEDIUM, DOT_MEDIUM, DOT_SMALL, DOT_MEDIUM, DOT_LARGE }, 0, true);
-	switch (rand() % 4) {
+	switch (Random::rand() % 4) {
 	case 0: specialCase->generateSoundDotReflectionPuzzle(0x014B2, { 7, 7 }, { DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM },
 		{ DOT_SMALL, DOT_LARGE, DOT_SMALL, DOT_LARGE, DOT_MEDIUM }, 0, true); break;
 	case 1: specialCase->generateSoundDotReflectionPuzzle(0x014B2, { 7, 7 }, { DOT_LARGE, DOT_MEDIUM, DOT_SMALL, DOT_LARGE, DOT_SMALL },

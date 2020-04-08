@@ -12,6 +12,7 @@
 #include "Special.h"
 #include "PuzzleList.h"
 #include "Watchdog.h"
+#include "Random.h"
 
 #define IDC_RANDOMIZE 0x401
 #define IDC_TOGGLESPEED 0x402
@@ -157,9 +158,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			int seed = _wtoi(text.c_str());
 			if (wcslen(text.c_str()) == 0) {
 				//If no seed is entered, pick random seed
-				srand(static_cast<int>(time(NULL)));
-				seed = rand() % 999999 + 1;
-				srand(seed);
+				Random::seed(static_cast<int>(time(NULL)));
+				seed = Random::rand() % 999999 + 1;
+				Random::seed(seed);
 				randomizer->seedIsRNG = true;
 			}
 			else randomizer->seedIsRNG = false;

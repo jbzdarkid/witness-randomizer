@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <numeric>
+#include "Random.h"
 
 void Randomizer::GenerateNormal(HWND loadingHandle) {
 	std::shared_ptr<PuzzleList> puzzles = std::make_shared<PuzzleList>();
@@ -49,7 +50,7 @@ void Randomizer::RandomizeDesert() {
 	std::vector<int> valid3 = { 0x00698, 0x0048F, 0x09F92, 0x0A036, 0x0A049, 0x00422, 0x008BB, 0x0078D, 0x18313, 0x01205, 0x012D7 };
 	int endIndex = static_cast<int>(desertPanels.size());
 	for (int i = 0; i < endIndex - 1; i++) {
-		const int target = rand() % (endIndex - i) + i;
+		const int target = Random::rand() % (endIndex - i) + i;
 		//Prevent ambiguity caused by shadows
 		if (i == target || i == 1 && std::find(valid1.begin(), valid1.end(), desertPanels[target]) == valid1.end() || 
 			(i == 2 || i == 9) && std::find(valid2.begin(), valid2.end(), desertPanels[target]) == valid2.end() ||
@@ -74,7 +75,7 @@ void Randomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t star
 	if (startIndex >= endIndex) return;
 	if (endIndex >= panels.size()) endIndex = static_cast<int>(panels.size());
 	for (size_t i = endIndex - 1; i > startIndex; i--) {
-		const int target = (rand() % (static_cast<int>(i) - static_cast<int>(startIndex) + 1)) + static_cast<int>(startIndex);
+		const int target = (Random::rand() % (static_cast<int>(i) - static_cast<int>(startIndex) + 1)) + static_cast<int>(startIndex);
 		if (i != target) {
 			SwapPanels(panels[i], panels[target], flags);
 			std::swap(panels[i], panels[target]); // Panel indices in the array

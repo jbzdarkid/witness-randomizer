@@ -7,6 +7,7 @@
 #include <time.h>
 #include <set>
 #include <algorithm>
+#include "Random.h"
 
 typedef std::set<Point> Shape;
 
@@ -20,7 +21,7 @@ public:
 		_handle = NULL;
 		_panel = NULL;
 		_parity = -1;
-		_seed = rand();
+		_seed = Random::rand();
 		arrowColor = backgroundColor = successColor = { 0, 0, 0, 0 };
 		resetConfig();
 	}
@@ -68,7 +69,7 @@ public:
 	void removeFlag(Config option) { _config &= ~option; };
 	void removeFlagOnce(Config option) { _config &= ~option; _oneTimeRemove |= option; };
 	void resetConfig();
-	void seed(long seed) { srand(seed); _seed = rand(); }
+	void seed(long seed) { Random::seed(seed); _seed = Random::rand(); }
 	void incrementProgress();
 
 	float pathWidth; //Controls how thick the line is on the puzzle
@@ -91,9 +92,9 @@ private:
 	void clear();
 	void resetVars();
 	void init_treehouse_layout();
-	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
-	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
-	template <class T> T pop_random(std::vector<T>& vec) { int i = rand() % vec.size(); T item = vec[i]; vec.erase(vec.begin() + i); return item; }
+	template <class T> T pick_random(std::vector<T>& vec) { return vec[Random::rand() % vec.size()]; }
+	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, Random::rand() % set.size()); return *it; }
+	template <class T> T pop_random(std::vector<T>& vec) { int i = Random::rand() % vec.size(); T item = vec[i]; vec.erase(vec.begin() + i); return item; }
 	template <class T> T pop_random(std::set<T>& set) { T item = pick_random(set); set.erase(item); return item; }
 	bool on_edge(Point p) { return (Point::pillarWidth == 0 && (p.first == 0 || p.first + 1 == _panel->_width) || p.second == 0 || p.second + 1 == _panel->_height); }
 	bool off_edge(Point p) { return (p.first < 0 || p.first >= _panel->_width || p.second < 0 || p.second >= _panel->_height); }

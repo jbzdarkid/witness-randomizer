@@ -287,7 +287,7 @@ bool Panel::LoadPanels(int seed, bool hard)
 		}
 		else panel.Write();
 	}
-	srand(seed);
+	Random::seed(seed);
 	//Random::SetSeed(seed);
 	Randomizer().RandomizeDesert();
 	file >> size;

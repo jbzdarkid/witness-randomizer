@@ -1,5 +1,6 @@
 #pragma once
 #include "Generate.h"
+#include "Random.h"
 
 //Class for generating puzzles with multiple solutions.
 class MultiGenerate
@@ -25,8 +26,8 @@ private:
 	bool can_place_triangle(Point pos);
 	bool place_triangles(int color, int amount);
 
-	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
-	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
+	template <class T> T pick_random(std::vector<T>& vec) { return vec[Random::rand() % vec.size()]; }
+	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, Random::rand() % set.size()); return *it; }
 
 	friend class Special;
 };

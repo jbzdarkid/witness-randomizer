@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include "Panel.h"
+#include "Random.h"
 
 struct PuzzleSymbols {
 	std::map<int, std::vector<std::pair<int, int>>> symbols;
@@ -18,11 +19,11 @@ struct PuzzleSymbols {
 		for (auto& pair : symbols)
 			if (pair.second.size() > 0 && pair.first != Decoration::Start && pair.first != Decoration::Exit && pair.first != Decoration::Gap && pair.first != Decoration::Eraser)
 				types.push_back(pair.first);
-		int randType = types[rand() % types.size()];
-		int randIndex = rand() % symbols[randType].size();
+		int randType = types[Random::rand() % types.size()];
+		int randIndex = Random::rand() % symbols[randType].size();
 		while (symbols[randType][randIndex].second == 0 || symbols[randType][randIndex].second >= 25) {
-			randType = types[rand() % types.size()];
-			randIndex = rand() % symbols[randType].size();
+			randType = types[Random::rand() % types.size()];
+			randIndex = Random::rand() % symbols[randType].size();
 		}
 		symbols[randType][randIndex].second--;
 		return symbols[randType][randIndex].first;

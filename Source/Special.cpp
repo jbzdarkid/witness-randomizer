@@ -32,13 +32,13 @@ void Special::generateReflectionDotPuzzle(std::shared_ptr<Generate> gen, int id1
 	}
 	if (split) {
 		int size = static_cast<int>(dots.size());
-		while (dots.size() > size / 2 + rand() % 2) {
+		while (dots.size() > size / 2 + Random::rand() % 2) {
 			Point dot = pop_random(dots);
 			Point sp = puzzle->get_sym_point(dot.first, dot.second, symmetry);
 			puzzle->_grid[dot.first][dot.second] |= IntersectionFlags::DOT_IS_INVISIBLE;
 			flippedPuzzle->_grid[sp.first][sp.second] &= ~IntersectionFlags::DOT_IS_INVISIBLE;
 		}
-		if (rand() % 2) {
+		if (Random::rand() % 2) {
 			Point dot = pop_random(dots);
 			Point sp = puzzle->get_sym_point(dot.first, dot.second, symmetry);
 			flippedPuzzle->_grid[sp.first][sp.second] &= ~IntersectionFlags::DOT_IS_INVISIBLE;
@@ -124,7 +124,7 @@ void Special::generateColorFilterPuzzle(int id, Point size, std::vector<std::pai
 		}
 	}
 	for (int i = 0; i < availableColors.size(); i++) { //Shuffle
-		std::swap(availableColors[i], availableColors[rand() % availableColors.size()]);
+		std::swap(availableColors[i], availableColors[Random::rand() % availableColors.size()]);
 	}
 	std::vector<Color> symbolColors;
 	for (int y = generator->_panel->_height - 2; y>0; y -= 2) {
@@ -138,9 +138,9 @@ void Special::generateColorFilterPuzzle(int id, Point size, std::vector<std::pai
 		//Add random variation in remaining color channel(s)
 		for (Color &c : symbolColors) {
 			if (c.a == 0) continue;
-			if (filter.r == 0) c.r = static_cast<float>(rand() % 2);
-			if (filter.g == 0) c.g = static_cast<float>(rand() % 2);
-			if (filter.b == 0) c.b = static_cast<float>(rand() % 2);
+			if (filter.r == 0) c.r = static_cast<float>(Random::rand() % 2);
+			if (filter.g == 0) c.g = static_cast<float>(Random::rand() % 2);
+			if (filter.b == 0) c.b = static_cast<float>(Random::rand() % 2);
 		}
 		//Check for solvability
 		std::map<Color, int> colorCounts;
@@ -522,7 +522,7 @@ void Special::generateJungleVault(int id)
 	std::vector<std::vector<int>> dotPoints2 = { { 7, 8, 13 }, { 3, 5, 6, 10, 11, 15, 17, 18, 20, 21, 22 }, { 14, 1 } };
 	generator->initPanel(id);
 	generator->clear();
-	int sol = rand() % sols.size();
+	int sol = Random::rand() % sols.size();
 	auto[x1, y1] = generator->_panel->loc_to_xy(generator->pick_random(dotPoints1[sol]));
 	auto[x2, y2] = generator->_panel->loc_to_xy(generator->pick_random(dotPoints2[sol]));
 	generator->set(x1, y1, Decoration::Dot_Intersection);
@@ -995,7 +995,7 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 		for (Point p : floorPos) sym.insert(generator->get(p));
 	} while (sym.size() < 4);
 
-	int rotateIndex = rand() % 4;
+	int rotateIndex = Random::rand() % 4;
 	for (int i = 0; i < 4; i++) {
 		int symbol = generator->get(floorPos[i]);
 		//Convert to shape
@@ -1008,7 +1008,7 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 		//Translate randomly
 		Shape newShape;
 		do {
-			Point shift = Point((rand() % 4) * 2, -(rand() % 4) * 2);
+			Point shift = Point((Random::rand() % 4) * 2, -(Random::rand() % 4) * 2);
 			newShape.clear();
 			for (Point p : shape) newShape.insert(p + shift);
 		} while (!checkShape(newShape, i % 2));
@@ -1090,7 +1090,7 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 				generateMountainFloorH(ids, idfloor);
 				return;
 			}
-			Point shift = Point((rand() % 4) * 2, -(rand() % 4) * 2);
+			Point shift = Point((Random::rand() % 4) * 2, -(Random::rand() % 4) * 2);
 			newShape.clear();
 			for (Point p : shape) newShape.insert(p + shift);
 		} while (!checkShape(newShape, i % 2));
@@ -1158,7 +1158,7 @@ void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<i
 	std::vector<std::shared_ptr<Generate>> gens;
 	for (int i = 0; i < 3; i++) gens.push_back(std::make_shared<Generate>());
 	for (std::shared_ptr<Generate> gen : gens) {
-		gen->seed(rand());
+		gen->seed(Random::rand());
 		gen->setSymbol(Decoration::Start, width / 2, height - 1);
 		gen->setGridSize(gridSize.first, gridSize.second);
 		gen->setFlag(Generate::Config::DisableWrite);
@@ -1226,11 +1226,11 @@ void Special::modifyGate(int id)
 void Special::addDecoyExits(std::shared_ptr<Generate> gen, int amount) {
 	while (amount > 0) {
 		Point pos;
-		switch (rand() % 4) {
-		case 0: pos = Point(0, rand() % gen->_height); break;
-		case 1: pos = Point(gen->_width - 1, rand() % gen->_height); break;
-		case 2: pos = Point(rand() % gen->_width, 0); break;
-		case 3: pos = Point(rand() % gen->_width, gen->_height - 1); break;
+		switch (Random::rand() % 4) {
+		case 0: pos = Point(0, Random::rand() % gen->_height); break;
+		case 1: pos = Point(gen->_width - 1, Random::rand() % gen->_height); break;
+		case 2: pos = Point(Random::rand() % gen->_width, 0); break;
+		case 3: pos = Point(Random::rand() % gen->_width, gen->_height - 1); break;
 		}
 		if (pos.first % 2) pos.first--;
 		if (pos.second % 2) pos.second--;

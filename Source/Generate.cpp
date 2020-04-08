@@ -276,8 +276,8 @@ void Generate::write(int id)
 		_oneTimeRemove = 0;
 	}
 	//Manually advance seed by 1 each generation to prevent seeds "funneling" from repeated fails
-	srand(_seed);
-	_seed = rand(); 
+	Random::seed(_seed);
+	_seed = Random::rand();
 }
 
 //Reset all config flags and persistent settings, including width/height and symmetry.
@@ -418,7 +418,7 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 		//Pick a random extendable point and extend it for some randomly chosen amount of units.
 		Point randomPos = (extraStarts.size() > 0 ? pick_random(extraStarts) : pick_random(check));
 		Point pos = randomPos;
-		for (int i = (extraStarts.size() > 0 ? 7 : rand() % 5); i >= 0; i--) { //False starts are extended by up to 7 units. Other points are extended up to 4 units at a time
+		for (int i = (extraStarts.size() > 0 ? 7 : Random::rand() % 5); i >= 0; i--) { //False starts are extended by up to 7 units. Other points are extended up to 4 units at a time
 			std::vector<Point> validDir;
 			for (Point dir : _DIRECTIONS2) {
 				if (!off_edge(pos + dir) && get(pos + dir) == 0) {
@@ -466,7 +466,7 @@ bool Generate::generate_maze(int id, int numStarts, int numExits)
 						sp.second == y && y % 2 == 0 && abs(sp.first - x) <= 2 || abs(sp.first - x) == 1) {
 						set(x, y, PATH);
 					}
-					else if (rand() % 2 == 0) {
+					else if (Random::rand() % 2 == 0) {
 						set(sp, PATH);
 					}
 					else {
@@ -508,7 +508,7 @@ bool Generate::generate(int id, PuzzleSymbols symbols)
 	if (symbols.getNum(Decoration::Dot) >= _panel->get_num_grid_points() - 2)
 		_parity = (_panel->get_parity() + (
 			!symbols.any(Decoration::Start) ? get_parity(pick_random(_starts)) :
-			!symbols.any(Decoration::Exit) ? get_parity(pick_random(_exits)) : rand() % 2)) % 2;
+			!symbols.any(Decoration::Exit) ? get_parity(pick_random(_exits)) : Random::rand() % 2)) % 2;
 	else _parity = -1; //-1 indicates a non-full dot puzzle
 
 	if (symbols.any(Decoration::Start)) place_start(symbols.getNum(Decoration::Start));
@@ -716,9 +716,9 @@ bool Generate::generate_longest_path()
 	if (hasFlag(Config::FalseParity)) { //If false parity, one dot must be left uncovered
 		if (get_parity(pos + exit) == _panel->get_parity())
 			return false;
-		block = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
+		block = Point(Random::rand() % (_panel->_width / 2 + 1) * 2, Random::rand() % (_panel->_height / 2 + 1) * 2);
 		while (pos == block || exit == block) {
-			block = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
+			block = Point(Random::rand() % (_panel->_width / 2 + 1) * 2, Random::rand() % (_panel->_height / 2 + 1) * 2);
 		}
 		set_path(block);
 	}
@@ -853,12 +853,12 @@ Point Generate::adjust_point(Point pos) {
 	if (pos.first % 2 != 0) {
 		if (get(pos) != 0) return { -10, -10 };
 		set_path(pos);
-		return Point(pos.first - 1 + rand() % 2 * 2, pos.second);
+		return Point(pos.first - 1 + Random::rand() % 2 * 2, pos.second);
 	}
 	if (pos.second % 2 != 0) {
 		if (get(pos) != 0) return { -10, -10 };
 		set_path(pos);
-		return Point(pos.first, pos.second - 1 + rand() % 2 * 2);
+		return Point(pos.first, pos.second - 1 + Random::rand() % 2 * 2);
 	}
 	if (_panel->symmetry && _exits.count(pos) && !_exits.count(get_sym_point(pos))) return { -10, -10 };
 	return pos;
@@ -907,9 +907,9 @@ bool Generate::place_start(int amount)
 	_starts.clear();
 	_panel->_startpoints.clear();
 	while (amount > 0) {
-		Point pos = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
+		Point pos = Point(Random::rand() % (_panel->_width / 2 + 1) * 2, Random::rand() % (_panel->_height / 2 + 1) * 2);
 		if (hasFlag(Config::StartEdgeOnly))
-		switch (rand() % 4) {
+		switch (Random::rand() % 4) {
 		case 0: pos.first = 0; break;
 		case 1: pos.second = 0; break;
 		case 2: pos.first = _panel->_width - 1; break;
@@ -926,7 +926,7 @@ bool Generate::place_start(int amount)
 				break;
 			}
 		}
-		if (adjacent && rand() % 10 > 0) continue;
+		if (adjacent && Random::rand() % 10 > 0) continue;
 		_starts.insert(pos);
 		_panel->SetGridSymbol(pos.first, pos.second, Decoration::Start, Decoration::Color::None);
 		amount--;
@@ -945,8 +945,8 @@ bool Generate::place_exit(int amount)
 	_exits.clear();
 	_panel->_endpoints.clear();
 	while (amount > 0) {
-		Point pos = Point(rand() % (_panel->_width / 2 + 1) * 2, rand() % (_panel->_height / 2 + 1) * 2);
-		switch (rand() % 4) {
+		Point pos = Point(Random::rand() % (_panel->_width / 2 + 1) * 2, Random::rand() % (_panel->_height / 2 + 1) * 2);
+		switch (Random::rand() % 4) {
 		case 0: pos.first = 0; break;
 		case 1: pos.second = 0; break;
 		case 2: pos.first = _panel->_width - 1; break;
@@ -983,7 +983,7 @@ bool Generate::can_place_gap(Point pos) {
 	if (pos.first == 0 || pos.second == 0) {
 		if (hasFlag(Config::FullGaps)) return false;
 	}
-	else if (rand() % 2 == 0) return false; //Encourages gaps on outside border
+	else if (Random::rand() % 2 == 0) return false; //Encourages gaps on outside border
 	//Prevent putting a gap on top of a start/end point
 	if (_starts.count(pos) || _exits.count(pos))
 		return false;
@@ -1060,12 +1060,12 @@ bool Generate::can_place_dot(Point pos) {
 			if (dir.first == 0 || dir.second == 0)
 				return false;
 			//Allow diagonally adjacent placement some of the time
-			if (rand() % 2 > 0)
+			if (Random::rand() % 2 > 0)
 				return false;
 		}
 	}
 	//Allow 2-space horizontally adjacent dots only in rare cases
-	if (rand() % 10 > 0) {
+	if (Random::rand() % 10 > 0) {
 		for (Point dir : _DIRECTIONS2) {
 			Point p = pos + dir;
 			if (!off_edge(p) && (get(p) & DOT)) {
@@ -1250,7 +1250,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 		if (rotation == -1) {
 			if (make_shape_symbol(shape, rotated, negative, 0, depth + 1) == make_shape_symbol(shape, rotated, negative, 1, depth + 1))
 				return 0; //Check to make sure the shape is not the same when rotated
-			rotation = rand() % 4;
+			rotation = Random::rand() % 4;
 		}
 		symbol |= Decoration::Can_Rotate;
 		Shape newShape; //Rotate shape points according to rotation
@@ -1282,7 +1282,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 	for (Point p : shape) {
 		symbol |= (1 << ((p.first - xmin) / 2 + (ymax  - p.second) * 2)) << 16;
 	}
-	if (rand() % 4 > 0) { //The generator makes a certain type of symbol way too often (2x2 square with another square attached), this makes it much less frequent
+	if (Random::rand() % 4 > 0) { //The generator makes a certain type of symbol way too often (2x2 square with another square attached), this makes it much less frequent
 		int type = symbol >> 16; 
 		if (type == 0x0331 || type == 0x0332 || type == 0x0037 || type == 0x0067 || type == 0x0133 || type == 0x0233 || type == 0x0073 || type == 0x0076)
 			return 0;
@@ -1303,8 +1303,8 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		removeFlag(Generate::Config::MountainFloorH);
 	}
 	int totalArea = 0;
-	int colorIndex = rand() % colors.size();
-	int colorIndexN = rand() % (negativeColors.size() + 1);
+	int colorIndex = Random::rand() % colors.size();
+	int colorIndexN = Random::rand() % (negativeColors.size() + 1);
 	bool shapesCanceled = false, shapesCombined = false;
 	if (amount == 1) shapesCombined = true;
 	while (amount > 0) {
@@ -1320,7 +1320,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		if (region.size() + totalArea == _panel->get_num_grid_blocks()) continue; //To prevent shapes from filling every grid point
 		std::vector<Shape> shapes;
 		std::vector<Shape> shapesN;
-		int numShapesN = min(rand() % (numNegative + 1), static_cast<int>(region.size()) / 3); //Negative blocks may be at max 1/3 of the regular blocks
+		int numShapesN = min(Random::rand() % (numNegative + 1), static_cast<int>(region.size()) / 3); //Negative blocks may be at max 1/3 of the regular blocks
 		if (amount == 1) numShapesN = numNegative;
 		if (numShapesN) {
 			std::set<Point> regionN = _gridpos;
@@ -1337,7 +1337,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 					}
 				}
 				if (!regionN.count(pos)) return false;
-				Shape shape = generate_shape(regionN, pos, min(rand() % 3 + 1, maxSize));
+				Shape shape = generate_shape(regionN, pos, min(Random::rand() % 3 + 1, maxSize));
 				shapesN.push_back(shape);
 				for (Point p : shape) {
 					if (region.count(p)) bufferRegion.insert(p); //Buffer region stores overlap between shapes
@@ -1347,8 +1347,8 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		int numShapes = static_cast<int>(region.size() + bufferRegion.size()) / (shapeSize + 1) + 1; //Pick a number of shapes to make. I tried different ones until I found something that made a good variety of shapes
 		if (numShapes == 1 && bufferRegion.size() > 0) numShapes++; //If there is any overlap, we need at least two shapes
-		if (numShapes < amount && region.size() > shapeSize && rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
-		if (region.size() <= shapeSize + 1 && bufferRegion.size() == 0 && rand() % 2 == 1) numShapes = 1; //For more variation, sometimes make a bigger shape than the target if the size is close
+		if (numShapes < amount && region.size() > shapeSize && Random::rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
+		if (region.size() <= shapeSize + 1 && bufferRegion.size() == 0 && Random::rand() % 2 == 1) numShapes = 1; //For more variation, sometimes make a bigger shape than the target if the size is close
 		if (hasFlag(Config::MountainFloorH)) {
 			if (region.size() < 20) continue;
 			numShapes = 6; //The big mountain floor puzzle on hard mode needs additional shapes since some combine
@@ -1361,7 +1361,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			//Make balancing shapes - Positive and negative will be switched so that code can be reused
 			balance = true;
 			std::set<Point> regionN = _gridpos;
-			numShapes = max(2, rand() % numNegative + 1);			//Actually the negative shapes
+			numShapes = max(2, Random::rand() % numNegative + 1);			//Actually the negative shapes
 			numShapesN = min(amount, numShapes * 2 / 5 + 1);		//Actually the positive shapes
 			if (numShapesN >= numShapes * 3 || numShapesN * 5 <= numShapes) continue;
 			shapes.clear();
@@ -1369,7 +1369,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			region.clear();
 			bufferRegion.clear();
 			for (int i = 0; i < numShapesN; i++) {
-				Shape shape = generate_shape(regionN, pick_random(regionN), min(shapeSize + 1, numShapes * 2 / numShapesN + rand() % 3 - 1));
+				Shape shape = generate_shape(regionN, pick_random(regionN), min(shapeSize + 1, numShapes * 2 / numShapesN + Random::rand() % 3 - 1));
 				shapesN.push_back(shape);
 				for (Point p : shape) {
 					region.insert(p);
@@ -1387,7 +1387,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		else for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
-			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), balance ? rand() % 3 + 1 : shapeSize));
+			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), balance ? Random::rand() % 3 + 1 : shapeSize));
 		}
 		//Take remaining area and try to stick it to existing shapes
 		multibreak:
@@ -1555,7 +1555,7 @@ bool Generate::place_triangles(int color, int amount, int targetCount)
 			}
 			if (found) continue;
 		}
-		if (!targetCount && count == 2 && rand() % 2 == 0) //Prevent it from placing so many 2's
+		if (!targetCount && count == 2 && Random::rand() % 2 == 0) //Prevent it from placing so many 2's
 			continue;
 		set(pos, Decoration::Triangle | color | (count << 16));
 		_openpos.erase(pos);
@@ -1591,13 +1591,13 @@ bool Generate::place_arrows(int color, int amount, int targetCount)
 			continue; //Because of a glitch where arrows in the center column won't draw right
 		int fails = 0;
 		while (fails++ < 20) { //Keep picking random directions until one works
-			int choice = (_parity == -1 ? rand() % 8 : rand() % 4);
+			int choice = (_parity == -1 ? Random::rand() % 8 : Random::rand() % 4);
 			Point dir = _8DIRECTIONS2[choice];
 			if (Point::pillarWidth > 0 && dir.second == 0) continue; //Sideways arrows on a pillar would wrap forever
 			int count = count_crossings(pos, dir);
 			if (count == 0 || count > 3 || targetCount && count != targetCount) continue;
 			if (dir.first < 0 && count == (pos.first + 1) / 2 || dir.first > 0 && count == (_panel->_width - pos.first) / 2 ||
-				dir.second < 0 && count == (pos.second + 1) / 2 || dir.second > 0 && count == (_panel->_height - pos.second) / 2 && rand() % 10 > 0)
+				dir.second < 0 && count == (pos.second + 1) / 2 || dir.second > 0 && count == (_panel->_height - pos.second) / 2 && Random::rand() % 10 > 0)
 				continue; //Make it so that there will be some possible edges that aren't passed, in the vast majority of cases
 			set(pos, Decoration::Arrow | color | (count << 12) | (choice << 16));
 			_openpos.erase(pos);
@@ -1703,11 +1703,11 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 			while (symbol == 0) {
 				std::set<Point> area = _gridpos;
 				int shapeSize;
-				if ((toErase & Decoration::Negative) || hasFlag(Config::SmallShapes)) shapeSize = rand() % 3 + 1;
+				if ((toErase & Decoration::Negative) || hasFlag(Config::SmallShapes)) shapeSize = Random::rand() % 3 + 1;
 				else {
-					shapeSize = rand() % 5 + 1;
+					shapeSize = Random::rand() % 5 + 1;
 					if (shapeSize < 3)
-						shapeSize += rand() % 3;
+						shapeSize += Random::rand() % 3;
 				}
 				Shape shape = generate_shape(area, pick_random(area), shapeSize);
 				if (shape.size() == region.size()) continue; //Don't allow the shape to match the region, to guarantee it will be wrong
@@ -1717,8 +1717,8 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		}
 		else if (get_symbol_type(toErase) == Decoration::Triangle) {
 			int count = count_sides(pos);
-			if (count == 0) count = rand() % 3 + 1;
-			else count = (count + (rand() & 1)) % 3 + 1;
+			if (count == 0) count = Random::rand() % 3 + 1;
+			else count = (count + (Random::rand() & 1)) % 3 + 1;
 			set(pos, toErase | (count << 16));
 		}
 

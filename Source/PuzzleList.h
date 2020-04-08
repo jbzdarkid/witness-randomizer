@@ -1,6 +1,7 @@
 #pragma once
 #include "Generate.h"
 #include "Special.h"
+#include "Random.h"
 
 class PuzzleList {
 
@@ -28,7 +29,7 @@ public:
 		this->seed = seed;
 		this->seedIsRNG = isRNG;
 		if (seed >= 0) generator->seed(seed);
-		else generator->seed(rand());
+		else generator->seed(Random::rand());
 	}
 
 	void CopyTargets();
@@ -84,17 +85,17 @@ private:
 	int seed;
 	bool seedIsRNG;
 
-	template <class T> T pick_random(std::vector<T>& vec) { return vec[rand() % vec.size()]; }
-	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, rand() % set.size()); return *it; }
+	template <class T> T pick_random(std::vector<T>& vec) { return vec[Random::rand() % vec.size()]; }
+	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, Random::rand() % set.size()); return *it; }
 	template <class T> T pop_random(std::vector<T>& vec) {
-		int i = rand() % vec.size();
+		int i = Random::rand() % vec.size();
 		T item = vec[i];
 		vec.erase(vec.begin() + i);
 		return item;
 	}
 	template <class T> T pop_random(std::set<T>& set) {
 		auto it = set.begin();
-		std::advance(it, rand() % set.size());
+		std::advance(it, Random::rand() % set.size());
 		T item = *it;
 		set.erase(item);
 		return item;
