@@ -780,15 +780,18 @@ void Panel::WriteIntersections() {
 		}
 	}
 
-	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
-	_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
-	_memory->WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
-	_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connections_a.size()) });
-	_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
-	_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
-	if (id == 0x00076 && symmetry == Symmetry::None || id == 0x01D3F && symmetry == Symmetry::None) {
+	//Symmetry Data
+	if (id == 0x00076 && symmetry == Symmetry::None) {
 		_style &= ~Style::SYMMETRICAL;
-		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 });
+		//For some reason, removing the symmetry outright sometimes makes the game crash, so this is a workaround
+		intersectionFlags.push_back(IntersectionFlags::NO_POINT); intersections.push_back(0); intersections.push_back(0);
+		for (int i = 0; i < intersectionFlags.size(); i++) symmetryData.push_back((int)intersectionFlags.size() - 1);
+		_memory->WriteArray<int>(id, REFLECTION_DATA, symmetryData); 
+	}
+	else if (id == 0x01D3F && symmetry == Symmetry::None) {
+		_style &= ~Style::SYMMETRICAL;
+		//This has been reported to cause crashes for some people, but this puzzle is stubborn and I can't get it to accept any workarounds
+		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 }); 
 	}
 	else if (symmetryData.size() > 0) {
 		_style |= Style::SYMMETRICAL;
@@ -798,6 +801,14 @@ void Panel::WriteIntersections() {
 		_style &= ~Style::SYMMETRICAL;
 		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 });
 	}
+
+	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
+	_memory->WriteArray<float>(id, DOT_POSITIONS, intersections);
+	_memory->WriteArray<int>(id, DOT_FLAGS, intersectionFlags);
+	_memory->WritePanelData<int>(id, NUM_CONNECTIONS, { static_cast<int>(connections_a.size()) });
+	_memory->WriteArray<int>(id, DOT_CONNECTION_A, connections_a);
+	_memory->WriteArray<int>(id, DOT_CONNECTION_B, connections_b);
+	
 	if (polygons.size() > 0) {
 		_memory->WritePanelData<int>(id, NUM_COLORED_REGIONS, { static_cast<int>(polygons.size()) / 4 });
 		_memory->WriteArray<int>(id, COLORED_REGIONS, polygons);
