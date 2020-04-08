@@ -67,7 +67,7 @@
 int panel = 0x014D2; //Swamp Red 2
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText, hwndNormal, hwndExpert, hwndMessage;
-std::shared_ptr<Panel> _panel = std::make_shared<Panel>();
+std::shared_ptr<Panel> _panel;
 std::shared_ptr<Randomizer> randomizer = std::make_shared<Randomizer>();
 std::shared_ptr<Generate> generator = std::make_shared<Generate>();
 std::shared_ptr<Special> specialCase = std::make_shared<Special>(generator);
@@ -384,6 +384,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	HWND hwnd = CreateWindow(WINDOW_CLASS, PRODUCT_NAME, WS_OVERLAPPEDWINDOW,
       rect.right - 650, 200, 600, DEBUG ? 700 : 220, nullptr, nullptr, hInstance, nullptr);
 
+	//Initialize memory globals constant depending on game version
+	int result = Special::testRead<int>(Memory::GLOBALS, 1)[0];
+	if (result == 0) Memory::GLOBALS = 0x62D0A0;
+
 	//Get the seed and difficulty previously used for this save file (if applicable)
 	int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
 	hard = (Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12) > 1);
@@ -430,6 +434,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	//---------------------Debug/editing controls (debug mode only)---------------------
 
 	if (DEBUG) {
+		_panel = std::make_shared<Panel>();
 		CreateWindow(L"STATIC", L"Col/Row:",
 			WS_TABSTOP | WS_VISIBLE | WS_CHILD | SS_LEFT,
 			160, 330, 100, 26, hwnd, NULL, hInstance, NULL);

@@ -1531,6 +1531,57 @@ void Special::drawGoodLuckPanel(int id)
 	panel._memory->WritePanelData<int>(id, NEEDS_REDRAW, { 1 });
 }
 
+uintptr_t Special::findGlobals() {
+	//testPanel(0x17E52);
+	//std::vector<int> data = testRead<int>(GLOBALS - 0x2000, 0x100);
+	//std::vector<int> data2 = testRead<int>(0x3311dbf0 + STYLE_FLAGS, 0x100);
+	//std::vector<float> dataf = testRead<float>(0x02838340, 0x100);
+	uintptr_t ptr = 0x35000000;
+	while (true) {
+		ptr = testFind<int>(ptr + 4, 0x10000000, Panel::Style::HAS_SHAPERS | Panel::Style::HAS_STARS | Panel::Style::IS_PIVOTABLE);
+		if (ptr == -1)
+			return -1;
+		std::vector<int> data = testRead<int>((int)ptr - STYLE_FLAGS + TARGET, 0x1);
+		if (data[0] == 0x17E5C) {
+			break;
+		}
+	}
+	ptr -= STYLE_FLAGS;
+	ptr = testFind<uintptr_t>(0x2A000000, 0x20000000, ptr);
+	if (ptr == -1)
+		return -1;
+	std::vector<int> datap = testRead<int>(int(ptr) - 5 * 8, 0x100);
+	int t1 = testRead<int>(datap[2] + STYLE_FLAGS, 0x10)[0];
+	int x1 = testRead<int>(datap[2] + GRID_SIZE_X, 0x10)[0];
+	int y1 = testRead<int>(datap[2] + GRID_SIZE_Y, 0x10)[0];
+	int g1 = testRead<int>(datap[2] + TARGET, 0x10)[0];
+	int t2 = testRead<int>(datap[4] + STYLE_FLAGS, 0x10)[0];
+	int x2 = testRead<int>(datap[4] + GRID_SIZE_X, 0x10)[0];
+	int y2 = testRead<int>(datap[4] + GRID_SIZE_Y, 0x10)[0];
+	int g2 = testRead<int>(datap[4] + TARGET, 0x10)[0];
+	int t3 = testRead<int>(datap[6] + STYLE_FLAGS, 0x10)[0];
+	int x3 = testRead<int>(datap[6] + GRID_SIZE_X, 0x10)[0];
+	int y3 = testRead<int>(datap[6] + GRID_SIZE_Y, 0x10)[0];
+	int g3 = testRead<int>(datap[6] + TARGET, 0x10)[0];
+	int t4 = testRead<int>(datap[8] + STYLE_FLAGS, 0x10)[0];
+	int x4 = testRead<int>(datap[8] + GRID_SIZE_X, 0x10)[0];
+	int y4 = testRead<int>(datap[8] + GRID_SIZE_Y, 0x10)[0];
+	int g4 = testRead<int>(datap[8] + TARGET, 0x10)[0];
+	int t5 = testRead<int>(datap[10] + STYLE_FLAGS, 0x10)[0];
+	int x5 = testRead<int>(datap[10] + GRID_SIZE_X, 0x10)[0];
+	int y5 = testRead<int>(datap[10] + GRID_SIZE_Y, 0x10)[0];
+	int g5 = testRead<int>(datap[10] + TARGET, 0x10)[0];
+	ptr -= 0x17E52 * 8;
+	ptr = testFind<uintptr_t>(0x14000000, 0x10000000, ptr);
+	if (ptr == -1)
+		return -1;
+	ptr -= 0x18;
+	Memory memory("witness64_d3d11.exe");
+	ptr = testFind<uintptr_t>(memory._baseAddress, 0x10000000, ptr);
+	ptr -= memory._baseAddress;
+	return ptr;
+}
+
 //For testing/debugging purposes only
 void Special::test() {
 

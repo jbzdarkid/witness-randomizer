@@ -7,8 +7,9 @@
 #include <fstream>
 #include <windows.h>
 
-//#define GLOBALS 0x5B28C0
-#define GLOBALS 0x62D0A0
+//#define GLOBALS 0x5B28C0 IDK what this is used for
+//#define GLOBALS 0x62D0A0 //Steam and Epic Games
+//#define GLOBALS 0x62B0A0 //Good Old Games
 
 // https://github.com/erayarslan/WriteProcessMemory-Example
 // http://stackoverflow.com/q/32798185
@@ -22,8 +23,6 @@ public:
 
 	Memory(const Memory& memory) = delete;
 	Memory& operator=(const Memory& other) = delete;
-
-	int GetCurrentFrame();
 
 	template <class T>
 	uintptr_t AllocArray(int id, int numItems) {
@@ -101,6 +100,8 @@ public:
 	}
 
 	void ClearOffsets() { _computedAddresses = std::map<uintptr_t, uintptr_t>(); }
+
+	static int GLOBALS;
 
 private:
 	template<class T>

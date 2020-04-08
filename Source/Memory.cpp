@@ -46,19 +46,6 @@ Memory::~Memory() {
 	CloseHandle(_handle);
 }
 
-int Memory::GetCurrentFrame()
-{
-	int SCRIPT_FRAMES;
-	if (GLOBALS == 0x5B28C0) {
-		SCRIPT_FRAMES = 0x5BE3B0;
-	} else if (GLOBALS == 0x62D0A0) {
-		SCRIPT_FRAMES = 0x63651C;
-	} else {
-		throw std::exception("Unknown value for Globals!");
-	}
-	return ReadData<int>({SCRIPT_FRAMES}, 1)[0];
-}
-
 int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t startIndex = 0) {
 	for (size_t i=startIndex; i<data.size() - search.size(); i++) {
 		bool match = true;
@@ -117,7 +104,8 @@ void* Memory::ComputeOffset(std::vector<int> offsets)
 	int final_offset = offsets.back();
 	offsets.pop_back();
 
-	uintptr_t cumulativeAddress = _baseAddress;
+	//uintptr_t cumulativeAddress = (offsets.size() == 0 ? 0 : _baseAddress);
+	uintptr_t cumulativeAddress =  _baseAddress;
 	for (const int offset : offsets) {
 		cumulativeAddress += offset;
 
@@ -135,3 +123,5 @@ void* Memory::ComputeOffset(std::vector<int> offsets)
 	}
 	return reinterpret_cast<void*>(cumulativeAddress + final_offset);
 }
+
+int Memory::GLOBALS = 0x62B0A0;
