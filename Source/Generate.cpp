@@ -1298,6 +1298,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 	std::set<Point> open = _openpos;
 	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : hasFlag(Config::BigShapes) ? 5 : 4;
 	int targetArea = amount * shapeSize * 7 / 8; //Average size must be at least 7/8 of the target size
+	int originalAmount = amount;
 	if (hasFlag(Generate::Config::MountainFloorH) && _panel->_width == 9) { //The 4 small puzzles shape size may vary depending on the path
 		targetArea = 0;
 		removeFlag(Generate::Config::MountainFloorH);
@@ -1378,6 +1379,8 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 			shapesCanceled = true;
 			//Let the rest of the algorithm create the cancelling shapes
 		}
+		if (_panel->symmetry && numShapes == originalAmount && numShapes >= 3 && Point::pillarWidth == 0 && !region.count(Point((_panel->_width / 4) * 2 + 1, (_panel->_height / 4) * 2 + 1)))
+			continue; //Prevent it from shoving all shapes to one side of symmetry
 		if (!balance && numShapesN && (numShapesN > 1 && numRotated > 0 || numShapesN > 2 || numShapes + numShapesN > 6))
 			continue; //Trying to prevent the game's shape calculator from lagging too much
 		if (!(hasFlag(Config::MountainFloorH) && _panel->_width == 11) && open2.size() < numShapes + numShapesN) continue; //Not enough space to put the symbols

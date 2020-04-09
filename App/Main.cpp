@@ -116,7 +116,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			generator->seed(static_cast<unsigned int>(time(NULL)));
 			generator->seed(ctr++);
 			//generator->seed(1);
-
+			specialCase->test();
 			break;
 
 		//Difficulty selection
