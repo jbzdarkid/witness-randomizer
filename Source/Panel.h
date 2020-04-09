@@ -11,8 +11,8 @@ struct Point {
 	Point operator+(const Point& p) { return { first + p.first, second + p.second }; }
 	Point operator*(int d) { return { first * d, second * d }; }
 	Point operator/(int d) { return { first / d, second / d }; }
-	bool operator==(const Point& p) { return first == p.first && second == p.second; };
-	bool operator!=(const Point& p) { return first != p.first || second != p.second; };
+	bool operator==(const Point& p) const { return first == p.first && second == p.second; };
+	bool operator!=(const Point& p) const { return first != p.first || second != p.second; };
 	friend bool operator<(const Point& p1, const Point& p2) { if (p1.first == p2.first) return p1.second < p2.second; return p1.first < p2.first; };
 	static int pillarWidth;
 };

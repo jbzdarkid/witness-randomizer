@@ -1387,7 +1387,9 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		}
 		else for (; numShapes > 0; numShapes--) {
 			if (region.size() == 0) break;
-			shapes.push_back(generate_shape(region, bufferRegion, pick_random(region), balance ? Random::rand() % 3 + 1 : shapeSize));
+			Shape shape = generate_shape(region, bufferRegion, pick_random(region), balance ? Random::rand() % 3 + 1 : shapeSize);
+			if (!balance && numShapesN) for (Shape s : shapesN) if (std::equal(shape.begin(), shape.end(), s.begin(), s.end())) return false; //Prevent unintentional in-group canceling
+			shapes.push_back(shape);
 		}
 		//Take remaining area and try to stick it to existing shapes
 		multibreak:
