@@ -1824,7 +1824,7 @@ void PuzzleList::GenerateMountainH()
 	generator->generate(0x09E72, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 4,
 		Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
 		Decoration::Poly | Decoration::Color::Black, 1, Decoration::Poly | Decoration::Color::White, 1);
-	generator->generate(0x09E69, Decoration::Stone | Decoration::Color::Black, 3, Decoration::Stone | Decoration::Color::White, 2,
+	generator->generate(0x09E69, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 2,
 		Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
 		Decoration::Poly | Decoration::Color::Black, 1, Decoration::Poly | Decoration::Color::White, 1);
 	generator->generate(0x09E7B, Decoration::Dot, 4, Decoration::Star | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::Black, 2,
