@@ -21,7 +21,15 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 	puzzles->setSeed(seed, seedIsRNG);
 	puzzles->GenerateAllH();
 	Panel::SavePanels(seed, true);
-	MessageBox(GetActiveWindow(), L"Hi there! Thanks for trying out Expert Mode. It will be tough, but I hope you have fun!\r\n\r\nJust a quick heads-up: Your first big challenge will involve getting out of the tutorial area. A certain puzzle that you normally need to solve will be unsolvable. You'll have to find a new way to escape. Good luck!\r\n\r\nAlso, If you post a video of yourself beating Expert mode, let me know and I will link to your video from Github so that others can see your accomplishment!", L"Welcome", MB_OK);
+	MessageBox(GetActiveWindow(), L"Hi there! Thanks for trying out Expert Mode. It will be tough, but I hope you have fun!\r\n\r\n"
+		L"Here are some things you should know before you get started:\r\n\r\n"
+		L"- Your first big challenge will involve getting out of the tutorial area. A puzzle that you normally need to solve will be unsolvable the normal way.\r\n\r\n"
+		L"- One puzzle in the Treehouse area is deactivated, making it harder to get to the laser.\r\n\r\n"
+		L"- Progression in the Town is slightly different. You must complete the 3-color room to open one of the tower doors.\r\n\r\n"
+		L"- The Keep has been made more challenging. You'll need to think creatively to figure out how to get around environmental obstacles.\r\n\r\n"
+		L"- If you post a video of yourself beating Expert mode, let me know and I will link to your video from Github so that others can see your accomplishment.\r\n\r\n"
+		L"- Remember to check the Hints page on the wiki if you get stuck.\r\n\r\n"
+		L"- Good luck!", L"Welcome", MB_OK);
 }
 
 template <class T>
