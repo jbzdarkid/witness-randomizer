@@ -1552,9 +1552,10 @@ void PuzzleList::GenerateTreehouseH()
 	generator->generate(0x17DB0, Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 2,
 		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 2, Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
 		Decoration::Poly | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1);
-	generator->generate(0x17DDB, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 2,
-		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1, Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
-		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 2, Decoration::Poly | Decoration::White, 1);
+	generator->generate(0x17DDB, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
+		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1,
+		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1,
+		Decoration::Triangle | Decoration::Black, 1, Decoration::Triangle | Decoration::White, 1);
 	(new TreehouseWatchdog(0x17DAE))->start();
 
 	//Orange Bridge 2
@@ -1986,10 +1987,9 @@ void PuzzleList::GenerateCavesH()
 	generator->generate(0x32962, Decoration::Dot_Intersection, 49, Decoration::Poly | Decoration::Can_Rotate, 3, Decoration::Start, 1);
 	generator->setFlagOnce(Generate::Config::ResetColors);
 	generator->setFlagOnce(Generate::Config::TreehouseLayout);
-	generator->generate(0x32966, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
-		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1,
-		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1,
-		Decoration::Triangle | Decoration::Black, 1, Decoration::Triangle | Decoration::White, 1);
+	generator->generate(0x32966, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 2,
+		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1, Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
+		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 2, Decoration::Poly | Decoration::White, 1);
 	generator->setGridSize(6, 6);
 	generator->setFlagOnce(Generate::Config::WriteColors);
 	generator->generate(0x01A31, Decoration::Star | Decoration::Color::Cyan, 8, Decoration::Star | Decoration::Color::Yellow, 8,
