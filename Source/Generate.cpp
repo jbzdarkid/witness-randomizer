@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "Generate.h"
 #include "Randomizer.h"
 #include "MultiGenerate.h"
@@ -48,7 +52,7 @@ void Generate::generate(int id, int symbol1, int amount1, int symbol2, int amoun
 	while (!generate(id, symbols));
 }
 
-void Generate::generate(int id, std::vector<std::pair<int, int>> symbolVec)
+void Generate::generate(int id, const std::vector<std::pair<int, int>>& symbolVec)
 {
 	PuzzleSymbols symbols(symbolVec);
 	while (!generate(id, symbols));
@@ -134,7 +138,7 @@ void Generate::initPanel(int id) {
 		_panel->_startpoints = std::vector<Point>(_starts.begin(), _starts.end());
 	if (_exits.size() == 0) {
 		for (Endpoint e : _panel->_endpoints) {
-			_exits.insert(Point(e.GetX(), e.GetY()));
+			_exits.emplace(Point(e.GetX(), e.GetY()));
 		}
 	}
 	else {
@@ -148,7 +152,7 @@ void Generate::initPanel(int id) {
 	for (int x = 1; x < _panel->_width; x += 2) {
 		for (int y = 1; y < _panel->_height; y += 2) {
 			if (!(hasFlag(Config::PreserveStructure) && (get(x, y) & Decoration::Empty) == Decoration::Empty))
-				_gridpos.insert(Point(x, y));
+				_gridpos.emplace(Point(x, y));
 		}
 	}
 	//Init the open positions available for symbols. Defaults to every grid block unless a custom openpos has been specified
@@ -178,8 +182,8 @@ void Generate::setSymbol(Decoration::Shape symbol, int x, int y)
 		}
 	}
 
-	if (symbol == Decoration::Start) _starts.insert(Point(x, y));
-	else if (symbol == Decoration::Exit) _exits.insert(Point(x, y));
+	if (symbol == Decoration::Start) _starts.emplace(Point(x, y));
+	else if (symbol == Decoration::Exit) _exits.emplace(Point(x, y));
 	else _custom_grid[x][y] = symbol; //Starts and exits are not set into the grid
 }
 
@@ -200,12 +204,12 @@ void Generate::setSymmetry(Panel::Symmetry symmetry)
 	_symmetry = symmetry;
 	if (_symmetry == Panel::Symmetry::ParallelV || _symmetry == Panel::Symmetry::ParallelVFlip) {
 		std::vector<Point> points;
-		for (int y = 0; y < _height; y += 2) points.push_back(Point(_width / 2, y));
+		for (int y = 0; y < _height; y += 2) points.emplace_back(Point(_width / 2, y));
 		setObstructions(points); //This prevents the generator from invalidly passing through the center line
 	}
 	if (_symmetry == Panel::Symmetry::ParallelH || _symmetry == Panel::Symmetry::ParallelHFlip) {
 		std::vector<Point> points;
-		for (int x = 0; x < _width; x += 2) points.push_back(Point(x, _height / 2));
+		for (int x = 0; x < _width; x += 2) points.emplace_back(Point(x, _height / 2));
 		setObstructions(points); //This prevents the generator from invalidly passing through the center line
 	}
 }
@@ -893,7 +897,7 @@ std::vector<int> Generate::get_symbols_in_region(Point pos) {
 }
 
 //Get all the symbols in the given region
-std::vector<int> Generate::get_symbols_in_region(std::set<Point> region) {
+std::vector<int> Generate::get_symbols_in_region(const std::set<Point>& region) {
 	std::vector<int> symbols;
 	for (Point p : region) {
 		if (get(p)) symbols.push_back(get(p));
@@ -1017,7 +1021,7 @@ bool Generate::place_gaps(int amount) {
 	for (int y = 0; y < _panel->_height; y++) {
 		for (int x = (y + 1) % 2; x < _panel->_width; x += 2) {
 			if (get(x, y) == 0 && (!_fullGaps || !on_edge(Point(x, y)))) {
-				open.insert(Point(x, y));
+				open.emplace(Point(x, y));
 			}
 		}
 	}
@@ -1142,7 +1146,7 @@ bool Generate::place_dots(int amount, int color, bool intersectionOnly) {
 }
 
 //Check if a stone can be placed at pos.
-bool Generate::can_place_stone(std::set<Point>& region, int color)
+bool Generate::can_place_stone(const std::set<Point>& region, int color)
 {
 	for (Point p : region) {
 		int sym = get(p);
@@ -1257,9 +1261,9 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 		for (Point p : shape) {
 			switch (rotation) {
 			case 0: newShape.insert(p); break;
-			case 1: newShape.insert(Point(p.second, -p.first)); break;
-			case 2: newShape.insert(Point(-p.second, p.first)); break;
-			case 3: newShape.insert(Point(-p.first, -p.second)); break;
+			case 1: newShape.emplace(Point(p.second, -p.first)); break;
+			case 2: newShape.emplace(Point(-p.second, p.first)); break;
+			case 3: newShape.emplace(Point(-p.first, -p.second)); break;
 			}
 		}
 		shape = newShape;
@@ -1293,7 +1297,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 //Place the given amount of shapes with random colors selected from the color vectors.
 //colors - colors for regular shapes, negativeColors - colors for negative shapes, amount - how many normal shapes
 //numRotated - how many rotated shapes, numNegative - how many negative shapes
-bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeColors, int amount, int numRotated, int numNegative)
+bool Generate::place_shapes(const std::vector<int>& colors, const std::vector<int>& negativeColors, int amount, int numRotated, int numNegative)
 {
 	std::set<Point> open = _openpos;
 	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : hasFlag(Config::BigShapes) ? 5 : 4;
@@ -1444,7 +1448,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 		if (numShapes > 1) shapesCombined = true;
 		numNegative -= static_cast<int>(shapesN.size());
 		if (hasFlag(Generate::Config::MountainFloorH) && amount == 6) { //For mountain floor, combine some of the shapes together
-			if (!combine_shapes(shapes) || !combine_shapes(shapes))
+			if (!combine_shapes(shapes) || !combine_shapes(shapes)) //Must call this twice b/c there are two combined areas
 				return false;
 			amount -= 2;
 		}
@@ -1483,7 +1487,7 @@ bool Generate::place_shapes(std::vector<int> colors, std::vector<int> negativeCo
 }
 
 //Count the occurrence of the given symbol color in the given region (for the stars)
-int Generate::count_color(std::set<Point>& region, int color)
+int Generate::count_color(const std::set<Point>& region, int color)
 {
 	int count = 0;
 	for (Point p : region) {
@@ -1528,7 +1532,7 @@ bool Generate::place_stars(int color, int amount)
 }
 
 //Check if there is a star in the given region
-bool Generate::has_star(std::set<Point>& region, int color)
+bool Generate::has_star(const std::set<Point>& region, int color)
 {
 	for (Point p : region) {
 		if (get(p) == (Decoration::Star | color)) return true;
@@ -1626,7 +1630,7 @@ int Generate::count_crossings(Point pos, Point dir)
 }
 
 //Place the given amount of erasers with the given colors. eraseSymbols are the symbols that were erased
-bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymbols)
+bool Generate::place_erasers(const std::vector<int>& colors, const std::vector<int>& eraseSymbols)
 {
 	std::set<Point> open = _openpos;
 	if (_panel->id == 0x288FC && hasFlag(Generate::Config::DisableWrite)) open.erase({ 5, 5 }); //For the puzzle in the cave with a pillar in middle
@@ -1655,8 +1659,6 @@ bool Generate::place_erasers(std::vector<int> colors, std::vector<int> eraseSymb
 		if (_panel->id == 0x288FC && hasFlag(Generate::Config::DisableWrite) && !region.count({ 5, 5 })) continue; //For the puzzle in the cave with a pillar in middle
 		if (hasFlag(Config::MakeStonesUnsolvable)) {
 			std::set<Point> valid;
-			std::set<Point> check = open2;
-			std::set<Point> test;
 			for (Point p : open2) {
 				//Try to make a checkerboard pattern with the stones
 				if (!off_edge(p + Point(2, 2)) && get(p + Point(2, 2)) == toErase && get(p + Point(0, 2)) != 0 && get(p + Point(0, 2)) != toErase && get(p + Point(2, 0)) != 0 && get(p + Point(2, 0)) != toErase ||

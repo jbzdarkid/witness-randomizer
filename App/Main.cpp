@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "windows.h"
 #include <Richedit.h>
 
@@ -156,7 +160,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			text.reserve(100);
 			GetWindowText(hwndSeed, &text[0], 100);
 			int seed = _wtoi(text.c_str());
-			if (wcslen(text.c_str()) == 0) {
+			if (text.length() == 0) {
 				//If no seed is entered, pick random seed
 				Random::seed(static_cast<int>(time(NULL)));
 				seed = Random::rand() % 999999 + 1;

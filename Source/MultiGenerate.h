@@ -12,7 +12,7 @@ public:
 
 	std::vector<std::shared_ptr<Generate>> generators;
 
-	void generate(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec);
+	void generate(int id, const std::vector<std::shared_ptr<Generate>>& gens, const std::vector<std::pair<int, int>>& symbolVec);
 
 	bool splitStones;
 

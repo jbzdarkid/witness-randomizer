@@ -13,7 +13,7 @@ template <class T> struct MemoryWrite {
 	int id;
 	int offset;
 	std::vector<T> data;
-	MemoryWrite(int id, int offset, std::vector<T> data) { this->id = id; this->offset = offset; this->data = data; }
+	MemoryWrite(int id, int offset, const std::vector<T>& data) { this->id = id; this->offset = offset; this->data = data; }
 };
 
 class Special {
@@ -26,7 +26,7 @@ public:
 	
 	void generateReflectionDotPuzzle(std::shared_ptr<Generate> gen, int id1, int id2, std::vector<std::pair<int, int>> symbols, Panel::Symmetry symmetry, bool split);
 	void generateAntiPuzzle(int id);
-	void generateColorFilterPuzzle(int id, Point size, std::vector<std::pair<int, int>> symbols, Color filter);
+	void generateColorFilterPuzzle(int id, Point size, const std::vector<std::pair<int, int>>& symbols, const Color& filter);
 	void generateSoundDotPuzzle(int id, Point size, std::vector<int> dotSequence, bool writeSequence);
 	void generateSoundDotPuzzle(int id1, int id2, std::vector<int> dotSequence, bool writeSequence);
 	void generateSoundDotReflectionPuzzle(int id, Point size, std::vector<int> dotSequence1, std::vector<int> dotSequence2, int numColored, bool writeSequence);
@@ -37,17 +37,17 @@ public:
 	void generateRGBDotPuzzleH(int id);
 	void generateJungleVault(int id);
 	void generateApplePuzzle(int id, bool changeExit, bool flip);
-	void generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols);
-	void generateMountaintop(int id, std::vector<std::pair<int, int>> symbolVec);
-	void generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec, bool flip);
-	bool generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<PuzzleSymbols> symbols, std::set<Point> path);
+	void generateKeepLaserPuzzle(int id, const std::set<Point>& path1, const std::set<Point>& path2, const std::set<Point>& path3, const std::set<Point>& path4, std::vector<std::pair<int, int>> symbols);
+	void generateMountaintop(int id, const std::vector<std::pair<int, int>>& symbolVec);
+	void generateMultiPuzzle(std::vector<int> ids, const std::vector<std::vector<std::pair<int, int>>>& symbolVec, bool flip);
+	bool generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, const std::vector<PuzzleSymbols>& symbols, const std::set<Point>& path);
 	void generate2Bridge(int id1, int id2);
 	bool generate2Bridge(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
 	void generate2BridgeH(int id1, int id2);
 	bool generate2BridgeH(int id1, int id2, std::vector<std::shared_ptr<Generate>> gens);
-	void generateMountainFloor(std::vector<int> ids, int idfloor);
-	void generateMountainFloorH(std::vector<int> ids, int idfloor);
-	void generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec); //Too slow right now, only used a couple times in hard mode
+	void generateMountainFloor(const std::vector<int>& ids, int idfloor);
+	void generateMountainFloorH(const std::vector<int>& ids, int idfloor);
+	void generatePivotPanel(int id, Point gridSize, const std::vector<std::pair<int, int>>& symbolVec); //Too slow right now, only used a couple times in hard mode
 	void modifyGate(int id);
 	void addDecoyExits(std::shared_ptr<Generate> gen, int amount);
 	void initSSGrid(std::shared_ptr<Generate> gen);
@@ -55,9 +55,9 @@ public:
 	void initPillarSymmetry(std::shared_ptr<Generate> gen, int id, Panel::Symmetry symmetry);
 	void generateSymmetryGate(int id);
 	bool checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr<Panel> panel2, Panel::Symmetry correctSym);
-	void createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps);
+	void createArrowPuzzle(int id, int x, int y, int dir, int ticks, const std::vector<Point>& gaps);
 	void createArrowSecretDoor(int id);
-	void generateCenterPerspective(int id, std::vector<std::pair<int, int>> symbolVec, int symbolType);
+	void generateCenterPerspective(int id, const std::vector<std::pair<int, int>>& symbolVec, int symbolType);
 	static void drawSeedAndDifficulty(int id, int seed, bool hard);
 	static void drawGoodLuckPanel(int id);
 
@@ -99,36 +99,36 @@ public:
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->ReadArray<T>(panel, offset, size);
 	}
 	static void WritePanelData(int panel, int offset, int data) {
-		writeInt.push_back(MemoryWrite<int>(panel, offset, { data }));
+		writeInt.emplace_back(MemoryWrite<int>(panel, offset, { data }));
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WritePanelData<int>(panel, offset, { data });
 	}
 	static void WritePanelData(int panel, int offset, float data) {
-		if (offset != POWER) writeFloat.push_back(MemoryWrite<float>(panel, offset, { data }));
+		if (offset != POWER) writeFloat.emplace_back(MemoryWrite<float>(panel, offset, { data }));
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WritePanelData<float>(panel, offset, { data });
 	}
 	static void WritePanelData(int panel, int offset, Color data) {
-		writeColor.push_back(MemoryWrite<Color>(panel, offset, { data }));
+		writeColor.emplace_back(MemoryWrite<Color>(panel, offset, { data }));
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WritePanelData<Color>(panel, offset, { data });
 	}
 	static void WriteArray(int panel, int offset, const std::vector<int>& data) {
 		return WriteArray(panel, offset, data, false);
 	}
 	static void WriteArray(int panel, int offset, const std::vector<int>& data, bool force) {
-		writeIntVec.push_back(MemoryWrite<int>(panel, offset, data));
+		writeIntVec.emplace_back(MemoryWrite<int>(panel, offset, data));
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WriteArray<int>(panel, offset, data, force);
 	}
 	static void WriteArray(int panel, int offset, const std::vector<float>& data) {
 		return WriteArray(panel, offset, data, false);
 	}
 	static void WriteArray(int panel, int offset, const std::vector<float>& data, bool force) {
-		writeFloatVec.push_back(MemoryWrite<float>(panel, offset, data));
+		writeFloatVec.emplace_back(MemoryWrite<float>(panel, offset, data));
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WriteArray<float>(panel, offset, data, force);
 	}
 	static void WriteArray(int panel, int offset, const std::vector<Color>& data) {
 		return WriteArray(panel, offset, data, false);
 	}
 	static void WriteArray(int panel, int offset, const std::vector<Color>& data, bool force) {
-		writeColorVec.push_back(MemoryWrite<Color>(panel, offset, data));
+		writeColorVec.emplace_back(MemoryWrite<Color>(panel, offset, data));
 		std::shared_ptr<Memory> _memory = std::make_shared<Memory>("witness64_d3d11.exe"); return _memory->WriteArray<Color>(panel, offset, data, force);
 	}
 

@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "Special.h"
 #include "MultiGenerate.h"
 
@@ -99,7 +103,7 @@ void Special::generateAntiPuzzle(int id)
 	}
 }
 
-void Special::generateColorFilterPuzzle(int id, Point size, std::vector<std::pair<int, int>> symbols, Color filter)
+void Special::generateColorFilterPuzzle(int id, Point size, const std::vector<std::pair<int, int>>& symbols, const Color& filter)
 {
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->setGridSize(size.first, size.second);
@@ -576,7 +580,7 @@ void Special::generateApplePuzzle(int id, bool changeExit, bool flip)
 	}
 }
 
-void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Point> path2, std::set<Point> path3, std::set<Point> path4, std::vector<std::pair<int, int>> symbols)
+void Special::generateKeepLaserPuzzle(int id, const std::set<Point>& path1, const std::set<Point>& path2, const std::set<Point>& path3, const std::set<Point>& path4, std::vector<std::pair<int, int>> symbols)
 {
 	PuzzleSymbols psymbols(symbols);
 	generator->resetConfig();
@@ -635,7 +639,7 @@ void Special::generateKeepLaserPuzzle(int id, std::set<Point> path1, std::set<Po
 	if (psymbols.getNum(Decoration::Triangle) > 0) (new KeepWatchdog())->start();
 }
 
-void Special::generateMountaintop(int id, std::vector<std::pair<int, int>> symbolVec)
+void Special::generateMountaintop(int id, const std::vector<std::pair<int, int>>& symbolVec)
 {
 	std::vector<std::vector<Point>> perspectiveU = {
 	{ { 0, 3 },{ 1, 2 },{ 1, 4 },{ 2, 1 },{ 2, 3 },{ 3, 2 },{4, 7}, { 6, 1 },{6, 7}, { 7, 0 },{ 7, 2 },{ 7, 4 },{7, 6}, { 8, 1 },{ 8, 3 },{ 8, 5 },{ 9, 2 },{ 9, 4 },{ 9, 6 } },
@@ -677,14 +681,14 @@ void Special::generateMountaintop(int id, std::vector<std::pair<int, int>> symbo
 	generator->generateMulti(id, gens, symbolVec);
 }
 
-void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<std::pair<int, int>>> symbolVec, bool flip) {
+void Special::generateMultiPuzzle(std::vector<int> ids, const std::vector<std::vector<std::pair<int, int>>>& symbolVec, bool flip) {
 	generator->resetConfig();
 	generator->setFlagOnce(Generate::Config::DisableWrite);
 	generator->generate(ids[0]);
 	std::vector<PuzzleSymbols> symbols;
-	for (auto sym : symbolVec) symbols.push_back(PuzzleSymbols(sym));
+	for (auto sym : symbolVec) symbols.emplace_back(PuzzleSymbols(sym));
 	std::vector<Generate> gens;
-	for (int i = 0; i < ids.size(); i++) gens.push_back(Generate());
+	for (int i = 0; i < ids.size(); i++) gens.emplace_back(Generate());
 	for (int i = 0; i < ids.size(); i++) {
 		gens[i].setFlag(Generate::Config::DisableWrite);
 		gens[i].setFlag(Generate::WriteColors);
@@ -714,7 +718,7 @@ void Special::generateMultiPuzzle(std::vector<int> ids, std::vector<std::vector<
 	generator->resetVars();
 }
 
-bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, std::vector<PuzzleSymbols> symbols, std::set<Point> path) {
+bool Special::generateMultiPuzzle(std::vector<int> ids, std::vector<Generate>& gens, const std::vector<PuzzleSymbols>& symbols, const std::set<Point>& path) {
 	for (int i = 0; i < ids.size(); i++) {
 		gens[i]._custom_grid.clear();
 		gens[i].setPath(path);
@@ -938,7 +942,7 @@ bool Special::generate2BridgeH(int id1, int id2, std::vector<std::shared_ptr<Gen
 	return count == 6;
 }
 
-bool checkShape(std::set<Point> shape, int direction) {
+bool checkShape(const std::set<Point>& shape, int direction) {
 	//Make sure it is not off the grid
 	for (Point p : shape) if (p.first < 0 || p.first > 7 || p.second < 0 || p.second > 7)
 		return false;
@@ -981,7 +985,7 @@ bool checkShape(std::set<Point> shape, int direction) {
 	return false;
 }
 
-void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
+void Special::generateMountainFloor(const std::vector<int>& ids, int idfloor)
 {
 	generator->resetConfig();
 	std::vector<Point> floorPos = { { 3, 3 },{ 7, 3 },{ 3, 7 },{ 7, 7 } };
@@ -1002,7 +1006,7 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 		Shape shape;
 		for (int j = 0; j < 16; j++) {
 			if (symbol & (1 << (j + 16))) {
-				shape.insert(Point((j % 4) * 2 + 1, 8 - ((j / 4) * 2 + 1)));
+				shape.emplace(Point((j % 4) * 2 + 1, 8 - ((j / 4) * 2 + 1)));
 			}
 		}
 		//Translate randomly
@@ -1037,7 +1041,7 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 		for (int x = 1; x <= 7; x += 2)
 			for (int y = 1; y <= 7; y += 2)
 				if (gen.get(x, y) != 0) {
-					covered.insert(Point(x, y));
+					covered.emplace(Point(x, y));
 					if (gen.get_symbol_type(gen.get(x, y)) == Decoration::Poly) decoyShape = gen.get(x, y);
 				}
 		for (Point p : covered) newShape.erase(p);
@@ -1054,7 +1058,7 @@ void Special::generateMountainFloor(std::vector<int> ids, int idfloor)
 	generator->resetConfig();
 }
 
-void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
+void Special::generateMountainFloorH(const std::vector<int>& ids, int idfloor)
 {
 	generator->resetConfig();
 	std::vector<Point> floorPos = { { 3, 3 },{ 7, 3 },{ 3, 7 },{ 7, 7 } };
@@ -1079,7 +1083,7 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 		Shape shape;
 		for (int j = 0; j < 16; j++) {
 			if (symbol & (1 << (j + 16))) {
-				shape.insert(Point((j % 4) * 2 + 1, 8 - ((j / 4) * 2 + 1)));
+				shape.emplace(Point((j % 4) * 2 + 1, 8 - ((j / 4) * 2 + 1)));
 			}
 		}
 		//Translate randomly
@@ -1153,7 +1157,7 @@ void Special::generateMountainFloorH(std::vector<int> ids, int idfloor)
 	generator->resetConfig();
 }
 
-void Special::generatePivotPanel(int id, Point gridSize, std::vector<std::pair<int, int>> symbolVec) {
+void Special::generatePivotPanel(int id, Point gridSize, const std::vector<std::pair<int, int>>& symbolVec) {
 	int width = gridSize.first * 2 + 1, height = gridSize.second * 2 + 1;
 	std::vector<std::shared_ptr<Generate>> gens;
 	for (int i = 0; i < 3; i++) gens.push_back(std::make_shared<Generate>());
@@ -1369,7 +1373,7 @@ bool Special::checkDotSolvability(std::shared_ptr<Panel> panel1, std::shared_ptr
 	return false;
 }
 
-void Special::createArrowPuzzle(int id, int x, int y, int dir, int ticks, std::vector<Point> gaps)
+void Special::createArrowPuzzle(int id, int x, int y, int dir, int ticks, const std::vector<Point>& gaps)
 {
 	generator->initPanel(id);
 	generator->clear();
@@ -1398,7 +1402,7 @@ void Special::createArrowSecretDoor(int id)
 	(new ArrowWatchdog(id))->start();
 }
 
-void Special::generateCenterPerspective(int id, std::vector<std::pair<int, int>> symbolVec, int symbolType)
+void Special::generateCenterPerspective(int id, const std::vector<std::pair<int, int>>& symbolVec, int symbolType)
 {
 	std::vector<std::vector<Point>> obstructions = { { { 5, 0 },{ 5, 2 },{ 5, 4 } },{ { 5, 6 },{ 5, 8 },{ 5, 10 } },{ { 0, 5 },{ 2, 5 },{ 4, 5 } },{ { 6, 5 },{ 8, 5 },{ 10, 5 } } };
 	generator->setObstructions(obstructions);

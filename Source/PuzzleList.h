@@ -81,9 +81,9 @@ public:
 private:
 	std::shared_ptr<Generate> generator;
 	std::shared_ptr<Special> specialCase;
-	HWND _handle;
-	int seed;
-	bool seedIsRNG;
+	HWND _handle = nullptr;
+	int seed = 0;
+	bool seedIsRNG = false;
 
 	template <class T> T pick_random(std::vector<T>& vec) { return vec[Random::rand() % vec.size()]; }
 	template <class T> T pick_random(std::set<T>& set) { auto it = set.begin(); std::advance(it, Random::rand() % set.size()); return *it; }

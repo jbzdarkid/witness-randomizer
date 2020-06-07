@@ -19,8 +19,8 @@ public:
 		COLORS = 8,
 	};
 
-	int seed;
-	bool seedIsRNG;
+	int seed = 0;
+	bool seedIsRNG = false;
 
 private:
 	void RandomizeDesert();

@@ -20,7 +20,7 @@ struct Point {
 class Decoration
 {
 public:
-	enum Shape {
+	enum Shape : int {
 		Exit =		0x600001,
 		Start =		0x600002,
 		Stone =		0x100,
@@ -47,7 +47,7 @@ public:
 		Dot_Intersection = 0x600020,
 		Empty = 0xA00,
 	};
-	enum Color {
+	enum Color : int {
 		None = 0,
 		Black = 0x1,
 		White = 0x2,
@@ -63,7 +63,7 @@ public:
 	};
 };
 
-enum IntersectionFlags {
+enum IntersectionFlags : int {
 	ROW = 0x200000,
 	COLUMN = 0x400000,
 	INTERSECTION = 0x600000,

@@ -1,3 +1,7 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "Panel.h"
 #include "Special.h"
 #include "Memory.h"
@@ -145,7 +149,7 @@ void Panel::SetGridSymbol(int x, int y, Decoration::Shape symbol, Decoration::Co
 			if (x == 0) dir = Endpoint::Direction::LEFT;
 			if (x == _width - 1) dir = Endpoint::Direction::RIGHT;
 		}
-		_endpoints.push_back(Endpoint(x, y, dir, IntersectionFlags::ENDPOINT | 
+		_endpoints.emplace_back(Endpoint(x, y, dir, IntersectionFlags::ENDPOINT | 
 			(dir == Endpoint::Direction::UP || dir == Endpoint::Direction::DOWN ?
 				IntersectionFlags::COLUMN : IntersectionFlags::ROW)));
 	}
@@ -254,7 +258,7 @@ bool Panel::LoadPanels(int seed, bool hard)
 		panel._endpoints.clear();
 		file >> panel._width >> panel._height;
 		for (int x = 0; x < panel._width; x++) {
-			panel._grid.push_back(std::vector<int>());
+			panel._grid.emplace_back(std::vector<int>());
 			for (int y = 0; y < panel._height; y++) {
 				int val;
 				file >> val;
@@ -271,7 +275,7 @@ bool Panel::LoadPanels(int seed, bool hard)
 		while (numExits-- > 0) {
 			int x, y, dir, flags;
 			file >> x >> y >> dir >> flags;
-			panel._endpoints.push_back(Endpoint(x, y, static_cast<Endpoint::Direction>(dir), flags));
+			panel._endpoints.emplace_back(Endpoint(x, y, static_cast<Endpoint::Direction>(dir), flags));
 		}
 		file >> panel.minx >> panel.miny >> panel.maxx >> panel.maxy >> panel.unitWidth >> panel.unitHeight;
 		int symmetry, colorMode;
@@ -595,7 +599,7 @@ void Panel::ReadIntersections() {
 					yd = (intersections[location * 2 + 1] - miny) / unitHeight;
 					x = std::clamp((int)std::round(xd), 0, _width - 1);
 					y = _height - 1 - std::clamp((int)std::round(yd), 0, _height - 1);
-					_endpoints.push_back(Endpoint(x, y, dir, intersectionFlags[i]));
+					_endpoints.emplace_back(Endpoint(x, y, dir, intersectionFlags[i]));
 					break;
 				}
 			}

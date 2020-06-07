@@ -1,8 +1,12 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "MultiGenerate.h"
 
 inline Point operator+(const Point& l, const Point& r) { return { l.first + r.first, l.second + r.second }; }
 
-void MultiGenerate::generate(int id, std::vector<std::shared_ptr<Generate>> gens, std::vector<std::pair<int, int>> symbolVec)
+void MultiGenerate::generate(int id, const std::vector<std::shared_ptr<Generate>>& gens, const std::vector<std::pair<int, int>>& symbolVec)
 {
 	generators = gens;
 	PuzzleSymbols symbols(symbolVec);

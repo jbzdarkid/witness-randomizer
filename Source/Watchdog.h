@@ -54,8 +54,8 @@ public:
 		grid = backupGrid = panel._grid;
 		width = static_cast<int>(grid.size());
 		height = static_cast<int>(grid[0].size());
-		pillarWidth = 0;
-		complete = false, tracedLength;
+		pillarWidth = tracedLength = 0;
+		complete = false;
 		style = ReadPanelData<int>(id, STYLE_FLAGS);
 		DIRECTIONS = { Point(0, 2), Point(0, -2), Point(2, 0), Point(-2, 0), Point(2, 2), Point(2, -2), Point(-2, -2), Point(-2, 2) };
 		exitPos = panel.xy_to_loc(panel._endpoints[0].GetX(), panel._endpoints[0].GetY());
