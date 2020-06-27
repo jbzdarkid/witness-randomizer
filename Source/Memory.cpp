@@ -66,6 +66,7 @@ int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t 
 }
 
 void Memory::ThrowError(std::string message) {
+	if (!showMsg) throw std::exception(message.c_str());
 	DWORD exitCode;
 	GetExitCodeProcess(_handle, &exitCode);
 	if (exitCode != STILL_ACTIVE) throw std::exception(message.c_str());
@@ -118,6 +119,7 @@ void* Memory::ComputeOffset(std::vector<int> offsets)
 			// If the address is not yet computed, then compute it.
 			uintptr_t computedAddress = 0;
 			if (!Read(reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t))) {
+				if (!showMsg) throw std::exception();
 				ThrowError(offsets, false);
 			}
 			_computedAddresses[cumulativeAddress] = computedAddress;
@@ -128,4 +130,10 @@ void* Memory::ComputeOffset(std::vector<int> offsets)
 	return reinterpret_cast<void*>(cumulativeAddress + final_offset);
 }
 
-int Memory::GLOBALS = 0x62B0A0;
+int Memory::GLOBALS = 0;
+bool Memory::showMsg = false;
+int Memory::globalsTests[3] = {
+	0x62D0A0, //Steam and Epic Games
+	0x62B0A0, //Good Old Games
+	0x5B28C0 //IDK what this is used for
+};

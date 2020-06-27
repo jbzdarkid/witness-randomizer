@@ -6,11 +6,6 @@
 #include <iomanip>
 #include <fstream>
 #include <windows.h>
-
-//#define GLOBALS 0x5B28C0 IDK what this is used for
-//#define GLOBALS 0x62D0A0 //Steam and Epic Games
-//#define GLOBALS 0x62B0A0 //Good Old Games
-
 // https://github.com/erayarslan/WriteProcessMemory-Example
 // http://stackoverflow.com/q/32798185
 // http://stackoverflow.com/q/36018838
@@ -102,6 +97,8 @@ public:
 	void ClearOffsets() { _computedAddresses = std::map<uintptr_t, uintptr_t>(); }
 
 	static int GLOBALS;
+	static bool showMsg;
+	static int globalsTests[3];
 
 private:
 	template<class T>
@@ -111,6 +108,7 @@ private:
 		if (Read(ComputeOffset(offsets), &data[0], sizeof(T) * numItems)) {
 			return data;
 		}
+		if (!showMsg) throw std::exception();
 		ThrowError(offsets, false);
 		return {};
 	}
@@ -120,6 +118,7 @@ private:
 		if (Write(ComputeOffset(offsets), &data[0], sizeof(T) * data.size())) {
 			return;
 		}
+		if (!showMsg) throw std::exception();
 		ThrowError(offsets, true);
 	}
 	void ThrowError(std::string message);

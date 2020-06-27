@@ -1250,16 +1250,16 @@ void PuzzleList::GenerateQuarryH()
 	generator->generate(0x09DB5, Decoration::Star | Decoration::Color::Magenta, 7, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Green, 5,
 		Decoration::Eraser | Decoration::Magenta, 1, Decoration::Eraser | Decoration::Green, 1);
 	//Multi-eraser + Shapes
+	generator->setGridSize(4, 4);
+	generator->generate(0x09DB1, Decoration::Poly | Decoration::Color::Green, 5, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->setFlagOnce(Generate::Config::DisconnectShapes);
+	generator->generate(0x3C124, Decoration::Poly | Decoration::Color::Green, 4, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->setSymbol(Decoration::Start, 0, 8);
+	generator->generate(0x09DB3, Decoration::Poly | Decoration::Color::Green, 4, Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 1, Decoration::Eraser | Decoration::Color::White, 2);
+	generator->generate(0x09DB4, Decoration::Poly | Decoration::Color::Green, 4, Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 3, Decoration::Eraser | Decoration::Color::White, 2);
+	//All together
 	generator->removeFlag(Generate::Config::WriteColors);
 	generator->setFlag(Generate::Config::ResetColors);
-	generator->setGridSize(4, 4);
-	generator->generate(0x09DB1, Decoration::Poly, 5, Decoration::Eraser | Decoration::Color::White, 2);
-	generator->setFlagOnce(Generate::Config::DisconnectShapes);
-	generator->generate(0x3C124, Decoration::Poly, 4, Decoration::Eraser | Decoration::Color::White, 2);
-	generator->setSymbol(Decoration::Start, 0, 8);
-	generator->generate(0x09DB3, Decoration::Poly | Decoration::Color::Orange, 4, Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 1, Decoration::Eraser | Decoration::Color::White, 2);
-	generator->generate(0x09DB4, Decoration::Poly | Decoration::Color::Orange, 4, Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 3, Decoration::Eraser | Decoration::Color::White, 2);
-	//All together
 	generator->setGridSize(0, 0);
 	generator->generate(0x0A3CB, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Poly | Decoration::Color::Orange, 3,
 		Decoration::Poly | Decoration::Negative | Decoration::Color::Magenta, 2, Decoration::Eraser | Decoration::White, 2);

@@ -390,8 +390,40 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
       rect.right - 650, 200, 600, DEBUG ? 700 : 220, nullptr, nullptr, hInstance, nullptr);
 
 	//Initialize memory globals constant depending on game version
-	int result = Special::testRead<int>(Memory::GLOBALS, 1)[0];
-	if (result == 0) Memory::GLOBALS = 0x62D0A0;
+	Memory memory("witness64_d3d11.exe");
+	Memory::showMsg = false;
+	for (int g : Memory::globalsTests) {
+		try {
+			Memory::GLOBALS = g;
+			if (memory.ReadPanelData<int>(0x17E52, STYLE_FLAGS) != 0xA040) throw std::exception();
+			break;
+		}
+		catch (std::exception) { Memory::GLOBALS = 0; }
+	}
+	if (!Memory::GLOBALS) {
+		std::ifstream file("globals.txt");
+		if (file.is_open()) {
+			file >> std::hex >> Memory::GLOBALS;
+		}
+		else {
+			std::string str = "Globals ptr not found. Press OK to search for globals ptr. It will probably take around 5 minutes. This popup will close and the calculation will run in the background. Please keep The Witness open during this time.";
+			if (MessageBox(GetActiveWindow(), std::wstring(str.begin(), str.end()).c_str(), NULL, MB_OK) != IDOK) return 0;
+			int address = Special::findGlobals();
+			if (address) {
+				std::stringstream ss; ss << std::hex << "Address found: 0x" << address << ". This address wil be automatically loaded next time. Please post an issue on Github with this address so that it can be added in the future.";
+				std::string str = ss.str();
+				MessageBox(GetActiveWindow(), std::wstring(str.begin(), str.end()).c_str(), NULL, MB_OK);
+				std::ofstream ofile("globals.txt", std::ofstream::app);
+				ofile << std::hex << address << std::endl;
+			}
+			else {
+				str = "Address could not be found. Please post an issue on the Github page.";
+				MessageBox(GetActiveWindow(), std::wstring(str.begin(), str.end()).c_str(), NULL, MB_OK);
+				return 0;
+			}
+		}
+	}
+	Memory::showMsg = true;
 
 	//Get the seed and difficulty previously used for this save file (if applicable)
 	int lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);

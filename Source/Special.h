@@ -191,7 +191,7 @@ public:
 		return -1;
 	}
 
-	static uintptr_t findGlobals();
+	static int findGlobals();
 
 	static std::vector<MemoryWrite<int>> writeInt;
 	static std::vector<MemoryWrite<float>> writeFloat;
