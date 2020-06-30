@@ -1385,6 +1385,10 @@ bool Generate::place_shapes(const std::vector<int>& colors, const std::vector<in
 		}
 		if (_panel->symmetry && numShapes == originalAmount && numShapes >= 3 && Point::pillarWidth == 0 && !region.count(Point((_panel->_width / 4) * 2 + 1, (_panel->_height / 4) * 2 + 1)))
 			continue; //Prevent it from shoving all shapes to one side of symmetry
+		if ((_panel->symmetry == Panel::Symmetry::ParallelH || _panel->symmetry == Panel::Symmetry::ParallelV ||
+			_panel->symmetry == Panel::Symmetry::ParallelHFlip || _panel->symmetry == Panel::Symmetry::ParallelVFlip)
+			&& region.count(Point((_panel->_width / 4) * 2 + 1, (_panel->_height / 4) * 2 + 1)))
+			continue; //Prevent parallel symmetry from making regions through the center line (this tends to make the puzzles way too hard)
 		if (!balance && numShapesN && (numShapesN > 1 && numRotated > 0 || numShapesN > 2 || numShapes + numShapesN > 6))
 			continue; //Trying to prevent the game's shape calculator from lagging too much
 		if (!(hasFlag(Config::MountainFloorH) && _panel->_width == 11) && open2.size() < numShapes + numShapesN) continue; //Not enough space to put the symbols
