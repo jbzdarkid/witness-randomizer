@@ -1409,7 +1409,7 @@ void Special::generateCenterPerspective(int id, const std::vector<std::pair<int,
 	do {
 		generator->setFlagOnce(Generate::Config::DisableWrite);
 		generator->generate(id, symbolVec);
-	} while (generator->get_symbol_type(generator->get(5, 5)) != symbolType);
+	} while ((generator->get(5, 5) & 0xFF00) != symbolType);
 	generator->write(id);
 }
 

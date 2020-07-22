@@ -1308,6 +1308,7 @@ bool Generate::place_shapes(const std::vector<int>& colors, const std::vector<in
 		removeFlag(Generate::Config::MountainFloorH);
 	}
 	int totalArea = 0;
+	int minx = _panel->_width, miny = _panel->_height, maxx = 0, maxy = 0;
 	int colorIndex = Random::rand() % colors.size();
 	int colorIndexN = Random::rand() % (negativeColors.size() + 1);
 	bool shapesCanceled = false, shapesCombined = false;
@@ -1483,9 +1484,21 @@ bool Generate::place_shapes(const std::vector<int>& colors, const std::vector<in
 			}
 			open2.erase(pos);
 			_openpos.erase(pos);
+			if (_panel->symmetry && Point::pillarWidth == 0 && originalAmount >= 3) {
+				for (const Point& p : shape) {
+					if (p.first < minx) minx = p.first;
+					if (p.second < miny) miny = p.second;
+					if (p.first > maxx) maxx = p.first;
+					if (p.second > maxy) maxy = p.second;
+				}
+			}
 		}
 	} //Do some final checks - make sure targetArea has been reached, all shapes have been placed, and that config requirements have been met
 	if (totalArea < targetArea || numNegative > 0 || hasFlag(Config::RequireCancelShapes) && !shapesCanceled || hasFlag(Config::RequireCombineShapes) && !shapesCombined)
+		return false;
+	//If symmetry, make sure it didn't shove all the shapes to one side
+	if (_panel->symmetry && Point::pillarWidth == 0 && originalAmount >= 3 &&
+		(minx >= _panel->_width / 2 || maxx <= _panel->_width / 2 || miny >= _panel->_height / 2 || maxy <= _panel->_height / 2))
 		return false;
 	return true;
 }
