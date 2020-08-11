@@ -156,10 +156,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 
 			//Read seed from text box
-			std::wstring text;
-			text.reserve(100);
+			WCHAR text[100];
 			GetWindowText(hwndSeed, &text[0], 100);
-			int seed = _wtoi(text.c_str());
+			int seed = _wtoi(text);
 			if (seed == 0) {
 				//If no seed is entered, pick random seed
 				Random::seed(static_cast<int>(time(NULL)));
