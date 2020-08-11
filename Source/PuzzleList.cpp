@@ -710,16 +710,20 @@ void PuzzleList::GenerateMountainN()
 	generator->generate(0x0383D, Decoration::Dot, 15, Decoration::Gap, 6);
 	generator->resetConfig();
 	generator->setFlag(Generate::Config::WriteColors);
+	generator->setFlag(Generate::Config::DecorationsOnly);
 	generator->generate(0x0383A, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 4);
 	generator->generate(0x0383F, Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
+	generator->removeFlag(Generate::Config::DecorationsOnly);
 	generator->generate(0x09E56, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Dot, 8);
 	generator->removeFlag(Generate::Config::WriteColors);
 	generator->setFlagOnce(Generate::Config::RequireCombineShapes);
-	generator->generate(0x03859, Decoration::Poly, 2);
+	generator->setFlagOnce(Generate::Config::DecorationsOnly);
+	generator->generate(0x03859, Decoration::Poly, 3);
 	generator->setSymbol(Decoration::Start, 4, 8);
 	generator->generate(0x09E5A, Decoration::Dot_Intersection, 30, Decoration::Gap, 10);
 	generator->setFlagOnce(Generate::Config::WriteColors);
 	generator->setSymmetry(Panel::Symmetry::PillarRotational);
+	generator->setFlagOnce(Generate::Config::DecorationsOnly);
 	generator->generate(0x339BB, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Stone | Decoration::Color::Black, 4,
 		Decoration::Stone | Decoration::Color::White, 4);
 	generator->setSymmetry(Panel::Symmetry::PillarParallel);

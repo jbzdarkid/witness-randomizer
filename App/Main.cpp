@@ -127,7 +127,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_DIFFICULTY_NORMAL:
 			lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
 			lastHard = (Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12) > 1);
-			if (lastSeed != 0 && lastHard) {
+			if (lastSeed != 0 && lastHard && !DEBUG) {
 				MessageBox(hwnd, L"This save file was previously randomized on Expert. To change the difficulty, you must start a new save file.", NULL, MB_OK);
 				SendMessage(hwndExpert, BM_SETCHECK, BST_CHECKED, 1);
 				SendMessage(hwndNormal, BM_SETCHECK, BST_UNCHECKED, 1);
@@ -138,7 +138,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_DIFFICULTY_EXPERT:
 			lastSeed = Special::ReadPanelData<int>(0x00064, BACKGROUND_REGION_COLOR + 12);
 			lastHard = (Special::ReadPanelData<int>(0x00182, BACKGROUND_REGION_COLOR + 12) > 1);
-			if (lastSeed != 0 && !lastHard) {
+			if (lastSeed != 0 && !lastHard && !DEBUG) {
 				MessageBox(hwnd, L"This save file was previously randomized on Normal. To change the difficulty, you must start a new save file.", NULL, MB_OK);
 				SendMessage(hwndNormal, BM_SETCHECK, BST_CHECKED, 1);
 				SendMessage(hwndExpert, BM_SETCHECK, BST_UNCHECKED, 1);
@@ -160,7 +160,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			text.reserve(100);
 			GetWindowText(hwndSeed, &text[0], 100);
 			int seed = _wtoi(text.c_str());
-			if (text.length() == 0) {
+			if (seed == 0) {
 				//If no seed is entered, pick random seed
 				Random::seed(static_cast<int>(time(NULL)));
 				seed = Random::rand() % 999999 + 1;
