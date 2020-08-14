@@ -27,4 +27,4 @@ Please report any issues (such as unsolvable/broken puzzles) on the issues page.
 
 Thanks for playing this mod, and good luck!
 
-(The mod can be downloaded from the "Releases" tab.)
+(The mod can be downloaded from the ["Releases"](https://github.com/sigma144/witness-randomizer/releases) section.)
