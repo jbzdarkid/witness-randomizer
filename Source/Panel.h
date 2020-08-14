@@ -228,6 +228,17 @@ private:
 	int get_num_grid_blocks() { return (_width / 2) * (_height / 2);  }
 	int get_parity() { return (get_num_grid_points() + 1) % 2; }
 	Color get_color_rgb(int color) {
+		if (colorMode == ColorMode::Treehouse || colorMode == ColorMode::TreehouseLoad) {
+			switch (color) {
+			case 1: return { 0, 0, 0, 1 }; //Black
+			case 2: return { 1, 1, 1, 1 }; //White
+			case 3: return { 1, 1, 1, 1 }; //Red
+			case 4: return { 1, 0, 1, 1 }; //Magenta
+			case 5: return { 1, 0.5, 0, 1 }; //Orange
+			case 6: return { 0, 1, 0, 1 }; //Green
+			default: return { 0, 0, 0, 0 };
+			}
+		}
 		Color xcolor;
 		switch (color) {
 		case Decoration::Color::Black: return { 0, 0, 0, 1 };
