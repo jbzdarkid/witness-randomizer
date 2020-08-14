@@ -1099,7 +1099,7 @@ void PuzzleList::GenerateSymmetryH()
 	generator->generate(0x00073, Decoration::Poly | Decoration::Color::Yellow, 3, Decoration::Start, 1, Decoration::Exit, 1);
 	generator->setGridSize(7, 7);
 	generator->setFlag(Generate::Config::ResetColors);
-	generator->generate(0x00077, Decoration::Triangle | Decoration::Color::Orange, 10, Decoration::Start, 1, Decoration::Exit, 1);
+	generator->generate(0x00077, Decoration::Triangle | Decoration::Color::Yellow, 8, Decoration::Start, 1, Decoration::Exit, 1);
 	generator->setSymmetry(Panel::Symmetry::FlipXY);
 	generator->generate(0x00079, Decoration::Dot | Decoration::Color::Blue, 2, Decoration::Dot | Decoration::Color::Yellow, 2, Decoration::Dot, 8,
 		Decoration::Eraser | Decoration::Color::White, 1, Decoration::Start, 1, Decoration::Exit, 1);
@@ -1489,8 +1489,6 @@ void PuzzleList::GenerateTreehouseH()
 	generator->generate(0x17D2D, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Dot_Intersection, 36);
 	generator->generate(0x17D6C, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Dot_Intersection, 36);
 	//Pink Bridge 2
-	generator->removeFlag(Generate::Config::TreehouseColors);
-	generator->setFlag(Generate::Config::ResetColors);
 	generator->setGridSize(4, 4);
 	generator->pathWidth = 1;
 	generator->generate(0x17D9B, Decoration::Triangle | Decoration::Color::Magenta, 4,
@@ -1504,8 +1502,6 @@ void PuzzleList::GenerateTreehouseH()
 	generator->generate(0x17D97, Decoration::Triangle | Decoration::Color::Magenta, 4,
 		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Star | Decoration::Color::Black, 1,
 		Decoration::Stone | Decoration::Color::Magenta, 2, Decoration::Star | Decoration::Color::White, 2);
-	generator->removeFlag(Generate::Config::ResetColors);
-	generator->setFlag(Generate::Config::TreehouseColors);
 	generator->generate(0x17BDF, Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Triangle | Decoration::Color::Magenta, 2,
 		Decoration::Star | Decoration::Color::Magenta, 2, Decoration::Star | Decoration::Color::Green, 2,
 		Decoration::Stone | Decoration::Color::Orange, 2, Decoration::Stone | Decoration::Color::Green, 2);
@@ -1606,7 +1602,7 @@ void PuzzleList::GenerateTreehouseH()
 		{ Decoration::Triangle | Decoration::Color::Orange, 2 }, { Decoration::Triangle | Decoration::Color::Magenta, 2 }, { Decoration::Triangle | Decoration::Color::Green, 1 },
 		{ Decoration::Triangle | Decoration::Color::White, 1 },{ Decoration::Triangle | Decoration::Color::Black, 1 } });
 	//Green Bridge
-	generator->removeFlag(Generate::Config::ResetColors);
+	generator->removeFlag(Generate::Config::TreehouseColors);
 	generator->setFlag(Generate::Config::AlternateColors);
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.9f;
@@ -1917,6 +1913,8 @@ void PuzzleList::GenerateMountainH()
 	generator->generate(0x0383F, Decoration::Triangle | Decoration::Color::Orange, 4,
 		Decoration::Dot_Intersection, 45, Decoration::Start, 5);
 	specialCase->initPillarSymmetry(generator, 0x09E56, Panel::Symmetry::PillarVertical);
+	generator->removeFlagOnce(Generate::Config::ResetColors);
+	generator->setFlagOnce(Generate::Config::TreehouseColors);
 	generator->generate(0x09E56, Decoration::Star | Decoration::Color::Orange, 3, Decoration::Star | Decoration::Color::Magenta, 3,
 		Decoration::Triangle | Decoration::Color::Orange, 2, Decoration::Triangle | Decoration::Color::Magenta, 2,
 		Decoration::Eraser | Decoration::Color::Magenta, 1, Decoration::Start, 3);
@@ -2019,7 +2017,7 @@ void PuzzleList::GenerateCavesH()
 	generator->resetConfig();
 	generator->setFlag(Generate::Config::DecorationsOnly);
 	specialCase->generateCenterPerspective(0x288EA, { { Decoration::Star | Decoration::Color::Black, 8 },
-		{Decoration::Star | Decoration::Color::White, 6} }, Decoration::Star);
+		{ Decoration::Star | Decoration::Color::White, 6 } }, Decoration::Star);
 	specialCase->generateCenterPerspective(0x288FC, { { Decoration::Poly, 4 },
 		{ Decoration::Eraser | Decoration::Color::White, 1 } }, Decoration::Eraser);
 	specialCase->generateCenterPerspective(0x289E7, { { Decoration::Triangle | Decoration::Color::Orange, 10},

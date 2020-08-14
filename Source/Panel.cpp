@@ -472,12 +472,11 @@ void Panel::WriteDecorations() {
 	}
 	else {
 		_memory->WritePanelData<int>(id, NUM_DECORATIONS, { static_cast<int>(decorations.size()) });
-		if (colorMode == ColorMode::Reset || colorMode == ColorMode::Alternate) {
-			_memory->WritePanelData<int>(id, DECORATION_COLORS, { 0 });
+		if (colorMode == ColorMode::WriteColors || colorMode == ColorMode::Treehouse || colorMode == ColorMode::TreehouseLoad || _memory->ReadPanelData<int>(id, DECORATION_COLORS))
+			_memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
+		else if (colorMode == ColorMode::Reset || colorMode == ColorMode::Alternate) {
 			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { colorMode == ColorMode::Reset ? 0 : 1 });
 		}
-		if (colorMode == ColorMode::WriteColors || colorMode == ColorMode::Treehouse || colorMode == ColorMode::TreehouseLoad)
-			_memory->WriteArray<Color>(id, DECORATION_COLORS, decorationColors);
 		if (colorMode == ColorMode::Treehouse || colorMode == ColorMode::TreehouseLoad) {
 			_memory->WritePanelData<int>(id, PUSH_SYMBOL_COLORS, { 1 });
 			_memory->WritePanelData<Color>(id, SYMBOL_A, { { 0, 0, 0, 1 } }); //Black
@@ -786,17 +785,9 @@ void Panel::WriteIntersections() {
 	}
 
 	//Symmetry Data
-	if (id == 0x00076 && symmetry == Symmetry::None) {
+	if (id == 0x01D3F && symmetry == Symmetry::None || id == 0x00076 && symmetry == Symmetry::None) {
 		_style &= ~Style::SYMMETRICAL;
-		//For some reason, removing the symmetry outright sometimes makes the game crash, so this is a workaround
-		intersectionFlags.push_back(IntersectionFlags::NO_POINT); intersections.push_back(0); intersections.push_back(0);
-		for (int i = 0; i < intersectionFlags.size(); i++) symmetryData.push_back((int)intersectionFlags.size() - 1);
-		_memory->WriteArray<int>(id, REFLECTION_DATA, symmetryData); 
-	}
-	else if (id == 0x01D3F && symmetry == Symmetry::None) {
-		_style &= ~Style::SYMMETRICAL;
-		//This has been reported to cause crashes for some people, but this puzzle is stubborn and I can't get it to accept any workarounds
-		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 }); 
+		_memory->WritePanelData<long long>(id, REFLECTION_DATA, { 0 });
 	}
 	else if (symmetryData.size() > 0) {
 		_style |= Style::SYMMETRICAL;
@@ -804,7 +795,7 @@ void Panel::WriteIntersections() {
 	}
 	else {
 		_style &= ~Style::SYMMETRICAL;
-		_memory->WritePanelData<int>(id, REFLECTION_DATA, { 0 });
+		_memory->WritePanelData<long long>(id, REFLECTION_DATA, { 0 });
 	}
 
 	_memory->WritePanelData<int>(id, NUM_DOTS, { static_cast<int>(intersectionFlags.size()) });
