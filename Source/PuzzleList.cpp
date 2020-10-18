@@ -1369,9 +1369,9 @@ void PuzzleList::GenerateSwampH()
 	generator->setGridSize(4, 4);
 	generator->pathWidth = 0.65f;
 	generator->generate(0x00999, Decoration::Poly | Decoration::Can_Rotate, 3);
+	generator->generate(0x0099D, Decoration::Poly | Decoration::Can_Rotate, 3);
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.6f;
-	generator->generate(0x0099D, Decoration::Poly | Decoration::Can_Rotate, 4);
 	generator->generate(0x009A0, Decoration::Poly | Decoration::Can_Rotate, 4);
 	generator->setSymbol(Decoration::Start, 4, 6);
 	generator->generate(0x009A1, Decoration::Poly | Decoration::Can_Rotate, 4);
@@ -1801,8 +1801,8 @@ void PuzzleList::GenerateMountainH()
 	generator->setGridSize(5, 5);
 	generator->pathWidth = 0.9f;
 	generator->setFlag(Generate::Config::ResetColors);
-	generator->generate(0x09E73, Decoration::Start, 1, Decoration::Dot, 6, Decoration::Triangle | Decoration::Color::Yellow, 3,
-		Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 4);
+	generator->generate(0x09E73, Decoration::Start, 1, Decoration::Dot, 6, Decoration::Triangle | Decoration::Color::Yellow, 5,
+		Decoration::Stone | Decoration::Color::Black, 4, Decoration::Stone | Decoration::Color::White, 4);
 	generator->generate(0x09E75, Decoration::Start, 1, Decoration::Dot, 6, Decoration::Poly | Decoration::Color::Blue, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Blue, 1,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
 	generator->generate(0x09E78, Decoration::Start, 1, Decoration::Exit, 1, Decoration::Poly | Decoration::Color::Blue, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Blue, 1,
@@ -1836,7 +1836,7 @@ void PuzzleList::GenerateMountainH()
 		Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
 		Decoration::Poly | Decoration::Color::Black, 1, Decoration::Poly | Decoration::Color::White, 1);
 	generator->generate(0x09E69, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 2,
-		Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
+		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Color::Black, 1, Decoration::Poly | Decoration::Color::White, 1);
 	generator->generate(0x09E7B, Decoration::Dot, 4, Decoration::Star | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::Black, 2,
 		Decoration::Triangle | Decoration::Color::Black, 2, Decoration::Eraser | Decoration::Color::Black, 1,
