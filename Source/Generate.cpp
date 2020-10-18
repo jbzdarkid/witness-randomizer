@@ -1571,7 +1571,7 @@ bool Generate::place_triangles(int color, int amount, int targetCount)
 			open.erase(get_sym_point(pos));
 		}
 		if (count == 0 || targetCount && count != targetCount) continue;
-		if (hasFlag(Config::TreehouseLayout)) { //If the block is adjacent to a start or exit, don't place a triangle there
+		if (hasFlag(Config::TreehouseLayout) || _panel->id == 0x289E7) { //If the block is adjacent to a start or exit, don't place a triangle there
 			bool found = false;
 			for (Point dir : _DIRECTIONS1) {
 				if (_starts.count(pos + dir) || _exits.count(pos + dir)) {
@@ -1740,6 +1740,16 @@ bool Generate::place_erasers(const std::vector<int>& colors, const std::vector<i
 			set(pos, symbol | (toErase & 0xf));
 		}
 		else if (get_symbol_type(toErase) == Decoration::Triangle) {
+			if (hasFlag(Config::TreehouseLayout) || _panel->id == 0x289E7) { //If the block is adjacent to a start or exit, don't place a triangle there
+				bool found = false;
+				for (Point dir : _DIRECTIONS1) {
+					if (_starts.count(pos + dir) || _exits.count(pos + dir)) {
+						found = true;
+						break;
+					}
+				}
+				if (found) continue;
+			}
 			int count = count_sides(pos);
 			if (count == 0) count = Random::rand() % 3 + 1;
 			else count = (count + (Random::rand() & 1)) % 3 + 1;
