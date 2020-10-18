@@ -947,7 +947,7 @@ bool checkShape(const std::set<Point>& shape, int direction) {
 	for (Point p : shape) if (p.first < 0 || p.first > 7 || p.second < 0 || p.second > 7)
 		return false;
 	//Make sure it is drawable
-	std::set<Point> points1, points2;
+	std::vector<Point> points1, points2;
 	if (direction == 0) {
 		points1 = { { 1, 7 },{ 3, 7 },{ 5, 7 },{ 7, 7 },{ 7, 5 },{ 7, 3 },{ 7, 1 } };
 		points2 = { { 1, 7 },{ 1, 5 },{ 1, 3 },{ 1, 1 },{ 3, 1 },{ 5, 1 },{ 7, 1 } };
@@ -1561,6 +1561,6 @@ int Special::findGlobals() {
 
 //For testing/debugging purposes only
 void Special::test() {
-
+	
 }
 

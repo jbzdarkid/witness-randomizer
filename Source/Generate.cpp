@@ -648,7 +648,7 @@ bool Generate::generate_path(PuzzleSymbols & symbols)
 		if (hasFlag(Config::SplitShapes)) {
 			return generate_path_regions(symbols.getNum(Decoration::Poly) + 1);
 		}
-		return generate_path_length(1);
+		return generate_path_length(_panel->get_num_grid_points() / 2);
 	}
 
 	return generate_path_length(_panel->get_num_grid_points() * 3 / 4);
@@ -1783,7 +1783,20 @@ bool Generate::combine_shapes(std::vector<Shape>& shapes)
 							std::set<Point> area = _gridpos;
 							for (Point p : shapes[j]) area.erase(p);
 							while (area.size() > 0) {
-								std::set<Point> region = get_region(*area.begin());
+								std::set<Point> region;
+								std::vector<Point> check;
+								check.push_back(*area.begin());
+								region.insert(*area.begin());
+								while (check.size() > 0) {
+									Point p = check[check.size() - 1];
+									check.pop_back();
+									for (Point dir : _DIRECTIONS1) {
+										Point p2 = p + dir * 2;
+										if (area.count(p2) && region.insert(p2).second) {
+											check.push_back(p2);
+										}
+									}
+								}
 								bool connected = false;
 								for (Point p : region) {
 									if (p.first == 1 || p.second == 1 || p.first == _panel->_width - 2 || p.second == _panel->_height - 2) {
