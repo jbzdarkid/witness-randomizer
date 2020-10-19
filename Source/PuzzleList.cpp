@@ -1807,8 +1807,9 @@ void PuzzleList::GenerateMountainH()
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2);
 	generator->generate(0x09E78, Decoration::Start, 1, Decoration::Exit, 1, Decoration::Poly | Decoration::Color::Blue, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Color::Blue, 1,
 		Decoration::Triangle | Decoration::Color::Yellow, 3, Decoration::Star | Decoration::Color::Yellow, 3);
-	generator->generate(0x09E79, Decoration::Start, 1, Decoration::Exit, 1, Decoration::Triangle | Decoration::Color::Purple, 2, Decoration::Triangle | Decoration::Color::Yellow, 2,
-		Decoration::Star | Decoration::Color::Purple, 3, Decoration::Star | Decoration::Color::Yellow, 3, Decoration::Eraser | Decoration::Color::Purple, 1);
+	generator->generate(0x09E79, Decoration::Start, 1, Decoration::Triangle | Decoration::Color::Purple, 2, Decoration::Triangle | Decoration::Color::Yellow, 2,
+		Decoration::Stone | Decoration::Color::Purple, 1, Decoration::Stone | Decoration::Color::Yellow, 2,
+		Decoration::Star | Decoration::Color::Purple, 2, Decoration::Star | Decoration::Color::Yellow, 1, Decoration::Eraser | Decoration::Color::Purple, 1);
 	generator->generate(0x09E6C, Decoration::Start, 1, Decoration::Exit, 1, Decoration::Poly | Decoration::Color::Blue, 3,
 		Decoration::Poly | Decoration::Negative | Decoration::Color::Blue, 3, Decoration::Star | Decoration::Color::Blue, 3,
 		Decoration::Eraser | Decoration::Color::Blue, 1);
