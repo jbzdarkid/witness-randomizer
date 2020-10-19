@@ -158,9 +158,9 @@ void Special::generateColorFilterPuzzle(int id, Point size, const std::vector<st
 			}
 		}
 	}
-	
-	WriteArray(id, DECORATION_COLORS, symbolColors);
+	generator->setFlagOnce(Generate::Config::WriteColors);
 	generator->write(id);
+	WriteArray(id, DECORATION_COLORS, symbolColors);
 	generator->resetConfig();
 }
 
@@ -1507,7 +1507,7 @@ void Special::drawSeedAndDifficulty(int id, int seed, bool hard)
 
 void Special::drawGoodLuckPanel(int id)
 {
-	std::vector<float> intersections = { /*G*/ 32, 7, 22, 7, 22, 22, 32, 22, 32, 15, 29, 15, /*O*/ 39, 7, 39, 22, 47, 22, 47, 7,
+	std::vector<float> intersections = { /*G*/ 32, 7, 22, 7, 22, 22, 32, 22, 32, 15, 31, 15, /*O*/ 39, 7, 39, 22, 47, 22, 47, 7,
 		/*O*/ 54, 7, 62, 7, 62, 22, 54, 22, /*D*/ 69, 7, 74, 7, 77, 14.5, 74, 22, 69, 22, /*L*/ 22, 79, 22, 94, 31, 94,
 		/*U*/ 38, 79, 38, 94, 46, 94, 46, 79, /*C*/ 60, 79, 55, 79, 52, 86.5, 55, 94, 60, 94, /*K*/ 67, 79, 67, 94, 74, 79, 69, 86.5, 74, 94,
 		/*!*/ 80, 79, 80, 89, 80, 94, /*SIGMA*/ 66, 39, 66, 32, 32, 32, 51, 51, 32, 69, 66, 69, 66, 62 };
