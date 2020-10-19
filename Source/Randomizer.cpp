@@ -31,7 +31,7 @@ void Randomizer::GenerateHard(HWND loadingHandle) {
 		L"- One puzzle in the Treehouse area is deactivated, making it harder to get to the laser.\r\n\r\n"
 		L"- Progression in the Town is slightly different. You must complete the 3-color room to open one of the tower doors.\r\n\r\n"
 		L"- The Keep has been made more challenging. You'll need to think creatively to figure out how to get around environmental obstacles.\r\n\r\n"
-		L"- If you post a video of yourself beating Expert mode, let me know and I will link to your video from Github so that others can see your accomplishment.\r\n\r\n"
+		L"- For negative tetris puzzles, make sure your solution has all tetris shapes lying within the bounds of the grid prior to cancellation.\r\n\r\n"
 		L"- Remember to check the Hints page on the wiki if you get stuck.\r\n\r\n"
 		L"- Good luck!", L"Welcome", MB_OK);
 }
