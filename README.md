@@ -1,7 +1,10 @@
 ![](https://github.com/sigma144/witness-randomizer/blob/master/example.png)
 
-# Witness Random Puzzle Generator (WitnessRPG)
-The WitnessRPG takes many of the puzzles in Jonathan Blow's "The Witness" and makes them into new, randomly generated puzzles. The mod requires the game in order to function. No game files will be altered, as the randomizer works enterly in RAM. This mod uses WinAPI, so it is only compatible with Microsoft Windows.
+# Witness Random Puzzle Generator
+
+### [Click Here to Download (ver 1.1.5)](https://github.com/sigma144/witness-randomizer/releases/download/1.1.5/WitnessRPG.zip)
+
+The Witness Random Puzzle Generator takes most of the puzzles in Jonathan Blow's "The Witness" and makes them into new, randomly generated puzzles. The mod requires the game in order to function. No game files will be altered, as the randomizer works enterly in RAM. This mod uses WinAPI, so it is only compatible with Microsoft Windows.
 
 This project is a fork of jbzdarkid's puzzle randomizer at https://github.com/jbzdarkid/witness-randomizer. His discoveries about how puzzle data is encoded in The Witness were invaluable to this project, so a huge thank you to jbzdarkid for his contributions.
 
@@ -21,10 +24,8 @@ This project is a fork of jbzdarkid's puzzle randomizer at https://github.com/jb
 3. Click "Randomize" and wait for the process to complete. You don't have to enter the seed or difficulty again. This is because the seed and difficulty were stored in your save file when you randomized initially, so they will be automatically restored and used.
 
 
-**If you get stuck on a puzzle,** the solver provided in the "Solver" folder (WitnessPuzzle.exe) might be able to help you. However I can't guarantee it will always work correctly, and there are some mechanics it doesn't handle at the moment. Another option if you get stuck is to exit and reopen the game, solve the puzzle the normal way, then run the randomizer again.
+If you get stuck on a puzzle, the solver provided in the "Solver" folder (WitnessPuzzle.exe) might be able to help you. However I can't guarantee it will always work correctly, and there are some mechanics it doesn't handle at the moment. Another option if you get stuck is to exit and reopen the game, solve the puzzle the normal way, then run the randomizer again.
 
-Please report any issues (such as unsolvable/broken puzzles) on the issues page. **However, please read the "Known Issues" section in the wiki first, as your issue may be addressed there.**
+Please report any issues (such as unsolvable/broken puzzles) on the issues page. However, please read the **"Known Issues"** section in the wiki first, as your issue may be addressed there.
 
 Thanks for playing this mod, and good luck!
-
-(The mod can be downloaded from the ["Releases"](https://github.com/sigma144/witness-randomizer/releases) section.)
