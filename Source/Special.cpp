@@ -587,11 +587,12 @@ void Special::generateKeepLaserPuzzle(int id, const std::set<Point>& path1, cons
 	generator->pathWidth = 0.4f;
 	generator->setGridSize(10, 11);
 	generator->_starts = { { 0, 2 },{ 20, 10 },{ 8, 14 },{ 0, 22 },{ 20, 22 } };
-	generator->_exits = { { 0, 18 },{ 10, 22 },{ 0, 0 },{ 20, 0 },{ 0, 12 } };
+	generator->_exits = { { 0, 18 },{ 0, 0 },{ 20, 0 },{ 0, 12 } };
 	if (psymbols.getNum(Decoration::Triangle) > 0) generator->_exits.insert({ 0, 22 });
 	generator->initPanel(id);
 	generator->clear();
-	std::vector<Point> gaps = { { 17, 20 },{ 16, 19 },{ 20, 17 },{ 15, 14 },{ 15, 16 },{ 18, 13 },{ 20, 13 }, //Yellow Puzzle Walls
+	std::vector<Point> gaps = { { 17, 20 },{ 16, 19 },{ 20, 17 },{ 15, 14 },{ 15, 16 },{ 18, 13 },{ 20, 13 }, //Yellow Internal Puzzle Walls
+	{ 11, 12 }, { 11, 14 }, { 11, 16 }, { 11, 18 }, { 11, 20 }, { 11, 22 }, { 10, 13 }, { 10, 15 }, { 10, 17 }, { 10, 19 }, { 10, 21 }, { 12, 13 }, { 13, 12 }, { 16, 13 }, //Yellow External Puzzle Walls
 	{ 10, 11 },{ 12, 11 },{ 14, 11 },{ 16, 11 },{ 18, 11 },{ 11, 0 },{ 11, 2 },{ 11, 4 },{ 11, 8 },{ 11, 10 },{ 14, 1 },{ 16, 1 },{ 18, 1 },{ 20, 1 }, //Pink Puzzle Walls
 	{ 2, 1 },{ 4, 1 },{ 6, 1 },{ 8, 1 },{ 0, 11 },{ 2, 11 },{ 4, 11 },{ 6, 11 },{ 9, 2 },{ 9, 4 },{ 9, 6 },{ 9, 8 },{ 9, 10 },{ 9, 12 }, //Green Puzzle Walls
 	{ 0, 13 },{ 2, 13 },{ 4, 13 },{ 6, 13 },{ 9, 14 },{ 9, 16 },{ 9, 20 },{ 9, 22 }, //Blue Puzzle Walls
@@ -599,7 +600,7 @@ void Special::generateKeepLaserPuzzle(int id, const std::set<Point>& path1, cons
 	std::vector<Point> pathPoints = { { 14, 13 },{ 14, 12 },{ 15, 12 },{ 16, 12 },{ 17, 12 },{ 18, 12 },{ 19, 12 },{ 20, 12 },{ 20, 11 },
 	{ 11, 6 },{ 10, 6 },{ 10, 5 },{ 10, 4 },{ 10, 3 },{ 10, 2 },{ 10, 1 },{ 10, 0 },{ 9, 0 },{ 8, 0 },{ 7, 0 },{ 6, 0 },{ 5, 0 },{ 4, 0 },{ 3, 0 },
 	{ 2, 0 },{ 1, 0 },{ 0, 0 },{ 0, 1 },{ 8, 11 },{ 8, 12 },{ 8, 13 } };
-	std::vector<Point> pathPoints2 = { { 9, 18 },{ 10, 18 },{ 10, 19 },{ 10, 20 },{ 10, 21 },{ 10, 22 } }; //For exiting out the right side of the last puzzle
+	std::vector<Point> pathPoints2 = { { 9, 18 },{ 10, 18 } }; //For exiting out the right side of the last puzzle
 	std::vector<Point> pathPoints3 = { { 8, 14 },{ 7, 14 },{ 6, 14 },{ 5, 14 },{ 4, 14 },{ 3, 14 },{ 2, 14 },{ 1, 14 },{ 0, 14 },{ 0, 15 },{ 0, 16 },{ 0, 17 } }; //For hard mode
 	for (Point p : pathPoints) generator->set_path(p);
 	for (Point p : gaps) generator->set(p, p.first % 2 == 0 ? Decoration::Gap_Column : Decoration::Gap_Row);
@@ -616,7 +617,7 @@ void Special::generateKeepLaserPuzzle(int id, const std::set<Point>& path1, cons
 	}
 
 	std::vector<std::string> solution; //For debugging only
-	for (int y = 0; y < generator-> _panel->_height; y++) {
+	for (int y = 0; y < generator->_panel->_height; y++) {
 		std::string row;
 		for (int x = 0; x < generator->_panel->_width; x++) {
 			if (generator->get(x, y) == PATH) {
@@ -634,7 +635,20 @@ void Special::generateKeepLaserPuzzle(int id, const std::set<Point>& path1, cons
 					generator->set(x, y, 0);
 		generator->_openpos = generator->_gridpos;
 	}
-	
+
+	for (int x = 0; x < generator->_panel->_width; x++)
+		for (int y = 0; y < generator->_panel->_height; y++)
+			if ((generator->get(x, y) & 0x1fffff) == Decoration::Gap)
+				generator->set(x, y, IntersectionFlags::OPEN);
+	generator->set(10, 10, IntersectionFlags::GAP);
+	generator->set(12, 12, IntersectionFlags::NO_POINT);
+	generator->set(10, 12, IntersectionFlags::NO_POINT);
+	generator->set(10, 14, IntersectionFlags::NO_POINT);
+	generator->set(10, 16, IntersectionFlags::NO_POINT);
+	generator->set(10, 18, IntersectionFlags::ENDPOINT);
+	generator->set(10, 20, IntersectionFlags::NO_POINT);
+	generator->set(10, 22, IntersectionFlags::NO_POINT);
+
 	generator->write(id);
 	if (psymbols.getNum(Decoration::Triangle) > 0) (new KeepWatchdog())->start();
 }
@@ -1507,7 +1521,7 @@ void Special::drawSeedAndDifficulty(int id, int seed, bool hard)
 
 void Special::drawGoodLuckPanel(int id)
 {
-	std::vector<float> intersections = { /*G*/ 32, 7, 22, 7, 22, 22, 32, 22, 32, 15, 31, 15, /*O*/ 39, 7, 39, 22, 47, 22, 47, 7,
+	std::vector<float> intersections = { /*G*/ 32, 7, 22, 7, 22, 22, 32, 22, 32, 15, 29, 15, /*O*/ 39, 7, 39, 22, 47, 22, 47, 7,
 		/*O*/ 54, 7, 62, 7, 62, 22, 54, 22, /*D*/ 69, 7, 74, 7, 77, 14.5, 74, 22, 69, 22, /*L*/ 22, 79, 22, 94, 31, 94,
 		/*U*/ 38, 79, 38, 94, 46, 94, 46, 79, /*C*/ 60, 79, 55, 79, 52, 86.5, 55, 94, 60, 94, /*K*/ 67, 79, 67, 94, 74, 79, 69, 86.5, 74, 94,
 		/*!*/ 80, 79, 80, 89, 80, 94, /*SIGMA*/ 66, 39, 66, 32, 32, 32, 51, 51, 32, 69, 66, 69, 66, 62 };
@@ -1561,6 +1575,6 @@ int Special::findGlobals() {
 
 //For testing/debugging purposes only
 void Special::test() {
-	
+
 }
 

@@ -1587,6 +1587,7 @@ bool Generate::place_triangles(int color, int amount, int targetCount)
 		_openpos.erase(pos);
 		amount--;
 	}
+	if (_panel->id == 0x033EA && open.count({ 1, 3 }) && open.count({ 3, 1 })) return false; //Keep Yellow Pressure Plate
 	return true;
 }
 
