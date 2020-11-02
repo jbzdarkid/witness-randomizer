@@ -2104,10 +2104,10 @@ void PuzzleList::GenerateCavesH()
 
 void PuzzleList::GenerateOrchardH()
 {
-	specialCase->generateApplePuzzle(0x00143, false, Random::rand() % 2);
-	specialCase->generateApplePuzzle(0x0003B, false, Random::rand() % 2);
-	specialCase->generateApplePuzzle(0x00055, false, Random::rand() % 2);
-	specialCase->generateApplePuzzle(0x032F7, false, Random::rand() % 2);
+	specialCase->generateApplePuzzle(0x00143, false, true);
+	specialCase->generateApplePuzzle(0x0003B, false, Random::rand() % 2 == 0);
+	specialCase->generateApplePuzzle(0x00055, false, Random::rand() % 2 == 0);
+	specialCase->generateApplePuzzle(0x032F7, false, Random::rand() % 2 == 0);
 	specialCase->generateApplePuzzle(0x032FF, true, true);
 }
 
