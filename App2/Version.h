@@ -10,5 +10,5 @@
 #define VERSION_STR     TO_STRING(MAJOR) L"." TO_STRING(MINOR) L"." TO_STRING(PATCH)
 #define VERSION			MAJOR, MINOR, PATCH
 
-#define PRODUCT_NAME L"Witness Challenge Randomizer"
-#define WINDOW_CLASS L"WitnessChallengeRandomizer"
+#define PRODUCT_NAME L"Challenge Randomizer"
+#define WINDOW_CLASS L"ChallengeRandomizer"

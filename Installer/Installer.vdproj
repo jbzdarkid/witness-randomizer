@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_337D614C2826496689F0B32275720028"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_9D683AD9CFDD4F1E90EB22DB4509B5E4"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -163,7 +169,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Witness Randomizer"
         "ProductCode" = "8:{45A4772A-100E-4B94-B73A-F2F0C355D0F0}"
-        "PackageCode" = "8:{9D15D892-3C9C-4007-86A4-AA6BA2138CE9}"
+        "PackageCode" = "8:{7C07A624-B098-4E43-95DB-4B1F7FF3D8EC}"
         "UpgradeCode" = "8:{4CB5496B-A47E-41D3-B4A7-677E29AB7513}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -283,6 +289,20 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_A0E6262ED2254331BB8D75147DF48C2F"
+            {
+            "Name" = "8:ChallengeRandomizer"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_337D614C2826496689F0B32275720028"
+            "Folder" = "8:_F60DCEC4FEDB4941B597F30EB2903A5C"
+            "WorkingFolder" = "8:_CC86D8CA6D3943FAB5F6A91D54540360"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_ED6B4CE62E6A437CB3D6CA1CB759E6BD"
             {
             "Name" = "8:WitnessRandomizer"
@@ -696,12 +716,40 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9D683AD9CFDD4F1E90EB22DB4509B5E4"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_337D614C2826496689F0B32275720028"
             {
-            "SourcePath" = "8:..\\GithubPackage\\WitnessRandomizer.exe"
+            "SourcePath" = "8:..\\x64\\Debug\\ChallengeRandomizer.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_CC86D8CA6D3943FAB5F6A91D54540360"
+            "Folder" = "8:_F60DCEC4FEDB4941B597F30EB2903A5C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{5A4E859A-9756-463E-86E6-6EADBBA23021}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9D683AD9CFDD4F1E90EB22DB4509B5E4"
+            {
+            "SourcePath" = "8:..\\x64\\Debug\\WitnessRandomizer.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_F60DCEC4FEDB4941B597F30EB2903A5C"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
