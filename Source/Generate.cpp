@@ -1561,6 +1561,11 @@ bool Generate::has_star(const std::set<Point>& region, int color)
 //Place the given amount of triangles with the given color. targetCount is how many triangles are in the symbol, or 0 for random
 bool Generate::place_triangles(int color, int amount, int targetCount)
 {
+	if (_panel->id == 0x033EA) { //Keep Yellow Pressure Plate
+		int count = count_sides({ 1, 3 });
+		set({ 1, 3 }, Decoration::Triangle | color | (count << 16));
+		_openpos.erase({ 1, 3 });
+	}
 	std::set<Point> open = _openpos;
 	while (amount > 0) {
 		if (open.size() == 0)
@@ -1588,7 +1593,6 @@ bool Generate::place_triangles(int color, int amount, int targetCount)
 		_openpos.erase(pos);
 		amount--;
 	}
-	if (_panel->id == 0x033EA && open.count({ 1, 3 }) && open.count({ 3, 1 })) return false; //Keep Yellow Pressure Plate
 	return true;
 }
 

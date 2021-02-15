@@ -506,10 +506,10 @@ void PuzzleList::GenerateTreehouseN()
 	generator->generate(0x17D8E, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Magenta, 2, Decoration::Star | Decoration::Color::Green, 2, Decoration::Gap, 8);
 	generator->setObstructions({ { 1, 2 },{ 1, 4 },{ 7, 2 },{ 7, 4 },{ 2, 1 },{ 4, 1 },{ 6, 1 } });
 	generator->generate(0x17DB7, Decoration::Star | Decoration::Color::Orange, 4, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Green, 4);
+	generator->setGridSize(4, 3);
+	generator->generate(0x17DB1, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Green, 2);
 	generator->setGridSize(4, 4);
-	generator->generate(0x17DB1, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Green, 4);
-	generator->setGridSize(5, 5);
-	generator->generate(0x17DA2, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Green, 6, Decoration::Star | Decoration::Color::Black, 6);
+	generator->generate(0x17DA2, Decoration::Star | Decoration::Color::Orange, 6, Decoration::Star | Decoration::Color::Magenta, 6, Decoration::Star | Decoration::Color::Green, 4);
 	//Green Bridge
 	generator->removeFlag(Generate::Config::WriteColors);
 	generator->setFlag(Generate::Config::AlternateColors);
@@ -2138,7 +2138,7 @@ void PuzzleList::GenerateKeepH()
 
 	generator->setObstructions({ { 8, 3 },{ 4, 5 },{ 3, 0 },{ 3, 2 },{ 5, 6 } });
 	generator->setFlagOnce(Generate::Config::DisableWrite);
-	generator->generate(0x033EA, Decoration::Triangle | Decoration::Color::Yellow, 5, Decoration::Star | Decoration::Color::Yellow, 3, Decoration::Stone | Decoration::Color::Yellow, 2);
+	generator->generate(0x033EA, Decoration::Triangle | Decoration::Color::Yellow, 4, Decoration::Star | Decoration::Color::Yellow, 3, Decoration::Stone | Decoration::Color::Yellow, 2);
 	std::set<Point> path1 = generator->_path;
 	generator->write(0x033EA);
 
