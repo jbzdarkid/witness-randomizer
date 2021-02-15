@@ -1541,40 +1541,37 @@ void PuzzleList::GenerateTreehouseH()
 	generator->generate(0x17DD9, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1);
-	generator->generate(0x17DB8, Decoration::Star | Decoration::Color::Purple, 2, Decoration::Star | Decoration::Color::Black, 5,
-		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::Purple, 1,
-		Decoration::Poly | Decoration::Purple, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1);
+	generator->generate(0x17DB8, Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 3,
+		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
+		Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1, Decoration::Poly | Decoration::White, 1);
+	generator->generate(0x17DDC, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 4,
+		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 2,
+		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::White, 1);
 	generator->setObstructions({ { 1, 2 },{ 1, 4 },{ 9, 2 },{ 9, 4 },{ 2, 1 },{ 4, 1 },{ 6, 1 },{ 8, 1 } });
-	generator->generate(0x17DDC, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
+	generator->generate(0x17DD1, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
 		Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Purple, 2,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Purple, 1, Decoration::Poly | Decoration::Black, 1);
-	generator->generate(0x17DD1, Decoration::Star | Decoration::Color::Purple, 4, Decoration::Star | Decoration::Color::White, 4,
+	generator->generate(0x17DDE, Decoration::Star | Decoration::Color::Purple, 2, Decoration::Star | Decoration::Color::Black, 5,
+		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::Purple, 1,
+		Decoration::Poly | Decoration::Purple, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1);
+	generator->generate(0x17DE3, Decoration::Star | Decoration::Color::Purple, 4, Decoration::Star | Decoration::Color::White, 4,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::Purple, 1,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Purple, 1, Decoration::Poly | Decoration::Black, 1);
 	generator->removeFlag(Generate::Config::AlternateColors);
-	generator->setFlag(Generate::Config::ResetColors);
-	generator->generate(0x17DDE, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 3,
+	generator->generate(0x17DEC, Decoration::Star | Decoration::Color::Black, 2, Decoration::Star | Decoration::Color::White, 3,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 1, Decoration::Triangle | Decoration::Color::Black, 2, Decoration::Triangle | Decoration::Color::White, 1,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::White, 1);
-	generator->generate(0x17DE3, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
+	specialCase->clearTarget(0x17DEC);
+	generator->generate(0x17DAE, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
 		Decoration::Stone | Decoration::Color::Black, 2, Decoration::Stone | Decoration::Color::White, 1, Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 2,
 		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::White, 1);
-	generator->generate(0x17DEC, Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 2,
+	generator->generate(0x17DB0, Decoration::Star | Decoration::Color::Black, 4, Decoration::Star | Decoration::Color::White, 2,
 		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 2, Decoration::Triangle | Decoration::Color::Black, 1, Decoration::Triangle | Decoration::Color::White, 1,
 		Decoration::Poly | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1);
-	generator->removeFlag(Generate::Config::ResetColors);
-	generator->setFlag(Generate::Config::TreehouseColors);
-	generator->generate(0x17DAE, Decoration::Triangle | Decoration::Color::White, 1, Decoration::Triangle | Decoration::Color::Magenta, 2,
-		Decoration::Star | Decoration::Color::Magenta, 4, Decoration::Star | Decoration::Color::Green, 3,
-		Decoration::Stone | Decoration::Color::White, 1, Decoration::Stone | Decoration::Color::Green, 1,
-		Decoration::Poly | Decoration::White, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Magenta, 1);
-	generator->generate(0x17DB0, Decoration::Triangle | Decoration::Color::Green, 2, Decoration::Triangle | Decoration::Color::Magenta, 2,
-		Decoration::Star | Decoration::Color::Magenta, 2, Decoration::Star | Decoration::Color::White, 3,
-		Decoration::Stone | Decoration::Color::White, 2, Decoration::Stone | Decoration::Color::Green, 2,
-		Decoration::Poly | Decoration::White, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Green, 1);
-	generator->generate(0x17DDB, Decoration::Triangle | Decoration::Color::Green, 2, Decoration::Triangle | Decoration::Color::White, 1, Decoration::Triangle | Decoration::Color::Magenta, 1,
-		Decoration::Star | Decoration::Color::Magenta, 2, Decoration::Star | Decoration::Color::White, 3, Decoration::Star | Decoration::Color::Green, 1,
-		Decoration::Poly | Decoration::White, 1, Decoration::Poly | Decoration::Magenta, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::Green, 1);
+	generator->generate(0x17DDB, Decoration::Star | Decoration::Color::Black, 3, Decoration::Star | Decoration::Color::White, 3,
+		Decoration::Stone | Decoration::Color::Black, 1, Decoration::Stone | Decoration::Color::White, 1,
+		Decoration::Poly | Decoration::Can_Rotate | Decoration::Black, 1, Decoration::Poly | Decoration::Can_Rotate | Decoration::White, 1,
+		Decoration::Triangle | Decoration::Black, 1, Decoration::Triangle | Decoration::White, 1);
 	(new TreehouseWatchdog(0x17DAE))->start();
 	//Orange Bridge 2
 	generator->setFlag(Generate::Config::TreehouseColors);
