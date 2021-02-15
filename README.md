@@ -8,6 +8,8 @@ The Witness Random Puzzle Generator takes most of the puzzles in Jonathan Blow's
 
 This project is a fork of jbzdarkid's puzzle randomizer at https://github.com/jbzdarkid/witness-randomizer. His discoveries about how puzzle data is encoded in The Witness were invaluable to this project, so a huge thank you to jbzdarkid for his contributions.
 
+Shadows, Monastery, and Greenhouse are non-randomized in this mod. The lasers for those areas will be activated as you solve optional puzzles throughout the island. [Click here](https://github.com/sigma144/witness-randomizer/wiki/Activation-Triggers) for a more detailed description.
+
 **How to use the Witness Random Puzzle Generator:**
 
 1. Launch The Witness
