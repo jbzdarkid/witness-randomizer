@@ -634,6 +634,9 @@ void Special::generateKeepLaserPuzzle(int id, const std::set<Point>& path1, cons
 				if (generator->get(x, y) != PATH && (generator->get(x, y) & 0x1fffff) != Decoration::Gap)
 					generator->set(x, y, 0);
 		generator->_openpos = generator->_gridpos;
+		for (int i = 0; i < psymbols.symbols[Decoration::Poly].size(); i++) {
+			psymbols.symbols[Decoration::Poly][i].second = Random::rand() % 2 + 2;
+		}
 	}
 
 	for (int x = 0; x < generator->_panel->_width; x++)
@@ -1575,6 +1578,6 @@ int Special::findGlobals() {
 
 //For testing/debugging purposes only
 void Special::test() {
-
+	
 }
 

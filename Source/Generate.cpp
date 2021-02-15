@@ -1287,7 +1287,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 		symbol |= (1 << ((p.first - xmin) / 2 + (ymax  - p.second) * 2)) << 16;
 	}
 	if (Random::rand() % 4 > 0) { //The generator makes a certain type of symbol way too often (2x2 square with another square attached), this makes it much less frequent
-		int type = symbol >> 16; 
+		int type = symbol >> 16;
 		if (type == 0x0331 || type == 0x0332 || type == 0x0037 || type == 0x0067 || type == 0x0133 || type == 0x0233 || type == 0x0073 || type == 0x0076)
 			return 0;
 	}
@@ -1300,7 +1300,7 @@ int Generate::make_shape_symbol(Shape shape, bool rotated, bool negative, int ro
 bool Generate::place_shapes(const std::vector<int>& colors, const std::vector<int>& negativeColors, int amount, int numRotated, int numNegative)
 {
 	std::set<Point> open = _openpos;
-	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : hasFlag(Config::BigShapes) ? 5 : 4;
+	int shapeSize = hasFlag(Config::SmallShapes) ? 2 : hasFlag(Config::BigShapes) ? 6 : 4;
 	int targetArea = amount * shapeSize * 7 / 8; //Average size must be at least 7/8 of the target size
 	int originalAmount = amount;
 	if (hasFlag(Generate::Config::MountainFloorH) && _panel->_width == 9) { //The 4 small puzzles shape size may vary depending on the path
@@ -1356,8 +1356,9 @@ bool Generate::place_shapes(const std::vector<int>& colors, const std::vector<in
 		if (numShapes < amount && region.size() > shapeSize && Random::rand() % 2 == 1) numShapes++; //Adds more variation to the shape sizes
 		if (region.size() <= shapeSize + 1 && bufferRegion.size() == 0 && Random::rand() % 2 == 1) numShapes = 1; //For more variation, sometimes make a bigger shape than the target if the size is close
 		if (hasFlag(Config::MountainFloorH)) {
-			if (region.size() < 20) continue;
+			if (region.size() < 19) continue;
 			numShapes = 6; //The big mountain floor puzzle on hard mode needs additional shapes since some combine
+			targetArea = 19;
 		}
 		if (hasFlag(Config::SplitShapes) && numShapes != 1) continue;
 		if (hasFlag(Config::RequireCombineShapes) && numShapes == 1) continue;
