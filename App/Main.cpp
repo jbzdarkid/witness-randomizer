@@ -69,7 +69,7 @@
 #define DEBUG false
 
 //Panel to edit
-int panel = 0x014D2; //Swamp Red 2
+int panel = 0x09E69;
 
 HWND hwndSeed, hwndRandomize, hwndCol, hwndRow, hwndElem, hwndColor, hwndLoadingText, hwndNormal, hwndExpert, hwndMessage;
 std::shared_ptr<Panel> _panel;
