@@ -2,11 +2,13 @@
 
 # Witness Random Puzzle Generator
 
-### [Click Here to Download (ver 1.1.6)](https://github.com/sigma144/witness-randomizer/releases/download/1.1.6/WitnessRPG.zip)
+### [Click Here to Download (ver 1.1.7)](https://github.com/sigma144/witness-randomizer/releases/download/1.1.7/WitnessRPG.zip)
 
 The Witness Random Puzzle Generator takes most of the puzzles in Jonathan Blow's "The Witness" and makes them into new, randomly generated puzzles. The mod requires the game in order to function. No game files will be altered, as the randomizer works enterly in RAM. This mod uses WinAPI, so it is only compatible with Microsoft Windows.
 
 This project is a fork of jbzdarkid's puzzle randomizer at https://github.com/jbzdarkid/witness-randomizer. His discoveries about how puzzle data is encoded in The Witness were invaluable to this project, so a huge thank you to jbzdarkid for his contributions.
+
+Shadows, Monastery, and Greenhouse are non-randomized in this mod. The lasers for those areas will be activated as you solve optional puzzles throughout the island. [Click here](https://github.com/sigma144/witness-randomizer/wiki/Activation-Triggers) for a more detailed description.
 
 **How to use the Witness Random Puzzle Generator:**
 
