@@ -300,6 +300,7 @@ void Randomizer::RandomizeSwamp() {
 void Randomizer::RandomizeMountain() {
     // Randomize multipanel
     Randomize(mountainMultipanel, SWAP::LINES | SWAP::COLORS);
+    Randomize(mountainMetaPanels, SWAP::LINES | SWAP::COLORS);
 
     // Randomize final pillars order
     std::vector<int> targets = {pillars[0] + 1};

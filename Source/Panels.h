@@ -200,6 +200,13 @@ std::vector<int> mountainMultipanel = {
     0x09FD2, // Mountain 2 Multipanel 6
 };
 
+std::vector<int> mountainMetaPanels = {
+    0x09F8E, //Bottom Right
+    0x09FC1, //Bottom Left
+    0x09F01, //Top Right
+    0x09EFF, //Top Left
+};
+
 std::vector<int> squarePanels = {
     0x00064, // Tutorial Straight
     0x00182, // Tutorial Bend
