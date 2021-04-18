@@ -140,6 +140,7 @@ void Randomizer::Randomize() {
     Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
     Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
 
+    Randomize(quarryLaserOptions, SWAP::LINES | SWAP::COLORS);
     Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
 
     // Individual area modifications
