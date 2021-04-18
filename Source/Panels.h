@@ -533,6 +533,11 @@ std::vector<int> desertPanels = {
     0x012D7, // Desert Final Far
 };
 
+std::vector<int> desertPanelsWide = {
+    0x0A15C, //wide desert panel curve 1
+    0x09FFF, //wide desert panel curve 2
+};
+
 std::vector<int> shadowsPanels = {
     0x198B5, // Shadows Tutorial 1
     0x198BD, // Shadows Tutorial 2

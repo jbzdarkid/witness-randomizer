@@ -200,6 +200,7 @@ void Randomizer::RandomizeSymmetry() {
 
 void Randomizer::RandomizeDesert() {
     Randomize(desertPanels, SWAP::LINES);
+    Randomize(desertPanelsWide, SWAP::LINES);
 
     // Turn off desert surface 8
     _memory->WriteEntityData<float>(0x09F94, POWER, {0.0, 0.0});
