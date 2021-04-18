@@ -33,7 +33,23 @@ std::vector<int> leftRightPanels = {
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
-std::vector<int> upDownPanels = {
+std::vector<int> upDownPanelsSetOne = {
+    0x0008D, // Glass Factory Rotational Symmetry 1
+    0x00081, // Glass Factory Rotational Symmetry 2
+    0x00070, // Symmetry Island Fading Lines 5
+    0x01E5A, // Mill Entry Door Left
+    0x28AC7, // Town Blue 1
+    0x28AC8, // Town Blue 2
+    0x28ACA, // Town Blue 3
+    0x28ACB, // Town Blue 4
+    0x28ACC, // Town Blue 5
+    0x00029, // UTM Invisible Dots Symmetry 3
+    0x288AA, // UTM Perspective 4
+
+    0x17CC4, // Mill Elevator Control
+};
+
+std::vector<int> upDownPanelsSetTwo = {
     0x0008D, // Glass Factory Rotational Symmetry 1
     0x00081, // Glass Factory Rotational Symmetry 2
     0x00083, // Glass Factory Rotational Symmetry 3
@@ -46,21 +62,73 @@ std::vector<int> upDownPanels = {
     0x28ACB, // Town Blue 4
     0x28ACC, // Town Blue 5
     0x00029, // UTM Invisible Dots Symmetry 3
+    0x00082, // Glass Factory Melting 2
+    0x0343A, // Glass Factory Melting 3
+    0x00022, // Symmetry Island Black Dots 1
+    0x00023, // Symmetry Island Black Dots 2
+    0x00024, // Symmetry Island Black Dots 3
+    0x00025, // Symmetry Island Black Dots 4
+    0x00026, // Symmetry Island Black Dots 5
+    0x00072, // Symmetry Island Fading 3
+    0x00076, // Symmetry Island Fading 7
+    0x3C125, // Mill Control Room Extra Panel
+    0x01A0D, // UTM Blue Hard Symmetry
+    0x018A0, // UTM Blue Easy Symmetry
+    0x09E85, // Tunnels Into Town Big Triangles
+
     0x288AA, // UTM Perspective 4
+};
+
+std::vector<int> upDownPanelsSetThree = {
+    0x0008D, // Glass Factory Rotational Symmetry 1
+    0x00081, // Glass Factory Rotational Symmetry 2
+    0x00083, // Glass Factory Rotational Symmetry 3
+    0x00084, // Glass Factory Melting 1
+    0x00070, // Symmetry Island Fading Lines 5
+    0x01E5A, // Mill Entry Door Left
+    0x28AC7, // Town Blue 1
+    0x28AC8, // Town Blue 2
+    0x28ACA, // Town Blue 3
+    0x28ACB, // Town Blue 4
+    0x28ACC, // Town Blue 5
+    0x00029, // UTM Invisible Dots Symmetry 3
+    0x00082, // Glass Factory Melting 2
+    0x0343A, // Glass Factory Melting 3
+    0x00022, // Symmetry Island Black Dots 1
+    0x00023, // Symmetry Island Black Dots 2
+    0x00024, // Symmetry Island Black Dots 3
+    0x00025, // Symmetry Island Black Dots 4
+    0x00026, // Symmetry Island Black Dots 5
+    0x00072, // Symmetry Island Fading 3
+    0x00076, // Symmetry Island Fading 7
+    0x3C125, // Mill Control Room Extra Panel
+    0x01A0D, // UTM Blue Hard Symmetry
+    0x018A0, // UTM Blue Easy Symmetry
+    0x09E85, // Tunnels Into Town Big Triangles
 
     0x0A3B5, // Tutorial Back Left
-    0x17CC4, // Mill Elevator Control
-//    0x335AB, // UTM In Elevator Control
-//    0x3369D, // UTM Lower Elevator Control
-//    0x335AC, // UTM Upper Elevator Control
+};
+
+std::vector<int> upDownPanelsSetFour = {
+    0x335AB, // UTM In Elevator Control
+    0x3369D, // UTM Lower Elevator Control
+    0x335AC, // UTM Upper Elevator Control
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
-std::vector<int> leftForwardRightPanels = {
+std::vector<int> leftForwardRightPanelsSetOne = {
     0x00075, // Symmetry Island Colored Dots 3
+    0x17DD1, // Treehouse Left Orange 9
+    0x17CE3, // Treehouse Right Orange 4
+    0x17DB7, // Treehouse Right Orange 10
+
     0x288EA, // UTM Perspective 1
     0x288FC, // UTM Perspective 2
     0x289E7, // UTM Perspective 3
+};
+
+std::vector<int> leftForwardRightPanelsSetTwo = {
+    0x00075, // Symmetry Island Colored Dots 3
 
     0x17DD1, // Treehouse Left Orange 9
     0x17CE3, // Treehouse Right Orange 4
