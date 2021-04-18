@@ -132,6 +132,7 @@ void Randomizer::Randomize() {
     RandomizeChallenge();
 
     // Content swaps -- must happen before squarePanels
+    Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
     Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
     Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
     Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);

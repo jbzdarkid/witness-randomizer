@@ -33,6 +33,21 @@ std::vector<int> leftRightPanels = {
 };
 
 // Note: Some of these (non-controls) are duplicated elsewhere
+std::vector<int> upDownPanelsSetZero = {
+    0x00070, // Symmetry Island Fading Lines 5
+    0x01E5A, // Mill Entry Door Left
+    0x28AC7, // Town Blue 1
+    0x28AC8, // Town Blue 2
+    0x28ACA, // Town Blue 3
+    0x28ACB, // Town Blue 4
+    0x28ACC, // Town Blue 5
+    0x00029, // UTM Invisible Dots Symmetry 3
+    0x288AA, // UTM Perspective 4
+    0x17CC4, // Mill Elevator Control
+
+    0x1C349, // Inner Symmetry Island Entrance
+};
+
 std::vector<int> upDownPanelsSetOne = {
     0x0008D, // Glass Factory Rotational Symmetry 1
     0x00081, // Glass Factory Rotational Symmetry 2
