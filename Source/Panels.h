@@ -200,6 +200,7 @@ std::vector<int> mountainMultipanel = {
     0x09FD2, // Mountain 2 Multipanel 6
 };
 
+//The mountainMetaPanels refers to the small panels within the big floor panel on floor 3 of the mountain
 std::vector<int> mountainMetaPanels = {
     0x09F8E, //Bottom Right
     0x09FC1, //Bottom Left
