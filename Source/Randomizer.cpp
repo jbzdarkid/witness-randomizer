@@ -187,6 +187,9 @@ void Randomizer::PreventSnipes()
 void Randomizer::SetDoubleRandomizerMode()
 {
   upDownPanelsSetThree.swap(upDownPanelsSetThreeDoubleMode);
+  // Split solution metapuzzles may become impossible if the interior panels are
+  // shuffled, so we will just not shuffle them.
+  mountainMetaPanels.clear();
 }
 
 // Private methods
