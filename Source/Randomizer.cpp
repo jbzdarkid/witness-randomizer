@@ -186,6 +186,10 @@ void Randomizer::PreventSnipes()
 
 void Randomizer::SetDoubleRandomizerMode()
 {
+  // The pool that Tutorial Back Left is in has some panels that may not be
+  // solveable in the down position after using Sigma's randomizer. We do not
+  // want to swap any such panel with Tutorial Back Left, because that would
+  // make it impossible to exit Tutorial.
   upDownPanelsSetThree.swap(upDownPanelsSetThreeDoubleMode);
   // Split solution metapuzzles may become impossible if the interior panels are
   // shuffled, so we will just not shuffle them.

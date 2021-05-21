@@ -124,10 +124,6 @@ std::vector<int> upDownPanelsSetThree = {
     0x0A3B5, // Tutorial Back Left
 };
 
-// When using Sigma's randomizer, it is possible that some of the above panels
-// are not solveable in the down position. We do not want to swap any such panel
-// with Tutorial Back Left, because that would make it impossible to exit
-// Tutorial.
 std::vector<int> upDownPanelsSetThreeDoubleMode = {
     0x0008D, // Glass Factory Rotational Symmetry 1
     0x00081, // Glass Factory Rotational Symmetry 2
