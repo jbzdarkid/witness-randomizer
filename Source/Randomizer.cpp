@@ -190,6 +190,16 @@ void Randomizer::SetDoubleRandomizerMode()
   // Split solution metapuzzles may become impossible if the interior panels are
   // shuffled, so we will just not shuffle them.
   mountainMetaPanels.clear();
+  // Many puzzles either crash the game or do not solve properly when swapped
+  // with Swamp Entry. To make things simpler, we will just remove that panel
+  // from both pools it is found in.
+  squarePanels.erase(
+      std::remove(std::begin(squarePanels), std::end(squarePanels), 0x0056E),
+      std::end(squarePanels));
+  quarryLaserOptions.erase(
+      std::remove(std::begin(quarryLaserOptions), std::end(quarryLaserOptions),
+          0x0056E),
+      std::end(quarryLaserOptions));
 }
 
 // Private methods
