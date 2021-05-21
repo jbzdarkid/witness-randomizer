@@ -132,21 +132,12 @@ void Randomizer::Randomize() {
     RandomizeChallenge();
 
     // Content swaps -- must happen before squarePanels
-    Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
     if (_doubleRandomizer) {
         // The pool that Tutorial Back Left is in has some panels that may not
         // be solveable in the down position after using Sigma's randomizer. We
         // do not want to swap any such panel with Tutorial Back Left, because
         // that would make it impossible to exit Tutorial.
         Randomize(upDownPanelsSetThreeDoubleMode, SWAP::LINES | SWAP::COLORS);
-    }
-    else {
-        Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
-    }
-    Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
-    if (_doubleRandomizer) {
         // The four pivot panels in Treehouse must be solveable in the up, left,
         // and right positions. However, the other panels in the pools those
         // panels are found in may not be solveable in all three directions
@@ -155,7 +146,14 @@ void Randomizer::Randomize() {
         Randomize(leftForwardRightPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(leftForwardRightPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
     }
-    else {
+    Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
+    Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+    Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+    if (!_doubleRandomizer) {
+        Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
+    }
+    Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
+    if (!_doubleRandomizer) {
         Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
         Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
     }
