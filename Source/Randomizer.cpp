@@ -143,11 +143,10 @@ void Randomizer::Randomize() {
         // panels are found in may not be solveable in all three directions
         // after using Sigma's randomizer. For safety, we will only swap the
         // pivot panels amongst themselves.
-        //
+        Randomize(treehousePivotSet, SWAP::LINES | SWAP::COLORS);
         // This will additionally shuffle the UTM perspective puzzles amongst
         // themselves.
-        Randomize(leftForwardRightPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
-        Randomize(leftForwardRightPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(utmPerspectiveSet, SWAP::LINES | SWAP::COLORS);
         // In order to prevent a situation where access to a Symmetry Laser
         // Yellow is blocked by its corresponding Blue panel, we will only
         // shuffle these six panels amongst themselves.
