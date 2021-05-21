@@ -143,6 +143,9 @@ void Randomizer::Randomize() {
         // panels are found in may not be solveable in all three directions
         // after using Sigma's randomizer. For safety, we will only swap the
         // pivot panels amongst themselves.
+        //
+        // This will additionally shuffle the UTM perspective puzzles amongst
+        // themselves.
         Randomize(leftForwardRightPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(leftForwardRightPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
         // In order to prevent a situation where access to a Symmetry Laser
@@ -151,10 +154,19 @@ void Randomizer::Randomize() {
         Randomize(symmetryLaserYellows, SWAP::LINES | SWAP::COLORS);
         Randomize(symmetryLaserBlues, SWAP::LINES | SWAP::COLORS);
     }
-    Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
-    if (!_doubleRandomizer) {
+    
+    if (_doubleRandomizer) {
+        // Prevent the fourth UTM perspective puzzle from being shuffled, as it
+        // is unknown whether any of the other puzzles in these pools can be
+        // solved there after using Sigma's randomizer.
+        Randomize(upDownPanelsSetZeroDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
+    }
+    else {
+        Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
     }
     Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
