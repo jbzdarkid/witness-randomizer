@@ -184,6 +184,10 @@ void Randomizer::PreventSnipes()
     _memory->WriteEntityData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
 }
 
+void Randomizer::SetDoubleRandomizerMode()
+{
+}
+
 // Private methods
 void Randomizer::RandomizeTutorial() {
     // Disable tutorial cursor speed modifications (not working?)

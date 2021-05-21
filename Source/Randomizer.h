@@ -11,6 +11,7 @@ public:
     void AdjustSpeed();
     void RandomizeLasers();
     void PreventSnipes();
+    void SetDoubleRandomizerMode();
 
     enum SWAP {
         NONE = 0,
