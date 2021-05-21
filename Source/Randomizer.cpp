@@ -153,29 +153,13 @@ void Randomizer::Randomize() {
         // shuffle these six panels amongst themselves.
         Randomize(symmetryLaserYellows, SWAP::LINES | SWAP::COLORS);
         Randomize(symmetryLaserBlues, SWAP::LINES | SWAP::COLORS);
-    }
-    
-    if (_doubleRandomizer) {
         // Prevent the fourth UTM perspective puzzle from being shuffled, as it
         // is unknown whether any of the other puzzles in these pools can be
         // solved there after using Sigma's randomizer.
         Randomize(upDownPanelsSetZeroDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
-    }
-    else {
-        Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
-        Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-        Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
-        Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
-    }
-    Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
-    if (!_doubleRandomizer) {
-        Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-        Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
-    }
-
-    if (_doubleRandomizer) {
+        Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
         // Many puzzles either crash the game or do not solve properly when
         // swapped with Swamp Entry. To make things simpler, we will just remove
         // that panel from both pools it is found in.
@@ -183,6 +167,13 @@ void Randomizer::Randomize() {
         Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     }
     else {
+        Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
         Randomize(quarryLaserOptions, SWAP::LINES | SWAP::COLORS);
         Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
     }
