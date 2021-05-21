@@ -502,12 +502,6 @@ std::vector<int> quarryLaserOptionsDoubleMode = {
     0x000B0, // Symmetry Island Door 1
     0x00079, // Symmetry Island Colored Dots 6
     0x00065, // Symmetry Island Fading Lines 1
-    0x00A52, // Symmetry Island Laser Yellow 1
-    0x00A57, // Symmetry Island Laser Yellow 2
-    0x00A5B, // Symmetry Island Laser Yellow 3
-    0x00A61, // Symmetry Island Laser Blue 1
-    0x00A64, // Symmetry Island Laser Blue 2
-    0x00A68, // Symmetry Island Laser Blue 3
     0x17CE7, // Desert Discard
     0x0CC7B, // Desert Vault
     0x01E59, // Mill Entry Door Right
@@ -1082,12 +1076,6 @@ std::vector<int> squarePanelsDoubleMode = {
     0x00070, // Symmetry Island Fading Lines 5
     0x00071, // Symmetry Island Fading Lines 6
     0x00076, // Symmetry Island Fading Lines 7
-    0x00A52, // Symmetry Island Laser Yellow 1
-    0x00A57, // Symmetry Island Laser Yellow 2
-    0x00A5B, // Symmetry Island Laser Yellow 3
-    0x00A61, // Symmetry Island Laser Blue 1
-    0x00A64, // Symmetry Island Laser Blue 2
-    0x00A68, // Symmetry Island Laser Blue 3
     0x17CE7, // Desert Discard
     0x0CC7B, // Desert Vault
     0x01E5A, // Mill Entry Door Left

@@ -161,7 +161,9 @@ void Randomizer::Randomize() {
     if (_doubleRandomizer) {
         // Many puzzles either crash the game or do not solve properly when
         // swapped with Swamp Entry. To make things simpler, we will just remove
-        // that panel from both pools it is found in.
+        // that panel from both pools it is found in. We also do not randomize
+        // the six panels next to the Symmetry Laser to prevent situations where
+        // a Laser Blue panel blocks access to the corresponding Laser Yellow.
         Randomize(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     }
