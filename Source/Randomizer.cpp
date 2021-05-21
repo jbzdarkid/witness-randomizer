@@ -145,6 +145,11 @@ void Randomizer::Randomize() {
         // pivot panels amongst themselves.
         Randomize(leftForwardRightPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(leftForwardRightPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
+        // In order to prevent a situation where access to a Symmetry Laser
+        // Yellow is blocked by its corresponding Blue panel, we will only
+        // shuffle these six panels amongst themselves.
+        Randomize(symmetryLaserYellows, SWAP::LINES | SWAP::COLORS);
+        Randomize(symmetryLaserBlues, SWAP::LINES | SWAP::COLORS);
     }
     Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
     Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
@@ -161,9 +166,7 @@ void Randomizer::Randomize() {
     if (_doubleRandomizer) {
         // Many puzzles either crash the game or do not solve properly when
         // swapped with Swamp Entry. To make things simpler, we will just remove
-        // that panel from both pools it is found in. We also do not randomize
-        // the six panels next to the Symmetry Laser to prevent situations where
-        // a Laser Blue panel blocks access to the corresponding Laser Yellow.
+        // that panel from both pools it is found in.
         Randomize(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     }

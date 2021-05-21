@@ -1331,6 +1331,18 @@ std::vector<int> squarePanelsDoubleMode = {
     0x09E85, // Tunnels Town Shortcut
 };
 
+std::vector<int> symmetryLaserYellows = {
+    0x00A52, // Symmetry Island Laser Yellow 1
+    0x00A57, // Symmetry Island Laser Yellow 2
+    0x00A5B, // Symmetry Island Laser Yellow 3
+};
+
+std::vector<int> symmetryLaserBlues = {
+    0x00A61, // Symmetry Island Laser Blue 1
+    0x00A64, // Symmetry Island Laser Blue 2
+    0x00A68, // Symmetry Island Laser Blue 3
+};
+
 std::vector<int> desertPanels = {
     0x00698, // Desert Surface 1
     0x0048F, // Desert Surface 2
