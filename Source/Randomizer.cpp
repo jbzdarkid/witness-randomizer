@@ -186,6 +186,7 @@ void Randomizer::PreventSnipes()
 
 void Randomizer::SetDoubleRandomizerMode()
 {
+  upDownPanelsSetThree.swap(upDownPanelsSetThreeDoubleMode);
 }
 
 // Private methods
