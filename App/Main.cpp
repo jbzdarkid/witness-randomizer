@@ -270,7 +270,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateCheckbox(10, 340, SPEED_UP_AUTOSCROLLERS);
     CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
     CreateCheckbox(10, 360, DOUBLE_RANDOMIZER_MODE);
-    CreateLabel(30, 360, 240, L"Double randomizer mode");
+    CreateLabel(30, 360, 165, L"Double randomizer mode");
 
     // CreateButton(200, 50, 200, L"Test RNG", TMP5);
     // g_rngDebug = CreateWindow(L"STATIC", L"",
