@@ -135,13 +135,42 @@ void Randomizer::Randomize() {
     Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
     Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
     Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
+    if (_doubleRandomizer) {
+        // The pool that Tutorial Back Left is in has some panels that may not
+        // be solveable in the down position after using Sigma's randomizer. We
+        // do not want to swap any such panel with Tutorial Back Left, because
+        // that would make it impossible to exit Tutorial.
+        Randomize(upDownPanelsSetThreeDoubleMode, SWAP::LINES | SWAP::COLORS);
+    }
+    else {
+        Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
+    }
     Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
-    Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-    Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+    if (_doubleRandomizer) {
+        // The four pivot panels in Treehouse must be solveable in the up, left,
+        // and right positions. However, the other panels in the pools those
+        // panels are found in may not be solveable in all three directions
+        // after using Sigma's randomizer. For safety, we will only swap the
+        // pivot panels amongst themselves.
+        Randomize(leftForwardRightPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
+    }
+    else {
+        Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+    }
 
-    Randomize(quarryLaserOptions, SWAP::LINES | SWAP::COLORS);
-    Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
+    if (_doubleRandomizer) {
+        // Many puzzles either crash the game or do not solve properly when
+        // swapped with Swamp Entry. To make things simpler, we will just remove
+        // that panel from both pools it is found in.
+        Randomize(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
+    }
+    else {
+        Randomize(quarryLaserOptions, SWAP::LINES | SWAP::COLORS);
+        Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
+    }
 
     // Individual area modifications
     RandomizeTutorial();
@@ -184,33 +213,9 @@ void Randomizer::PreventSnipes()
     _memory->WriteEntityData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
 }
 
-void Randomizer::SetDoubleRandomizerMode()
+void Randomizer::SetDoubleRandomizerMode(bool val)
 {
-  // The pool that Tutorial Back Left is in has some panels that may not be
-  // solveable in the down position after using Sigma's randomizer. We do not
-  // want to swap any such panel with Tutorial Back Left, because that would
-  // make it impossible to exit Tutorial.
-  upDownPanelsSetThree.swap(upDownPanelsSetThreeDoubleMode);
-  // Split solution metapuzzles may become impossible if the interior panels are
-  // shuffled, so we will just not shuffle them.
-  mountainMetaPanels.clear();
-  // Many puzzles either crash the game or do not solve properly when swapped
-  // with Swamp Entry. To make things simpler, we will just remove that panel
-  // from both pools it is found in.
-  squarePanels.erase(
-      std::remove(std::begin(squarePanels), std::end(squarePanels), 0x0056E),
-      std::end(squarePanels));
-  quarryLaserOptions.erase(
-      std::remove(std::begin(quarryLaserOptions), std::end(quarryLaserOptions),
-          0x0056E),
-      std::end(quarryLaserOptions));
-  // The four pivot panels in Treehouse must be solveable in the up, left, and
-  // right positions. However, the other panels in the pools those panel are
-  // found in may not be solveable in all three directions after using Sigma's
-  // randomizer. For safety, we will only swap the pivot panels amongst
-  // themselves.
-  leftForwardRightPanelsSetOne.swap(leftForwardRightPanelsSetOneDoubleMode);
-  leftForwardRightPanelsSetTwo.swap(leftForwardRightPanelsSetTwoDoubleMode);
+    _doubleRandomizer = val;
 }
 
 // Private methods
@@ -330,7 +335,12 @@ void Randomizer::RandomizeSwamp() {
 void Randomizer::RandomizeMountain() {
     // Randomize multipanel
     Randomize(mountainMultipanel, SWAP::LINES | SWAP::COLORS);
-    Randomize(mountainMetaPanels, SWAP::LINES | SWAP::COLORS);
+    // With Sigma's randomizer, split solution metapuzzles may become impossible
+    // if the interior panels are shuffled, so we will just not shuffle them in
+    // double randomizer mode.
+    if (!_doubleRandomizer) {
+        Randomize(mountainMetaPanels, SWAP::LINES | SWAP::COLORS);
+    }
 
     // Randomize final pillars order
     std::vector<int> targets = {pillars[0] + 1};

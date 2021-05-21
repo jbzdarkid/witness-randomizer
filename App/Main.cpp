@@ -106,9 +106,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                     if (IsDlgButtonChecked(g_hwnd, SPEED_UP_AUTOSCROLLERS)) {
                         g_randomizer->AdjustSpeed();
                     }
-                    if (IsDlgButtonChecked(g_hwnd, DOUBLE_RANDOMIZER_MODE)) {
-                        g_randomizer->SetDoubleRandomizerMode();
-                    }
+                    g_randomizer->SetDoubleRandomizerMode(IsDlgButtonChecked(g_hwnd, DOUBLE_RANDOMIZER_MODE));
                     if (IsDlgButtonChecked(g_hwnd, CHALLENGE_ONLY)) {
                         SetWindowText(g_randomizerStatus, L"Randomizing Challenge...");
                         g_randomizer->RandomizeChallenge();
