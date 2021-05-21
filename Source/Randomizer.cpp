@@ -204,6 +204,13 @@ void Randomizer::SetDoubleRandomizerMode()
       std::remove(std::begin(quarryLaserOptions), std::end(quarryLaserOptions),
           0x0056E),
       std::end(quarryLaserOptions));
+  // The four pivot panels in Treehouse must be solveable in the up, left, and
+  // right positions. However, the other panels in the pools those panel are
+  // found in may not be solveable in all three directions after using Sigma's
+  // randomizer. For safety, we will only swap the pivot panels amongst
+  // themselves.
+  leftForwardRightPanelsSetOne.swap(leftForwardRightPanelsSetOneDoubleMode);
+  leftForwardRightPanelsSetTwo.swap(leftForwardRightPanelsSetTwoDoubleMode);
 }
 
 // Private methods

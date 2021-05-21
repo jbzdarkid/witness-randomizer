@@ -166,9 +166,24 @@ std::vector<int> leftForwardRightPanelsSetOne = {
     0x289E7, // UTM Perspective 3
 };
 
+std::vector<int> leftForwardRightPanelsSetOneDoubleMode = {
+    0x00075, // Symmetry Island Colored Dots 3
+
+    0x288EA, // UTM Perspective 1
+    0x288FC, // UTM Perspective 2
+    0x289E7, // UTM Perspective 3
+};
+
 std::vector<int> leftForwardRightPanelsSetTwo = {
     0x00075, // Symmetry Island Colored Dots 3
 
+    0x17DD1, // Treehouse Left Orange 9
+    0x17CE3, // Treehouse Right Orange 4
+    0x17DB7, // Treehouse Right Orange 10
+    0x17E52, // Treehouse Green 4
+};
+
+std::vector<int> leftForwardRightPanelsSetTwoDoubleMode = {
     0x17DD1, // Treehouse Left Orange 9
     0x17CE3, // Treehouse Right Orange 4
     0x17DB7, // Treehouse Right Orange 10
