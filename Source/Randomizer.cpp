@@ -100,7 +100,6 @@ Things to do for V2:
 #include <iostream>
 #include <numeric>
 #include <set>
-#include <algorithm>
 
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
@@ -112,10 +111,12 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 }
 
 std::vector<int> copyWithoutElements(const std::vector<int>& input, const std::set<int>& toRemove) {
-  std::vector<int> result = input;
-  result.erase(std::remove_if(std::begin(result), std::end(result), [&toRemove](int val) {
-      return toRemove.count(val);
-  }), std::end(result));
+  std::vector<int> result;
+  for (int val : input) {
+      if (toRemove.find(val) == toRemove.end()) {
+          result.push_back(val);
+      }
+  }
   return result;
 }
 
