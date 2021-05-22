@@ -147,15 +147,14 @@ void Randomizer::Randomize() {
         // be solveable in the down position after using Sigma's randomizer. We
         // do not want to swap any such panel with Tutorial Back Left, because
         // that would make it impossible to exit Tutorial.
-        const std::set<int> bannedTutorialBackLeftPanels = {
+        std::vector<int> upDownPanelsSetThreeDoubleMode = copyWithoutElements(upDownPanelsSetThree, {
             0x00070, // Symmetry Island Fading Lines 5
             0x01E5A, // Mill Entry Door Left
             0x00072, // Symmetry Island Fading 3
             0x00076, // Symmetry Island Fading 7
             0x3C125, // Mill Control Room Extra Panel
             0x09E85, // Tunnels Into Town Big Triangles
-        };
-        std::vector<int> upDownPanelsSetThreeDoubleMode = copyWithoutElements(upDownPanelsSetThree, bannedTutorialBackLeftPanels);
+        });
         Randomize(upDownPanelsSetThreeDoubleMode, SWAP::LINES | SWAP::COLORS);
         // The four pivot panels in Treehouse must be solveable in the up, left,
         // and right positions. However, the other panels in the pools those
