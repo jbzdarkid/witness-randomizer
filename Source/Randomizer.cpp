@@ -146,12 +146,12 @@ void Randomizer::Randomize() {
         // do not want to swap any such panel with Tutorial Back Left, because
         // that would make it impossible to exit Tutorial.
         const std::set<int> bannedTutorialBackLeftPanels = {
-          0x00070, // Symmetry Island Fading Lines 5
-          0x01E5A, // Mill Entry Door Left
-          0x00072, // Symmetry Island Fading 3
-          0x00076, // Symmetry Island Fading 7
-          0x3C125, // Mill Control Room Extra Panel
-          0x09E85, // Tunnels Into Town Big Triangles
+            0x00070, // Symmetry Island Fading Lines 5
+            0x01E5A, // Mill Entry Door Left
+            0x00072, // Symmetry Island Fading 3
+            0x00076, // Symmetry Island Fading 7
+            0x3C125, // Mill Control Room Extra Panel
+            0x09E85, // Tunnels Into Town Big Triangles
         };
         Randomize(copyWithoutElements(upDownPanelsSetThreeDoubleMode, bannedTutorialBackLeftPanels), SWAP::LINES | SWAP::COLORS);
         // The four pivot panels in Treehouse must be solveable in the up, left,
@@ -172,7 +172,7 @@ void Randomizer::Randomize() {
         // is unknown whether any of the other puzzles in these pools can be
         // solved there after using Sigma's randomizer.
         const std::set<int> bannedUpDownPanels {
-          0x288AA, // UTM Perspective 4
+            0x288AA, // UTM Perspective 4
         };
         Randomize(copyWithoutElements(upDownPanelsSetZero, bannedUpDownPanels), SWAP::LINES | SWAP::COLORS);
         Randomize(copyWithoutElements(upDownPanelsSetOne, bannedUpDownPanels), SWAP::LINES | SWAP::COLORS);
@@ -182,18 +182,17 @@ void Randomizer::Randomize() {
         // swapped with Swamp Entry. To make things simpler, we will just remove
         // that panel from both pools it is found in.
         const std::set<int> bannedSquarePanels {
-          0x00A52, // Symmetry Laser Yellow 1
-          0x00A57, // Symmetry Laser Yellow 2
-          0x00A5B, // Symmetry Laser Yellow 3
-          0x00A61, // Symmetry Laser Blue 1
-          0x00A64, // Symmetry Laser Blue 2
-          0x00A68, // Symmetry Laser Blue 3
-          0x0056E, // Swamp Entry
+            0x00A52, // Symmetry Laser Yellow 1
+            0x00A57, // Symmetry Laser Yellow 2
+            0x00A5B, // Symmetry Laser Yellow 3
+            0x00A61, // Symmetry Laser Blue 1
+            0x00A64, // Symmetry Laser Blue 2
+            0x00A68, // Symmetry Laser Blue 3
+            0x0056E, // Swamp Entry
         };
         Randomize(copyWithoutElements(quarryLaserOptions, bannedSquarePanels), SWAP::LINES | SWAP::COLORS);
         Randomize(copyWithoutElements(squarePanels, bannedSquarePanels), SWAP::LINES | SWAP::COLORS);
-    }
-    else {
+    } else {
         Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
