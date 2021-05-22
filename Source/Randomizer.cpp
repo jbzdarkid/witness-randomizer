@@ -109,6 +109,14 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
     throw std::exception("Couldn't find value in data!");
 }
 
+std::vector<int> copyWithoutElements(const std::vector<int>& input, const std::set<int>& toRemove) {
+  std::vector<int> result = input;
+  result.erase(std::remove_if(std::begin(result), std::end(result), [&toRemove](int val) {
+      return toRemove.count(val);
+  }), std::end(result));
+  return result;
+}
+
 Randomizer::Randomizer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
 void Randomizer::Randomize() {
@@ -162,8 +170,17 @@ void Randomizer::Randomize() {
         // Many puzzles either crash the game or do not solve properly when
         // swapped with Swamp Entry. To make things simpler, we will just remove
         // that panel from both pools it is found in.
-        Randomize(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
-        Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
+        const std::set<int> bannedSquarePanels {
+          0x00A52, // Symmetry Laser Yellow 1
+          0x00A57, // Symmetry Laser Yellow 2
+          0x00A5B, // Symmetry Laser Yellow 3
+          0x00A61, // Symmetry Laser Blue 1
+          0x00A64, // Symmetry Laser Blue 2
+          0x00A68, // Symmetry Laser Blue 3
+          0x0056E, // Swamp Entry
+        };
+        Randomize(copyWithoutElements(quarryLaserOptions, bannedSquarePanels), SWAP::LINES | SWAP::COLORS);
+        Randomize(copyWithoutElements(squarePanels, bannedSquarePanels), SWAP::LINES | SWAP::COLORS);
     }
     else {
         Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
