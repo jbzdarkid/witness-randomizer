@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <set>
 
 // Some of these (the puzzle ones) are duplicated elsewhere
 std::vector<int> lasers = {
@@ -772,7 +771,7 @@ std::vector<int> squarePanels = {
     0x09E85, // Tunnels Town Shortcut
 };
 
-std::set<int> doubleModeBannedSquarePanels = {
+std::vector<int> doubleModeBannedSquarePanels = {
     0x00A52, // Symmetry Laser Yellow 1
     0x00A57, // Symmetry Laser Yellow 2
     0x00A5B, // Symmetry Laser Yellow 3
