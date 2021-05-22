@@ -112,6 +112,7 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
 
 std::vector<int> copyWithoutElements(const std::vector<int>& input, const std::set<int>& toRemove) {
   std::vector<int> result;
+  result.reserve(input.size());
   for (int val : input) {
       if (toRemove.find(val) == toRemove.end()) {
           result.push_back(val);
