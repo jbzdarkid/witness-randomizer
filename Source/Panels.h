@@ -48,20 +48,6 @@ std::vector<int> upDownPanelsSetZero = {
     0x1C349, // Inner Symmetry Island Entrance
 };
 
-std::vector<int> upDownPanelsSetZeroDoubleMode = {
-    0x00070, // Symmetry Island Fading Lines 5
-    0x01E5A, // Mill Entry Door Left
-    0x28AC7, // Town Blue 1
-    0x28AC8, // Town Blue 2
-    0x28ACA, // Town Blue 3
-    0x28ACB, // Town Blue 4
-    0x28ACC, // Town Blue 5
-    0x00029, // UTM Invisible Dots Symmetry 3
-    0x17CC4, // Mill Elevator Control
-
-    0x1C349, // Inner Symmetry Island Entrance
-};
-
 std::vector<int> upDownPanelsSetOne = {
     0x0008D, // Glass Factory Rotational Symmetry 1
     0x00081, // Glass Factory Rotational Symmetry 2
@@ -74,21 +60,6 @@ std::vector<int> upDownPanelsSetOne = {
     0x28ACC, // Town Blue 5
     0x00029, // UTM Invisible Dots Symmetry 3
     0x288AA, // UTM Perspective 4
-
-    0x17CC4, // Mill Elevator Control
-};
-
-std::vector<int> upDownPanelsSetOneDoubleMode = {
-    0x0008D, // Glass Factory Rotational Symmetry 1
-    0x00081, // Glass Factory Rotational Symmetry 2
-    0x00070, // Symmetry Island Fading Lines 5
-    0x01E5A, // Mill Entry Door Left
-    0x28AC7, // Town Blue 1
-    0x28AC8, // Town Blue 2
-    0x28ACA, // Town Blue 3
-    0x28ACB, // Town Blue 4
-    0x28ACC, // Town Blue 5
-    0x00029, // UTM Invisible Dots Symmetry 3
 
     0x17CC4, // Mill Elevator Control
 };
@@ -121,34 +92,6 @@ std::vector<int> upDownPanelsSetTwo = {
     0x09E85, // Tunnels Into Town Big Triangles
 
     0x288AA, // UTM Perspective 4
-};
-
-std::vector<int> upDownPanelsSetTwoDoubleMode = {
-    0x0008D, // Glass Factory Rotational Symmetry 1
-    0x00081, // Glass Factory Rotational Symmetry 2
-    0x00083, // Glass Factory Rotational Symmetry 3
-    0x00084, // Glass Factory Melting 1
-    0x00070, // Symmetry Island Fading Lines 5
-    0x01E5A, // Mill Entry Door Left
-    0x28AC7, // Town Blue 1
-    0x28AC8, // Town Blue 2
-    0x28ACA, // Town Blue 3
-    0x28ACB, // Town Blue 4
-    0x28ACC, // Town Blue 5
-    0x00029, // UTM Invisible Dots Symmetry 3
-    0x00082, // Glass Factory Melting 2
-    0x0343A, // Glass Factory Melting 3
-    0x00022, // Symmetry Island Black Dots 1
-    0x00023, // Symmetry Island Black Dots 2
-    0x00024, // Symmetry Island Black Dots 3
-    0x00025, // Symmetry Island Black Dots 4
-    0x00026, // Symmetry Island Black Dots 5
-    0x00072, // Symmetry Island Fading 3
-    0x00076, // Symmetry Island Fading 7
-    0x3C125, // Mill Control Room Extra Panel
-    0x01A0D, // UTM Blue Hard Symmetry
-    0x018A0, // UTM Blue Easy Symmetry
-    0x09E85, // Tunnels Into Town Big Triangles
 };
 
 std::vector<int> upDownPanelsSetThree = {
