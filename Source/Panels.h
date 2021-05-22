@@ -124,30 +124,6 @@ std::vector<int> upDownPanelsSetThree = {
     0x0A3B5, // Tutorial Back Left
 };
 
-std::vector<int> upDownPanelsSetThreeDoubleMode = {
-    0x0008D, // Glass Factory Rotational Symmetry 1
-    0x00081, // Glass Factory Rotational Symmetry 2
-    0x00083, // Glass Factory Rotational Symmetry 3
-    0x00084, // Glass Factory Melting 1
-    0x28AC7, // Town Blue 1
-    0x28AC8, // Town Blue 2
-    0x28ACA, // Town Blue 3
-    0x28ACB, // Town Blue 4
-    0x28ACC, // Town Blue 5
-    0x00029, // UTM Invisible Dots Symmetry 3
-    0x00082, // Glass Factory Melting 2
-    0x0343A, // Glass Factory Melting 3
-    0x00022, // Symmetry Island Black Dots 1
-    0x00023, // Symmetry Island Black Dots 2
-    0x00024, // Symmetry Island Black Dots 3
-    0x00025, // Symmetry Island Black Dots 4
-    0x00026, // Symmetry Island Black Dots 5
-    0x01A0D, // UTM Blue Hard Symmetry
-    0x018A0, // UTM Blue Easy Symmetry
-
-    0x0A3B5, // Tutorial Back Left
-};
-
 std::vector<int> upDownPanelsSetFour = {
     0x335AB, // UTM In Elevator Control
     0x3369D, // UTM Lower Elevator Control
