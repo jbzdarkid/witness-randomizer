@@ -99,6 +99,7 @@ Things to do for V2:
 #include <string>
 #include <iostream>
 #include <numeric>
+#include <algorithm>
 
 template <class T>
 int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
@@ -107,6 +108,17 @@ int find(const std::vector<T> &data, T search, size_t startIndex = 0) {
     }
     std::cout << "Couldn't find " << search << " in data!" << std::endl;
     throw std::exception("Couldn't find value in data!");
+}
+
+std::vector<int> copyWithoutElements(const std::vector<int>& input, const std::vector<int>& toRemove) {
+  std::vector<int> result;
+  result.reserve(input.size());
+  for (int val : input) {
+      if (std::find(toRemove.begin(), toRemove.end(), val) == toRemove.end()) {
+          result.push_back(val);
+      }
+  }
+  return result;
 }
 
 Randomizer::Randomizer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
@@ -132,16 +144,63 @@ void Randomizer::Randomize() {
     RandomizeChallenge();
 
     // Content swaps -- must happen before squarePanels
-    Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
-    Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
-    Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-    Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
-
-    Randomize(quarryLaserOptions, SWAP::LINES | SWAP::COLORS);
-    Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
+    if (_doubleRandomizer) {
+        // The pool that Tutorial Back Left is in has some panels that may not
+        // be solveable in the down position after using Sigma's randomizer. We
+        // do not want to swap any such panel with Tutorial Back Left, because
+        // that would make it impossible to exit Tutorial.
+        std::vector<int> upDownPanelsSetThreeDoubleMode = copyWithoutElements(upDownPanelsSetThree, {
+            0x00070, // Symmetry Island Fading Lines 5
+            0x01E5A, // Mill Entry Door Left
+            0x00072, // Symmetry Island Fading 3
+            0x00076, // Symmetry Island Fading 7
+            0x3C125, // Mill Control Room Extra Panel
+            0x09E85, // Tunnels Town Shortcut
+        });
+        Randomize(upDownPanelsSetThreeDoubleMode, SWAP::LINES | SWAP::COLORS);
+        // The four pivot panels in Treehouse must be solveable in the up, left,
+        // and right positions. However, the other panels in the pools those
+        // panels are found in may not be solveable in all three directions
+        // after using Sigma's randomizer. For safety, we will only swap the
+        // pivot panels amongst themselves.
+        Randomize(treehousePivotSet, SWAP::LINES | SWAP::COLORS);
+        // This will additionally shuffle the UTM perspective puzzles amongst
+        // themselves.
+        Randomize(utmPerspectiveSet, SWAP::LINES | SWAP::COLORS);
+        // In order to prevent a situation where access to a Symmetry Laser
+        // Yellow is blocked by its corresponding Blue panel, we will only
+        // shuffle these six panels amongst themselves.
+        Randomize(symmetryLaserYellows, SWAP::LINES | SWAP::COLORS);
+        Randomize(symmetryLaserBlues, SWAP::LINES | SWAP::COLORS);
+        // Prevent the fourth UTM perspective puzzle from being shuffled, as it
+        // is unknown whether any of the other puzzles in these pools can be
+        // solved there after using Sigma's randomizer.
+        // 0x288AA UTM Perspective 4
+        std::vector<int> upDownPanelsSetZeroDoubleMode = copyWithoutElements(upDownPanelsSetZero, {0x288AA});
+        std::vector<int> upDownPanelsSetOneDoubleMode = copyWithoutElements(upDownPanelsSetOne, {0x288AA});
+        std::vector<int> upDownPanelsSetTwoDoubleMode = copyWithoutElements(upDownPanelsSetTwo, {0x288AA});
+        Randomize(upDownPanelsSetZeroDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
+        // Many puzzles either crash the game or do not solve properly when
+        // swapped with Swamp Entry. To make things simpler, we will just remove
+        // that panel from both pools it is found in.
+        std::vector<int> quarryLaserOptionsDoubleMode = copyWithoutElements(quarryLaserOptions, doubleModeBannedSquarePanels);
+        std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, doubleModeBannedSquarePanels);
+        Randomize(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
+    } else {
+        Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetThree, SWAP::LINES | SWAP::COLORS);
+        Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+        Randomize(quarryLaserOptions, SWAP::LINES | SWAP::COLORS);
+        Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
+    }
 
     // Individual area modifications
     RandomizeTutorial();
@@ -182,6 +241,11 @@ void Randomizer::PreventSnipes()
     _memory->WriteEntityData<float>(0x17C05, MAX_BROADCAST_DISTANCE, {15.0});
     // Distance-gate shadows laser to prevent sniping through the bars
     _memory->WriteEntityData<float>(0x19650, MAX_BROADCAST_DISTANCE, {2.5});
+}
+
+void Randomizer::SetDoubleRandomizerMode(bool val)
+{
+    _doubleRandomizer = val;
 }
 
 // Private methods
@@ -301,7 +365,12 @@ void Randomizer::RandomizeSwamp() {
 void Randomizer::RandomizeMountain() {
     // Randomize multipanel
     Randomize(mountainMultipanel, SWAP::LINES | SWAP::COLORS);
-    Randomize(mountainMetaPanels, SWAP::LINES | SWAP::COLORS);
+    // With Sigma's randomizer, split solution metapuzzles may become impossible
+    // if the interior panels are shuffled, so we will just not shuffle them in
+    // double randomizer mode.
+    if (!_doubleRandomizer) {
+        Randomize(mountainMetaPanels, SWAP::LINES | SWAP::COLORS);
+    }
 
     // Randomize final pillars order
     std::vector<int> targets = {pillars[0] + 1};

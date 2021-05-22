@@ -89,7 +89,7 @@ std::vector<int> upDownPanelsSetTwo = {
     0x3C125, // Mill Control Room Extra Panel
     0x01A0D, // UTM Blue Hard Symmetry
     0x018A0, // UTM Blue Easy Symmetry
-    0x09E85, // Tunnels Into Town Big Triangles
+    0x09E85, // Tunnels Town Shortcut
 
     0x288AA, // UTM Perspective 4
 };
@@ -119,7 +119,7 @@ std::vector<int> upDownPanelsSetThree = {
     0x3C125, // Mill Control Room Extra Panel
     0x01A0D, // UTM Blue Hard Symmetry
     0x018A0, // UTM Blue Easy Symmetry
-    0x09E85, // Tunnels Into Town Big Triangles
+    0x09E85, // Tunnels Town Shortcut
 
     0x0A3B5, // Tutorial Back Left
 };
@@ -142,9 +142,23 @@ std::vector<int> leftForwardRightPanelsSetOne = {
     0x289E7, // UTM Perspective 3
 };
 
+std::vector<int> utmPerspectiveSet = {
+    0x288EA, // UTM Perspective 1
+    0x288FC, // UTM Perspective 2
+    0x289E7, // UTM Perspective 3
+    0x288AA, // UTM Perspective 4
+};
+
 std::vector<int> leftForwardRightPanelsSetTwo = {
     0x00075, // Symmetry Island Colored Dots 3
 
+    0x17DD1, // Treehouse Left Orange 9
+    0x17CE3, // Treehouse Right Orange 4
+    0x17DB7, // Treehouse Right Orange 10
+    0x17E52, // Treehouse Green 4
+};
+
+std::vector<int> treehousePivotSet = {
     0x17DD1, // Treehouse Left Orange 9
     0x17CE3, // Treehouse Right Orange 4
     0x17DB7, // Treehouse Right Orange 10
@@ -755,6 +769,28 @@ std::vector<int> squarePanels = {
     0x0A16E, // UTM Challenge Entrance
     0x039B4, // Tunnels Theater Catwalk
     0x09E85, // Tunnels Town Shortcut
+};
+
+std::vector<int> doubleModeBannedSquarePanels = {
+    0x00A52, // Symmetry Laser Yellow 1
+    0x00A57, // Symmetry Laser Yellow 2
+    0x00A5B, // Symmetry Laser Yellow 3
+    0x00A61, // Symmetry Laser Blue 1
+    0x00A64, // Symmetry Laser Blue 2
+    0x00A68, // Symmetry Laser Blue 3
+    0x0056E, // Swamp Entry
+};
+
+std::vector<int> symmetryLaserYellows = {
+    0x00A52, // Symmetry Island Laser Yellow 1
+    0x00A57, // Symmetry Island Laser Yellow 2
+    0x00A5B, // Symmetry Island Laser Yellow 3
+};
+
+std::vector<int> symmetryLaserBlues = {
+    0x00A61, // Symmetry Island Laser Blue 1
+    0x00A64, // Symmetry Island Laser Blue 2
+    0x00A68, // Symmetry Island Laser Blue 3
 };
 
 std::vector<int> desertPanels = {

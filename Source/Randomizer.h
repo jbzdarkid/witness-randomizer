@@ -11,6 +11,7 @@ public:
     void AdjustSpeed();
     void RandomizeLasers();
     void PreventSnipes();
+    void SetDoubleRandomizerMode(bool val);
 
     enum SWAP {
         NONE = 0,
@@ -44,6 +45,7 @@ private:
     void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
     std::shared_ptr<Memory> _memory;
+    bool _doubleRandomizer = false;
 
     friend class SwapTests_Shipwreck_Test;
 };
