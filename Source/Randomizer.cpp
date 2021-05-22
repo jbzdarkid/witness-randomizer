@@ -184,17 +184,8 @@ void Randomizer::Randomize() {
         // Many puzzles either crash the game or do not solve properly when
         // swapped with Swamp Entry. To make things simpler, we will just remove
         // that panel from both pools it is found in.
-        const std::set<int> bannedSquarePanels {
-            0x00A52, // Symmetry Laser Yellow 1
-            0x00A57, // Symmetry Laser Yellow 2
-            0x00A5B, // Symmetry Laser Yellow 3
-            0x00A61, // Symmetry Laser Blue 1
-            0x00A64, // Symmetry Laser Blue 2
-            0x00A68, // Symmetry Laser Blue 3
-            0x0056E, // Swamp Entry
-        };
-        std::vector<int> quarryLaserOptionsDoubleMode = copyWithoutElements(quarryLaserOptions, bannedSquarePanels);
-        std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, bannedSquarePanels);
+        std::vector<int> quarryLaserOptionsDoubleMode = copyWithoutElements(quarryLaserOptions, doubleModeBannedSquarePanels);
+        std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, doubleModeBannedSquarePanels);
         Randomize(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     } else {
