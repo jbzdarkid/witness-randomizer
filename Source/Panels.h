@@ -89,7 +89,7 @@ std::vector<int> upDownPanelsSetTwo = {
     0x3C125, // Mill Control Room Extra Panel
     0x01A0D, // UTM Blue Hard Symmetry
     0x018A0, // UTM Blue Easy Symmetry
-    0x09E85, // Tunnels Into Town Big Triangles
+    0x09E85, // Tunnels Town Shortcut
 
     0x288AA, // UTM Perspective 4
 };
@@ -119,7 +119,7 @@ std::vector<int> upDownPanelsSetThree = {
     0x3C125, // Mill Control Room Extra Panel
     0x01A0D, // UTM Blue Hard Symmetry
     0x018A0, // UTM Blue Easy Symmetry
-    0x09E85, // Tunnels Into Town Big Triangles
+    0x09E85, // Tunnels Town Shortcut
 
     0x0A3B5, // Tutorial Back Left
 };
