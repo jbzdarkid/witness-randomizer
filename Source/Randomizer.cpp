@@ -173,12 +173,10 @@ void Randomizer::Randomize() {
         // Prevent the fourth UTM perspective puzzle from being shuffled, as it
         // is unknown whether any of the other puzzles in these pools can be
         // solved there after using Sigma's randomizer.
-        const std::set<int> bannedUpDownPanels {
-            0x288AA, // UTM Perspective 4
-        };
-        std::vector<int> upDownPanelsSetZeroDoubleMode = copyWithoutElements(upDownPanelsSetZero, bannedUpDownPanels);
-        std::vector<int> upDownPanelsSetOneDoubleMode = copyWithoutElements(upDownPanelsSetOne, bannedUpDownPanels);
-        std::vector<int> upDownPanelsSetTwoDoubleMode = copyWithoutElements(upDownPanelsSetTwo, bannedUpDownPanels);
+        // 0x288AA UTM Perspective 4
+        std::vector<int> upDownPanelsSetZeroDoubleMode = copyWithoutElements(upDownPanelsSetZero, {0x288AA});
+        std::vector<int> upDownPanelsSetOneDoubleMode = copyWithoutElements(upDownPanelsSetOne, {0x288AA});
+        std::vector<int> upDownPanelsSetTwoDoubleMode = copyWithoutElements(upDownPanelsSetTwo, {0x288AA});
         Randomize(upDownPanelsSetZeroDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
