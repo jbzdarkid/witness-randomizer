@@ -432,7 +432,7 @@ int Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible
     if (panel1 != possible_panels[target]) {
         SwapPanels(panel1, possible_panels[target], flags);
     }
-    return target;
+    return possible_panels[target];
 }
 
 // Range is [start, end)
