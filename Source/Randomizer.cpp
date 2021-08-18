@@ -157,7 +157,7 @@ void Randomizer::Randomize() {
             0x3C125, // Mill Control Room Extra Panel
             0x09E85, // Tunnels Town Shortcut
         });
-        Randomize(upDownPanelsSetThreeDoubleMode, SWAP::LINES | SWAP::COLORS);
+        RandomizeInPlace(upDownPanelsSetThreeDoubleMode, SWAP::LINES | SWAP::COLORS);
         // The four pivot panels in Treehouse must be solveable in the up, left,
         // and right positions. However, the other panels in the pools those
         // panels are found in may not be solveable in all three directions
@@ -179,17 +179,17 @@ void Randomizer::Randomize() {
         std::vector<int> upDownPanelsSetZeroDoubleMode = copyWithoutElements(upDownPanelsSetZero, {0x288AA});
         std::vector<int> upDownPanelsSetOneDoubleMode = copyWithoutElements(upDownPanelsSetOne, {0x288AA});
         std::vector<int> upDownPanelsSetTwoDoubleMode = copyWithoutElements(upDownPanelsSetTwo, {0x288AA});
-        Randomize(upDownPanelsSetZeroDoubleMode, SWAP::LINES | SWAP::COLORS);
-        Randomize(upDownPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
-        Randomize(upDownPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
+        RandomizeInPlace(upDownPanelsSetZeroDoubleMode, SWAP::LINES | SWAP::COLORS);
+        RandomizeInPlace(upDownPanelsSetOneDoubleMode, SWAP::LINES | SWAP::COLORS);
+        RandomizeInPlace(upDownPanelsSetTwoDoubleMode, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetFour, SWAP::LINES | SWAP::COLORS);
         // Many puzzles either crash the game or do not solve properly when
         // swapped with Swamp Entry. To make things simpler, we will just remove
         // that panel from both pools it is found in.
         std::vector<int> quarryLaserOptionsDoubleMode = copyWithoutElements(quarryLaserOptions, doubleModeBannedSquarePanels);
         std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, doubleModeBannedSquarePanels);
-        Randomize(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
-        Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
+        RandomizeInPlace(quarryLaserOptionsDoubleMode, SWAP::LINES | SWAP::COLORS);
+        RandomizeInPlace(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     } else {
         Randomize(upDownPanelsSetZero, SWAP::LINES | SWAP::COLORS);
         Randomize(upDownPanelsSetOne, SWAP::LINES | SWAP::COLORS);
@@ -403,11 +403,15 @@ void Randomizer::RandomizeChallenge() {
 void Randomizer::RandomizeAudioLogs() {
     std::vector<int> randomOrder(audiologs.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    Randomize(randomOrder, SWAP::NONE);
+    RandomizeInPlace(randomOrder, SWAP::NONE);
     ReassignNames(audiologs, randomOrder);
 }
 
-void Randomizer::Randomize(std::vector<int>& panels, int flags) {
+void Randomizer::Randomize(std::vector<int> panels, int flags) {
+    return RandomizeInPlace(panels, flags);
+}
+
+void Randomizer::RandomizeInPlace(std::vector<int>& panels, int flags) {
     return RandomizeRange(panels, flags, 0, panels.size());
 }
 
