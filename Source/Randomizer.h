@@ -12,6 +12,7 @@ public:
     void RandomizeLasers();
     void PreventSnipes();
     void SetDoubleRandomizerMode(bool val);
+    void SetPreventDesertSkips(bool val);
 
     enum SWAP {
         NONE = 0,
@@ -47,6 +48,7 @@ private:
 
     std::shared_ptr<Memory> _memory;
     bool _doubleRandomizer = false;
+    bool _preventDesertSkips = false;
 
     friend class SwapTests_Shipwreck_Test;
 };

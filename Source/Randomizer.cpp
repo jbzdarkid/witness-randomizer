@@ -248,6 +248,11 @@ void Randomizer::SetDoubleRandomizerMode(bool val)
     _doubleRandomizer = val;
 }
 
+void Randomizer::SetPreventDesertSkips(bool val)
+{
+    _preventDesertSkips = val;
+}
+
 // Private methods
 void Randomizer::RandomizeTutorial() {
     // Disable tutorial cursor speed modifications (not working?)
@@ -265,23 +270,27 @@ void Randomizer::RandomizeSymmetry() {
 }
 
 void Randomizer::RandomizeDesert() {
-    // In order to require that all three latches are opened, Surface 7 cannot
-    // be swapped with:
-    // 0x09DA6 Surface 5
-    // 0x09F94 Surface 8
-    // 0x0117A Flood 4
-    int surfaceSevenSwapepdWith = SwapWithRandomPanel(0x0A053, copyWithoutElements(desertPanels, { 0x09DA6, 0x09F94, 0x0117A }), SWAP::LINES);
-    // In order to require that both latches are opened, Light 3 cannot be
-    // swapped with Final Far. If Surface 7 has been swapped with Final Far, we
-    // need to ban that panel instead.
-    int finalFarId = 0x012D7;
-    if (surfaceSevenSwapepdWith == finalFarId) {
-        finalFarId = 0x0A053;
+    if (_preventDesertSkips) {
+        // In order to require that all three latches are opened, Surface 7
+        // cannot be swapped with:
+        // 0x09DA6 Surface 5
+        // 0x09F94 Surface 8
+        // 0x0117A Flood 4
+        int surfaceSevenSwappedWith = SwapWithRandomPanel(0x0A053, copyWithoutElements(desertPanels, { 0x09DA6, 0x09F94, 0x0117A }), SWAP::LINES);
+        // In order to require that both latches are opened, Light 3 cannot be
+        // swapped with Final Far. If Surface 7 has been swapped with Final Far,
+        // we need to ban that panel instead.
+        int finalFarId = 0x012D7;
+        if (surfaceSevenSwappedWith == finalFarId) {
+            finalFarId = 0x0A053;
+        }
+        SwapWithRandomPanel(0x0A02D, copyWithoutElements(desertPanels, { finalFarId }), SWAP::LINES);
+        // The remaining panels can be safely shuffled amongst themselves.
+        std::vector<int> remainingDesertPanels = copyWithoutElements(desertPanels, { 0x0A053, 0x0A02D });
+        Randomize(remainingDesertPanels, SWAP::LINES);
+    } else {
+        Randomize(desertPanels, SWAP::LINES);
     }
-    SwapWithRandomPanel(0x0A02D, copyWithoutElements(desertPanels, { finalFarId }), SWAP::LINES);
-    // The remaining panels can be safely shuffled amongst themselves.
-    std::vector<int> remainingDesertPanels = copyWithoutElements(desertPanels, { 0x0A053, 0x0A02D });
-    Randomize(remainingDesertPanels, SWAP::LINES);
     Randomize(desertPanelsWide, SWAP::LINES);
 
     // Turn off desert surface 8
