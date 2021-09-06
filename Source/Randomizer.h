@@ -38,8 +38,9 @@ private:
     void RandomizeMountain();
     void RandomizeAudioLogs();
 
-    void Randomize(std::vector<int>& panels, int flags);
-    void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
+    void Shuffle(std::vector<int> panels, int flags);
+    void ReorderRange(std::vector<int>& panels, size_t startIndex, size_t endIndex);
+    int SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
     void SwapPanels(int panel1, int panel2, int flags);
     void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
     void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
