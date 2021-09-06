@@ -236,12 +236,19 @@ std::vector<int> quarryLaserBanned = {
     0x00024, // Symmetry Island Black Dots 3
     0x00025, // Symmetry Island Black Dots 4
     0x00026, // Symmetry Island Black Dots 5
-    0x00079, // Symmetry Island Colored Dots 6
-    0x00065, // Symmetry Island Fading Lines 1
+    0x0007C, // Symmetry Island Colored Dots 1
+    0x0007E, // Symmetry Island Colored Dots 2
+    0x00075, // Symmetry Island Colored Dots 3
+    0x00073, // Symmetry Island Colored Dots 4
+    0x00077, // Symmetry Island Colored Dots 5
+    0x0006D, // Symmetry Island Fading Lines 2
+    0x00072, // Symmetry Island Fading Lines 3
+    0x0006F, // Symmetry Island Fading Lines 4
+    0x00070, // Symmetry Island Fading Lines 5
+    0x00071, // Symmetry Island Fading Lines 6
+    0x00076, // Symmetry Island Fading Lines 7
     0x01E5A, // Mill Entry Door Left
     0x3C125, // Mill Control Room 2
-    0x03677, // Mill Stairs Control
-    0x17CF0, // Mill Discard
     0x09DB3, // Boathouse Erasers Shapers and Stars 1
     0x0288C, // Treehouse Door 1
     0x17D72, // Treehouse Yellow 1
@@ -266,9 +273,11 @@ std::vector<int> quarryLaserBanned = {
     0x17D8C, // Treehouse Right Orange 3
     0x17DCD, // Treehouse Right Orange 5
     0x17D8E, // Treehouse Right Orange 9
-    0x17E3C, // Treehouse Green 1
-    0x17E4D, // Treehouse Green 2
-    0x17E4F, // Treehouse Green 3
+    0x17E5B, // Treehouse Green 5
+    0x17E5F, // Treehouse Green 6
+    0x17E61, // Treehouse Green 7
+    0x17FA9, // Treehouse Green Bridge Discard
+    0x17FA0, // Treehouse Laser Discard
     0x28938, // Town Apple Tree
     0x28AC7, // Town Blue 1
     0x28AC8, // Town Blue 2
