@@ -276,8 +276,6 @@ std::vector<int> quarryLaserBanned = {
     0x17E5B, // Treehouse Green 5
     0x17E5F, // Treehouse Green 6
     0x17E61, // Treehouse Green 7
-    0x17FA9, // Treehouse Green Bridge Discard
-    0x17FA0, // Treehouse Laser Discard
     0x28938, // Town Apple Tree
     0x28AC7, // Town Blue 1
     0x28AC8, // Town Blue 2
