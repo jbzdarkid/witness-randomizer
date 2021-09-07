@@ -187,7 +187,7 @@ void Randomizer::Randomize() {
         std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, doubleModeBannedSquarePanels);
         std::vector<int> quarryLaserOptions = copyWithoutElements(squarePanelsDoubleMode, quarryLaserBanned);
         alreadySwapped.push_back(SwapWithRandomPanel(0x03612, copyWithoutElements(quarryLaserOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Quarry Laser
-        Shuffle(copyWithoutElements(squarePanelsDoubleMode, alreadySwapped), SWAP::LINES | SWAP::COLORS);
+        Shuffle(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     } else {
         Shuffle(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
         Shuffle(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
@@ -201,7 +201,7 @@ void Randomizer::Randomize() {
         alreadySwapped.push_back(SwapWithRandomPanel(0x0A3B5, copyWithoutElements(tutorialBackLeftOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Tutorial Back Left
         std::vector<int> quarryLaserOptions = copyWithoutElements(squarePanels, quarryLaserBanned);
         alreadySwapped.push_back(SwapWithRandomPanel(0x03612, copyWithoutElements(quarryLaserOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Quarry Laser
-        Shuffle(copyWithoutElements(squarePanels, alreadySwapped), SWAP::LINES | SWAP::COLORS);
+        Shuffle(squarePanels, SWAP::LINES | SWAP::COLORS);
     }
 
     // Individual area modifications
