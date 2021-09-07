@@ -572,6 +572,7 @@ std::vector<int> squarePanels = {
     0x09FD4, // Mountain 2 Rainbow 2
     0x09FD6, // Mountain 2 Rainbow 3
     0x09FD7, // Mountain 2 Rainbow 4
+    0x09FD8, // Mountain 2 Rainbow 5
     0x17F93, // Mountain 2 Discard
     0x17FA2, // Mountain 3 Secret Door
     0x17C42, // Mountainside Discard
