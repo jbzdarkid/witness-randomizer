@@ -25,21 +25,6 @@ std::vector<int> townWindmillControlOptions = {
     0x17D02, // Town Windmill Control
 };
 
-std::vector<int> symmetryDoorTwoOptions = {
-    0x00070, // Symmetry Island Fading Lines 5
-    0x01E5A, // Mill Entry Door Left
-    0x28AC7, // Town Blue 1
-    0x28AC8, // Town Blue 2
-    0x28ACA, // Town Blue 3
-    0x28ACB, // Town Blue 4
-    0x28ACC, // Town Blue 5
-    0x00029, // UTM Invisible Dots Symmetry 3
-    0x288AA, // UTM Perspective 4
-    0x17CC4, // Mill Elevator Control
-
-    0x1C349, // Inner Symmetry Island Entrance
-};
-
 std::vector<int> millElevatorControlOptions = {
     0x0008D, // Glass Factory Rotational Symmetry 1
     0x00081, // Glass Factory Rotational Symmetry 2
@@ -304,6 +289,85 @@ std::vector<int> quarryLaserBanned = {
     0x018A0, // UTM Blue Easy Symmetry
     0x01A0D, // UTM Blue Hard Symmetry
     0x09E85, // Tunnels Town Shortcut
+};
+
+std::vector<int> symmetryDoorTwoBanned = {
+    0x00182, // Tutorial Bend
+    0x0005E, // Outside Tutorial Dots Tutorial 2
+    0x0005F, // Outside Tutorial Dots Tutorial 3
+    0x00060, // Outside Tutorial Dots Tutorial 4
+    0x00061, // Outside Tutorial Dots Tutorial 5
+    0x012C9, // Outside Tutorial Stones Tutorial 3
+    0x0001D, // Outside Tutorial Stones Tutorial 5
+    0x0001E, // Outside Tutorial Stones Tutorial 6
+    0x17CFB, // Outside Tutorial Discard
+    0x3C12B, // Glass Factory Discard
+    0x01A54, // Glass Factory Entry
+    0x00086, // Glass Factory Vertical Symmetry 1
+    0x0008D, // Glass Factory Rotational Symmetry 1
+    0x00081, // Glass Factory Rotational Symmetry 2
+    0x00022, // Symmetry Island Black Dots 1
+    0x00023, // Symmetry Island Black Dots 2
+    0x0007E, // Symmetry Island Colored Dots 2
+    0x00073, // Symmetry Island Colored Dots 4
+    0x17CE7, // Desert Discard
+    0x014D9, // Mill Lower Row 4
+    0x005F1, // Mill Upper Row 2
+    0x00620, // Mill Upper Row 3
+    0x009F5, // Mill Upper Row 4
+    0x014E9, // Mill Upper Row 8
+    0x17CF0, // Mill Discard
+    0x021B3, // Boathouse Erasers and Shapers 1
+    0x021AF, // Boathouse Erasers and Shapers 4
+    0x021B5, // Boathouse Erasers and Stars 1
+    0x021B6, // Boathouse Erasers and Stars 2
+    0x17D72, // Treehouse Yellow 1
+    0x17D9C, // Treehouse Yellow 7
+    0x17DC2, // Treehouse Yellow 8
+    0x17DC8, // Treehouse First Purple 1
+    0x17DC7, // Treehouse First Purple 2
+    0x17D9B, // Treehouse Second Purple 1
+    0x17D99, // Treehouse Second Purple 2
+    0x17DAA, // Treehouse Second Purple 3
+    0x17D97, // Treehouse Second Purple 4
+    0x17BDF, // Treehouse Second Purple 5
+    0x17DD9, // Treehouse Left Orange 6
+    0x17DB8, // Treehouse Left Orange 7
+    0x17DDE, // Treehouse Left Orange 10
+    0x17DE3, // Treehouse Left Orange 11
+    0x17D8C, // Treehouse Right Orange 3
+    0x17FA9, // Treehouse Green Bridge Discard
+    0x17FA0, // Treehouse Laser Discard
+    0x17D27, // Keep Discard
+    0x17D28, // Shipwreck Discard
+    0x17D01, // Town Orange Crate Discard
+    0x17C71, // Town Rooftop Discard
+    0x17CF7, // Theater Discard
+    0x0056E, // Swamp Entry
+    0x00472, // Swamp Tutorial 2
+    0x00262, // Swamp Tutorial 3
+    0x00553, // Swamp Tutorial 5
+    0x00390, // Swamp Tutorial 7
+    0x010CA, // Swamp Tutorial 8
+    0x00983, // Swamp Tutorial 9
+    0x00984, // Swamp Tutorial 10
+    0x00986, // Swamp Tutorial 11
+    0x00985, // Swamp Tutorial 12
+    0x00987, // Swamp Tutorial 13
+    0x181A9, // Swamp Tutorial 14
+    0x00999, // Swamp Discontinuous 1
+    0x0099D, // Swamp Discontinuous 2
+    0x00008, // Swamp Rotation Tutorial 2
+    0x009AB, // Swamp Blue Underwater 1
+    0x00001, // Swamp Red Underwater 1
+    0x014D2, // Swamp Red Underwater 2
+    0x17F93, // Mountain 2 Discard
+    0x17C42, // Mountainside Discard
+    0x17FB9, // UTM Green Dots 6
+    0x0008F, // UTM Invisible Dots 1
+    0x0008B, // UTM Invisible Dots 3
+    0x0008C, // UTM Invisible Dots 4
+    0x00B71, // UTM Quarry
 };
 
 std::vector<int> squarePanels = {

@@ -124,6 +124,8 @@ std::vector<int> copyWithoutElements(const std::vector<int>& input, const std::v
 Randomizer::Randomizer(const std::shared_ptr<Memory>& memory) : _memory(memory) {}
 
 void Randomizer::Randomize() {
+    _alreadySwapped.clear();
+
     // reveal_exit_hall - Prevent actually ending the game (EEE)
     _memory->AddSigScan({0x45, 0x8B, 0xF7, 0x48, 0x8B, 0x4D}, [&](int index){
         _memory->WriteData<byte>({index + 0x15}, {0xEB}); // jz -> jmp
@@ -149,9 +151,8 @@ void Randomizer::Randomize() {
         // is unknown whether any of the other puzzles in these pools can be
         // solved there after using Sigma's randomizer.
         // 0x288AA UTM Perspective 4
-        std::vector<int> alreadySwapped = { 0x288AA };
-        alreadySwapped.push_back(SwapWithRandomPanel(0x1C349, copyWithoutElements(symmetryDoorTwoOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Symmetry Door 2
-        alreadySwapped.push_back(SwapWithRandomPanel(0x17CC4, copyWithoutElements(millElevatorControlOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Mill Elevator Control
+        _alreadySwapped.push_back(0x288AA);
+        SwapWithRandomPanel(0x17CC4, millElevatorControlOptions, SWAP::LINES | SWAP::COLORS); // Mill Elevator Control
         // The pool that Tutorial Back Left is in has some panels that may not
         // be solveable in the down position after using Sigma's randomizer. We
         // do not want to swap any such panel with Tutorial Back Left, because
@@ -164,7 +165,7 @@ void Randomizer::Randomize() {
             0x3C125, // Mill Control Room Extra Panel
             0x09E85, // Tunnels Town Shortcut
         });
-        alreadySwapped.push_back(SwapWithRandomPanel(0x0A3B5, copyWithoutElements(tutorialBackLeftDoubleMode, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Tutorial Back Left
+        SwapWithRandomPanel(0x0A3B5, tutorialBackLeftDoubleMode, SWAP::LINES | SWAP::COLORS); // Tutorial Back Left
         // Shuffle the UTM elevator controls amongst themselves.
         Shuffle(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
         // The four pivot panels in Treehouse must be solveable in the up, left,
@@ -186,21 +187,28 @@ void Randomizer::Randomize() {
         // shuffle it.
         std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, doubleModeBannedSquarePanels);
         std::vector<int> quarryLaserOptions = copyWithoutElements(squarePanelsDoubleMode, quarryLaserBanned);
-        alreadySwapped.push_back(SwapWithRandomPanel(0x03612, copyWithoutElements(quarryLaserOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Quarry Laser
+        quarryLaserOptions.push_back(0x03612);
+        SwapWithRandomPanel(0x03612, quarryLaserOptions, SWAP::LINES | SWAP::COLORS); // Quarry Laser
+
         Shuffle(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     } else {
         Shuffle(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
         Shuffle(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
         Shuffle(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+        
+        SwapWithRandomPanel(0x17D02, townWindmillControlOptions, SWAP::LINES | SWAP::COLORS); // Town Windmill Control
+        SwapWithRandomPanel(0x17CC4, millElevatorControlOptions, SWAP::LINES | SWAP::COLORS); // Mill Elevator Control
+        SwapWithRandomPanel(0x288AA, utmPerspectiveFourOptions, SWAP::LINES | SWAP::COLORS); // UTM Perspective 4
+        SwapWithRandomPanel(0x0A3B5, tutorialBackLeftOptions, SWAP::LINES | SWAP::COLORS); // Tutorial Back Left
 
-        std::vector<int> alreadySwapped;
-        alreadySwapped.push_back(SwapWithRandomPanel(0x17D02, townWindmillControlOptions, SWAP::LINES | SWAP::COLORS)); // Town Windmill Control
-        alreadySwapped.push_back(SwapWithRandomPanel(0x1C349, copyWithoutElements(symmetryDoorTwoOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Symmetry Door 2
-        alreadySwapped.push_back(SwapWithRandomPanel(0x17CC4, copyWithoutElements(millElevatorControlOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Mill Elevator Control
-        alreadySwapped.push_back(SwapWithRandomPanel(0x288AA, copyWithoutElements(utmPerspectiveFourOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // UTM Perspective 4
-        alreadySwapped.push_back(SwapWithRandomPanel(0x0A3B5, copyWithoutElements(tutorialBackLeftOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Tutorial Back Left
+        std::vector<int> symTwoOptions = copyWithoutElements(squarePanels, symmetryDoorTwoBanned);
+        symTwoOptions.push_back(0x1C349);
+        SwapWithRandomPanel(0x1C349, symTwoOptions, SWAP::LINES | SWAP::COLORS); // Symmetry Door 2
+
         std::vector<int> quarryLaserOptions = copyWithoutElements(squarePanels, quarryLaserBanned);
-        alreadySwapped.push_back(SwapWithRandomPanel(0x03612, copyWithoutElements(quarryLaserOptions, alreadySwapped), SWAP::LINES | SWAP::COLORS)); // Quarry Laser
+        quarryLaserOptions.push_back(0x03612);
+        SwapWithRandomPanel(0x03612, quarryLaserOptions, SWAP::LINES | SWAP::COLORS); // Quarry Laser
+
         Shuffle(squarePanels, SWAP::LINES | SWAP::COLORS);
     }
 
@@ -433,12 +441,14 @@ void Randomizer::ReorderRange(std::vector<int>& panels, size_t startIndex, size_
     }
 }
 
-int Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags) {
-    const int target = Random::RandInt(0, static_cast<int>(possible_panels.size()) - 1);
-    if (panel1 != possible_panels[target]) {
-        SwapPanels(panel1, possible_panels[target], flags);
+void Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags) {
+    std::vector<int> filtered = copyWithoutElements(possible_panels, _alreadySwapped);
+    const int target = Random::RandInt(0, static_cast<int>(filtered.size()) - 1);
+    const int toSwap = filtered[target];
+    if (panel1 != toSwap) {
+        SwapPanels(panel1, toSwap, flags);
     }
-    return possible_panels[target];
+    _alreadySwapped.push_back(toSwap);
 }
 
 void Randomizer::SwapPanels(int panel1, int panel2, int flags) {

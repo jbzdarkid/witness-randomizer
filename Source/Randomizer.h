@@ -40,13 +40,14 @@ private:
 
     void Shuffle(std::vector<int> panels, int flags);
     void ReorderRange(std::vector<int>& panels, size_t startIndex, size_t endIndex);
-    int SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
+    void SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
     void SwapPanels(int panel1, int panel2, int flags);
     void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
     void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
     std::shared_ptr<Memory> _memory;
     bool _doubleRandomizer = false;
+    std::vector<int> _alreadySwapped;
 
     friend class SwapTests_Shipwreck_Test;
 };
