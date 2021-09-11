@@ -15,7 +15,7 @@ public:
     void SetPreventDesertSkips(bool val);
 
     enum SWAP {
-        NONE = 0,
+        // NONE = 0,
         TARGETS = 1,
         LINES = 2,
         AUDIO_NAMES = 4,
@@ -41,7 +41,8 @@ private:
 
     void Randomize(std::vector<int>& panels, int flags);
     int SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
-    void RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex);
+    void Shuffle(std::vector<int>& order, size_t startIndex, size_t endIndex);
+    void RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex);
     void SwapPanels(int panel1, int panel2, int flags);
     void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
     void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);

@@ -265,7 +265,7 @@ void Randomizer::RandomizeTutorial() {
 void Randomizer::RandomizeSymmetry() {
     std::vector<int> randomOrder(transparent.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    RandomizeRange(randomOrder, SWAP::NONE, 1, 5);
+    Shuffle(randomOrder, 1, 5);
     ReassignTargets(transparent, randomOrder);
 }
 
@@ -327,9 +327,9 @@ void Randomizer::RandomizeShadows() {
 
     std::vector<int> randomOrder(shadowsPanels.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    RandomizeRange(randomOrder, SWAP::NONE, 0, 8); // Tutorial
-    RandomizeRange(randomOrder, SWAP::NONE, 8, 16); // Avoid
-    RandomizeRange(randomOrder, SWAP::NONE, 16, 21); // Follow
+    Shuffle(randomOrder, 0, 8); // Tutorial
+    Shuffle(randomOrder, 8, 16); // Avoid
+    Shuffle(randomOrder, 16, 21); // Follow
     ReassignTargets(shadowsPanels, randomOrder);
     // Turn off original starting panel
     _memory->WriteEntityData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
@@ -341,7 +341,7 @@ void Randomizer::RandomizeTown() {
     // @Hack...? To open the gate at the end
     std::vector<int> randomOrder(orchard.size() + 1, 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    RandomizeRange(randomOrder, SWAP::NONE, 1, 5);
+    Shuffle(randomOrder, 1, 5);
     // Ensure that we open the gate before the final puzzle (by swapping)
     int panel3Index = find(randomOrder, 3);
     int panel4Index = find(randomOrder, 4);
@@ -353,7 +353,7 @@ void Randomizer::RandomizeTown() {
 void Randomizer::RandomizeMonastery() {
     std::vector<int> randomOrder(monasteryPanels.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    RandomizeRange(randomOrder, SWAP::NONE, 3, 9); // Outer 2 & 3, Inner 1-4
+    Shuffle(randomOrder, 3, 9); // Outer 2 & 3, Inner 1-4
     ReassignTargets(monasteryPanels, randomOrder);
 }
 
@@ -363,10 +363,10 @@ void Randomizer::RandomizeBunker() {
     // Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
     // Tutorial 1 cannot be randomized, since no other panel can start on
     // Glass 1 will become door + glass 1, due to the targetting system
-    RandomizeRange(randomOrder, SWAP::NONE, 1, 10);
+    Shuffle(randomOrder, 1, 10);
     // Randomize Glass 1-3 into everything after the door/glass 1
     const size_t glass1Index = find(randomOrder, 9);
-    RandomizeRange(randomOrder, SWAP::NONE, glass1Index + 1, 12);
+    Shuffle(randomOrder, glass1Index + 1, 12);
     ReassignTargets(bunkerPanels, randomOrder);
 }
 
@@ -374,8 +374,8 @@ void Randomizer::RandomizeJungle() {
     std::vector<int> randomOrder(junglePanels.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
     // Waves 1 cannot be randomized, since no other panel can start on
-    RandomizeRange(randomOrder, SWAP::NONE, 1, 7); // Waves 2-7
-    RandomizeRange(randomOrder, SWAP::NONE, 8, 13); // Pitches 1-6
+    Shuffle(randomOrder, 1, 7); // Waves 2-7
+    Shuffle(randomOrder, 8, 13); // Pitches 1-6
     ReassignTargets(junglePanels, randomOrder);
 
     // Fix the wall's target to point back to the cable, and the cable to point to the pitches panel.
@@ -407,8 +407,8 @@ void Randomizer::RandomizeMountain() {
 
     std::vector<int> randomOrder(pillars.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    RandomizeRange(randomOrder, SWAP::NONE, 0, 4); // Left Pillars 1-4
-    RandomizeRange(randomOrder, SWAP::NONE, 5, 9); // Right Pillars 1-4
+    Shuffle(randomOrder, 0, 4); // Left Pillars 1-4
+    Shuffle(randomOrder, 5, 9); // Right Pillars 1-4
     ReassignTargets(pillars, randomOrder, targets);
     // Turn off original starting panels
     _memory->WriteEntityData<float>(pillars[0], POWER, {0.0f, 0.0f});
@@ -428,7 +428,7 @@ void Randomizer::RandomizeChallenge() {
 void Randomizer::RandomizeAudioLogs() {
     std::vector<int> randomOrder(audiologs.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    Randomize(randomOrder, SWAP::NONE);
+    Shuffle(randomOrder, 0, randomOrder.size());
     ReassignNames(audiologs, randomOrder);
 }
 
@@ -445,7 +445,18 @@ int Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible
 }
 
 // Range is [start, end)
-void Randomizer::RandomizeRange(std::vector<int> &panels, int flags, size_t startIndex, size_t endIndex) {
+void Randomizer::Shuffle(std::vector<int> &order, size_t startIndex, size_t endIndex) {
+    if (order.size() == 0) return;
+    if (startIndex >= endIndex) return;
+    if (endIndex >= order.size()) endIndex = static_cast<int>(order.size());
+    for (size_t i = endIndex - 1; i > startIndex; i--) {
+        const int target = Random::RandInt(static_cast<int>(startIndex), static_cast<int>(i));
+        std::swap(order[i], order[target]);
+    }
+}
+
+// Range is [start, end)
+void Randomizer::RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex) {
     if (panels.size() == 0) return;
     if (startIndex >= endIndex) return;
     if (endIndex >= panels.size()) endIndex = static_cast<int>(panels.size());
