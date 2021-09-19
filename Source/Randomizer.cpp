@@ -151,7 +151,7 @@ void Randomizer::Randomize() {
         // is unknown whether any of the other puzzles in these pools can be
         // solved there after using Sigma's randomizer.
         // 0x288AA UTM Perspective 4
-        _alreadySwapped.push_back(0x288AA);
+        _alreadySwapped.insert(0x288AA);
         SwapWithRandomPanel(0x17CC4, millElevatorControlOptions, SWAP::LINES | SWAP::COLORS); // Mill Elevator Control
         // The pool that Tutorial Back Left is in has some panels that may not
         // be solveable in the down position after using Sigma's randomizer. We
@@ -440,13 +440,15 @@ void Randomizer::Randomize(std::vector<int>& panels, int flags) {
 }
 
 void Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags) {
-    std::vector<int> filtered = copyWithoutElements(possible_panels, _alreadySwapped);
-    const int target = Random::RandInt(0, static_cast<int>(filtered.size()) - 1);
-    const int toSwap = filtered[target];
+    int toSwap = -1;
+    do {
+        const int target = Random::RandInt(0, static_cast<int>(possible_panels.size()) - 1);
+        toSwap = possible_panels[target];
+    } while (_alreadySwapped.count(toSwap));
     if (panel1 != toSwap) {
         SwapPanels(panel1, toSwap, flags);
     }
-    _alreadySwapped.push_back(toSwap);
+    _alreadySwapped.insert(toSwap);
 }
 
 // Range is [start, end)

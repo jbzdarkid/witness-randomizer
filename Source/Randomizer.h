@@ -1,6 +1,7 @@
 #pragma once
 #include "Memory.h"
 #include <memory>
+#include <set>
 
 class Randomizer {
 public:
@@ -50,7 +51,7 @@ private:
     std::shared_ptr<Memory> _memory;
     bool _doubleRandomizer = false;
     bool _preventDesertSkips = false;
-    std::vector<int> _alreadySwapped;
+    std::set<int> _alreadySwapped;
 
     friend class SwapTests_Shipwreck_Test;
 };
