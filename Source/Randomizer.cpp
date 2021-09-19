@@ -201,6 +201,7 @@ void Randomizer::Randomize() {
         SwapWithRandomPanel(0x288AA, utmPerspectiveFourOptions, SWAP::LINES | SWAP::COLORS); // UTM Perspective 4
         SwapWithRandomPanel(0x0A3B5, tutorialBackLeftOptions, SWAP::LINES | SWAP::COLORS); // Tutorial Back Left
         SwapWithRandomPanel(0x33AF5, mountainBlueOneOptions, SWAP::LINES | SWAP::COLORS); // Mountain Blue 1
+        SwapWithRandomPanel(0x33AF7, mountainBlueTwoOptions, SWAP::LINES | SWAP::COLORS); // Mountain Blue 2
 
         std::vector<int> symTwoOptions = copyWithoutElements(squarePanels, symmetryDoorTwoBanned);
         symTwoOptions.push_back(0x1C349);
