@@ -439,12 +439,22 @@ void Randomizer::Randomize(std::vector<int>& panels, int flags) {
     return RandomizeRange(panels, flags, 0, panels.size());
 }
 
+void Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags) {
+    std::vector<int> filtered = copyWithoutElements(possible_panels, _alreadySwapped);
+    const int target = Random::RandInt(0, static_cast<int>(filtered.size()) - 1);
+    const int toSwap = filtered[target];
+    if (panel1 != toSwap) {
+        SwapPanels(panel1, toSwap, flags);
+    }
+    _alreadySwapped.push_back(toSwap);
+}
+
 // Range is [start, end)
-void Randomizer::Shuffle(std::vector<int>& order, size_t startIndex, size_t endIndex) {
+void Randomizer::Shuffle(std::vector<int> &order, size_t startIndex, size_t endIndex) {
     if (order.size() == 0) return;
     if (startIndex >= endIndex) return;
     if (endIndex >= order.size()) endIndex = static_cast<int>(order.size());
-    for (size_t i = endIndex - 1; i > startIndex; i--) {
+    for (size_t i = endIndex-1; i > startIndex; i--) {
         const int target = Random::RandInt(static_cast<int>(startIndex), static_cast<int>(i));
         std::swap(order[i], order[target]);
     }
@@ -463,16 +473,6 @@ void Randomizer::RandomizeRange(std::vector<int> panels, int flags, size_t start
             std::swap(panels[i], panels[target]); // Panel indices in the array
         }
     }
-}
-
-void Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags) {
-    std::vector<int> filtered = copyWithoutElements(possible_panels, _alreadySwapped);
-    const int target = Random::RandInt(0, static_cast<int>(filtered.size()) - 1);
-    const int toSwap = filtered[target];
-    if (panel1 != toSwap) {
-        SwapPanels(panel1, toSwap, flags);
-    }
-    _alreadySwapped.push_back(toSwap);
 }
 
 void Randomizer::SwapPanels(int panel1, int panel2, int flags) {
