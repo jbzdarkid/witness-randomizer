@@ -186,10 +186,6 @@ void Randomizer::Randomize() {
         // swapped with Swamp Entry. To make things simpler, we will just not
         // shuffle it.
         std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, doubleModeBannedSquarePanels);
-        std::vector<int> quarryLaserOptions = copyWithoutElements(squarePanelsDoubleMode, quarryLaserBanned);
-        quarryLaserOptions.push_back(0x03612);
-        SwapWithRandomPanel(0x03612, quarryLaserOptions, SWAP::LINES | SWAP::COLORS); // Quarry Laser
-
         Shuffle(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     } else {
         Shuffle(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
