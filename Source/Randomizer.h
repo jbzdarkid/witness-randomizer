@@ -40,7 +40,7 @@ private:
     void RandomizeAudioLogs();
 
     void Randomize(std::vector<int>& panels, int flags);
-    int SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
+    void SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
     void Shuffle(std::vector<int>& order, size_t startIndex, size_t endIndex);
     void RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex);
     void SwapPanels(int panel1, int panel2, int flags);
