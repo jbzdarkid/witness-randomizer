@@ -454,7 +454,7 @@ void Randomizer::Shuffle(std::vector<int> &order, size_t startIndex, size_t endI
     if (order.size() == 0) return;
     if (startIndex >= endIndex) return;
     if (endIndex >= order.size()) endIndex = static_cast<int>(order.size());
-    for (size_t i = endIndex-1; i > startIndex; i--) {
+    for (size_t i = endIndex - 1; i > startIndex; i--) {
         const int target = Random::RandInt(static_cast<int>(startIndex), static_cast<int>(i));
         std::swap(order[i], order[target]);
     }
@@ -465,7 +465,7 @@ void Randomizer::RandomizeRange(std::vector<int> panels, int flags, size_t start
     if (panels.size() == 0) return;
     if (startIndex >= endIndex) return;
     if (endIndex >= panels.size()) endIndex = static_cast<int>(panels.size());
-    for (size_t i = endIndex - 1; i > startIndex; i--) {
+    for (size_t i = endIndex-1; i > startIndex; i--) {
         const int target = Random::RandInt(static_cast<int>(startIndex), static_cast<int>(i));
         if (i != target) {
             // std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
