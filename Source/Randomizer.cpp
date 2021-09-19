@@ -167,30 +167,30 @@ void Randomizer::Randomize() {
         });
         SwapWithRandomPanel(0x0A3B5, tutorialBackLeftDoubleMode, SWAP::LINES | SWAP::COLORS); // Tutorial Back Left
         // Shuffle the UTM elevator controls amongst themselves.
-        Shuffle(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
+        Randomize(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
         // The four pivot panels in Treehouse must be solveable in the up, left,
         // and right positions. However, the other panels in the pools those
         // panels are found in may not be solveable in all three directions
         // after using Sigma's randomizer. For safety, we will only swap the
         // pivot panels amongst themselves.
-        Shuffle(treehousePivotSet, SWAP::LINES | SWAP::COLORS);
+        Randomize(treehousePivotSet, SWAP::LINES | SWAP::COLORS);
         // This will additionally shuffle the UTM perspective puzzles amongst
         // themselves.
-        Shuffle(utmPerspectiveSet, SWAP::LINES | SWAP::COLORS);
+        Randomize(utmPerspectiveSet, SWAP::LINES | SWAP::COLORS);
         // In order to prevent a situation where access to a Symmetry Laser
         // Yellow is blocked by its corresponding Blue panel, we will only
         // shuffle these six panels amongst themselves.
-        Shuffle(symmetryLaserYellows, SWAP::LINES | SWAP::COLORS);
-        Shuffle(symmetryLaserBlues, SWAP::LINES | SWAP::COLORS);
+        Randomize(symmetryLaserYellows, SWAP::LINES | SWAP::COLORS);
+        Randomize(symmetryLaserBlues, SWAP::LINES | SWAP::COLORS);
         // Many puzzles either crash the game or do not solve properly when
         // swapped with Swamp Entry. To make things simpler, we will just not
         // shuffle it.
         std::vector<int> squarePanelsDoubleMode = copyWithoutElements(squarePanels, doubleModeBannedSquarePanels);
-        Shuffle(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
+        Randomize(squarePanelsDoubleMode, SWAP::LINES | SWAP::COLORS);
     } else {
-        Shuffle(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
-        Shuffle(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
-        Shuffle(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
+        Randomize(utmElevatorControls, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
+        Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
         
         SwapWithRandomPanel(0x17D02, townWindmillControlOptions, SWAP::LINES | SWAP::COLORS); // Town Windmill Control
         SwapWithRandomPanel(0x17CC4, millElevatorControlOptions, SWAP::LINES | SWAP::COLORS); // Mill Elevator Control
@@ -207,7 +207,7 @@ void Randomizer::Randomize() {
         quarryLaserOptions.push_back(0x03612);
         SwapWithRandomPanel(0x03612, quarryLaserOptions, SWAP::LINES | SWAP::COLORS); // Quarry Laser
 
-        Shuffle(squarePanels, SWAP::LINES | SWAP::COLORS);
+        Randomize(squarePanels, SWAP::LINES | SWAP::COLORS);
     }
 
     // Individual area modifications
@@ -237,7 +237,7 @@ void Randomizer::AdjustSpeed() {
 }
 
 void Randomizer::RandomizeLasers() {
-    Shuffle(lasers, SWAP::TARGETS);
+    Randomize(lasers, SWAP::TARGETS);
     // Read the target of keep front laser, and write it to keep back laser.
     std::vector<int> keepFrontLaserTarget = _memory->ReadEntityData<int>(0x0360E, TARGET, 1);
     _memory->WriteEntityData<int>(0x03317, TARGET, keepFrontLaserTarget);
@@ -256,6 +256,11 @@ void Randomizer::SetDoubleRandomizerMode(bool val)
     _doubleRandomizer = val;
 }
 
+void Randomizer::SetPreventDesertSkips(bool val)
+{
+    _preventDesertSkips = val;
+}
+
 // Private methods
 void Randomizer::RandomizeTutorial() {
     // Disable tutorial cursor speed modifications (not working?)
@@ -268,13 +273,28 @@ void Randomizer::RandomizeTutorial() {
 void Randomizer::RandomizeSymmetry() {
     std::vector<int> randomOrder(transparent.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    ReorderRange(randomOrder, 1, 5);
+    Shuffle(randomOrder, 1, 5);
     ReassignTargets(transparent, randomOrder);
 }
 
 void Randomizer::RandomizeDesert() {
-    Shuffle(desertPanels, SWAP::LINES);
-    Shuffle(desertPanelsWide, SWAP::LINES);
+    if (_preventDesertSkips) {
+        // In order to require that all three latches are opened, Surface 7
+        // cannot be swapped with:
+        // 0x09DA6 Surface 5
+        // 0x09F94 Surface 8
+        // 0x0117A Flood 4
+        SwapWithRandomPanel(0x0A053, copyWithoutElements(desertPanels, { 0x09DA6, 0x09F94, 0x0117A }), SWAP::LINES);
+        // In order to require that both latches are opened, Light 3 cannot be
+        // swapped with Final Far.
+        SwapWithRandomPanel(0x0A02D, copyWithoutElements(desertPanels, { 0x012D7 }), SWAP::LINES);
+        // The remaining panels can be safely shuffled amongst themselves.
+        std::vector<int> remainingDesertPanels = copyWithoutElements(desertPanels, { 0x0A053, 0x0A02D });
+        Randomize(remainingDesertPanels, SWAP::LINES);
+    } else {
+        Randomize(desertPanels, SWAP::LINES);
+    }
+    Randomize(desertPanelsWide, SWAP::LINES);
 
     // Turn off desert surface 8
     _memory->WriteEntityData<float>(0x09F94, POWER, {0.0, 0.0});
@@ -310,9 +330,9 @@ void Randomizer::RandomizeShadows() {
 
     std::vector<int> randomOrder(shadowsPanels.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    ReorderRange(randomOrder, 0, 8); // Tutorial
-    ReorderRange(randomOrder, 8, 16); // Avoid
-    ReorderRange(randomOrder, 16, 21); // Follow
+    Shuffle(randomOrder, 0, 8); // Tutorial
+    Shuffle(randomOrder, 8, 16); // Avoid
+    Shuffle(randomOrder, 16, 21); // Follow
     ReassignTargets(shadowsPanels, randomOrder);
     // Turn off original starting panel
     _memory->WriteEntityData<float>(shadowsPanels[0], POWER, {0.0f, 0.0f});
@@ -324,7 +344,7 @@ void Randomizer::RandomizeTown() {
     // @Hack...? To open the gate at the end
     std::vector<int> randomOrder(orchard.size() + 1, 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    ReorderRange(randomOrder, 1, 5);
+    Shuffle(randomOrder, 1, 5);
     // Ensure that we open the gate before the final puzzle (by swapping)
     int panel3Index = find(randomOrder, 3);
     int panel4Index = find(randomOrder, 4);
@@ -336,7 +356,7 @@ void Randomizer::RandomizeTown() {
 void Randomizer::RandomizeMonastery() {
     std::vector<int> randomOrder(monasteryPanels.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    ReorderRange(randomOrder, 3, 9); // Outer 2 & 3, Inner 1-4
+    Shuffle(randomOrder, 3, 9); // Outer 2 & 3, Inner 1-4
     ReassignTargets(monasteryPanels, randomOrder);
 }
 
@@ -346,10 +366,10 @@ void Randomizer::RandomizeBunker() {
     // Randomize Tutorial 2-Advanced Tutorial 4 + Glass 1
     // Tutorial 1 cannot be randomized, since no other panel can start on
     // Glass 1 will become door + glass 1, due to the targetting system
-    ReorderRange(randomOrder, 1, 10);
+    Shuffle(randomOrder, 1, 10);
     // Randomize Glass 1-3 into everything after the door/glass 1
     const size_t glass1Index = find(randomOrder, 9);
-    ReorderRange(randomOrder, glass1Index + 1, 12);
+    Shuffle(randomOrder, glass1Index + 1, 12);
     ReassignTargets(bunkerPanels, randomOrder);
 }
 
@@ -357,8 +377,8 @@ void Randomizer::RandomizeJungle() {
     std::vector<int> randomOrder(junglePanels.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
     // Waves 1 cannot be randomized, since no other panel can start on
-    ReorderRange(randomOrder, 1, 7); // Waves 2-7
-    ReorderRange(randomOrder, 8, 13); // Pitches 1-6
+    Shuffle(randomOrder, 1, 7); // Waves 2-7
+    Shuffle(randomOrder, 8, 13); // Pitches 1-6
     ReassignTargets(junglePanels, randomOrder);
 
     // Fix the wall's target to point back to the cable, and the cable to point to the pitches panel.
@@ -372,12 +392,12 @@ void Randomizer::RandomizeSwamp() {
 
 void Randomizer::RandomizeMountain() {
     // Randomize multipanel
-    Shuffle(mountainMultipanel, SWAP::LINES | SWAP::COLORS);
+    Randomize(mountainMultipanel, SWAP::LINES | SWAP::COLORS);
     // With Sigma's randomizer, split solution metapuzzles may become impossible
     // if the interior panels are shuffled, so we will just not shuffle them in
     // double randomizer mode.
     if (!_doubleRandomizer) {
-        Shuffle(mountainMetaPanels, SWAP::LINES | SWAP::COLORS);
+        Randomize(mountainMetaPanels, SWAP::LINES | SWAP::COLORS);
     }
 
     // Randomize final pillars order
@@ -390,8 +410,8 @@ void Randomizer::RandomizeMountain() {
 
     std::vector<int> randomOrder(pillars.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    ReorderRange(randomOrder, 0, 4); // Left Pillars 1-4
-    ReorderRange(randomOrder, 5, 9); // Right Pillars 1-4
+    Shuffle(randomOrder, 0, 4); // Left Pillars 1-4
+    Shuffle(randomOrder, 5, 9); // Right Pillars 1-4
     ReassignTargets(pillars, randomOrder, targets);
     // Turn off original starting panels
     _memory->WriteEntityData<float>(pillars[0], POWER, {0.0f, 0.0f});
@@ -411,23 +431,27 @@ void Randomizer::RandomizeChallenge() {
 void Randomizer::RandomizeAudioLogs() {
     std::vector<int> randomOrder(audiologs.size(), 0);
     std::iota(randomOrder.begin(), randomOrder.end(), 0);
-    ReorderRange(randomOrder, 0, audiologs.size());
+    Shuffle(randomOrder, 0, randomOrder.size());
     ReassignNames(audiologs, randomOrder);
 }
 
-void Randomizer::Shuffle(std::vector<int> panels, int flags) {
-    for (size_t i = panels.size() - 1; i > 0; i--) {
-        const int target = Random::RandInt(0, static_cast<int>(i));
-        if (i != target) {
-            // std::cout << "Swapping panels " << std::hex << panels[i] << " and " << std::hex << panels[target] << std::endl;
-            SwapPanels(panels[i], panels[target], flags);
-            std::swap(panels[i], panels[target]); // Panel indices in the array
-        }
+void Randomizer::Randomize(std::vector<int>& panels, int flags) {
+    return RandomizeRange(panels, flags, 0, panels.size());
+}
+
+// Range is [start, end)
+void Randomizer::Shuffle(std::vector<int> &order, size_t startIndex, size_t endIndex) {
+    if (order.size() == 0) return;
+    if (startIndex >= endIndex) return;
+    if (endIndex >= order.size()) endIndex = static_cast<int>(order.size());
+    for (size_t i = endIndex - 1; i > startIndex; i--) {
+        const int target = Random::RandInt(static_cast<int>(startIndex), static_cast<int>(i));
+        std::swap(order[i], order[target]);
     }
 }
 
 // Range is [start, end)
-void Randomizer::ReorderRange(std::vector<int>& panels, size_t startIndex, size_t endIndex) {
+void Randomizer::RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex) {
     if (panels.size() == 0) return;
     if (startIndex >= endIndex) return;
     if (endIndex >= panels.size()) endIndex = static_cast<int>(panels.size());

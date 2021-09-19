@@ -12,9 +12,10 @@ public:
     void RandomizeLasers();
     void PreventSnipes();
     void SetDoubleRandomizerMode(bool val);
+    void SetPreventDesertSkips(bool val);
 
     enum SWAP {
-        NONE = 0,
+        // NONE = 0,
         TARGETS = 1,
         LINES = 2,
         AUDIO_NAMES = 4,
@@ -38,15 +39,17 @@ private:
     void RandomizeMountain();
     void RandomizeAudioLogs();
 
-    void Shuffle(std::vector<int> panels, int flags);
-    void ReorderRange(std::vector<int>& panels, size_t startIndex, size_t endIndex);
-    void SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
+    void Randomize(std::vector<int>& panels, int flags);
+    int SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags);
+    void Shuffle(std::vector<int>& order, size_t startIndex, size_t endIndex);
+    void RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex);
     void SwapPanels(int panel1, int panel2, int flags);
     void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
     void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
 
     std::shared_ptr<Memory> _memory;
     bool _doubleRandomizer = false;
+    bool _preventDesertSkips = false;
     std::vector<int> _alreadySwapped;
 
     friend class SwapTests_Shipwreck_Test;

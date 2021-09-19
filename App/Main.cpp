@@ -21,6 +21,7 @@
 #define DISABLE_SNIPES 0x407
 #define SPEED_UP_AUTOSCROLLERS 0x408
 #define DOUBLE_RANDOMIZER_MODE 0x409
+#define DISABLE_DESERT_SKIPS 0x410
 
 /* ------- Temp ------- */
 #include "Puzzle.h"
@@ -107,6 +108,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                         g_randomizer->AdjustSpeed();
                     }
                     g_randomizer->SetDoubleRandomizerMode(IsDlgButtonChecked(g_hwnd, DOUBLE_RANDOMIZER_MODE));
+                    g_randomizer->SetPreventDesertSkips(IsDlgButtonChecked(g_hwnd, DISABLE_DESERT_SKIPS));
                     if (IsDlgButtonChecked(g_hwnd, CHALLENGE_ONLY)) {
                         SetWindowText(g_randomizerStatus, L"Randomizing Challenge...");
                         g_randomizer->RandomizeChallenge();
@@ -145,6 +147,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 break;
             case DOUBLE_RANDOMIZER_MODE:
                 CheckDlgButton(hwnd, DOUBLE_RANDOMIZER_MODE, !IsDlgButtonChecked(hwnd, DOUBLE_RANDOMIZER_MODE));
+                break;
+            case DISABLE_DESERT_SKIPS:
+                CheckDlgButton(hwnd, DISABLE_DESERT_SKIPS, !IsDlgButtonChecked(hwnd, DISABLE_DESERT_SKIPS));
                 break;
             case TMP1:
                 {
@@ -269,6 +274,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     CreateLabel(30, 340, 205, L"Speed up various autoscrollers");
     CreateCheckbox(10, 360, DOUBLE_RANDOMIZER_MODE);
     CreateLabel(30, 360, 165, L"Double randomizer mode");
+    CreateCheckbox(10, 380, DISABLE_DESERT_SKIPS);
+    CreateLabel(30, 380, 280, L"Disable Desert Surface 7 and Light 3 skips");
+    CheckDlgButton(g_hwnd, DISABLE_DESERT_SKIPS, TRUE);
 
     // CreateButton(200, 50, 200, L"Test RNG", TMP5);
     // g_rngDebug = CreateWindow(L"STATIC", L"",
