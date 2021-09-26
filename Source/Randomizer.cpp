@@ -439,11 +439,11 @@ void Randomizer::Randomize(std::vector<int>& panels, int flags) {
     return RandomizeRange(panels, flags, 0, panels.size());
 }
 
-void Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possible_panels, int flags) {
+void Randomizer::SwapWithRandomPanel(int panel1, const std::vector<int>& possiblePanels, int flags) {
     int toSwap = -1;
     do {
-        const int target = Random::RandInt(0, static_cast<int>(possible_panels.size()) - 1);
-        toSwap = possible_panels[target];
+        const int target = Random::RandInt(0, static_cast<int>(possiblePanels.size()) - 1);
+        toSwap = possiblePanels[target];
     } while (_alreadySwapped.count(toSwap));
     if (panel1 != toSwap) {
         SwapPanels(panel1, toSwap, flags);
