@@ -276,6 +276,18 @@ std::vector<int> mountainBlueTwoOptions = {
     0x33AF7, // Mountain 1 Blue 2
 };
 
+std::vector<int> mountainBlueThreeOptions = {
+    0x018AF, // Outside Tutorial Stones Tutorial 1
+    0x01A54, // Glass Factory Entry
+    0x00087, // Glass Factory Vertical Symmetry 2
+    0x0008D, // Glass Factory Rotational Symmetry 1
+    0x0007E, // Symmetry Island Colored Dots 2
+    0x28AC7, // Town Blue 1
+    0x28AC8, // Town Blue 2
+
+    0x09F6E, // Mountain 1 Blue 3
+};
+
 std::vector<int> utmElevatorControls = {
     0x335AB, // UTM In Elevator Control
     0x3369D, // UTM Lower Elevator Control

@@ -192,6 +192,7 @@ void Randomizer::Randomize() {
         Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
         Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
         
+        SwapWithRandomPanel(0x09F6E, mountainBlueThreeOptions, SWAP::LINES | SWAP::COLORS); // Mountain Blue 3
         SwapWithRandomPanel(0x17D02, townWindmillControlOptions, SWAP::LINES | SWAP::COLORS); // Town Windmill Control
         SwapWithRandomPanel(0x17CC4, millElevatorControlOptions, SWAP::LINES | SWAP::COLORS); // Mill Elevator Control
         SwapWithRandomPanel(0x288AA, utmPerspectiveFourOptions, SWAP::LINES | SWAP::COLORS); // UTM Perspective 4
