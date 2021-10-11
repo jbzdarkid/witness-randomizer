@@ -192,12 +192,14 @@ void Randomizer::Randomize() {
         Randomize(leftForwardRightPanelsSetOne, SWAP::LINES | SWAP::COLORS);
         Randomize(leftForwardRightPanelsSetTwo, SWAP::LINES | SWAP::COLORS);
         
+        SwapWithRandomPanel(0x09F6E, mountainBlueThreeOptions, SWAP::LINES | SWAP::COLORS); // Mountain Blue 3
         SwapWithRandomPanel(0x17D02, townWindmillControlOptions, SWAP::LINES | SWAP::COLORS); // Town Windmill Control
         SwapWithRandomPanel(0x17CC4, millElevatorControlOptions, SWAP::LINES | SWAP::COLORS); // Mill Elevator Control
         SwapWithRandomPanel(0x288AA, utmPerspectiveFourOptions, SWAP::LINES | SWAP::COLORS); // UTM Perspective 4
         SwapWithRandomPanel(0x0A3B5, tutorialBackLeftOptions, SWAP::LINES | SWAP::COLORS); // Tutorial Back Left
         SwapWithRandomPanel(0x33AF5, mountainBlueOneOptions, SWAP::LINES | SWAP::COLORS); // Mountain Blue 1
         SwapWithRandomPanel(0x33AF7, mountainBlueTwoOptions, SWAP::LINES | SWAP::COLORS); // Mountain Blue 2
+        SwapWithRandomPanel(0x0005C, glassVerticalFiveOptions, SWAP::LINES | SWAP::COLORS); // Glass Factory Vertical Symmetry 5
 
         std::vector<int> symTwoOptions = copyWithoutElements(squarePanels, symmetryDoorTwoBanned);
         symTwoOptions.push_back(0x1C349);
