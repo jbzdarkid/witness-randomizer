@@ -288,6 +288,151 @@ std::vector<int> mountainBlueThreeOptions = {
     0x09F6E, // Mountain 1 Blue 3
 };
 
+std::vector<int> glassVerticalFiveOptions = {
+    0x00064, // Tutorial Straight
+    0x00182, // Tutorial Bend
+    0x0A3B2, // Tutorial Back Right
+    0x00295, // Tutorial Center Left
+    0x00293, // Tutorial Front Center
+    0x018AF, // Outside Tutorial Stones Tutorial 1
+    0x0001B, // Outside Tutorial Stones Tutorial 2
+    0x012C9, // Outside Tutorial Stones Tutorial 3
+    0x0001C, // Outside Tutorial Stones Tutorial 4
+    0x0001D, // Outside Tutorial Stones Tutorial 5
+    0x0001F, // Outside Tutorial Stones Tutorial 7
+    0x00021, // Outside Tutorial Stones Tutorial 9
+    0x01A54, // Glass Factory Entry
+    0x00086, // Glass Factory Vertical Symmetry 1
+    0x00087, // Glass Factory Vertical Symmetry 2
+    0x00059, // Glass Factory Vertical Symmetry 3
+    0x00062, // Glass Factory Vertical Symmetry 4
+    0x0008D, // Glass Factory Rotational Symmetry 1
+    0x00081, // Glass Factory Rotational Symmetry 2
+    0x00083, // Glass Factory Rotational Symmetry 3
+    0x00084, // Glass Factory Melting 1
+    0x00082, // Glass Factory Melting 2
+    0x0343A, // Glass Factory Melting 3
+    0x00022, // Symmetry Island Black Dots 1
+    0x00023, // Symmetry Island Black Dots 2
+    0x00024, // Symmetry Island Black Dots 3
+    0x00025, // Symmetry Island Black Dots 4
+    0x00026, // Symmetry Island Black Dots 5
+    0x0007C, // Symmetry Island Colored Dots 1
+    0x0007E, // Symmetry Island Colored Dots 2
+    0x00075, // Symmetry Island Colored Dots 3
+    0x00065, // Symmetry Island Fading Lines 1
+    0x0006D, // Symmetry Island Fading Lines 2
+    0x00072, // Symmetry Island Fading Lines 3
+    0x0006F, // Symmetry Island Fading Lines 4
+    0x00070, // Symmetry Island Fading Lines 5
+    0x00076, // Symmetry Island Fading Lines 7
+    0x00A57, // Symmetry Island Laser Yellow 2
+    0x00A5B, // Symmetry Island Laser Yellow 3
+    0x00A68, // Symmetry Island Laser Blue 3
+    0x01E5A, // Mill Entry Door Left
+    0x01E59, // Mill Entry Door Right
+    0x01489, // Mill Lower Row 2
+    0x0148A, // Mill Lower Row 3
+    0x014D9, // Mill Lower Row 4
+    0x00557, // Mill Upper Row 1
+    0x005F1, // Mill Upper Row 2
+    0x00620, // Mill Upper Row 3
+    0x0146C, // Mill Upper Row 5
+    0x3C12D, // Mill Upper Row 6
+    0x03686, // Mill Upper Row 7
+    0x014E9, // Mill Upper Row 8
+    0x0367C, // Mill Control Room 1
+    0x03677, // Mill Stairs Control
+    0x021B3, // Boathouse Erasers and Shapers 1
+    0x021B4, // Boathouse Erasers and Shapers 2
+    0x021B0, // Boathouse Erasers and Shapers 3
+    0x021AF, // Boathouse Erasers and Shapers 4
+    0x021AE, // Boathouse Erasers and Shapers 5
+    0x021B5, // Boathouse Erasers and Stars 1
+    0x021B6, // Boathouse Erasers and Stars 2
+    0x021B7, // Boathouse Erasers and Stars 3
+    0x021BB, // Boathouse Erasers and Stars 4
+    0x09DB5, // Boathouse Erasers and Stars 5
+    0x09DB1, // Boathouse Erasers and Stars 6
+    0x3C124, // Boathouse Erasers and Stars 7
+    0x09DB3, // Boathouse Erasers Shapers and Stars 1
+    0x09DB4, // Boathouse Erasers Shapers and Stars 2
+    0x0A3CB, // Boathouse Erasers Shapers and Stars 3
+    0x0A3CC, // Boathouse Erasers Shapers and Stars 4
+    0x0A3D0, // Boathouse Erasers Shapers and Stars 5
+    0x0288C, // Treehouse Door 1
+    0x17D72, // Treehouse Yellow 1
+    0x17D74, // Treehouse Yellow 3
+    0x17DC2, // Treehouse Yellow 8
+    0x17D9B, // Treehouse Second Purple 1
+    0x17D99, // Treehouse Second Purple 2
+    0x17DAA, // Treehouse Second Purple 3
+    0x17D97, // Treehouse Second Purple 4
+    0x17D91, // Treehouse Second Purple 6
+    0x17DC6, // Treehouse Second Purple 7
+    0x17DB3, // Treehouse Left Orange 1
+    0x17DB8, // Treehouse Left Orange 7
+    0x17DDE, // Treehouse Left Orange 10
+    0x17DE3, // Treehouse Left Orange 11
+    0x17DEC, // Treehouse Left Orange 12
+    0x17DAE, // Treehouse Left Orange 13
+    0x17D88, // Treehouse Right Orange 1
+    0x17D8C, // Treehouse Right Orange 3
+    0x17DCD, // Treehouse Right Orange 5
+    0x17DB2, // Treehouse Right Orange 6
+    0x17DCA, // Treehouse Right Orange 8
+    0x17D8E, // Treehouse Right Orange 9
+    0x17DB1, // Treehouse Right Orange 11
+    0x17DA2, // Treehouse Right Orange 12
+    0x17E5F, // Treehouse Green 6
+    0x17E61, // Treehouse Green 7
+    0x00139, // Keep Hedges 1
+    0x019DC, // Keep Hedges 2
+    0x019E7, // Keep Hedges 3
+    0x01A0F, // Keep Hedges 4
+    0x03317, // Keep Back Laser
+    0x17D27, // Keep Discard
+    0x00AFB, // Shipwreck Vault
+    0x28938, // Town Apple Tree
+    0x28AC7, // Town Blue 1
+    0x28AC8, // Town Blue 2
+    0x28ACA, // Town Blue 3
+    0x28ACB, // Town Blue 4
+    0x28ACC, // Town Blue 5
+    0x17F5F, // Town Windmill Door
+    0x17F89, // Theater Entrance
+    0x33AB2, // Theater Corona Exit
+    0x0A168, // Theater Sun Exit
+    0x00B10, // Monastery Left Door
+    0x00C92, // Monastery Right Door
+    0x00469, // Swamp Tutorial 1
+    0x00472, // Swamp Tutorial 2
+    0x00262, // Swamp Tutorial 3
+    0x010CA, // Swamp Tutorial 8
+    0x00983, // Swamp Tutorial 9
+    0x00007, // Swamp Rotation Tutorial 1
+    0x00008, // Swamp Rotation Tutorial 2
+    0x009AB, // Swamp Blue Underwater 1
+    0x009AD, // Swamp Blue Underwater 2
+    0x009A6, // Swamp Purple Tetris
+    0x00001, // Swamp Red Underwater 1
+    0x014D2, // Swamp Red Underwater 2
+    0x17F9B, // Jungle Discard
+    0x002A6, // Mountainside Vault
+    0x0042D, // Mountaintop River
+    0x00FF8, // UTM Entrance Door
+    0x0006A, // UTM Invisible Dots 7
+    0x0006C, // UTM Invisible Dots 8
+    0x00027, // UTM Invisible Dots Symmetry 1
+    0x00028, // UTM Invisible Dots Symmetry 2
+    0x00029, // UTM Invisible Dots Symmetry 3
+    0x32966, // UTM Treehouse
+    0x018A0, // UTM Blue Easy Symmetry
+    0x01A0D, // UTM Blue Hard Symmetry
+
+    0x0005C, // Glass Factory Vertical Symmetry 5
+};
+
 std::vector<int> utmElevatorControls = {
     0x335AB, // UTM In Elevator Control
     0x3369D, // UTM Lower Elevator Control
