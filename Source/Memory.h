@@ -55,7 +55,20 @@ public:
 
     template <class T>
     inline void WriteData(const std::vector<int64_t>& offsets, const std::vector<T>& data) {
-        WriteDataInternal(&data[0], offsets, sizeof(T) * data.size());
+        WriteDataInternal(&data[0], ComputeOffset(offsets), sizeof(T) * data.size());
+    }
+
+    template <class T>
+    void WriteArray(const std::vector<int64_t>& offsets, const std::vector<T>& data) {
+        uintptr_t targetAddress = ComputeOffset(offsets);
+        auto search = _allocatedArrays.find(targetAddress);
+        if (search == _allocatedArrays.end() || search.second < data.size()) {
+            // We don't have an existing allocation or it's not big enough.
+            uintptr_t newArray = AllocArray(data.size());
+            _allocatedArrays[targetAddress] = data.size();
+        }
+
+        WriteDataInternal(&data[0], targetAddress, sizeof(T) * data.size());
     }
 
 private:
@@ -66,8 +79,15 @@ private:
     static void DebugPrint(const std::wstring& text);
 
     void ReadDataInternal(void* buffer, const uintptr_t computedOffset, size_t bufferSize);
-    void WriteDataInternal(const void* buffer, const std::vector<int64_t>& offsets, size_t bufferSize);
+    void WriteDataInternal(const void* buffer, const uintptr_t computedOffset, size_t bufferSize);
     uintptr_t ComputeOffset(std::vector<int64_t> offsets, bool absolute = false);
+
+    template <class T>
+	uintptr_t AllocArray(size_t numItems) {
+		void* ptr = VirtualAllocEx(_handle, 0, numItems * sizeof(T), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+        _allocations.push_back(ptr);
+		return reinterpret_cast<uintptr_t>(ptr);
+	}
 
     // Parts of the constructor / StartHeartbeat
     std::wstring _processName;
@@ -101,4 +121,7 @@ private:
         ScanFunc2 scanFunc;
     };
     std::map<std::vector<uint8_t>, SigScan> _sigScans;
+
+    std::vector<void*> _allocations; // This contains the address of the array data
+    std::map<uintptr_t, size_t> _allocatedArrays; // This contains the address in the panel which points to the array.
 };

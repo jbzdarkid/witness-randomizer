@@ -12,6 +12,9 @@ Memory::~Memory() {
     if (_thread.joinable()) _thread.join();
 
     if (_handle != nullptr) {
+        for (void* allocation : _allocations) {
+            VirtualFreeEx(_handle, allocation, 0, MEM_RELEASE);
+        }
         CloseHandle(_handle);
     }
 }
@@ -92,7 +95,7 @@ void Memory::Heartbeat(HWND window, UINT message) {
         return;
     }
 
-    __int64 entityManager = ReadData<__int64>({_globals}, 1)[0];
+    int64_t entityManager = ReadData<int64_t>({_globals}, 1)[0];
     if (entityManager == 0) {
         // Game hasn't loaded yet, we're still sitting on the launcher
         PostMessage(window, message, ProcStatus::NotRunning, NULL);
@@ -192,11 +195,11 @@ void Memory::Initialize() {
     // Clear out any leftover sigscans from consumers (e.g. the trainer)
     _sigScans.clear();
 
-    AddSigScan({0x74, 0x41, 0x48, 0x85, 0xC0, 0x74, 0x04, 0x48, 0x8B, 0x48, 0x10}, [&](__int64 offset, int index, const std::vector<uint8_t>& data) {
+    AddSigScan({0x74, 0x41, 0x48, 0x85, 0xC0, 0x74, 0x04, 0x48, 0x8B, 0x48, 0x10}, [&](int64_t offset, int index, const std::vector<uint8_t>& data) {
         _globals = Memory::ReadStaticInt(offset, index + 0x14, data);
     });
 
-    AddSigScan({0x01, 0x00, 0x00, 0x66, 0xC7, 0x87}, [&](__int64 offset, int index, const std::vector<uint8_t>& data) {
+    AddSigScan({0x01, 0x00, 0x00, 0x66, 0xC7, 0x87}, [&](int64_t offset, int index, const std::vector<uint8_t>& data) {
         _loadCountOffset = *(int*)&data[index-1];
     });
 
@@ -221,14 +224,14 @@ void Memory::SetCurrentThreadName(const wchar_t* name) {
 
 // These functions are much more generic than this witness-specific implementation. As such, I'm keeping them somewhat separated.
 
-__int64 Memory::ReadStaticInt(__int64 offset, int index, const std::vector<uint8_t>& data, size_t bytesToEOL) {
+int64_t Memory::ReadStaticInt(int64_t offset, int index, const std::vector<uint8_t>& data, size_t bytesToEOL) {
     // (address of next line) + (index interpreted as 4uint8_t int)
     return offset + index + bytesToEOL + *(int*)&data[index];
 }
 
 // Small wrapper for non-failing scan functions
 void Memory::AddSigScan(const std::vector<uint8_t>& scanBytes, const ScanFunc& scanFunc) {
-    _sigScans[scanBytes] = {false, [scanFunc](__int64 offset, int index, const std::vector<uint8_t>& data) {
+    _sigScans[scanBytes] = {false, [scanFunc](int64_t offset, int index, const std::vector<uint8_t>& data) {
         scanFunc(offset, index, data);
         return true;
     }};
@@ -298,8 +301,8 @@ size_t Memory::ExecuteSigScans() {
 }
 
 // Technically this is ReadChar*, but this name makes more sense with the return type.
-std::string Memory::ReadString(std::vector<__int64> offsets) {
-    __int64 charAddr = ReadData<__int64>(offsets, 1)[0];
+std::string Memory::ReadString(std::vector<int64_t> offsets) {
+    int64_t charAddr = ReadData<int64_t>(offsets, 1)[0];
     if (charAddr == 0) return ""; // Handle nullptr for strings
     
     std::vector<char> tmp;
@@ -326,7 +329,7 @@ void Memory::ReadDataInternal(void* buffer, uintptr_t computedOffset, size_t buf
     }
 }
 
-void Memory::WriteDataInternal(const void* buffer, const std::vector<__int64>& offsets, size_t bufferSize) {
+void Memory::WriteDataInternal(const void* buffer, const std::vector<int64_t>& offsets, size_t bufferSize) {
     assert(bufferSize > 0);
     if (!_handle) return;
     if (offsets.empty() || offsets[0] == 0) return; // Empty offset path passed in.
@@ -336,16 +339,16 @@ void Memory::WriteDataInternal(const void* buffer, const std::vector<__int64>& o
     }
 }
 
-uintptr_t Memory::ComputeOffset(std::vector<__int64> offsets, bool absolute) {
+uintptr_t Memory::ComputeOffset(std::vector<int64_t> offsets, bool absolute) {
     assert(offsets.size() > 0);
     assert(offsets.front() != 0);
 
     // Leave off the last offset, since it will be either read/write, and may not be of type uintptr_t.
-    const __int64 final_offset = offsets.back();
+    const int64_t final_offset = offsets.back();
     offsets.pop_back();
 
     uintptr_t cumulativeAddress = (absolute ? 0 : _baseAddress);
-    for (const __int64 offset : offsets) {
+    for (const int64_t offset : offsets) {
         cumulativeAddress += offset;
 
         // If the address was already computed, continue to the next offset.

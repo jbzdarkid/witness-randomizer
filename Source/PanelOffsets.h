@@ -4,79 +4,200 @@
 // They are accurate for the latest Steam version, as well as (I'm pretty sure) the Epic & GoG versions.
 // They *NOT* accurate for the legacy Steam version(s).
 
-constexpr auto BOAT_DELTA_SPEED = 0xD4;
-#define POSITION 0x24
-#define SCALE 0x30
-#define ORIENTATION 0x34
-#define MESH 0x60
-#define PATH_COLOR 0xC0 
-#define REFLECTION_PATH_COLOR 0xD0 
-#define DOT_COLOR 0xF0 
-#define ACTIVE_COLOR 0x100 
-#define BACKGROUND_REGION_COLOR 0x110 
-#define SUCCESS_COLOR_A 0x120 
-#define SUCCESS_COLOR_B 0x130 
-#define STROBE_COLOR_A 0x140 
-#define STROBE_COLOR_B 0x150 
-#define ERROR_COLOR 0x160 
-#define VIDEO_STATUS_COLOR 0x170
-#define PATTERN_POINT_COLOR 0x180 
-#define PATTERN_POINT_COLOR_A 0x190 
-#define PATTERN_POINT_COLOR_B 0x1A0 
-#define SYMBOL_A 0x1B0 
-#define SYMBOL_B 0x1C0 
-#define SYMBOL_C 0x1D0 
-#define SYMBOL_D 0x1E0 
-#define SYMBOL_E 0x1F0 
-#define PUSH_SYMBOL_COLORS 0x200 
-#define OUTER_BACKGROUND 0x204 
-#define OUTER_BACKGROUND_MODE 0x214 
-#define TRACED_EDGES 0x228 
-#define TRACED_EDGE_DATA 0x230 
-#define AUDIO_PREFIX 0x270 
-#define SOLVED 0x298
-#define POWER 0x2A0 
-#define TARGET 0x2B4 
-#define POWER_OFF_ON_FAIL 0x2B8
-#define IS_CYLINDER 0x2F4
-#define CYLINDER_Z0 0x2F8
-#define CYLINDER_Z1 0x2FC
-#define CYLINDER_RADIUS 0x300
-#define PATTERN_SCALE 0x338
-#define CURSOR_SPEED_SCALE 0x350 
-#define NEEDS_REDRAW 0x37C
-#define SPECULAR_ADD 0x38C
-#define SPECULAR_POWER 0x390
-#define PATH_WIDTH_SCALE 0x39C 
-#define STARTPOINT_SCALE 0x3A0 
-#define NUM_DOTS 0x3B4 
-#define NUM_CONNECTIONS 0x3B8 
-#define MAX_BROADCAST_DISTANCE 0x3BC
-#define DOT_POSITIONS 0x3C0 
-#define DOT_FLAGS 0x3C8 
-#define DOT_CONNECTION_A 0x3D0 
-#define DOT_CONNECTION_B 0x3D8 
-#define RANDOMIZE_ON_POWER_ON 0x3E0 
-#define DECORATIONS 0x418 
-#define DECORATION_FLAGS 0x420 
-#define DECORATION_COLORS 0x428 
-#define NUM_DECORATIONS 0x430 
-#define REFLECTION_DATA 0x438 
-#define GRID_SIZE_X 0x440 
-#define GRID_SIZE_Y 0x444 
-#define STYLE_FLAGS 0x448 
-#define SEQUENCE_LEN 0x454 
-#define SEQUENCE 0x458 
-#define DOT_SEQUENCE_LEN 0x460 
-#define DOT_SEQUENCE 0x468 
-#define DOT_SEQUENCE_LEN_REFLECTION 0x470 
-#define DOT_SEQUENCE_REFLECTION 0x478 
-#define NUM_COLORED_REGIONS 0x498 
-#define COLORED_REGIONS 0x4A0 
-#define PANEL_TARGET 0x4A8 
-#define SPECULAR_TEXTURE 0x4D0 
-#define CABLE_TARGET_2 0xD0
-#define AUDIO_LOG_NAME 0x0
-#define OPEN_RATE 0xE0
-#define METADATA 0x13A // sizeof(short)
-#define HOTEL_EP_NAME 0x51E340
+constexpr int PANEL_ID = 0x10; // int
+constexpr int PORTABLE_FLAGS = 0x14; // short
+constexpr int REVISION_NUMBER = 0x16; // short
+constexpr int ENTITY_MANAGER = 0x18; // long
+constexpr int ENTITY_FLAGS = 0x20; // int
+constexpr int POSITION = 0x24; // float[3]
+constexpr int SCALE = 0x30; // float
+constexpr int ORIENTATION = 0x34; // float[4]
+constexpr int BOUNDING_RADIUS = 0x44; // float
+constexpr int BOUNDING_CENTER = 0x48; // float[3]
+constexpr int GROUP_ID = 0x54; // int
+constexpr int PANEL_NAME = 0x58; // char*
+constexpr int MESH = 0x60; // Mesh*
+constexpr int LIGHTMAP_TABLE = 0x68; // Lightmap_Table*
+constexpr int ANIMATOR = 0x70; // Mesh_Animator*
+constexpr int MOUNT_BONE_NAME = 0x78; // char*
+constexpr int MOUNT_PARENT_ID = 0x80; // int
+constexpr int MOUNT_POSITION = 0x84; // float[3]
+constexpr int MOUNT_SCALE = 0x90; // float
+constexpr int MOUNT_ORIENTATION = 0x94; // float[4]
+constexpr int MOUNT_DEPTH = 0xA4; // short
+constexpr int MOUNT_BONE_INDEX = 0xA6; // short
+constexpr int CLUSTER_ID = 0xA8; // int
+constexpr int RUNTIME_ONLY_FLAGS = 0xAC; // int
+constexpr int ENTITY_TREE_NODE_IDX = 0xB0; // int
+constexpr int LOD_DISTANCE = 0xB4; // float
+constexpr int DISPLAY_ID = 0xB8; // int
+constexpr int UNUSED1 = 0xBC; // int
+constexpr int PATH_COLOR = 0xC0; // float[4]
+constexpr int REFLECTION_PATH_COLOR = 0xD0; // float[4]
+constexpr int DEPRECATED_FINISHED_PATH_COLOR = 0xE0; // float[4]
+constexpr int DOT_COLOR = 0xF0; // float[4]
+constexpr int ACTIVE_COLOR = 0x100; // float[4]
+constexpr int BACKGROUND_REGION_COLOR = 0x110; // float[4]
+constexpr int SUCCESS_COLOR_A = 0x120; // float[4]
+constexpr int SUCCESS_COLOR_B = 0x130; // float[4]
+constexpr int STROBE_COLOR_A = 0x140; // float[4]
+constexpr int STROBE_COLOR_B = 0x150; // float[4]
+constexpr int ERROR_COLOR = 0x160; // float[4]
+constexpr int VIDEO_STATUS_COLOR = 0x170; // float[4]
+constexpr int PATTERN_POINT_COLOR = 0x180; // float[4]
+constexpr int PATTERN_POINT_COLOR_A = 0x190; // float[4]
+constexpr int PATTERN_POINT_COLOR_B = 0x1A0; // float[4]
+constexpr int SYMBOL_A = 0x1B0; // float[4]
+constexpr int SYMBOL_B = 0x1C0; // float[4]
+constexpr int SYMBOL_C = 0x1D0; // float[4]
+constexpr int SYMBOL_D = 0x1E0; // float[4]
+constexpr int SYMBOL_E = 0x1F0; // float[4]
+constexpr int PUSH_SYMBOL_COLORS = 0x200; // int
+constexpr int OUTER_BACKGROUND = 0x204; // float[4]
+constexpr int OUTER_BACKGROUND_MODE = 0x214; // int
+constexpr int TRACED_EDGES_COUNT = 0x228; // int
+constexpr int TRACED_EDGES_MAX = 0x22C; // int
+constexpr int TRACED_EDGES_DATA = 0x230; // Traced_Edge*
+constexpr int MESH_NAME = 0x238; // char*
+constexpr int BACKING_TEXTURE_NAME = 0x240; // char*
+constexpr int OFF_TEXTURE_NAME = 0x248; // char*
+constexpr int SCANLINE_TEXTURE_NAME = 0x250; // char*
+constexpr int OVERRIDE_ENV_MAP_NAME = 0x258; // char*
+constexpr int SUCCESS_SOUND_NAME = 0x260; // char*
+constexpr int RATTLE_SOUND_NAME = 0x268; // char*
+constexpr int AUDIO_PREFIX = 0x270; // char*
+constexpr int FLASH_T = 0x278; // float
+constexpr int FLASH_T_MAX = 0x27C; // float
+constexpr int FLASH_MODE = 0x280; // int
+constexpr int DOTS_FLASHING = 0x284; // int
+constexpr int DOT_FLASH_T = 0x288; // float
+constexpr int DOT_FLASH_T_MAX = 0x28C; // float
+constexpr int SOLVED_T = 0x290; // float
+constexpr int SOLVED_T_TARGET = 0x294; // float
+constexpr int HAS_EVER_BEEN_SOLVED = 0x298; // int
+constexpr int DON_DT = 0x29C; // float
+constexpr int ON_T = 0x2A0; // float
+constexpr int ON_T_TARGET = 0x2A4; // float
+constexpr int GESTURE_FINISHED_T = 0x2A8; // float
+constexpr int GESTURE_FINISHED_T_TARGET = 0x2AC; // float
+constexpr int GESTURE_FINISHED_TIME = 0x2B0; // float
+constexpr int ID_TO_POWER = 0x2B4; // int
+constexpr int POWER_OFF_ON_FAIL = 0x2B8; // int
+constexpr int MY_MULTIPANEL = 0x2BC; // int
+constexpr int MY_BRIDGE = 0x2C0; // int
+constexpr int MY_LANDING_SIGNAL = 0x2C4; // int
+constexpr int POWERED_BY = 0x2C8; // int
+constexpr int MANUAL_PREV_ID = 0x2CC; // int
+constexpr int MANUAL_NEXT_ID = 0x2D0; // int
+constexpr int EXTRA_ATTRACT_DIST = 0x2D4; // float
+constexpr int PANEL_CHECKSUM = 0x2D8; // int
+constexpr int PANEL_FOCUS_POINT = 0x2DC; // float[3]
+constexpr int PANEL_NORMAL = 0x2E8; // float[3]
+constexpr int IS_CYLINDER = 0x2F4; // int
+constexpr int CYLINDER_Z0 = 0x2F8; // float
+constexpr int CYLINDER_Z1 = 0x2FC; // float
+constexpr int CYLINDER_RADIUS = 0x300; // float
+constexpr int UV_TO_WORLD_SCALE = 0x304; // float
+constexpr int ERASER_STATUS_ACTIVE = 0x308; // int
+constexpr int ERASER_STATUS_FADE_T = 0x30C; // float
+constexpr int ERASER_STATUS_TIME_TO_REJUDGE = 0x310; // float
+constexpr int ERASED_DECORATIONS_COUNT = 0x318; // int
+constexpr int ERASED_DECORATIONS_MAX = 0x31C; // int
+constexpr int ERASED_DECORATIONS_DATA = 0x320; // int*
+constexpr int ERASED_DOTS_COUNT = 0x328; // int
+constexpr int ERASED_DOTS_MAX = 0x32C; // int
+constexpr int ERASED_DOTS_DATA = 0x330; // int*
+constexpr int PATTERN_SCALE = 0x338; // float
+constexpr int SYMBOL_SCALE = 0x33C; // float
+constexpr int INITIAL_DOTS_SIZE = 0x340; // float
+constexpr int ACCEPT_ANY_HIT = 0x344; // int
+constexpr int RAY_SHORTENING = 0x348; // float
+constexpr int COVERT = 0x34C; // int
+constexpr int CURSOR_SPEED_SCALE = 0x350; // float
+constexpr int SOLVABLE_FROM_BEHIND = 0x354; // int
+constexpr int VOLUME_SCALE = 0x358; // float
+constexpr int SCINTILLATE_STARTPOINTS_ON_T = 0x35C; // float
+constexpr int SCINTILLATE_STARTPOINTS_ON_T_TARGET = 0x360; // float
+constexpr int SCINTILLATE_ENDPOINTS_ON_T = 0x364; // float
+constexpr int SCINTILLATE_ENDPOINTS_ON_T_TARGET = 0x368; // float
+constexpr int SCINTILLATE_TIME = 0x36C; // float
+constexpr int SCINTILLATE_CYCLE_COUNT = 0x370; // int
+constexpr int SCINTILLATE_AUDIO_COUNT = 0x374; // int
+constexpr int POINTS_OCCUPIED_BY_PRESSURE_PLATES = 0x378; // int
+constexpr int NEEDS_REDRAW = 0x37C; // int
+constexpr int IGNORE_OCCLUSION = 0x380; // int
+constexpr int STASHED_GIANT_FLOOR_SHAPE = 0x384; // int
+constexpr int EXTRA_EMISSIVE = 0x388; // float
+constexpr int SPECULAR_ADD = 0x38C; // int
+constexpr int SPECULAR_POWER = 0x390; // int
+constexpr int FILTERED_ENV_MAP = 0x394; // int
+constexpr int USE_ENV_MAP = 0x398; // int
+constexpr int PATH_WIDTH_SCALE = 0x39C; // float
+constexpr int STARTPOINT_SCALE = 0x3A0; // float
+constexpr int BACKFACE_TRACING_OFFSET = 0x3A4; // float
+constexpr int VIGNETTE_INTENSITY = 0x3A8; // float
+constexpr int BROKENNESS = 0x3AC; // int
+constexpr int UNKNOWN = 0x3B0; // float
+constexpr int NUM_DOTS = 0x3B4; // int
+constexpr int NUM_CONNECTIONS = 0x3B8; // int
+constexpr int MAX_BROADCAST_DISTANCE = 0x3BC; // float
+constexpr int DOT_POSITIONS = 0x3C0; // int*
+constexpr int DOT_FLAGS = 0x3C8; // int*
+constexpr int DOT_CONNECTION_A = 0x3D0; // int*
+constexpr int DOT_CONNECTION_B = 0x3D8; // int*
+constexpr int RANDOMIZE_ON_POWER_ON = 0x3E0; // int
+constexpr int UNUSED2 = 0x3E4; // int
+constexpr int DOT_TIME_TAGS = 0x3E8; // float*
+constexpr int DOT_TIME_TAGS_INTERPOLATED = 0x3F0; // float*
+constexpr int CONTROLLED_BY_PRESSURE_PLATES = 0x3F8; // int
+constexpr int UNUSED3 = 0x3FC; // int
+constexpr int UNCONSTRAINED_TRIANGLES_COUNT = 0x400; // int
+constexpr int UNCONSTRAINED_TRIANGLES_MAX = 0x404; // int
+constexpr int UNCONSTRAINED_TRIANGLES_DATA = 0x408; // Unconstrained_Triangle*
+constexpr int DOT_RESULT_FLAGS = 0x410; // int*
+constexpr int DECORATIONS = 0x418; // int*
+constexpr int DECORATION_FLAGS = 0x420; // int*
+constexpr int DECORATION_COLORS = 0x428; // int*
+constexpr int NUM_DECORATIONS = 0x430; // int
+constexpr int REFLECTION_DATA = 0x438; // int*
+constexpr int GRID_SIZE_X = 0x440; // int
+constexpr int GRID_SIZE_Y = 0x444; // int
+constexpr int STYLE_FLAGS = 0x448; // int
+constexpr int WAS_EDITED = 0x44C; // int
+constexpr int PATTERN_UPDATED = 0x450; // int
+constexpr int SEQUENCE_LEN = 0x454; // int
+constexpr int SEQUENCE = 0x458; // int*
+constexpr int DOT_SEQUENCE_LEN = 0x460; // int
+constexpr int UNUSED4 = 0x464; // int
+constexpr int DOT_SEQUENCE = 0x468; // int*
+constexpr int DOT_SEQUENCE_LEN_REFLECTION = 0x470; // int
+constexpr int UNUSED5 = 0x474; // int
+constexpr int DOT_SEQUENCE_REFLECTION = 0x478; // int*
+constexpr int COLOR_CYCLE_INDEX = 0x480; // int
+constexpr int UNUSED6 = 0x484; // int
+constexpr int AUXILIARY_TRACED_EDGES_COUNT = 0x488; // int
+constexpr int AUXILIARY_TRACED_EDGES_MAX = 0x48C; // int
+constexpr int AUXILIARY_TRACED_EDGES_DATA = 0x490; // Traced_Edge*
+constexpr int NUM_COLORED_REGIONS = 0x498; // int
+constexpr int UNUSED7 = 0x49C; // int
+constexpr int COLORED_REGIONS = 0x4A0; // Colored_Region*
+constexpr int PANEL_TARGET = 0x4A8; // Panel_Target*
+constexpr int BACKING_TEXTURE = 0x4B0; // Texture_Map*
+constexpr int OFF_TEXTURE = 0x4B8; // Texture_Map*
+constexpr int SCANLINE_TEXTURE = 0x4C0; // Texture_Map*
+constexpr int OVERRIDE_ENV_MAP = 0x4C8; // Texture_Map*
+constexpr int SPECULAR_TEXTURE = 0x4D0; // Texture_Map*
+constexpr int CACHED_ENV_MAP_PROBE = 0x4D8; // Entity*
+constexpr int MAX_DOTS = 0x4E0; // int
+constexpr int MAX_CONNECTIONS = 0x4E4; // int
+constexpr int POWERED_SUBPANEL_REGIONS_COUNT = 0x4E8; // int
+constexpr int POWERED_SUBPANEL_REGIONS_MAX = 0x4EC; // int
+constexpr int POWERED_SUBPANEL_REGIONS_DATA = 0x4F0; // float*
+constexpr int NEEDS_JUNCTION_UPDATE = 0x4FC;
+
+// These are other misc constants (which are often useful). I have prefixed them with their entity type, to avoid confusion.
+constexpr int DOOR_OPEN_RATE = 0xE0; // float
+constexpr int CABLE_TARGET_2 = 0xD0; // int
+constexpr int AUDIO_LOG_NAME = 0x0; // char*
+constexpr int BOAT_DELTA_SPEED = 0xD4; // 
+
