@@ -84,7 +84,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
@@ -101,7 +101,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
@@ -119,7 +119,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -140,7 +140,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -161,39 +161,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ChallengeRandomizer.h" />
-    <ClInclude Include="json.hpp" />
     <ClInclude Include="Memory.h" />
-    <ClInclude Include="MemoryException.h" />
-    <ClInclude Include="Panels_.h" />
+    <ClInclude Include="PanelOffsets.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Puzzle.h" />
-    <ClInclude Include="Panels.h" />
-    <ClInclude Include="PuzzleSerializer.h" />
-    <ClInclude Include="Random.h" />
     <ClInclude Include="Randomizer.h" />
-    <ClInclude Include="Randomizer2.h" />
-    <ClInclude Include="Randomizer2Core.h" />
-    <ClInclude Include="Solver.h" />
-    <ClInclude Include="Validator.h" />
+    <ClInclude Include="ThreadSafeAddressMap.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ChallengeRandomizer.cpp" />
     <ClCompile Include="Memory.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Puzzle.cpp" />
-    <ClCompile Include="PuzzleSerializer.cpp" />
-    <ClCompile Include="Random.cpp" />
     <ClCompile Include="Randomizer.cpp" />
-    <ClCompile Include="Randomizer2.cpp" />
-    <ClCompile Include="Randomizer2Core.cpp" />
-    <ClCompile Include="Solver.cpp" />
-    <ClCompile Include="Validator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

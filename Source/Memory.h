@@ -1,100 +1,104 @@
 #pragma once
+#include "ThreadSafeAddressMap.h"
 
-extern int GLOBALS, POSITION, ORIENTATION, PATH_COLOR, REFLECTION_PATH_COLOR, DOT_COLOR, ACTIVE_COLOR, BACKGROUND_REGION_COLOR, SUCCESS_COLOR_A, SUCCESS_COLOR_B, STROBE_COLOR_A, STROBE_COLOR_B, ERROR_COLOR, PATTERN_POINT_COLOR, PATTERN_POINT_COLOR_A, PATTERN_POINT_COLOR_B, SYMBOL_A, SYMBOL_B, SYMBOL_C, SYMBOL_D, SYMBOL_E, PUSH_SYMBOL_COLORS, OUTER_BACKGROUND, OUTER_BACKGROUND_MODE, TRACED_EDGES, AUDIO_PREFIX, POWER, TARGET, POWER_OFF_ON_FAIL, IS_CYLINDER, CYLINDER_Z0, CYLINDER_Z1, CYLINDER_RADIUS, CURSOR_SPEED_SCALE, NEEDS_REDRAW, SPECULAR_ADD, SPECULAR_POWER, PATH_WIDTH_SCALE, STARTPOINT_SCALE, NUM_DOTS, NUM_CONNECTIONS, MAX_BROADCAST_DISTANCE, DOT_POSITIONS, DOT_FLAGS, DOT_CONNECTION_A, DOT_CONNECTION_B, DECORATIONS, DECORATION_FLAGS, DECORATION_COLORS, NUM_DECORATIONS, REFLECTION_DATA, GRID_SIZE_X, GRID_SIZE_Y, STYLE_FLAGS, SEQUENCE_LEN, SEQUENCE, DOT_SEQUENCE_LEN, DOT_SEQUENCE, DOT_SEQUENCE_LEN_REFLECTION, DOT_SEQUENCE_REFLECTION, NUM_COLORED_REGIONS, COLORED_REGIONS, PANEL_TARGET, SPECULAR_TEXTURE, CABLE_TARGET_2, AUDIO_LOG_NAME, OPEN_RATE, METADATA, HOTEL_EP_NAME;
+#include <functional>
+#include <map>
+#include <memory>
 
-enum class ProcStatus {
+enum ProcStatus : WPARAM {
     NotRunning,
+    Started,
     Running,
-    NewGame
+    Reload,
+    NewGame,
+    Stopped
 };
 
-using byte = unsigned char;
-
-// https://github.com/erayarslan/WriteProcessMemory-Example
-// http://stackoverflow.com/q/32798185
-// http://stackoverflow.com/q/36018838
-// http://stackoverflow.com/q/1387064
-// https://github.com/fkloiber/witness-trainer/blob/master/source/foreign_process_memory.cpp
 class Memory final : public std::enable_shared_from_this<Memory> {
 public:
     Memory(const std::wstring& processName);
     ~Memory();
-    void StartHeartbeat(HWND window, WPARAM wParam, std::chrono::milliseconds beat = std::chrono::milliseconds(1000));
+    void StartHeartbeat(HWND window, UINT message);
+    void StopHeartbeat();
+    void BringToFront();
+    bool IsForeground();
+
+    static HWND GetProcessHwnd(DWORD pid);
 
     Memory(const Memory& memory) = delete;
     Memory& operator=(const Memory& other) = delete;
 
-    template <class T>
-    std::vector<T> ReadArray(int id, int offset, int size) {
-        return ReadData<T>({GLOBALS, 0x18, id*8, offset, 0}, size);
-    }
+    // bytesToEOL is the number of bytes from the given index to the end of the opcode.
+    // Usually, the target address is last 4 bytes, since it's the destination of the call.
+    static int64_t ReadStaticInt(int64_t offset, int index, const std::vector<uint8_t>& data, size_t bytesToEOL = 4);
+    using ScanFunc = std::function<void(int64_t offset, int index, const std::vector<uint8_t>& data)>;
+    using ScanFunc2 = std::function<bool(int64_t offset, int index, const std::vector<uint8_t>& data)>;
+    void AddSigScan(const std::vector<uint8_t>& scanBytes, const ScanFunc& scanFunc);
+    void AddSigScan2(const std::vector<uint8_t>& scanBytes, const ScanFunc2& scanFunc);
+    [[nodiscard]] size_t ExecuteSigScans();
 
-    template <class T>
-    void WriteArray(int id, int offset, const std::vector<T>& data) {
-        WriteData({GLOBALS, 0x18, id*8, offset, 0}, data);
-    }
-
-    template <class T>
-    void WriteNewArray(int id, int offset, const std::vector<T>& data) {
-        uintptr_t addr = (uintptr_t)VirtualAllocEx(_handle, nullptr, data.size() * sizeof(T), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-        _allocations.emplace_back(addr);
-        WriteEntityData<uintptr_t>(id, offset, {addr});
-        WriteArray(id, offset, data);
-    }
-
-    template <class T>
-    std::vector<T> ReadEntityData(int id, int offset, size_t size) {
-        return ReadData<T>({GLOBALS, 0x18, id*8, offset}, size);
-    }
-
-    template <class T>
-    void WriteEntityData(int id, int offset, const std::vector<T>& data) {
-        WriteData({GLOBALS, 0x18, id*8, offset}, data);
-    }
-
-    void AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc);
-    int ExecuteSigScans();
-
-private:
     template<class T>
-    std::vector<T> ReadData(const std::vector<int>& offsets, size_t numItems) {
-        assert(numItems);
-        std::vector<T> data;
-        data.resize(numItems);
-        if (!ReadProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * numItems, nullptr)) {
-            MEMORY_THROW("Failed to read data.", offsets, numItems);
-        }
+    inline std::vector<T> ReadData(const std::vector<int64_t>& offsets, size_t numItems) {
+        std::vector<T> data(numItems);
+        if (!_handle) return data;
+        ReadDataInternal(&data[0], ComputeOffset(offsets), numItems * sizeof(T));
         return data;
     }
+    template<class T>
+    inline std::vector<T> ReadAbsoluteData(const std::vector<int64_t>& offsets, size_t numItems) {
+        std::vector<T> data(numItems);
+        if (!_handle) return data;
+        ReadDataInternal(&data[0], ComputeOffset(offsets, true), numItems * sizeof(T));
+        return data;
+    }
+    std::string ReadString(std::vector<int64_t> offsets);
 
     template <class T>
-    void WriteData(const std::vector<int>& offsets, const std::vector<T>& data) {
-        assert(data.size());
-        if (!WriteProcessMemory(_handle, ComputeOffset(offsets), &data[0], sizeof(T) * data.size(), nullptr)) {
-            MEMORY_THROW("Failed to write data.", offsets, data.size());
-        }
+    inline void WriteData(const std::vector<int64_t>& offsets, const std::vector<T>& data) {
+        WriteDataInternal(&data[0], offsets, sizeof(T) * data.size());
     }
 
-    void Heartbeat(HWND window, WPARAM wParam);
-    bool Initialize();
-    void* ComputeOffset(std::vector<int> offsets);
-    void LoadPanelOffsets();
+private:
+    void Heartbeat(HWND window, UINT message);
+    void Initialize();
+    static void SetCurrentThreadName(const wchar_t* name);
+    static void DebugPrint(const std::string& text);
+    static void DebugPrint(const std::wstring& text);
 
-    int _previousFrame = 0;
+    void ReadDataInternal(void* buffer, const uintptr_t computedOffset, size_t bufferSize);
+    void WriteDataInternal(const void* buffer, const std::vector<int64_t>& offsets, size_t bufferSize);
+    uintptr_t ComputeOffset(std::vector<int64_t> offsets, bool absolute = false);
+
+    // Parts of the constructor / StartHeartbeat
+    std::wstring _processName;
     bool _threadActive = false;
     std::thread _thread;
-    std::wstring _processName;
-    std::map<uintptr_t, uintptr_t> _computedAddresses;
-    uintptr_t _baseAddress = 0;
-    HANDLE _handle = nullptr;
-    std::vector<uintptr_t> _allocations;
-    struct SigScan {
-        std::function<void(int)> scanFunc;
-        bool found;
-    };
-    std::map<std::vector<byte>, SigScan> _sigScans;
 
-    friend class Temp;
-    friend class ChallengeRandomizer;
-    friend class Randomizer;
+    // Parts of Initialize / heartbeat
+    HANDLE _handle = nullptr;
+    DWORD _pid = 0;
+    HWND _hwnd = NULL;
+    uintptr_t _baseAddress = 0;
+    uintptr_t _endOfModule = 0;
+    int64_t _globals = 0;
+    int _loadCountOffset = 0;
+    int64_t _previousEntityManager = 0;
+    int _previousLoadCount = 0;
+    ProcStatus _nextStatus = ProcStatus::Started;
+    bool _trainerHasStarted = false;
+
+#ifdef NDEBUG
+    static constexpr std::chrono::milliseconds s_heartbeat = std::chrono::milliseconds(100);
+#else // Induce more stress in debug, to catch errors more easily.
+    static constexpr std::chrono::milliseconds s_heartbeat = std::chrono::milliseconds(10);
+#endif
+
+    // Parts of Read / Write / Sigscan
+    ThreadSafeAddressMap _computedAddresses;
+
+    struct SigScan {
+        bool found = false;
+        ScanFunc2 scanFunc;
+    };
+    std::map<std::vector<uint8_t>, SigScan> _sigScans;
 };

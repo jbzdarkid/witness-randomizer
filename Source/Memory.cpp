@@ -1,343 +1,406 @@
 #include "pch.h"
-#include "Memory.h"
+#include "Windows.h"
 #include <psapi.h>
 #include <tlhelp32.h>
 
-#undef PROCESSENTRY32
-#undef Process32Next
+#include "Memory.h"
 
 Memory::Memory(const std::wstring& processName) : _processName(processName) {}
 
 Memory::~Memory() {
-    if (_threadActive) {
-        _threadActive = false;
-        _thread.join();
-    }
+    StopHeartbeat();
+    if (_thread.joinable()) _thread.join();
 
     if (_handle != nullptr) {
-        for (uintptr_t addr : _allocations) VirtualFreeEx(_handle, (void*)addr, 0, MEM_RELEASE);
         CloseHandle(_handle);
     }
 }
 
-void Memory::StartHeartbeat(HWND window, WPARAM wParam, std::chrono::milliseconds beat) {
+void Memory::StartHeartbeat(HWND window, UINT message) {
     if (_threadActive) return;
     _threadActive = true;
-    _thread = std::thread([sharedThis = shared_from_this(), window, wParam, beat]{
+    _thread = std::thread([sharedThis = shared_from_this(), window, message]{
+        SetCurrentThreadName(L"Heartbeat");
+
+        // Run the first heartbeat before setting trainerHasStarted, to detect if we are attaching to a game already in progress.
+        sharedThis->Heartbeat(window, message);
+        sharedThis->_trainerHasStarted = true;
+
         while (sharedThis->_threadActive) {
-            sharedThis->Heartbeat(window, wParam);
-            std::this_thread::sleep_for(beat);
+            std::this_thread::sleep_for(s_heartbeat);
+            sharedThis->Heartbeat(window, message);
         }
     });
     _thread.detach();
 }
 
-void Memory::Heartbeat(HWND window, WPARAM wParam) {
-    if (!_handle && !Initialize()) {
-        // Couldn't initialize, definitely not running
-        PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::NotRunning);
-        return;
+void Memory::StopHeartbeat() {
+    _threadActive = false;
+}
+
+void Memory::BringToFront() {
+    ShowWindow(_hwnd, SW_RESTORE); // This handles fullscreen mode
+    SetForegroundWindow(_hwnd); // This handles windowed mode
+}
+
+bool Memory::IsForeground() {
+    return GetForegroundWindow() == _hwnd;
+}
+
+HWND Memory::GetProcessHwnd(DWORD pid) {
+    struct Data {
+        DWORD pid;
+        HWND hwnd;
+    };
+    Data data = Data{pid, NULL};
+
+    BOOL result = EnumWindows([](HWND hwnd, LPARAM data) {
+        DWORD pid;
+        GetWindowThreadProcessId(hwnd, &pid);
+        DWORD targetPid = reinterpret_cast<Data*>(data)->pid;
+        if (pid == targetPid) {
+            reinterpret_cast<Data*>(data)->hwnd = hwnd;
+            return FALSE; // Stop enumerating
+        }
+        return TRUE; // Continue enumerating
+    }, (LPARAM)&data);
+
+    return data.hwnd;
+}
+
+void Memory::Heartbeat(HWND window, UINT message) {
+    if (!_handle) {
+        Initialize(); // Initialize promises to set _handle only on success
+        if (!_handle) {
+            // Couldn't initialize, definitely not running
+            PostMessage(window, message, ProcStatus::NotRunning, NULL);
+            return;
+        }
     }
 
     DWORD exitCode = 0;
-    assert(_handle);
     GetExitCodeProcess(_handle, &exitCode);
     if (exitCode != STILL_ACTIVE) {
-        // Process has exited, clean up.
-        _computedAddresses.clear();
-        _handle = NULL;
-        PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::NotRunning);
+        // Process has exited, clean up. We only need to reset _handle here -- its validity is linked to all other class members.
+        _computedAddresses.Clear();
+        _handle = nullptr;
+
+        _nextStatus = ProcStatus::Started;
+        PostMessage(window, message, ProcStatus::Stopped, NULL);
+        // Wait for the process to fully close; otherwise we might accidentally re-attach to it.
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         return;
     }
 
-    int currentFrame = 0;
-    if (GLOBALS == 0x5B28C0) {
-        int currentFrame = ReadData<int>({0x5BE3B0}, 1)[0];
-    } else if (GLOBALS == 0x62D0A0) {
-        int currentFrame = ReadData<int>({0x63954C}, 1)[0];
+    __int64 entityManager = ReadData<__int64>({_globals}, 1)[0];
+    if (entityManager == 0) {
+        // Game hasn't loaded yet, we're still sitting on the launcher
+        PostMessage(window, message, ProcStatus::NotRunning, NULL);
+        return;
+    }
+
+    // To avoid obtaining the HWND for the launcher, we wait to determine HWND until after the entity manager is allocated (the main game has started).
+    if (_hwnd == NULL) {
+        _hwnd = GetProcessHwnd(_pid);
     } else {
+        // Under some circumstances the window can expire? Or the game re-allocates it? I have no idea.
+        // Anyways, we check to see if the title is wrong, and if so, search for the window again.
+        constexpr int TITLE_SIZE = sizeof(L"The Witness") / sizeof(wchar_t);
+        wchar_t title[TITLE_SIZE] = {L'\0'};
+        GetWindowTextW(_hwnd, title, TITLE_SIZE);
+        if (wcsncmp(title, L"The Witness", TITLE_SIZE) == 0) _hwnd = GetProcessHwnd(_pid);
+    }
+
+    if (_hwnd == NULL) {
+        DebugPrint("Couldn't find the HWND for the game");
         assert(false);
         return;
     }
 
-    int frameDelta = currentFrame - _previousFrame;
-    _previousFrame = currentFrame;
-    if (frameDelta < 0 && currentFrame < 250) {
-        // Some addresses (e.g. Entity Manager) may get re-allocated on newgame.
-        _computedAddresses.clear();
-        PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::NewGame);
+    // New game causes the entity manager to re-allocate
+    if (entityManager != _previousEntityManager) {
+        _previousEntityManager = entityManager;
+        _computedAddresses.Clear();
+    }
+
+    // Loading a game causes entities to be shuffled
+    int loadCount = ReadAbsoluteData<int>({entityManager, _loadCountOffset}, 1)[0];
+    if (_previousLoadCount != loadCount) {
+        _previousLoadCount = loadCount;
+        _computedAddresses.Clear();
+    }
+
+    int numEntities = ReadData<int>({_globals, 0x10}, 1)[0];
+    if (numEntities != 400'000) {
+        // New game is starting, do not take any actions.
+        _nextStatus = ProcStatus::NewGame;
         return;
     }
 
-    // TODO: Some way to return ProcStatus::Randomized vs ProcStatus::NotRandomized vs ProcStatus::DeRandomized;
+    uint8_t isLoading = ReadAbsoluteData<uint8_t>({entityManager, _loadCountOffset - 0x4}, 1)[0];
+    if (isLoading == 0x01) {
+        // Saved game is currently loading, do not take any actions.
+        _nextStatus = ProcStatus::Reload;
+        return;
+    }
 
-    PostMessage(window, WM_COMMAND, wParam, (LPARAM)ProcStatus::Running);
+    if (_trainerHasStarted == false) {
+        // If it's the first time we started, and the game appears to be running, return "Running" instead of "Started".
+        PostMessage(window, message, ProcStatus::Running, NULL);
+    } else {
+        // Else, report whatever status we last encountered.
+        PostMessage(window, message, _nextStatus, NULL);
+    }
+    _nextStatus = ProcStatus::Running;
 }
 
-[[nodiscard]]
-bool Memory::Initialize() {
+void Memory::Initialize() {
+    HANDLE handle = nullptr;
     // First, get the handle of the process
     PROCESSENTRY32W entry;
     entry.dwSize = sizeof(entry);
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     while (Process32NextW(snapshot, &entry)) {
         if (_processName == entry.szExeFile) {
-            _handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
+            _pid = entry.th32ProcessID;
+            handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, _pid);
             break;
         }
     }
-    if (!_handle) {
-        std::cerr << "Couldn't find " << _processName.c_str() << ", is it open?" << std::endl;
-        return false;
+    if (!handle || !_pid) {
+        // Game likely not opened yet. Don't spam the log.
+        _nextStatus = ProcStatus::Started;
+        return;
     }
+    DebugPrint(L"Found " + _processName + L": PID " + std::to_wstring(_pid));
 
-    // Next, get the process base address
-    DWORD numModules;
-    std::vector<HMODULE> moduleList(1024);
-    EnumProcessModulesEx(_handle, &moduleList[0], static_cast<DWORD>(moduleList.size()), &numModules, 3);
+    _hwnd = NULL; // Will be populated later.
 
-    std::wstring name(64, '\0');
-    for (DWORD i = 0; i < numModules / sizeof(HMODULE); i++) {
-        int length = GetModuleBaseNameW(_handle, moduleList[i], &name[0], static_cast<DWORD>(name.size()));
-        name.resize(length);
-        if (_processName == name) {
-            _baseAddress = (uintptr_t)moduleList[i];
-            break;
-        }
-    }
+    DWORD unused;
+    HMODULE modules[1];
+    EnumProcessModules(handle, &modules[0], sizeof(HMODULE), &unused);
+    MODULEINFO moduleInfo;
+    GetModuleInformation(handle, modules[0], &moduleInfo, sizeof(moduleInfo));
+
+    _baseAddress = reinterpret_cast<uint64_t>(moduleInfo.lpBaseOfDll);
+    _endOfModule = _baseAddress + moduleInfo.SizeOfImage;
     if (_baseAddress == 0) {
-        std::cerr << "Couldn't locate base address" << std::endl;
-        return false;
+        DebugPrint("Couldn't locate base address");
+        return;
     }
 
-    LoadPanelOffsets();
-    return true;
+    // Clear out any leftover sigscans from consumers (e.g. the trainer)
+    _sigScans.clear();
+
+    AddSigScan({0x74, 0x41, 0x48, 0x85, 0xC0, 0x74, 0x04, 0x48, 0x8B, 0x48, 0x10}, [&](__int64 offset, int index, const std::vector<uint8_t>& data) {
+        _globals = Memory::ReadStaticInt(offset, index + 0x14, data);
+    });
+
+    AddSigScan({0x01, 0x00, 0x00, 0x66, 0xC7, 0x87}, [&](__int64 offset, int index, const std::vector<uint8_t>& data) {
+        _loadCountOffset = *(int*)&data[index-1];
+    });
+
+    // This little song-and-dance is because we need _handle in order to execute sigscans.
+    // But, we use _handle to indicate success, so we need to reset it.
+    // Note that these sigscans are very lightweight -- they are *only* the scans required to handle loading.
+    _handle = handle;
+    size_t failedScans = ExecuteSigScans(); // Will DebugPrint the failed scans.
+    if (failedScans > 0) _handle = nullptr;
 }
 
-void Memory::AddSigScan(const std::vector<byte>& scanBytes, const std::function<void(int index)>& scanFunc)
-{
-    _sigScans[scanBytes] = {scanFunc, false};
+void Memory::SetCurrentThreadName(const wchar_t* name) {
+    HMODULE module = GetModuleHandleA("Kernel32.dll");
+    if (!module) return;
+
+    typedef HRESULT (WINAPI *TSetThreadDescription)(HANDLE, PCWSTR);
+    auto setThreadDescription = (TSetThreadDescription)GetProcAddress(module, "SetThreadDescription");
+    if (!setThreadDescription) return;
+
+    setThreadDescription(GetCurrentThread(), name);
 }
 
-int find(const std::vector<byte> &data, const std::vector<byte>& search, size_t startIndex = 0) {
-    for (size_t i=startIndex; i<data.size() - search.size(); i++) {
+// These functions are much more generic than this witness-specific implementation. As such, I'm keeping them somewhat separated.
+
+__int64 Memory::ReadStaticInt(__int64 offset, int index, const std::vector<uint8_t>& data, size_t bytesToEOL) {
+    // (address of next line) + (index interpreted as 4uint8_t int)
+    return offset + index + bytesToEOL + *(int*)&data[index];
+}
+
+// Small wrapper for non-failing scan functions
+void Memory::AddSigScan(const std::vector<uint8_t>& scanBytes, const ScanFunc& scanFunc) {
+    _sigScans[scanBytes] = {false, [scanFunc](__int64 offset, int index, const std::vector<uint8_t>& data) {
+        scanFunc(offset, index, data);
+        return true;
+    }};
+}
+
+void Memory::AddSigScan2(const std::vector<uint8_t>& scanBytes, const ScanFunc2& scanFunc) {
+    _sigScans[scanBytes] = {false, scanFunc};
+}
+
+int find(const std::vector<uint8_t>& data, const std::vector<uint8_t>& search) {
+    const uint8_t* dataBegin = &data[0];
+    const uint8_t* searchBegin = &search[0];
+    size_t maxI = data.size() - search.size();
+    size_t maxJ = search.size();
+
+    for (int i=0; i<maxI; i++) {
         bool match = true;
-        for (size_t j=0; j<search.size(); j++) {
-            if (data[i+j] == search[j]) {
+        for (size_t j=0; j<maxJ; j++) {
+            if (*(dataBegin + i + j) == *(searchBegin + j)) {
                 continue;
             }
             match = false;
             break;
         }
-        if (match) return static_cast<int>(i);
+        if (match) return i;
     }
     return -1;
 }
 
-int Memory::ExecuteSigScans()
-{
-    for (int i=0; i<0x200000; i+=0x1000) {
-        std::vector<byte> data = ReadData<byte>({i}, 0x1100);
+#define BUFFER_SIZE 0x10000 // 10 KB
+size_t Memory::ExecuteSigScans() {
+    size_t notFound = 0;
+    for (const auto& [_, sigScan] : _sigScans) if (!sigScan.found) notFound++;
+    std::vector<uint8_t> buff;
+    buff.resize(BUFFER_SIZE + 0x100); // padding in case the sigscan is past the end of the buffer
 
+    for (uintptr_t i = _baseAddress; i < _endOfModule; i += BUFFER_SIZE) {
+        SIZE_T numBytesWritten;
+        if (!ReadProcessMemory(_handle, reinterpret_cast<void*>(i), &buff[0], buff.size(), &numBytesWritten)) continue;
+        buff.resize(numBytesWritten);
         for (auto& [scanBytes, sigScan] : _sigScans) {
             if (sigScan.found) continue;
-            int index = find(data, scanBytes);
+            int index = find(buff, scanBytes);
             if (index == -1) continue;
-            sigScan.scanFunc(i + index);
-            sigScan.found = true;
+            sigScan.found = sigScan.scanFunc(i - _baseAddress, index, buff); // We're expecting i to be relative to the base address here.
+            if (sigScan.found) notFound--;
         }
+        if (notFound == 0) break;
     }
 
-    int notFound = 0;
-    for (auto it : _sigScans) {
-        if (it.second.found == false) notFound++;
+    if (notFound > 0) {
+        DebugPrint("Failed to find " + std::to_string(notFound) + " sigscans:");
+        for (const auto& [scanBytes, sigScan] : _sigScans) {
+            if (sigScan.found) continue;
+            std::stringstream ss;
+            for (const auto b : scanBytes) {
+                ss << "0x" << std::setw(2) << std::setfill('0') << std::hex << std::uppercase << static_cast<int16_t>(b) << ", ";
+            }
+            DebugPrint(ss.str());
+        }
+    } else {
+        DebugPrint("Found all sigscans!");
     }
+
+    _sigScans.clear();
     return notFound;
 }
 
-void* Memory::ComputeOffset(std::vector<int> offsets) {
-    // Leave off the last offset, since it will be either read/write, and may not be of type uintptr_t.
-    int final_offset = offsets.back();
-    offsets.pop_back();
-
-    uintptr_t cumulativeAddress = _baseAddress;
-    for (const int offset : offsets) {
-        cumulativeAddress += offset;
-
-        const auto search = _computedAddresses.find(cumulativeAddress);
-        // This is an issue with re-randomization. Always. Just disable it in debug mode!
-#ifdef NDEBUG
-        if (search == std::end(_computedAddresses)) {
-#endif
-            // If the address is not yet computed, then compute it.
-            uintptr_t computedAddress = 0;
-            if (!ReadProcessMemory(_handle, reinterpret_cast<LPVOID>(cumulativeAddress), &computedAddress, sizeof(uintptr_t), NULL)) {
-                MEMORY_THROW("Couldn't compute offset.", offsets);
-            }
-            if (computedAddress == 0) {
-                MEMORY_THROW("Attempted to derefence NULL while computing offsets.", offsets);
-            }
-            _computedAddresses[cumulativeAddress] = computedAddress;
-#ifdef NDEBUG
-        }
-#endif
-
-        cumulativeAddress = _computedAddresses[cumulativeAddress];
+// Technically this is ReadChar*, but this name makes more sense with the return type.
+std::string Memory::ReadString(std::vector<__int64> offsets) {
+    __int64 charAddr = ReadData<__int64>(offsets, 1)[0];
+    if (charAddr == 0) return ""; // Handle nullptr for strings
+    
+    std::vector<char> tmp;
+    auto nullTerminator = tmp.begin(); // Value is only for type information.
+    for (size_t maxLength = (1 << 6); maxLength < (1 << 10); maxLength *= 2) {
+        tmp = ReadAbsoluteData<char>({charAddr}, maxLength);
+        nullTerminator = std::find(tmp.begin(), tmp.end(), '\0');
+        // If a null terminator is found, we will strip any trailing data after it.
+        if (nullTerminator != tmp.end()) break;
     }
-    return reinterpret_cast<void*>(cumulativeAddress + final_offset);
+    return std::string(tmp.begin(), nullTerminator);
 }
 
-int GLOBALS, POSITION, ORIENTATION, PATH_COLOR, REFLECTION_PATH_COLOR, DOT_COLOR, ACTIVE_COLOR, BACKGROUND_REGION_COLOR, SUCCESS_COLOR_A, SUCCESS_COLOR_B, STROBE_COLOR_A, STROBE_COLOR_B, ERROR_COLOR, PATTERN_POINT_COLOR, PATTERN_POINT_COLOR_A, PATTERN_POINT_COLOR_B, SYMBOL_A, SYMBOL_B, SYMBOL_C, SYMBOL_D, SYMBOL_E, PUSH_SYMBOL_COLORS, OUTER_BACKGROUND, OUTER_BACKGROUND_MODE, TRACED_EDGES, AUDIO_PREFIX, POWER, TARGET, POWER_OFF_ON_FAIL, IS_CYLINDER, CYLINDER_Z0, CYLINDER_Z1, CYLINDER_RADIUS, CURSOR_SPEED_SCALE, NEEDS_REDRAW, SPECULAR_ADD, SPECULAR_POWER, PATH_WIDTH_SCALE, STARTPOINT_SCALE, NUM_DOTS, NUM_CONNECTIONS, MAX_BROADCAST_DISTANCE, DOT_POSITIONS, DOT_FLAGS, DOT_CONNECTION_A, DOT_CONNECTION_B, DECORATIONS, DECORATION_FLAGS, DECORATION_COLORS, NUM_DECORATIONS, REFLECTION_DATA, GRID_SIZE_X, GRID_SIZE_Y, STYLE_FLAGS, SEQUENCE_LEN, SEQUENCE, DOT_SEQUENCE_LEN, DOT_SEQUENCE, DOT_SEQUENCE_LEN_REFLECTION, DOT_SEQUENCE_REFLECTION, NUM_COLORED_REGIONS, COLORED_REGIONS, PANEL_TARGET, SPECULAR_TEXTURE, CABLE_TARGET_2, AUDIO_LOG_NAME, OPEN_RATE, METADATA, HOTEL_EP_NAME;
-
-void Memory::LoadPanelOffsets() {
-    AddSigScan({0x74, 0x41, 0x48, 0x85, 0xC0, 0x74, 0x04, 0x48, 0x8B, 0x48, 0x10}, [sharedThis = shared_from_this()](int index){
-        // (address of next line) + (value at index)
-        GLOBALS = index + 0x14 + 0x4 + sharedThis->ReadData<int>({index+0x14}, 1)[0];
-    });
-    ExecuteSigScans();
-
-    if (GLOBALS == 0x5B28C0) {
-        POSITION = 0x24;
-        ORIENTATION = 0x34;
-        PATH_COLOR = 0xC8;
-        REFLECTION_PATH_COLOR = 0xD8;
-        DOT_COLOR = 0xF8;
-        ACTIVE_COLOR = 0x108;
-        BACKGROUND_REGION_COLOR = 0x118;
-        SUCCESS_COLOR_A = 0x128;
-        SUCCESS_COLOR_B = 0x138;
-        STROBE_COLOR_A = 0x148;
-        STROBE_COLOR_B = 0x158;
-        ERROR_COLOR = 0x168;
-        PATTERN_POINT_COLOR = 0x188;
-        PATTERN_POINT_COLOR_A = 0x198;
-        PATTERN_POINT_COLOR_B = 0x1A8;
-        SYMBOL_A = 0x1B8;
-        SYMBOL_B = 0x1C8;
-        SYMBOL_C = 0x1D8;
-        SYMBOL_D = 0x1E8;
-        SYMBOL_E = 0x1F8;
-        PUSH_SYMBOL_COLORS = 0x208;
-        OUTER_BACKGROUND = 0x20C;
-        OUTER_BACKGROUND_MODE = 0x21C;
-        TRACED_EDGES = 0x230;
-        AUDIO_PREFIX = 0x278;
-        POWER = 0x2A8;
-        TARGET = 0x2BC;
-        POWER_OFF_ON_FAIL = 0x2C0;
-        IS_CYLINDER = 0x2FC;
-        CYLINDER_Z0 = 0x300;
-        CYLINDER_Z1 = 0x304;
-        CYLINDER_RADIUS = 0x308;
-        CURSOR_SPEED_SCALE = 0x358;
-        NEEDS_REDRAW = 0x384;
-        SPECULAR_ADD = 0x398;
-        SPECULAR_POWER = 0x39C;
-        PATH_WIDTH_SCALE = 0x3A4;
-        STARTPOINT_SCALE = 0x3A8;
-        NUM_DOTS = 0x3B8;
-        NUM_CONNECTIONS = 0x3BC;
-        MAX_BROADCAST_DISTANCE = 0x3C0;
-        DOT_POSITIONS = 0x3C8;
-        DOT_FLAGS = 0x3D0;
-        DOT_CONNECTION_A = 0x3D8;
-        DOT_CONNECTION_B = 0x3E0;
-        DECORATIONS = 0x420;
-        DECORATION_FLAGS = 0x428;
-        DECORATION_COLORS = 0x430;
-        NUM_DECORATIONS = 0x438;
-        REFLECTION_DATA = 0x440;
-        GRID_SIZE_X = 0x448;
-        GRID_SIZE_Y = 0x44C;
-        STYLE_FLAGS = 0x450;
-        SEQUENCE_LEN = 0x45C;
-        SEQUENCE = 0x460;
-        DOT_SEQUENCE_LEN = 0x468;
-        DOT_SEQUENCE = 0x470;
-        DOT_SEQUENCE_LEN_REFLECTION = 0x478;
-        DOT_SEQUENCE_REFLECTION = 0x480;
-        NUM_COLORED_REGIONS = 0x4A0;
-        COLORED_REGIONS = 0x4A8;
-        PANEL_TARGET = 0x4B0;
-        SPECULAR_TEXTURE = 0x4D8;
-        CABLE_TARGET_2 = 0xD8;
-        AUDIO_LOG_NAME = 0xC8;
-        OPEN_RATE = 0xE8;
-        METADATA = 0xF2; // sizeof(short)
-        HOTEL_EP_NAME = 0x4BC640;
-    } else if (GLOBALS == 0x62B0A0) {
-        // TODO:
-    } else if (GLOBALS == 0x62D0A0) {
-        POSITION = 0x24;
-        ORIENTATION = 0x34;
-        PATH_COLOR = 0xC0;
-        REFLECTION_PATH_COLOR = 0xD0;
-        DOT_COLOR = 0xF0;
-        ACTIVE_COLOR = 0x100;
-        BACKGROUND_REGION_COLOR = 0x110;
-        SUCCESS_COLOR_A = 0x120;
-        SUCCESS_COLOR_B = 0x130;
-        STROBE_COLOR_A = 0x140;
-        STROBE_COLOR_B = 0x150;
-        ERROR_COLOR = 0x160;
-        PATTERN_POINT_COLOR = 0x180;
-        PATTERN_POINT_COLOR_A = 0x190;
-        PATTERN_POINT_COLOR_B = 0x1A0;
-        SYMBOL_A = 0x1B0;
-        SYMBOL_B = 0x1C0;
-        SYMBOL_C = 0x1D0;
-        SYMBOL_D = 0x1E0;
-        SYMBOL_E = 0x1F0;
-        PUSH_SYMBOL_COLORS = 0x200;
-        OUTER_BACKGROUND = 0x204;
-        OUTER_BACKGROUND_MODE = 0x214;
-        TRACED_EDGES = 0x228;
-        AUDIO_PREFIX = 0x270;
-        POWER = 0x2A0;
-        TARGET = 0x2B4;
-        POWER_OFF_ON_FAIL = 0x2B8;
-        IS_CYLINDER = 0x2F4;
-        CYLINDER_Z0 = 0x2F8;
-        CYLINDER_Z1 = 0x2FC;
-        CYLINDER_RADIUS = 0x300;
-        CURSOR_SPEED_SCALE = 0x350;
-        NEEDS_REDRAW = 0x37C;
-        SPECULAR_ADD = 0x38C;
-        SPECULAR_POWER = 0x390;
-        PATH_WIDTH_SCALE = 0x39C;
-        STARTPOINT_SCALE = 0x3A0;
-        NUM_DOTS = 0x3B4;
-        NUM_CONNECTIONS = 0x3B8;
-        MAX_BROADCAST_DISTANCE = 0x3BC;
-        DOT_POSITIONS = 0x3C0;
-        DOT_FLAGS = 0x3C8;
-        DOT_CONNECTION_A = 0x3D0;
-        DOT_CONNECTION_B = 0x3D8;
-        DECORATIONS = 0x418;
-        DECORATION_FLAGS = 0x420;
-        DECORATION_COLORS = 0x428;
-        NUM_DECORATIONS = 0x430;
-        REFLECTION_DATA = 0x438;
-        GRID_SIZE_X = 0x440;
-        GRID_SIZE_Y = 0x444;
-        STYLE_FLAGS = 0x448;
-        SEQUENCE_LEN = 0x454;
-        SEQUENCE = 0x458;
-        DOT_SEQUENCE_LEN = 0x460;
-        DOT_SEQUENCE = 0x468;
-        DOT_SEQUENCE_LEN_REFLECTION = 0x470;
-        DOT_SEQUENCE_REFLECTION = 0x478;
-        NUM_COLORED_REGIONS = 0x498;
-        COLORED_REGIONS = 0x4A0;
-        PANEL_TARGET = 0x4A8;
-        SPECULAR_TEXTURE = 0x4D0;
-        CABLE_TARGET_2 = 0xD0;
-        AUDIO_LOG_NAME = 0x0;
-        OPEN_RATE = 0xE0;
-        METADATA = 0x13A; // sizeof(short)
-        HOTEL_EP_NAME = 0x51E340;
-    } else {
+void Memory::ReadDataInternal(void* buffer, uintptr_t computedOffset, size_t bufferSize) {
+    assert(bufferSize > 0);
+    if (!_handle) return;
+    // Ensure that the buffer size does not cause a read across a page boundary.
+    if (bufferSize > 0x1000 - (computedOffset & 0x0000FFF)) {
+        bufferSize = 0x1000 - (computedOffset & 0x0000FFF);
+    }
+    if (!ReadProcessMemory(_handle, (void*)computedOffset, buffer, bufferSize, nullptr)) {
+        DebugPrint("Failed to read process memory.");
         assert(false);
-        return;
+    }
+}
+
+void Memory::WriteDataInternal(const void* buffer, const std::vector<__int64>& offsets, size_t bufferSize) {
+    assert(bufferSize > 0);
+    if (!_handle) return;
+    if (offsets.empty() || offsets[0] == 0) return; // Empty offset path passed in.
+    if (!WriteProcessMemory(_handle, (void*)ComputeOffset(offsets), buffer, bufferSize, nullptr)) {
+        DebugPrint("Failed to write process memory.");
+        assert(false);
+    }
+}
+
+uintptr_t Memory::ComputeOffset(std::vector<__int64> offsets, bool absolute) {
+    assert(offsets.size() > 0);
+    assert(offsets.front() != 0);
+
+    // Leave off the last offset, since it will be either read/write, and may not be of type uintptr_t.
+    const __int64 final_offset = offsets.back();
+    offsets.pop_back();
+
+    uintptr_t cumulativeAddress = (absolute ? 0 : _baseAddress);
+    for (const __int64 offset : offsets) {
+        cumulativeAddress += offset;
+
+        // If the address was already computed, continue to the next offset.
+        uintptr_t foundAddress = _computedAddresses.Find(cumulativeAddress);
+        if (foundAddress != 0) {
+            cumulativeAddress = foundAddress;
+            continue;
+        }
+
+        // If the address was not yet computed, read it from memory.
+        uintptr_t computedAddress = 0;
+        if (!_handle) return 0;
+        if (ReadProcessMemory(_handle, reinterpret_cast<LPCVOID>(cumulativeAddress), &computedAddress, sizeof(computedAddress), NULL) && computedAddress != 0) {
+            // Success!
+            _computedAddresses.Set(cumulativeAddress, computedAddress);
+            cumulativeAddress = computedAddress;
+            continue;
+        }
+
+        MEMORY_BASIC_INFORMATION info;
+        if (computedAddress == 0) {
+            DebugPrint("Attempted to dereference NULL!");
+            assert(false);
+        } else if (!VirtualQuery(reinterpret_cast<LPVOID>(cumulativeAddress), &info, sizeof(computedAddress))) {
+            DebugPrint("Failed to read process memory, probably because cumulativeAddress was too large.");
+            assert(false);
+        } else if (info.State != MEM_COMMIT) {
+            DebugPrint("Attempted to read unallocated memory.");
+            assert(false);
+        } else if ((info.AllocationProtect & 0xC4) == 0) { // 0xC4 = PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READWRITE
+            DebugPrint("Attempted to read unreadable memory.");
+            assert(false);
+        } else {
+            DebugPrint("Failed to read memory for some as-yet unknown reason.");
+            assert(false);
+        }
+        return 0;
+    }
+    return cumulativeAddress + final_offset;
+}
+
+void Memory::DebugPrint(const std::string& text) {
+    OutputDebugStringA(text.c_str());
+    std::cout << text;
+    if (text[text.size()-1] != '\n') {
+        OutputDebugStringA("\n");
+        std::cout << std::endl;
+    }
+}
+
+void Memory::DebugPrint(const std::wstring& text) {
+    OutputDebugStringW(text.c_str());
+    std::wcout << text;
+    if (text[text.size()-1] != L'\n') {
+        OutputDebugStringW(L"\n");
+        std::wcout << std::endl;
     }
 }

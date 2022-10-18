@@ -1,48 +1,24 @@
 #pragma once
+#include "Memory.h"
 
 class Randomizer {
 public:
     Randomizer(const std::shared_ptr<Memory>& memory);
-    void Randomize();
-    void RandomizeChallenge();
 
-    void AdjustSpeed();
-    void RandomizeLasers();
-    void PreventSnipes();
+    template <typename T>
+    std::vector<T> ReadPanelData(int panel, int offset, size_t size) {
+        if (size == 0) return {};
+        return _memory->ReadData<T>({ _globals, 0x18, panel * 8, offset }, size);
+    }
 
-    enum SWAP {
-        // NONE = 0,
-        TARGETS = 1,
-        LINES = 2,
-        AUDIO_NAMES = 4,
-        COLORS = 8,
-    };
+    template <typename T>
+    T ReadPanelData(int panel, int offset) {
+        return ReadPanelData<T>(panel, offset, 1)[0];
+    }
 
 private:
-    int _lastRandomizedFrame = 1 << 30;
-    void RandomizeTutorial();
-    void RandomizeSymmetry();
-    void RandomizeDesert();
-    void RandomizeQuarry();
-    void RandomizeTreehouse();
-    void RandomizeKeep();
-    void RandomizeShadows();
-    void RandomizeTown();
-    void RandomizeMonastery();
-    void RandomizeBunker();
-    void RandomizeJungle();
-    void RandomizeSwamp();
-    void RandomizeMountain();
-    void RandomizeAudioLogs();
-
-    void Randomize(std::vector<int>& panels, int flags);
-    void Shuffle(std::vector<int>&order, size_t startIndex, size_t endIndex);
-    void RandomizeRange(std::vector<int> panels, int flags, size_t startIndex, size_t endIndex);
-    void SwapPanels(int panel1, int panel2, int flags);
-    void ReassignTargets(const std::vector<int>& panels, const std::vector<int>& order, std::vector<int> targets = {});
-    void ReassignNames(const std::vector<int>& panels, const std::vector<int>& order);
-
     std::shared_ptr<Memory> _memory;
 
-    friend class SwapTests_Shipwreck_Test;
+    // Sigscan outputs
+    int64_t _globals = 0;
 };
