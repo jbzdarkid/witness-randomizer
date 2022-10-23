@@ -322,6 +322,7 @@ void Memory::ReadDataInternal(void* buffer, uintptr_t computedOffset, size_t buf
     // Ensure that the buffer size does not cause a read across a page boundary.
     if (bufferSize > 0x1000 - (computedOffset & 0x0000FFF)) {
         bufferSize = 0x1000 - (computedOffset & 0x0000FFF);
+        assert(false);
     }
     if (!ReadProcessMemory(_handle, (void*)computedOffset, buffer, bufferSize, nullptr)) {
         DebugPrint("Failed to read process memory.");
@@ -329,11 +330,15 @@ void Memory::ReadDataInternal(void* buffer, uintptr_t computedOffset, size_t buf
     }
 }
 
-void Memory::WriteDataInternal(const void* buffer, const std::vector<int64_t>& offsets, size_t bufferSize) {
+void Memory::WriteDataInternal(const void* buffer, const uintptr_t computedOffset, size_t bufferSize) {
     assert(bufferSize > 0);
     if (!_handle) return;
-    if (offsets.empty() || offsets[0] == 0) return; // Empty offset path passed in.
-    if (!WriteProcessMemory(_handle, (void*)ComputeOffset(offsets), buffer, bufferSize, nullptr)) {
+    // Ensure that the buffer size does not cause a read across a page boundary.
+    if (bufferSize > 0x1000 - (computedOffset & 0x0000FFF)) {
+        bufferSize = 0x1000 - (computedOffset & 0x0000FFF);
+        assert(false);
+    }
+    if (!WriteProcessMemory(_handle, (void*)computedOffset, buffer, bufferSize, nullptr)) {
         DebugPrint("Failed to write process memory.");
         assert(false);
     }

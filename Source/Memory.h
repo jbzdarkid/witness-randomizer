@@ -62,7 +62,7 @@ public:
     void WriteArray(const std::vector<int64_t>& offsets, const std::vector<T>& data) {
         uintptr_t targetAddress = ComputeOffset(offsets);
         auto search = _allocatedArrays.find(targetAddress);
-        if (search == _allocatedArrays.end() || search.second < data.size()) {
+        if (search == _allocatedArrays.end() || search->second < data.size()) {
             // We don't have an existing allocation or it's not big enough.
             uintptr_t newArray = AllocArray(data.size());
             _allocatedArrays[targetAddress] = data.size();
@@ -84,7 +84,7 @@ private:
 
     template <class T>
 	uintptr_t AllocArray(size_t numItems) {
-		void* ptr = VirtualAllocEx(_handle, 0, numItems * sizeof(T), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		void* ptr = VirtualAllocEx(_handle, 0, numItems * sizeof(T), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         _allocations.push_back(ptr);
 		return reinterpret_cast<uintptr_t>(ptr);
 	}
