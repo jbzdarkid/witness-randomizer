@@ -37,15 +37,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
     case HEARTBEAT: // The "heartbeat" of the game -- tells you if The Witness is running, stopped, loading, etc.
         switch ((ProcStatus)wParam) {
             case ProcStatus::Stopped:
-                EnableWindow(g_randomize, false); // Prevent randomization when the game stops
+            case ProcStatus::Loading:
+                EnableWindow(g_randomize, false); // Prevent randomization when the game stops, or while loading
                 break;
             case ProcStatus::Started:
-                EnableWindow(g_randomize, true); // Allow randomization when the game starts
-                break;
-            case ProcStatus::NotRunning:
-            case ProcStatus::Reload:
             case ProcStatus::NewGame:
-                break; // No specific actions needed. You might consider reloading the randomization when a player loads a save, e.g.
+            case ProcStatus::AlreadyRunning:
+                EnableWindow(g_randomize, true); // Allow randomization when the game starts, or on new game
+                break;
+            case ProcStatus::LoadSave:
+                break; // TODO: Something when reloading the game?
+            case ProcStatus::NotRunning:
+                break; // Nothing to do while the game isn't running
         }
         break;
     case WM_COMMAND:
@@ -56,6 +59,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             if (randomizer.ReadPanelData<int>(0x00064, NUM_DOTS) > 5) {
 				if (MessageBox(hwnd, L"Game is currently randomized. Are you sure you want to randomize again? (Can cause glitches)", NULL, MB_YESNO) != IDYES) break;
 			}
+
+            randomizer.DrawStartingPanelText({ "Hello" });
+
             break;
         }
         break;
@@ -94,7 +100,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         rect.right - 550, 200, 500, 500, nullptr, nullptr, hInstance, nullptr);
 
     g_randomize = CreateWindow(L"BUTTON", L"Randomize!",
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON | WS_DISABLED,
         0, 0, 100, 26,
         g_hwnd, (HMENU)IDC_RANDOMIZE, hInstance, NULL);
 

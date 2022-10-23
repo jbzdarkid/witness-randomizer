@@ -6,12 +6,24 @@
 #include <memory>
 
 enum ProcStatus : WPARAM {
+    // Emitted continuously while the randomizer is running and the game is not
     NotRunning,
-    Started,
+    // Emitted continuously while the randomizer is running and the game is also running
     Running,
-    Reload,
+    // Emitted continuously while the randomizer is running and the game is loading
+    Loading,
+
+    // Emitted exactly once if game starts while the randomizer is running
+    Started,
+    // Emitted exactly once if randomzier starts while the game is running
+    AlreadyRunning,
+
+    // Emitted exactly once if we detect that a save was loaded after ProcStats::Loading
+    LoadSave,
+    // Emitted exactly once if we detect that a new game was started after ProcStats::Loading
     NewGame,
-    Stopped
+    // Emitted exactly once if the game stops while the randomizer is running
+    Stopped,
 };
 
 class Memory final : public std::enable_shared_from_this<Memory> {
@@ -51,7 +63,7 @@ public:
         ReadDataInternal(&data[0], ComputeOffset(offsets, true), numItems * sizeof(T));
         return data;
     }
-    std::string ReadString(std::vector<int64_t> offsets);
+    std::string ReadString(const std::vector<int64_t>& offsets);
 
     template <class T>
     inline void WriteData(const std::vector<int64_t>& offsets, const std::vector<T>& data) {
@@ -64,7 +76,10 @@ public:
         auto search = _allocatedArrays.find(targetAddress);
         if (search == _allocatedArrays.end() || search->second < data.size()) {
             // We don't have an existing allocation or it's not big enough.
-            uintptr_t newArray = AllocArray(data.size());
+	        // uintptr_t AllocArray(size_t numItems) {
+		    void* ptr = VirtualAllocEx(_handle, 0, data.size() * sizeof(T), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            _allocations.push_back(ptr);
+            targetAddress = reinterpret_cast<uintptr_t>(ptr);
             _allocatedArrays[targetAddress] = data.size();
         }
 
@@ -72,7 +87,7 @@ public:
     }
 
 private:
-    void Heartbeat(HWND window, UINT message);
+    ProcStatus Heartbeat();
     void Initialize();
     static void SetCurrentThreadName(const wchar_t* name);
     static void DebugPrint(const std::string& text);
@@ -82,30 +97,26 @@ private:
     void WriteDataInternal(const void* buffer, const uintptr_t computedOffset, size_t bufferSize);
     uintptr_t ComputeOffset(std::vector<int64_t> offsets, bool absolute = false);
 
-    template <class T>
-	uintptr_t AllocArray(size_t numItems) {
-		void* ptr = VirtualAllocEx(_handle, 0, numItems * sizeof(T), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-        _allocations.push_back(ptr);
-		return reinterpret_cast<uintptr_t>(ptr);
-	}
-
     // Parts of the constructor / StartHeartbeat
     std::wstring _processName;
     bool _threadActive = false;
     std::thread _thread;
 
-    // Parts of Initialize / heartbeat
+    // Windows-y parts of initialize / heartbeat
     HANDLE _handle = nullptr;
     DWORD _pid = 0;
     HWND _hwnd = NULL;
     uintptr_t _baseAddress = 0;
     uintptr_t _endOfModule = 0;
+
+    // These variables are all used to track game state
     int64_t _globals = 0;
     int _loadCountOffset = 0;
     int64_t _previousEntityManager = 0;
     int _previousLoadCount = 0;
-    ProcStatus _nextStatus = ProcStatus::Started;
+    bool _gameHasStarted = false;
     bool _trainerHasStarted = false;
+    bool _wasLoading = false;
 
 #ifdef NDEBUG
     static constexpr std::chrono::milliseconds s_heartbeat = std::chrono::milliseconds(100);

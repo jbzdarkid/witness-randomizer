@@ -32,22 +32,31 @@ public:
         return ReadPanelData<T>(panel, offset, 1)[0];
     }
 
-    std::vector<Traced_Edge> ReadTracedEdges(int panel);
-    
+    template <typename T>
+    void WritePanelData(int panel, const int offset, const std::vector<T>& data) {
+        if (data.size() == 0) return;
+        _memory->WriteData({ _globals, 0x18, panel * 8, offset }, data);
+    }
+
+    template <typename T>
+    void WritePanelData(int panel, const int offset, const T& data) {
+        std::vector<T> dataVector = { data };
+        _memory->WriteData({ _globals, 0x18, panel * 8, offset }, dataVector);
+    }
+
     template <typename T>
     void WriteArray(int panel, const int offset, const std::vector<T>& data) {
         _memory->WriteArray({ _globals, 0x18, panel * 8, offset }, data);
     }
 
-    /*
-    void CreateText(int id, std::string text, std::vector<float>& intersections, std::vector<int>& connectionsA, std::vector<int>& connectionsB,
-		float left, float right, float top, float bottom);
-	void DrawText(int id, std::vector<float>& intersections, std::vector<int>& connectionsA, std::vector<int>& connectionsB, const std::vector<float>& finalLine);
-	void DrawSeedAndDifficulty(int id, int seed, bool hard, bool setSeed, bool options);
-	void DrawGoodLuckPanel(int id);
-    */
+    // Slightly more human-usable functions
+    std::vector<Traced_Edge> ReadTracedEdges(int panel);
+	void DrawStartingPanelText(const std::vector<std::string>& textLines);
 
 private:
+    void DrawLine(int panel, const std::vector<float>& coords);
+    void DrawText(int panel, const std::string& text, float top, float left, float bottom, float right);
+
     std::shared_ptr<Memory> _memory;
     std::vector<uintptr_t> _allocations;
 
