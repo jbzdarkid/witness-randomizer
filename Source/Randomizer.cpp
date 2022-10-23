@@ -78,14 +78,13 @@ void Randomizer::DrawLine(int panel, const vector<float>& coords) {
 	vector<int> connectionsA = ReadPanelData<int>(panel, DOT_CONNECTION_A, numConnections);
 	vector<int> connectionsB = ReadPanelData<int>(panel, DOT_CONNECTION_B, numConnections);
 
-	const vector<float> finalLine;
-	intersections.emplace_back(finalLine[0]);
+	intersections.emplace_back(coords[0]);
 	intersectionFlags.emplace_back(IntersectionFlags::STARTPOINT | IntersectionFlags::INTERSECTION);
 
-	for (int i = 1; i < finalLine.size(); i++) {
-		intersections.emplace_back(finalLine[i]);
+	for (int i = 1; i < coords.size(); i++) {
+		intersections.emplace_back(coords[i]);
 		if (i % 2 == 0) {
-			intersectionFlags.emplace_back(i == finalLine.size() - 2 ? IntersectionFlags::ENDPOINT | IntersectionFlags::INTERSECTION : 0);
+			intersectionFlags.emplace_back(i == coords.size() - 2 ? IntersectionFlags::ENDPOINT | IntersectionFlags::INTERSECTION : 0);
 			connectionsA.emplace_back(static_cast<int>(intersectionFlags.size()) - 2);
 			connectionsB.emplace_back(static_cast<int>(intersectionFlags.size()) - 1);
 		}

@@ -52,7 +52,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         }
         break;
     case WM_COMMAND:
-        switch (LOWORD(message)) {
+        switch (LOWORD(wParam)) {
         case IDC_RANDOMIZE:
             Randomizer randomizer(g_memory);
 
