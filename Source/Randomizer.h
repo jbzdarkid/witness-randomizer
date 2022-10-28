@@ -24,18 +24,19 @@ public:
     template <typename T>
     std::vector<T> ReadPanelData(int panel, const int offset, size_t size) {
         if (size == 0) return {};
-        return _memory->ReadData<T>({ _globals, 0x18, panel * 8, offset }, size);
+        // When reading more than one datapoint, the object in the panel is a pointer to an array.
+        return _memory->ReadData<T>({ _globals, 0x18, panel * 8, offset, 0 }, size);
     }
 
     template <typename T>
     T ReadPanelData(int panel, const int offset) {
-        return ReadPanelData<T>(panel, offset, 1)[0];
+        return _memory->ReadData<T>({ _globals, 0x18, panel * 8, offset }, 1)[0];
     }
 
     template <typename T>
     void WritePanelData(int panel, const int offset, const std::vector<T>& data) {
         if (data.size() == 0) return;
-        _memory->WriteData({ _globals, 0x18, panel * 8, offset }, data);
+        _memory->WriteArray({ _globals, 0x18, panel * 8, offset }, data);
     }
 
     template <typename T>
@@ -44,18 +45,21 @@ public:
         _memory->WriteData({ _globals, 0x18, panel * 8, offset }, dataVector);
     }
 
-    template <typename T>
-    void WriteArray(int panel, const int offset, const std::vector<T>& data) {
-        _memory->WriteArray({ _globals, 0x18, panel * 8, offset }, data);
-    }
-
     // Slightly more human-usable functions
     std::vector<Traced_Edge> ReadTracedEdges(int panel);
-	void DrawStartingPanelText(const std::vector<std::string>& textLines);
+    void DrawStartingPanelText(const std::vector<std::string>& textLines);
 
 private:
+    void ClearPanel(int panel);
+
+    const int HALIGN_LEFT   = 0x1;
+    const int HALIGN_CENTER = 0x2;
+    const int HALIGN_RIGHT  = 0x4;
+    const int VALIGN_TOP    = 0x8;
+    const int VALIGN_CENTER = 0x10;
+    const int VALIGN_BOTTOM = 0x20;
+    void DrawText(int panel, const std::string& text, float x, float y, int alignment, float textSize = 0.05);
     void DrawLine(int panel, const std::vector<float>& coords);
-    void DrawText(int panel, const std::string& text, float top, float left, float bottom, float right);
 
     std::shared_ptr<Memory> _memory;
     std::vector<uintptr_t> _allocations;

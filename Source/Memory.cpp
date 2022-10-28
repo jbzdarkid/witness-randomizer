@@ -349,6 +349,22 @@ void Memory::WriteDataInternal(const void* buffer, const uintptr_t computedOffse
     }
 }
 
+void Memory::WriteArrayInternal(const void* buffer, const uintptr_t addressOfArray, size_t bufferSize) {
+    uintptr_t addressOfArrayData = ComputeOffset({static_cast<int64_t>(addressOfArray), 0}, true);
+
+    uintptr_t newAddress = EnsureArrayCapacity(addressOfArrayData, bufferSize);
+    if (newAddress) addressOfArrayData = newAddress;
+    WriteDataInternal(buffer, addressOfArrayData, bufferSize); // To be extra safe, we fill out the array data before swapping the array pointer.
+
+    if (newAddress) {
+        // If the array reallocated, write the new address into the previous array.
+        // Also reset the associated value in the computed address map.
+        _computedAddresses.Set(addressOfArray, addressOfArrayData);
+        uintptr_t newAddressArr[1] = { newAddress }; // Local array allocation because WriteDataInternal expects an array
+        WriteDataInternal(&newAddressArr[0], addressOfArray, sizeof(uintptr_t));
+    }
+}
+
 uintptr_t Memory::ComputeOffset(std::vector<int64_t> offsets, bool absolute) {
     assert(offsets.size() > 0);
     assert(offsets.front() != 0);
@@ -398,6 +414,22 @@ uintptr_t Memory::ComputeOffset(std::vector<int64_t> offsets, bool absolute) {
         return 0;
     }
     return cumulativeAddress + final_offset;
+}
+
+uintptr_t Memory::EnsureArrayCapacity(uintptr_t address, size_t size) {
+    auto search = _allocatedArrays.find(address);
+    if (search == _allocatedArrays.end()) {
+		uintptr_t newAddress = (uintptr_t)VirtualAllocEx(_handle, 0, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        _allocatedArrays[newAddress] = size;
+        return newAddress;
+    } else if (search->second < size) {
+        VirtualFreeEx(_handle, (void*)address, 0, MEM_RELEASE);
+		uintptr_t newAddress = (uintptr_t)VirtualAllocEx(_handle, 0, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        search->second = size;
+        return newAddress;
+    } else {
+        return NULL;
+    }
 }
 
 void Memory::DebugPrint(const std::string& text) {

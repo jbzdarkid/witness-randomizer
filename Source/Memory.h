@@ -15,7 +15,7 @@ enum ProcStatus : WPARAM {
 
     // Emitted exactly once if game starts while the randomizer is running
     Started,
-    // Emitted exactly once if randomzier starts while the game is running
+    // Emitted exactly once if randomzier starts while the game is running (and not in the middle of a load)
     AlreadyRunning,
 
     // Emitted exactly once if we detect that a save was loaded after ProcStats::Loading
@@ -60,6 +60,7 @@ public:
     inline std::vector<T> ReadAbsoluteData(const std::vector<int64_t>& offsets, size_t numItems) {
         std::vector<T> data(numItems);
         if (!_handle) return data;
+        if (numItems == 0) return data;
         ReadDataInternal(&data[0], ComputeOffset(offsets, true), numItems * sizeof(T));
         return data;
     }
@@ -67,23 +68,16 @@ public:
 
     template <class T>
     inline void WriteData(const std::vector<int64_t>& offsets, const std::vector<T>& data) {
+        if (!_handle) return;
+        if (data.size() == 0) return;
         WriteDataInternal(&data[0], ComputeOffset(offsets), sizeof(T) * data.size());
     }
 
     template <class T>
     void WriteArray(const std::vector<int64_t>& offsets, const std::vector<T>& data) {
-        uintptr_t targetAddress = ComputeOffset(offsets);
-        auto search = _allocatedArrays.find(targetAddress);
-        if (search == _allocatedArrays.end() || search->second < data.size()) {
-            // We don't have an existing allocation or it's not big enough.
-	        // uintptr_t AllocArray(size_t numItems) {
-		    void* ptr = VirtualAllocEx(_handle, 0, data.size() * sizeof(T), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-            _allocations.push_back(ptr);
-            targetAddress = reinterpret_cast<uintptr_t>(ptr);
-            _allocatedArrays[targetAddress] = data.size();
-        }
-
-        WriteDataInternal(&data[0], targetAddress, sizeof(T) * data.size());
+        if (!_handle) return;
+        if (data.size() == 0) return;
+        WriteArrayInternal(&data[0], ComputeOffset(offsets), sizeof(T) * data.size());
     }
 
 private:
@@ -95,7 +89,9 @@ private:
 
     void ReadDataInternal(void* buffer, const uintptr_t computedOffset, size_t bufferSize);
     void WriteDataInternal(const void* buffer, const uintptr_t computedOffset, size_t bufferSize);
+    void WriteArrayInternal(const void* buffer, const uintptr_t addressOfArray, size_t bufferSize);
     uintptr_t ComputeOffset(std::vector<int64_t> offsets, bool absolute = false);
+    uintptr_t EnsureArrayCapacity(uintptr_t existingAddress, size_t size);
 
     // Parts of the constructor / StartHeartbeat
     std::wstring _processName;

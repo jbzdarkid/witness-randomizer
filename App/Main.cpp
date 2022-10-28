@@ -60,7 +60,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				if (MessageBox(hwnd, L"Game is currently randomized. Are you sure you want to randomize again? (Can cause glitches)", NULL, MB_YESNO) != IDYES) break;
 			}
 
-            randomizer.DrawStartingPanelText({ "Hello" });
+            randomizer.DrawStartingPanelText({ "witness", "randomizer" });
 
             break;
         }
