@@ -35,8 +35,7 @@ public:
     void BringToFront();
     bool IsForeground();
 
-    static HWND GetProcessHwnd(DWORD pid);
-
+    // Do not attempt to copy this object. Instead, use shared_ptr<Memory>
     Memory(const Memory& memory) = delete;
     Memory& operator=(const Memory& other) = delete;
 
@@ -48,6 +47,12 @@ public:
     void AddSigScan(const std::vector<uint8_t>& scanBytes, const ScanFunc& scanFunc);
     void AddSigScan2(const std::vector<uint8_t>& scanBytes, const ScanFunc2& scanFunc);
     [[nodiscard]] size_t ExecuteSigScans();
+
+    // This is the fully typed function -- you mostly won't need to call this.
+    int32_t CallFunction(int64_t address,
+        const int64_t rcx, const int64_t rdx, const int64_t r8, const int64_t r9,
+        const float xmm0, const float xmm1, const float xmm2, const float xmm3);
+    int32_t CallFunction(int64_t address, int64_t rcx, const float xmm1) { return CallFunction(address, rcx, 0, 0, 0, 0.0f, xmm1, 0.0f, 0.0f); }
 
     template<class T>
     inline std::vector<T> ReadData(const std::vector<int64_t>& offsets, size_t numItems) {
@@ -83,7 +88,9 @@ public:
 private:
     ProcStatus Heartbeat();
     void Initialize();
+    static HWND GetProcessHwnd(DWORD pid);
     static void SetCurrentThreadName(const wchar_t* name);
+
     static void DebugPrint(const std::string& text);
     static void DebugPrint(const std::wstring& text);
 
@@ -120,7 +127,7 @@ private:
     static constexpr std::chrono::milliseconds s_heartbeat = std::chrono::milliseconds(10);
 #endif
 
-    // Parts of Read / Write / Sigscan
+    // Parts of various memory primitives
     ThreadSafeAddressMap _computedAddresses;
 
     struct SigScan {
@@ -129,6 +136,7 @@ private:
     };
     std::map<std::vector<uint8_t>, SigScan> _sigScans;
 
-    std::vector<void*> _allocations; // This contains the address of the array data
-    std::map<uintptr_t, size_t> _allocatedArrays; // This contains the address in the panel which points to the array.
+    std::vector<void*> _allocations;
+    std::map<uintptr_t, size_t> _allocatedArrays;
+    uintptr_t _functionPrimitive = 0;
 };

@@ -12,8 +12,13 @@ Randomizer::Randomizer(const shared_ptr<Memory>& memory) {
         _globals = Memory::ReadStaticInt(offset, index + 0x14, data);
     });
 
+    // Entity_Door::open(float t_target)
+    _memory->AddSigScan({0x48, 0x89, 0x48, 0x08, 0x53, 0x48, 0x81, 0xEC, 0x80, 0x00, 0x00, 0x00}, [&](int64_t offset, int index, const vector<uint8_t>& data) {
+        _openDoor = offset + index - 3;
+	});
+
     size_t failedScans = _memory->ExecuteSigScans();
-    assert(failedScans == 0);
+    assert(failedScans == 0, "Failed to find some number of sigscans");
 }
 
 vector<Traced_Edge> Randomizer::ReadTracedEdges(int panel) {
@@ -30,6 +35,45 @@ vector<Traced_Edge> Randomizer::ReadTracedEdges(int panel) {
     }
 
     return edgeData;
+}
+
+void Randomizer::DrawStartingPanelText(const std::vector<std::string>& textLines) {
+    int panel = 0x64; // The first panel in the game
+
+    if (textLines.size() == 0) {
+        // Do nothing, the horizontal line is already there.
+    } else if (textLines.size() == 1) {
+        // If one text line, then draw it at 1/3, and the line at 2/3
+        float width = textLines[0].size() * 0.05f; // Each character is 0.12f wide
+        float height = 0.05f;
+        ClearPanel(panel);
+        DrawText(panel, textLines[0], 0.5f, 0.33f, HALIGN_CENTER | VALIGN_CENTER);
+        DrawLine(panel, { 0.1f, 0.33f, 0.9f, 0.33f });
+    } else if (textLines.size() == 2) {
+        ClearPanel(panel);
+        DrawText(panel, textLines[0], 0.5f, 0.25f, HALIGN_CENTER | VALIGN_CENTER);
+        DrawText(panel, textLines[1], 0.5f, 0.75f, HALIGN_CENTER | VALIGN_CENTER);
+        DrawLine(panel, { 0.1f, 0.5f, 0.9f, 0.5f });
+    } else {
+        assert(false, "Don't know how to put more than 4 lines of text on a panel!");
+        return;
+    }
+
+    WritePanelData<float>(panel, PATH_WIDTH_SCALE, 0.5f);
+    WritePanelData<int>(panel, NEEDS_REDRAW, 1);
+}
+
+void Randomizer::OpenDoor(int32_t door, float target) {
+    // The entity type must be Entity_Door
+    assert(_memory->ReadString({_globals, 0x18, door * 8, TYPE, PORTABLE_TYPE_NAME}) == "Door", "Cannot open a non-door entity");
+
+    int64_t doorEntity = _memory->ReadData<int64_t>({_globals, 0x18, door * 8}, 1)[0];
+    _memory->CallFunction(_openDoor, doorEntity, target);
+}
+
+void Randomizer::ClearPanel(int panel) {
+    WritePanelData<int>(panel, NUM_DOTS, 0);
+    WritePanelData<int>(panel, NUM_CONNECTIONS, 0);
 }
 
 // These coordinates are laid out in a 3x3 grid with these positions:
@@ -79,15 +123,10 @@ vector<int> CharToCoords(char ch) {
         case '.': return { 7 };
         case '-': return { 3,5 };
         case '_': return { 6,8 };
-        default: assert(false);
+        default: assert(false, "Cannot write character to a door. Please update CharToCoords.");
     }
 
     return {};
-}
-
-void Randomizer::ClearPanel(int panel) {
-    WritePanelData<int>(panel, NUM_DOTS, 0);
-    WritePanelData<int>(panel, NUM_CONNECTIONS, 0);
 }
 
 void Randomizer::DrawLine(int panel, const vector<float>& coords) {
@@ -119,21 +158,6 @@ void Randomizer::DrawLine(int panel, const vector<float>& coords) {
     WritePanelData<int>(panel, DOT_CONNECTION_B, connectionsB);
     WritePanelData<int>(panel, NUM_CONNECTIONS, static_cast<int>(connectionsA.size()));
 }
-
-//void Randomizer::DrawText(int panel, const string& text, float left, float top, float right, float bottom) {
-/*
-    enum HAlign : int {
-        Left    = 0x1,
-        Center  = 0x2,
-        Right   = 0x4,
-    };
-    enum VAlign : int {
-        Top     = 0x8,
-        Center  = 0x16,
-        Bottom  = 0x32,
-    };
-
-*/
 
 void Randomizer::DrawText(int panel, const std::string& text, float x, float y, int alignment, float textSize) {
     int numIntersections = ReadPanelData<int>(panel, NUM_DOTS);
@@ -189,43 +213,4 @@ void Randomizer::DrawText(int panel, const std::string& text, float x, float y, 
     WritePanelData<int>(panel, DOT_CONNECTION_A, connectionsA);
     WritePanelData<int>(panel, DOT_CONNECTION_B, connectionsB);
     WritePanelData<int>(panel, NUM_CONNECTIONS, static_cast<int>(connectionsA.size()));
-}
-
-void Randomizer::DrawStartingPanelText(const std::vector<std::string>& textLines) {
-    int panel = 0x64; // The first panel in the game
-
-    if (textLines.size() == 0) {
-        // Do nothing, the horizontal line is already there.
-    } else if (textLines.size() == 1) {
-        // If one text line, then draw it at 1/3, and the line at 2/3
-        float width = textLines[0].size() * 0.05f; // Each character is 0.12f wide
-        float height = 0.05f;
-        ClearPanel(panel);
-        DrawText(panel, textLines[0], 0.5f, 0.33f, HALIGN_CENTER | VALIGN_CENTER);
-        DrawLine(panel, { 0.1f, 0.33f, 0.9f, 0.33f });
-    } else if (textLines.size() == 2) {
-        ClearPanel(panel);
-        DrawText(panel, textLines[0], 0.5f, 0.25f, HALIGN_CENTER | VALIGN_CENTER);
-        DrawText(panel, textLines[1], 0.5f, 0.75f, HALIGN_CENTER | VALIGN_CENTER);
-        DrawLine(panel, { 0.1f, 0.5f, 0.9f, 0.5f });
-    } else {
-        assert(false); // Don't know how to put more than 4 lines of text on a panel
-        return;
-    }
-
-
-    /*
-
-     createText(id, hard ? "expert" : "normal", intersections, connectionsA, connectionsB, 0.1f, 0.9f, 0.25f, 0.4f);
-     std::string seedStr = std::to_string(seed);
-     createText(id, seedStr, intersections, connectionsA, connectionsB, 0.5f - seedStr.size()*0.06f, 0.5f + seedStr.size()*0.06f, setSeed ? 0.6f : 0.65f, setSeed ? 0.75f : 0.8f);
-     if (setSeed) createText(id, "Archipelago", intersections, connectionsA, connectionsB, 0.05f, 0.95f, 0.86f, 0.96f);
-     std::string version = VERSION_STR;
-     createText(id, version, intersections, connectionsA, connectionsB, 0.98f - version.size()*0.06f, 0.98f, 0.02f, 0.10f);
-     if (options) createText(id, "option", intersections, connectionsA, connectionsB, 0.02f, 0.5f, 0.02f, 0.10f);
-
-     drawText(id, intersections, connectionsA, connectionsB, { 0.1f, 0.5f, 0.9f, 0.5f });
-    */
-    WritePanelData<float>(panel, PATH_WIDTH_SCALE, 0.5f);
-    WritePanelData<int>(panel, NEEDS_REDRAW, 1);
 }

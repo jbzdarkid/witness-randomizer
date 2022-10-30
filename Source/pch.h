@@ -1,9 +1,10 @@
 #pragma once
 
+#define _L(x) L##x
 #undef assert
-#define assert(expr) if (!(expr)) { \
-    void ShowAssertDialogue(); \
-    ShowAssertDialogue(); \
+#define assert(expr, message) if (!(expr)) { \
+    void ShowAssertDialogue(const wchar_t*); \
+    ShowAssertDialogue(_L(message)); \
 }
 
 #define _HAS_EXCEPTIONS 0
@@ -12,13 +13,13 @@
 #include <crtdbg.h>
 #undef _RPT_BASE
 #define _RPT_BASE(...) \
-    void ShowAssertDialogue(); \
-    ShowAssertDialogue();
+    void ShowAssertDialogue(const wchar_t*); \
+    ShowAssertDialogue(L"");
 
 #undef _RPT_BASE_W
 #define _RPT_BASE_W(...) \
-    void ShowAssertDialogue(); \
-    ShowAssertDialogue();
+    void ShowAssertDialogue(const wchar_t*); \
+    ShowAssertDialogue(L"");
 
 #define WIN32_LEAN_AND_MEAN 1
 #define VC_EXTRALEAN 1

@@ -4,6 +4,8 @@
 // They are accurate for the latest Steam version, as well as (I'm pretty sure) the Epic & GoG versions.
 // They *NOT* accurate for the legacy Steam version(s).
 
+constexpr int VTABLE = 0x0; // vfptr[]
+constexpr int TYPE = 0x8; // Portable_Type*
 constexpr int PANEL_ID = 0x10; // int
 constexpr int PORTABLE_FLAGS = 0x14; // short
 constexpr int REVISION_NUMBER = 0x16; // short
@@ -195,9 +197,9 @@ constexpr int POWERED_SUBPANEL_REGIONS_MAX = 0x4EC; // int
 constexpr int POWERED_SUBPANEL_REGIONS_DATA = 0x4F0; // float*
 constexpr int NEEDS_JUNCTION_UPDATE = 0x4FC;
 
-// These are other misc constants (which are often useful). I have prefixed them with their entity type, to avoid confusion.
+// These are other misc constants (which are often useful). I have prefixed them with their type, to avoid confusion.
 constexpr int DOOR_OPEN_RATE = 0xE0; // float
 constexpr int CABLE_TARGET_2 = 0xD0; // int
 constexpr int AUDIO_LOG_NAME = 0x0; // char*
 constexpr int BOAT_DELTA_SPEED = 0xD4; // 
-
+constexpr int PORTABLE_TYPE_NAME = 0x8; // char*

@@ -18,8 +18,8 @@ void Panel::Edit(const shared_ptr<Randomizer>& randomizer, int id, const PanelEd
 	}
 
 	editFunction(*this);
-	assert(intersections.size() == intersectionFlags.size() * 2);
-	assert(connectionsA.size() == connectionsB.size());
+	assert(intersections.size() == intersectionFlags.size() * 2, "");
+	assert(connectionsA.size() == connectionsB.size(), "");
 
 	randomizer->WritePanelData<int>(id, NUM_DOTS, static_cast<int>(intersectionFlags.size()));
 	randomizer->WritePanelData<float>(id, DOT_POSITIONS, intersections);

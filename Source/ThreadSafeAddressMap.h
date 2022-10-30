@@ -12,7 +12,7 @@ public:
     uintptr_t Find(uintptr_t key) const {
         std::lock_guard<std::mutex> l(_mutex);
         auto search = _map.find(key);
-        return (search == std::end(_map) ? 0 : search->second);
+        return (search == std::end(_map) ? NULL : search->second);
     }
 
     size_t Size() const {

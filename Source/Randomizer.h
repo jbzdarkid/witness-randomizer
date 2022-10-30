@@ -47,7 +47,9 @@ public:
 
     // Slightly more human-usable functions
     std::vector<Traced_Edge> ReadTracedEdges(int panel);
-    void DrawStartingPanelText(const std::vector<std::string>& textLines);
+    void DrawStartingPanelText(const std::vector<std::string>& textLines);\
+    // 0.0: closed, 1.0: open
+    void OpenDoor(int32_t door, float target = 1.0f);
 
 private:
     void ClearPanel(int panel);
@@ -66,4 +68,5 @@ private:
 
     // Sigscan outputs
     int64_t _globals = 0;
+    int64_t _openDoor = 0;
 };
