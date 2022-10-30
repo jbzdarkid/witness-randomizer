@@ -13,6 +13,7 @@
 #define HEARTBEAT 0x400
 #define IDC_RANDOMIZE 0x401
 #define IDC_OPENDOOR 0x402
+#define IDC_SAYHELLO 0x403
 
 // Globals
 using namespace std;
@@ -68,6 +69,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         case IDC_OPENDOOR:
             if (g_randomizer) g_randomizer->OpenDoor(0x34EDA);
             break;
+        case IDC_SAYHELLO:
+            if (g_randomizer) g_randomizer->ShowMessage("Hello, world!");
+            break;
         }
         break;
     }
@@ -113,6 +117,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
         0, 30, 100, 26,
         g_hwnd, (HMENU)IDC_OPENDOOR, hInstance, NULL);
+
+    CreateWindow(L"Button", L"Hello, World!",
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+        0, 60, 100, 26,
+        g_hwnd, (HMENU)IDC_SAYHELLO, hInstance, NULL);
 
     g_memory->StartHeartbeat(g_hwnd, HEARTBEAT);
 

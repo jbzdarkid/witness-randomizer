@@ -351,7 +351,6 @@ int32_t Memory::CallFunction(int64_t relativeAddress,
         0xF3, 0x0F, 0x7E, 0x4B, OFFSET_OF(xmm1),    // mov xmm1, args.xmm1
         0xF3, 0x0F, 0x7E, 0x53, OFFSET_OF(xmm2),    // mov xmm2, args.xmm2
         0xF3, 0x0F, 0x7E, 0x5B, OFFSET_OF(xmm3),    // mov xmm3, args.xmm3
-        // TODO: 0x08 should work?
         0x48, 0x83, 0xEC, 0x48,                     // sub rsp,48 ; align the stack pointer for movss opcodes
         0xFF, 0x13,                                 // call [rbx]
         0x48, 0x83, 0xC4, 0x48,                     // add rsp,48
@@ -377,6 +376,12 @@ int32_t Memory::CallFunction(int64_t relativeAddress,
     static_assert(sizeof(DWORD) == sizeof(exitCode));
     GetExitCodeThread(thread, reinterpret_cast<LPDWORD>(&exitCode));
     return exitCode;
+}
+
+int32_t Memory::CallFunction(int64_t address, const string& str) {
+    uintptr_t addr = EnsureArrayCapacity(NULL, str.size());
+    WriteDataInternal(&str[0], addr, str.size());
+    return CallFunction(address, addr);
 }
 
 // Technically this is ReadChar*, but this name makes more sense with the return type.

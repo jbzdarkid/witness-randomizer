@@ -8,14 +8,24 @@ using namespace std;
 Randomizer::Randomizer(const shared_ptr<Memory>& memory) {
     _memory = memory;
 
-    _memory->AddSigScan({0x74, 0x41, 0x48, 0x85, 0xC0, 0x74, 0x04, 0x48, 0x8B, 0x48, 0x10}, [&](int64_t offset, int index, const vector<uint8_t>& data) {
+    _memory->AddSigScan({0x74, 0x41, 0x48, 0x85, 0xC0, 0x74, 0x04, 0x48, 0x8B, 0x48, 0x10}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
         _globals = Memory::ReadStaticInt(offset, index + 0x14, data);
     });
 
     // Entity_Door::open(float t_target)
-    _memory->AddSigScan({0x48, 0x89, 0x48, 0x08, 0x53, 0x48, 0x81, 0xEC, 0x80, 0x00, 0x00, 0x00}, [&](int64_t offset, int index, const vector<uint8_t>& data) {
+    _memory->AddSigScan({0x48, 0x89, 0x48, 0x08, 0x53, 0x48, 0x81, 0xEC, 0x80, 0x00, 0x00, 0x00}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
         _openDoor = offset + index - 3;
 	});
+
+    // Entity_Laser::activate(void)
+	_memory->AddSigScan({0x40, 0x53, 0x48, 0x83, 0xEC, 0x60, 0x83, 0xB9}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
+		_activateLaser = offset + index;
+	});
+
+    // hud_report_text_to_player(const char*)
+	_memory->AddSigScan({0x00, 0x48, 0x8B, 0xD9, 0x7F, 0x49, 0x48, 0x8B, 0x0D}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
+        _reportHudText = offset + index - 12;
+    });
 
     size_t failedScans = _memory->ExecuteSigScans();
     assert(failedScans == 0, "Failed to find some number of sigscans");
@@ -64,11 +74,24 @@ void Randomizer::DrawStartingPanelText(const std::vector<std::string>& textLines
 }
 
 void Randomizer::OpenDoor(int32_t door, float target) {
-    // The entity type must be Entity_Door
+    if (!_openDoor) return;
     assert(_memory->ReadString({_globals, 0x18, door * 8, TYPE, PORTABLE_TYPE_NAME}) == "Door", "Cannot open a non-door entity");
 
     int64_t doorEntity = _memory->ReadData<int64_t>({_globals, 0x18, door * 8}, 1)[0];
     _memory->CallFunction(_openDoor, doorEntity, target);
+}
+
+void Randomizer::ActivateLaser(int32_t laser) {
+    if (!_activateLaser) return;
+    assert(_memory->ReadString({_globals, 0x18, laser * 8, TYPE, PORTABLE_TYPE_NAME}) == "Laser", "Cannot activate a non-laser entity");
+
+    int64_t laserEntity = _memory->ReadData<int64_t>({_globals, 0x18, laser * 8}, 1)[0];
+    _memory->CallFunction(_activateLaser, laserEntity);
+}
+
+void Randomizer::ShowMessage(const string& message) {
+    if (!_reportHudText) return;
+    _memory->CallFunction(_reportHudText, message);
 }
 
 void Randomizer::ClearPanel(int panel) {
