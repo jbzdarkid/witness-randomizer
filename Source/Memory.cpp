@@ -129,7 +129,7 @@ ProcStatus Memory::Heartbeat() {
         _computedAddresses.Clear();
     }
 
-    uint8_t isLoading = ReadAbsoluteData<uint8_t>({entityManager, _loadCountOffset - 0x4}, 1)[0];
+    uint8_t isLoading = ReadData<uint8_t>({_globals, _loadCountOffset - 0x4}, 1)[0];
     // Saved game is currently loading, do not take any actions.
     if (isLoading == 0x01) {
         _wasLoading = true;
@@ -232,7 +232,7 @@ void Memory::SetCurrentThreadName(const wchar_t* name) {
 // These functions are much more generic than this witness-specific implementation. As such, I'm keeping them somewhat separated.
 
 int64_t Memory::ReadStaticInt(int64_t offset, int index, const vector<uint8_t>& data, size_t bytesToEOL) {
-    // (address of next line) + (index interpreted as 4uint8_t int)
+    // (address of next line) + (index interpreted as 4 byte int)
     return offset + index + bytesToEOL + *(int*)&data[index];
 }
 

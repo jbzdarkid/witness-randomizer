@@ -1,4 +1,7 @@
 #pragma once
+#include <memory>
+#include <thread>
+
 #include "Memory.h"
 #undef DrawText
 
@@ -16,8 +19,9 @@ struct Traced_Edge final {
     bool hide_edge;
     bool padding;
 };
+class Watchdog;
 
-class Randomizer {
+class Randomizer final : public std::enable_shared_from_this<Randomizer> {
 public:
     Randomizer(const std::shared_ptr<Memory>& memory);
 
@@ -47,11 +51,24 @@ public:
 
     // Slightly more human-usable functions
     std::vector<Traced_Edge> ReadTracedEdges(int panel);
-    void DrawStartingPanelText(const std::vector<std::string>& textLines);\
+    void DrawStartingPanelText(const std::vector<std::string>& textLines);
     // 0.0: closed, 1.0: open
     void OpenDoor(int32_t door, float target = 1.0f);
     void ActivateLaser(int32_t laser);
     void ShowMessage(const std::string& message);
+
+    // set entity position
+    // call "entity has moved"
+    // watchdog if associated collision does not also move <--- use this to test watchdogs
+    struct EntityData final {
+        float position[3];
+        float scale;
+        float orientation[4];
+    };
+    void MoveEntity(int entity, const std::function<void(EntityData*)>& updateFunc);
+
+    void TrackWatchdog(Watchdog* watchdog);
+    void StopWatchdogs();
 
 private:
     void ClearPanel(int panel);
@@ -66,11 +83,12 @@ private:
     void DrawLine(int panel, const std::vector<float>& coords);
 
     std::shared_ptr<Memory> _memory;
-    std::vector<uintptr_t> _allocations;
+    std::unordered_map<Watchdog*, std::thread> _watchdogs;
 
     // Sigscan outputs
     int64_t _globals = 0;
     int64_t _openDoor = 0;
     int64_t _activateLaser = 0;
     int64_t _reportHudText = 0;
+    int64_t _entityHasMoved = 0;
 };

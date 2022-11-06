@@ -41,6 +41,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             case ProcStatus::Stopped:
             case ProcStatus::Loading:
                 EnableWindow(g_randomize, false); // Prevent randomization when the game stops, or while loading
+                g_randomizer->StopWatchdogs();
                 g_randomizer = nullptr;
                 break;
             case ProcStatus::Started:

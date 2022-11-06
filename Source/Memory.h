@@ -53,6 +53,7 @@ public:
         const int64_t rcx, const int64_t rdx, const int64_t r8, const int64_t r9,
         const float xmm0, const float xmm1, const float xmm2, const float xmm3);
     int32_t CallFunction(int64_t address, int64_t rcx) { return CallFunction(address, rcx, 0, 0, 0, 0.0f, 0.0f, 0.0f, 0.0f); }
+    int32_t CallFunction(int64_t address, int64_t rcx, int64_t rdx, int64_t r8, int64_t r9) { return CallFunction(address, rcx, rdx, r8, r9, 0.0f, 0.0f, 0.0f, 0.0f); }
     int32_t CallFunction(int64_t address, int64_t rcx, const float xmm1) { return CallFunction(address, rcx, 0, 0, 0, 0.0f, xmm1, 0.0f, 0.0f); }
     int32_t CallFunction(int64_t address, const std::string& str);
 

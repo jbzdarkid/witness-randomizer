@@ -2,6 +2,7 @@
 #include "Randomizer.h"
 #include "PanelOffsets.h"
 #include "Panel.h"
+#include "Watchdog.h"
 
 using namespace std;
 
@@ -15,18 +16,23 @@ Randomizer::Randomizer(const shared_ptr<Memory>& memory) {
     // Entity_Door::open(float t_target)
     _memory->AddSigScan({0x48, 0x89, 0x48, 0x08, 0x53, 0x48, 0x81, 0xEC, 0x80, 0x00, 0x00, 0x00}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
         _openDoor = offset + index - 3;
-	});
+    });
 
     // Entity_Laser::activate(void)
-	_memory->AddSigScan({0x40, 0x53, 0x48, 0x83, 0xEC, 0x60, 0x83, 0xB9}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
-		_activateLaser = offset + index;
-	});
+    _memory->AddSigScan({0x40, 0x53, 0x48, 0x83, 0xEC, 0x60, 0x83, 0xB9}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
+        _activateLaser = offset + index;
+    });
 
     // hud_report_text_to_player(const char*)
-	_memory->AddSigScan({0x00, 0x48, 0x8B, 0xD9, 0x7F, 0x49, 0x48, 0x8B, 0x0D}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
+    _memory->AddSigScan({0x00, 0x48, 0x8B, 0xD9, 0x7F, 0x49, 0x48, 0x8B, 0x0D}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
         _reportHudText = offset + index - 12;
     });
 
+    // Entity::has_moved(Vector3*, Quaternion*, BOOL)
+    _memory->AddSigScan({0x48, 0x8B, 0x79, 0x18, 0x41, 0x0F, 0xB6, 0xF1}, [this](int64_t offset, int index, const vector<uint8_t>& data) {
+        _entityHasMoved = offset + index - 15;
+    });
+    
     size_t failedScans = _memory->ExecuteSigScans();
     assert(failedScans == 0, "Failed to find some number of sigscans");
 }
@@ -94,6 +100,40 @@ void Randomizer::ShowMessage(const string& message) {
     _memory->CallFunction(_reportHudText, message);
 }
 
+void Randomizer::MoveEntity(int entity, const function<void(EntityData*)>& updateFunc) {
+    int64_t entityPointer = _memory->ReadData<int64_t>({_globals, 0x18, entity * 8}, 1)[0];
+    assert(entityPointer != 0, "Entity does not exist");
+
+    vector<float> rawData = _memory->ReadAbsoluteData<float>({entityPointer, POSITION}, sizeof(EntityData) / sizeof(float));
+    updateFunc((EntityData*)&rawData[0]);
+    _memory->WriteData({_globals, 0x18, entity * 8, POSITION}, rawData);
+
+    if (_entityHasMoved) {
+        _memory->CallFunction(_entityHasMoved, entityPointer, entityPointer + POSITION, entityPointer + ORIENTATION, 1 /* true */);
+    }
+}
+
+void Randomizer::TrackWatchdog(Watchdog* watchdog) {
+    std::thread watchdogThread([sharedThis = shared_from_this(), watchdog] {
+        while (watchdog->IsRunning()) {
+		    std::this_thread::sleep_for(watchdog->sleepTime);
+            watchdog->action(sharedThis);
+        }
+        sharedThis->_watchdogs.erase(watchdog);
+        delete watchdog;
+    });
+
+    watchdogThread.detach();
+    _watchdogs[watchdog] = std::move(watchdogThread);
+}
+
+void Randomizer::StopWatchdogs() {
+    for (auto& [watchdog, thrd] : _watchdogs) {
+        watchdog->Shutdown();
+        thrd.join();
+    }
+}
+
 void Randomizer::ClearPanel(int panel) {
     WritePanelData<int>(panel, NUM_DOTS, 0);
     WritePanelData<int>(panel, NUM_CONNECTIONS, 0);
@@ -103,50 +143,79 @@ void Randomizer::ClearPanel(int panel) {
 //   012
 //   345
 //   678
-vector<int> CharToCoords(char ch) {
+// -1 is used as a 'gap indicator'
+vector<int8_t> CharToCoords(char ch) {
     switch (ch) {
-        case 'a': return { 6,0,2,8,5,3 };
-        case 'b': return { 0,1,4,7,6,3,0,3,4 };
-        case 'c': return { 2,0,6,8 };
-        case 'd': return { 0,1,5,7,6,0 };
-        case 'e': return { 2,0,3,5,3,6,8 };
-        case 'f': return { 1,0,6,3,4 };
-        case 'g': return { 2,0,6,8,5,4 };
-        case 'h': return { 0,6,3,5,2,8 };
-        case 'i': return { 0,2,1,7,6,8 };
-        case 'j': return { 0,2,1,7,6,3 };
-        case 'k': return { 0,6,3,2,3,8 };
-        case 'l': return { 0,6,8 };
-        case 'm': return { 6,0,4,2,8 };
-        case 'n': return { 6,0,8,2 };
-        case 'o': return { 0,2,8,6,0 };
-        case 'p': return { 6,0,2,5,3 };
-        case 'q': return { 8,6,0,2,8,4 };
-        case 'r': return { 6,0,2,5,3,8 };
-        case 's': return { 2,0,3,5,8,6 };
-        case 't': return { 0,2,1,7 };
-        case 'u': return { 0,6,8,2 };
-        case 'v': return { 0,3,7,5,2 };
-        case 'w': return { 0,6,4,8,2 };
-        case 'x': return { 0,8,4,2,6 };
-        case 'y': return { 0,4,7,4,2 };
-        case 'z': return { 0,2,6,8 };
-        case '0': return { 0,2,8,6,0 };
-        case '1': return { 0,1,7,6,8 };
-        case '2': return { 0,2,5,3,6,8 };
-        case '3': return { 0,2,5,3,5,8,6 };
-        case '4': return { 0,3,5,2,8 };
-        case '5': return { 2,0,3,5,8,6 };
-        case '6': return { 2,0,6,8,5,3 };
-        case '7': return { 0,2,7 };
-        case '8': return { 0,2,8,6,0,3,5 };
-        case '9': return { 6,8,2,0,3,5 };
-        case '!': return { 1,4,7 };
         case ' ': return { };
-        case '.': return { 7 };
+        case '!': return { 1,4,-1,7 };
+        case '"': return { 0,3,-1,2,5 };
+        case '#': return { 1,4,6,-1,4,8 }; // Negation symbol
+        // case '$':
+        // case '%':
+        // case '&':
+        case '\'': return { 1,4 };
+        case '(': return { 2,4,8 };
+        case ')': return { 0,4,6 };
+        case '*': return { 0,8,-1,1,7,-1,2,6,-1,3,5 };
+        case '+': return { 1,7,-1,3,5 };
+        case ',': return { 4,6 };
         case '-': return { 3,5 };
+        case '.': return { 7 };
+        case '/': return { 2,6 };
+        case '0': return { 2,8,6,0,2,6 };
+        case '1': return { 0,1,7,-1,6,8 };
+        case '2': return { 0,1,5,6,8 };
+        case '3': return { 0,2,8,6,-1,3,5 };
+        case '4': return { 0,3,5,-1,2,8 };
+        case '5': return { 2,0,5,7,6 };
+        case '6': return { 2,1,3,6,8,5,3 };
+        case '7': return { 0,2,7 };
+        case '8': return { 0,2,8,6,0,-1,3,5 };
+        case '9': return { 5,3,0,2,5,7,6 };
+        case ':': return { 1,-1,7 };
+        case ';': return { 1,-1,4,7 };
+        case '<': return { 2,3,8 };
+        case '=': return { 0,2,-1,6,8 };
+        case '>': return { 0,5,6 };
+        case '?': return { 0,2,5,4,-1,7 };
+        case '@': return { 4,5,1,3,7,8 };
+        case 'A': return { 6,3,1,5,8,-1,3,5 };
+        case 'B': return { 0,2,4,8,6,0,-1,3,4 };
+        case 'C': return { 2,1,3,7,8 };
+        case 'D': return { 0,1,5,7,6,0 };
+        case 'E': return { 2,0,6,8,-1,3,4 };
+        case 'F': return { 2,0,6,-1,3,4 };
+        case 'G': return { 2,0,6,8,5,4 };
+        case 'H': return { 0,6,-1,3,5,-1,2,8 };
+        case 'I': return { 0,2,-1,1,7,-1,6,8 };
+        case 'J': return { 0,2,-1,1,7,6,3 };
+        case 'K': return { 0,6,-1,2,3,8 };
+        case 'L': return { 0,6,8 };
+        case 'M': return { 6,0,4,2,8 };
+        case 'N': return { 6,0,8,2 };
+        case 'O': return { 0,2,8,6,0 };
+        case 'P': return { 6,0,2,5,3 };
+        case 'Q': return { 0,2,8,6,0,-1,4,8 };
+        case 'R': return { 6,0,2,5,3,8 };
+        case 'S': return { 2,0,3,5,8,6 };
+        case 'T': return { 0,2,-1,1,7 };
+        case 'U': return { 0,6,8,2 };
+        case 'V': return { 0,7,2 };
+        case 'W': return { 0,6,4,8,2 };
+        case 'X': return { 0,8,-1,2,6 };
+        case 'Y': return { 0,4,2,-1,4,7 };
+        case 'Z': return { 0,2,6,8 };
+        case '[': return { 2,1,7,8 };
+        case '\\': return { 0, 8 };
+        case ']': return { 0,1,7,6 };
+        case '^': return { 3,1,5 };
         case '_': return { 6,8 };
-        default: assert(false, "Cannot write character to a door. Please update CharToCoords.");
+        case '`': return { 1,5 };
+        // case '{':
+        case '|': return { 1,7 };
+        // case '}':
+        // case '~':
+        default: assert(false, "Don't know how to draw the provided character -- please update CharToCoords.");
     }
 
     return {};
@@ -211,18 +280,19 @@ void Randomizer::DrawText(int panel, const std::string& text, float x, float y, 
     if (alignment & VALIGN_CENTER) bottom = y + textSize;
     if (alignment & VALIGN_BOTTOM) bottom = y + textSize * 2;
 
-    float spacingX = (right - left) / (text.size() * 3 - 1);
-    float spacingY = (top - bottom) / 2;
+    float spacingX = (text.size() * textSize * 2) / (text.size() * 3 - 1);
+    float spacingY = textSize;
 
     for (int i = 0; i < text.size(); i++) {
-        char c = tolower(text[i]);
-        const vector<int> coords = CharToCoords(c);
+        char c = toupper(text[i]);
+        const vector<int8_t> coords = CharToCoords(c);
         for (int j = 0; j < coords.size(); j++) {
-            int n = coords[j];
+            int8_t n = coords[j];
+            if (n == -1) continue; // Indicates a gap
             intersections.emplace_back((n % 3 + i * 3) * spacingX + left);
-            intersections.emplace_back(1 - ((2 - n / 3) * spacingY + bottom));
+            intersections.emplace_back(1 - ((n / 3 - 2) * spacingY + bottom));
             intersectionFlags.emplace_back(0);
-            if (j > 0 && !(c == '!' && j == 2)) {
+            if (j > 0) {
                 connectionsA.emplace_back(static_cast<int>(intersections.size()) / 2 - 2);
                 connectionsB.emplace_back(static_cast<int>(intersections.size()) / 2 - 1);
             }

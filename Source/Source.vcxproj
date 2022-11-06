@@ -167,6 +167,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Randomizer.h" />
     <ClInclude Include="ThreadSafeAddressMap.h" />
+    <ClInclude Include="Watchdog.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Memory.cpp" />
