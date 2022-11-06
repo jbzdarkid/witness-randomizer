@@ -10,12 +10,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App", "App\App.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Source", "Source\Source.vcxproj", "{6B5DF051-A51A-48CB-8ACD-C6FAD726019F}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer", "Installer\Installer.vdproj", "{F1B9D251-3DCC-4B19-A5C9-CA23AFD38632}"
-	ProjectSection(ProjectDependencies) = postProject
-		{6B5DF051-A51A-48CB-8ACD-C6FAD726019F} = {6B5DF051-A51A-48CB-8ACD-C6FAD726019F}
-		{235D27F1-9907-489B-8D58-636A0C5CD079} = {235D27F1-9907-489B-8D58-636A0C5CD079}
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -40,11 +34,6 @@ Global
 		{6B5DF051-A51A-48CB-8ACD-C6FAD726019F}.Release|x64.Build.0 = Release|x64
 		{6B5DF051-A51A-48CB-8ACD-C6FAD726019F}.Release|x86.ActiveCfg = Debug|x64
 		{6B5DF051-A51A-48CB-8ACD-C6FAD726019F}.Release|x86.Build.0 = Debug|x64
-		{F1B9D251-3DCC-4B19-A5C9-CA23AFD38632}.Debug|x64.ActiveCfg = Debug
-		{F1B9D251-3DCC-4B19-A5C9-CA23AFD38632}.Debug|x64.Build.0 = Debug
-		{F1B9D251-3DCC-4B19-A5C9-CA23AFD38632}.Debug|x86.ActiveCfg = Debug
-		{F1B9D251-3DCC-4B19-A5C9-CA23AFD38632}.Release|x64.ActiveCfg = Release
-		{F1B9D251-3DCC-4B19-A5C9-CA23AFD38632}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
