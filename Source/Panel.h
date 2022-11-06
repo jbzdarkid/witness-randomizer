@@ -2,6 +2,8 @@
 
 struct Decoration {
     enum Shape : int {
+        Exit =              0x600001,
+        Start =             0x600002,
         Stone =             0x100,
         Star =              0x200,
         Poly =              0x400,
@@ -30,7 +32,7 @@ struct Decoration {
         None =      0x0,
         Black =     0x1,
         White =     0x2,
-        // Red =     0x3, // Doesn't work, sadly
+        Red =       0x3,
         Purple =    0x4,
         Green =     0x5,
         Cyan =      0x6,
@@ -58,15 +60,17 @@ enum IntersectionFlags : int {
     INTERSECTION =      ROW | COLUMN,
 };
 
-struct Panel {
-    std::vector<float> intersections;
-    std::vector<int> intersectionFlags;
-    std::vector<int> connectionsA;
-    std::vector<int> connectionsB;
-
-    using PanelEditFunction = std::function<void(Panel&)>;
-    void Edit(const std::shared_ptr<Randomizer>& randomizer, int panel, const PanelEditFunction& editFunction, bool readFromPanel = true);
-
-private:
-    Panel();
+class Endpoint {
+public:
+    enum Direction {
+        NONE =  0,
+        LEFT =  1,
+        RIGHT = 2,
+        UP =    4,
+        DOWN =  8,
+        UP_LEFT = UP | LEFT,
+        UP_RIGHT = UP | RIGHT,
+        DOWN_LEFT = DOWN | LEFT,
+        DOWN_RIGHT = DOWN | RIGHT,
+    };
 };
