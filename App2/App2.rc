@@ -1,7 +1,0 @@
-#include "winres.h"
-#include "Version.h"
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION VERSION
-BEGIN
-END
